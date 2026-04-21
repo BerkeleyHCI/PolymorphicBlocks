@@ -72,6 +72,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="ON Semiconductor",
             part="NCP3420",
             datasheet="https://www.onsemi.com/pdf/datasheet/ncp3420-d.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C154600")
         self.assign(self.actual_basic_part, False)

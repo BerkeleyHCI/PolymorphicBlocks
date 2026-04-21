@@ -53,6 +53,7 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="ON Semiconductor",
             part="NLAS4157",
             datasheet="https://www.onsemi.com/pdf/datasheet/nlas4157-d.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C106912")
         self.assign(self.actual_basic_part, False)

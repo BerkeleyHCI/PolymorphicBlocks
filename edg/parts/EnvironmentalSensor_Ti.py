@@ -91,6 +91,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
             mfr="Texas Instruments",
             part="TMP1075N",
             datasheet="https://www.ti.com/lit/ds/symlink/tmp1075.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C3663690")
         self.assign(self.actual_basic_part, False)

@@ -107,6 +107,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="DRV8313PWP",
             datasheet="https://www.ti.com/lit/ds/symlink/drv8313.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C92482")
 

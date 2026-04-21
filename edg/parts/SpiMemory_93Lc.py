@@ -73,6 +73,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
             mfr="Microchip Technology",
             part=part_pn,
             datasheet=part_datasheet,
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, part_lcsc)
         self.assign(self.actual_basic_part, part_lcsc_basic)

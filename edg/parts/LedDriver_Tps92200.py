@@ -50,6 +50,7 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TPS92200D2DDCR",
             datasheet="https://www.ti.com/lit/ds/symlink/tps92200.pdf",
+            pnp_rot=0,
         )
         self.assign(self.lcsc_part, "C2865497")
         self.assign(self.actual_basic_part, False)

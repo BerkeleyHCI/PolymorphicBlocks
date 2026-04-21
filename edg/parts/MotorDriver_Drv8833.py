@@ -97,6 +97,7 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="DRV8833PWP",  # also compatible w/ PW package (no GND pad)
             datasheet="https://www.ti.com/lit/ds/symlink/drv8833.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C50506")
 

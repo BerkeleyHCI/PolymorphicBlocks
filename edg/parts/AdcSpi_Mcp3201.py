@@ -51,6 +51,7 @@ class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
             mfr="Microchip Technology",
             part="MCP3201T-BI/SN",
             datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/21290F.pdf",
+            pnp_rot=-90,
         )
 
 

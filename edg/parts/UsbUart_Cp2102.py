@@ -89,6 +89,7 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Silicon Labs",
             part="CP2102",
             datasheet="https://www.silabs.com/documents/public/data-sheets/CP2102-9.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C6568")  # CP2102-GMR
         self.assign(self.actual_basic_part, True)

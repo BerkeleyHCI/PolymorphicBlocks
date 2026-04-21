@@ -51,6 +51,7 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Vishay Siliconix",
             part="DG468DV",
             datasheet="https://www.vishay.com/docs/74413/dg467.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C2651906")
         self.assign(self.actual_basic_part, False)

@@ -56,6 +56,7 @@ class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA2333AIDR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa2333.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C38732")
         self.assign(self.actual_basic_part, False)

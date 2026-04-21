@@ -82,6 +82,8 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Sparkfun",
             part="COM-15111",
             datasheet="https://cdn.sparkfun.com/assets/8/6/b/4/5/A40-00119-A52-12.pdf",
+            pnp_rot=0,
+            pnp_offset=(0, -1.25),
         )
 
 
@@ -261,4 +263,5 @@ class Pgb102st23(UsbEsdDiode, FootprintBlock, JlcPart):
             mfr="Littelfuse",
             part="PGB102ST23",
             datasheet="https://www.littelfuse.com/~/media/electronics/datasheets/pulseguard_esd_suppressors/littelfuse_pulseguard_pgb1_datasheet.pdf.pdf",
+            pnp_rot=90,
         )

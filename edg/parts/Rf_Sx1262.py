@@ -58,6 +58,7 @@ class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, 
             mfr="pSemi",
             part="PE4259",
             datasheet="https://www.psemi.com/pdf/datasheets/pe4259ds.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C470892")
         self.assign(self.actual_basic_part, False)
@@ -235,6 +236,7 @@ class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Semtech Corporation",
             part="SX1262IMLTRT",
             datasheet="https://semtech.my.salesforce.com/sfc/p/E0000000JelG/a/2R000000Un7F/yT.fKdAr9ZAo3cJLc4F2cBdUsMftpT2vsOICP7NmvMo",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C191341")
         self.assign(self.actual_basic_part, False)

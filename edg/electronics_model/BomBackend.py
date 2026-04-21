@@ -1,5 +1,5 @@
 import io
-from typing import List, Tuple, Dict, NamedTuple
+from typing import List, Tuple, Dict, NamedTuple, Optional
 
 from typing_extensions import override
 
@@ -15,6 +15,8 @@ class BomItem(NamedTuple):
     jlc_number: str
     manufacturer: str
     part: str
+    pnp_rot: Optional[float]
+    pnp_offset: Optional[Tuple[float, float]]
 
 
 class GenerateBom(BaseBackend):  # creates and populates .csv file
@@ -34,6 +36,9 @@ class GenerateBom(BaseBackend):  # creates and populates .csv file
             "JLCPCB Part #",
             "Manufacturer",
             "Part",
+            "PNP Rotation Offset",
+            "PNP Offset X",
+            "PNP Offset Y",
         ]  # populates headers
         writer = csv.writer(bom_string, lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
         writer.writerow(csv_data)
@@ -48,6 +53,9 @@ class GenerateBom(BaseBackend):  # creates and populates .csv file
                 key.jlc_number,
                 key.manufacturer,
                 key.part,
+                str(key.pnp_rot) if key.pnp_rot is not None else "",
+                str(key.pnp_offset[0]) if key.pnp_offset is not None else "",
+                str(key.pnp_offset[1]) if key.pnp_offset is not None else "",
             ]
             writer.writerow(csv_data)
 
@@ -68,6 +76,9 @@ class BomTransform(TransformUtil.Transform):
             jlc_number = self.design.get_value(context.path.to_tuple() + ("lcsc_part",)) or ""
             manufacturer = self.design.get_value(context.path.to_tuple() + ("fp_mfr",)) or ""
             part = self.design.get_value(context.path.to_tuple() + ("fp_part",)) or ""
+            pnp_rot = self.design.get_value(context.path.to_tuple() + ("fp_pnp_rot",))
+            pnp_offset_x = self.design.get_value(context.path.to_tuple() + ("fp_pnp_offset_x",))
+            pnp_offset_y = self.design.get_value(context.path.to_tuple() + ("fp_pnp_offset_y",))
             assert (
                 isinstance(footprint, str)
                 and isinstance(refdes, str)
@@ -75,9 +86,20 @@ class BomTransform(TransformUtil.Transform):
                 and isinstance(value, str)
                 and isinstance(manufacturer, str)
                 and isinstance(part, str)
+                and isinstance(pnp_rot, (float, type(None)))
+                and isinstance(pnp_offset_x, (float, type(None)))
+                and isinstance(pnp_offset_y, (float, type(None)))
             )
             bom_item = BomItem(
-                footprint=footprint, value=value, jlc_number=jlc_number, manufacturer=manufacturer, part=part
+                footprint=footprint,
+                value=value,
+                jlc_number=jlc_number,
+                manufacturer=manufacturer,
+                part=part,
+                pnp_rot=pnp_rot,
+                pnp_offset=(
+                    (pnp_offset_x, pnp_offset_y) if pnp_offset_x is not None and pnp_offset_y is not None else None
+                ),
             )
             self.bom_list.setdefault(bom_item, []).append(refdes)
 

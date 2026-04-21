@@ -46,6 +46,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Diodes Incorporated",
             part="AL8861MP",
             datasheet="https://www.diodes.com/assets/Datasheets/AL8861.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C155534")
         self.assign(self.actual_basic_part, False)

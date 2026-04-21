@@ -72,6 +72,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA2171AIDR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa2171.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C40904")
         self.assign(self.actual_basic_part, False)

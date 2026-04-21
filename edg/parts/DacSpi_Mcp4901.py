@@ -55,6 +55,7 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
             mfr="Microchip Technology",
             part="MCP4921-E/SN",
             datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/22248a.pdf",
+            pnp_rot=-90,
         )
 
 

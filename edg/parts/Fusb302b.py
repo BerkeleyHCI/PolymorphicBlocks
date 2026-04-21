@@ -51,6 +51,7 @@ class Fusb302b_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="ON Semiconductor",
             part="FUSB302B11MPX",  # actual several compatible variants
             datasheet="https://www.onsemi.com/pdf/datasheet/fusb302b-d.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C132291")
         self.assign(self.actual_basic_part, False)

@@ -41,6 +41,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="LM2664",
             datasheet="https://www.ti.com/lit/ds/symlink/lm2664.pdf",
+            pnp_rot=0,
         )
         self.assign(self.lcsc_part, "C840095")
         self.assign(self.actual_basic_part, False)

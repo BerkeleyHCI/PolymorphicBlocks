@@ -80,6 +80,7 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
             mfr="Torex Semiconductor Ltd",
             part=f"XC9142*{part_number_voltage}{part_number_frequency}{part_number_package}",
             datasheet="https://www.torexsemi.com/file/xc9141/XC9141-XC9142.pdf",
+            pnp_rot=180,
         )
 
 

@@ -53,6 +53,7 @@ class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Corebai",
             part="CBMuD1200L",
             datasheet="http://corebai.com/en/UploadFiles/20220908/142534811.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C476470")
         self.assign(self.actual_basic_part, False)

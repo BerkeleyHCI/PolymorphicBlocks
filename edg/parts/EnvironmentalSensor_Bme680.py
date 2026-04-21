@@ -42,6 +42,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Bosch Sensortec",
             part="BME680",
             datasheet="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme680-ds001.pdf",
+            pnp_rot=90,
         )
         self.assign(self.lcsc_part, "C125972")
         self.assign(self.actual_basic_part, False)

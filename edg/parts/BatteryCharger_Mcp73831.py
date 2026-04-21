@@ -45,6 +45,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Microchip Technology",
             part="MCP73831T-2ACI/OT",
             datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/MCP73831-Family-Data-Sheet-DS20001984H.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C424093")
         self.assign(self.actual_basic_part, False)

@@ -84,6 +84,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             mfr="NXP",
             part="PCA9554APW,118",  # -A variant, in TSSOP16
             datasheet="https://www.nxp.com/docs/en/data-sheet/PCA9554_9554A.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C86803")
 

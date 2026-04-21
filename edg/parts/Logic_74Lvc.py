@@ -50,6 +50,7 @@ class Sn74lvc1g74_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="SN74LVC1G74DCUR",
             datasheet="https://www.ti.com/lit/ds/symlink/sn74lvc1g74.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C70285")
 

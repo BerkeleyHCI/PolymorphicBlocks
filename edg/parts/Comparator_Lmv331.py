@@ -39,6 +39,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="LMV331IDCKR",
             datasheet="https://www.ti.com/lit/ds/symlink/lmv331.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C7976")
 

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from typing_extensions import override
 
@@ -84,6 +84,10 @@ class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
             f"PinHeader1.27 Shrouded 2x{length//2}",
         )
 
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return -90
+
 
 @abstract_block_default(lambda: JstXhAVertical)
 class JstXh(FootprintPassiveConnector):
@@ -125,10 +129,9 @@ class JstPhKVertical(JstPh):
         return (f"Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical", "JST", f"B{length}B-PH-K")
 
 
-"""JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
-
-
 class JstPhKHorizontal(JstPh, JlcPart):
+    """JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
+
     allowed_pins = range(2, 16 + 1)
     PART_NUMBERS = {  # white colored, -S part suffix
         2: "C173752",
@@ -153,6 +156,14 @@ class JstPhKHorizontal(JstPh, JlcPart):
         self.assign(self.lcsc_part, self.PART_NUMBERS[length])
         self.assign(self.actual_basic_part, False)
         return (f"Connector_JST:JST_PH_S{length}B-PH-K_1x{length:02d}_P2.00mm_Horizontal", "JST", f"S{length}B-PH-K")
+
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return 180
+
+    @override
+    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
+        return (length - 1.0, 0)
 
 
 class JstPhSmVertical(JstPh):

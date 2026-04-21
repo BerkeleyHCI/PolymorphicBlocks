@@ -49,6 +49,7 @@ class L74Ahct1g125_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Diodes Incorporated",
             part="74AHCT1G125W5-7",
             datasheet="https://www.diodes.com/assets/Datasheets/74AHCT1G125.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C842287")
 

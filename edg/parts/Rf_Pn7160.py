@@ -358,6 +358,7 @@ class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="NXP",
             part="PN7160A1HN/C100Y",
             datasheet="https://www.nxp.com/docs/en/data-sheet/PN7160_PN7161.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C3303790")
         self.assign(self.actual_basic_part, False)

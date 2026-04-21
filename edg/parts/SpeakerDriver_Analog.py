@@ -45,6 +45,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
             mfr="Texas Instruments",
             part="LM4871MX",
             datasheet="https://www.ti.com/lit/ds/symlink/lm4871.pdf",
+            pnp_rot=-90,
         )
 
 
@@ -131,6 +132,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TPA2005D1",
             datasheet="https://www.ti.com/lit/ds/symlink/tpa2005d1.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C27396")
         self.assign(self.actual_basic_part, False)
@@ -244,6 +246,7 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Diodes Incorporated",
             part="PAM8302AASCR",
             datasheet="https://www.diodes.com/assets/Datasheets/PAM8302A.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C113367")
         self.assign(self.actual_basic_part, False)

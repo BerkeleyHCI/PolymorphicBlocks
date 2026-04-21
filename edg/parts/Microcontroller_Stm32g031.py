@@ -187,6 +187,7 @@ class Stm32g031Base_Device(
             mfr="STMicroelectronics",
             part=self.PART,
             datasheet="https://www.st.com/resource/en/datasheet/stm32g031c6.pdf",
+            pnp_rot=90,
         )
         self.assign(self.lcsc_part, self.LCSC_PART)
         self.assign(self.actual_basic_part, False)

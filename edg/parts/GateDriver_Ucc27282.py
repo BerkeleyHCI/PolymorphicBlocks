@@ -65,6 +65,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="UCC27282DR",
             datasheet="https://www.ti.com/lit/ds/symlink/ucc27282-q1.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C2867844")
         self.assign(self.actual_basic_part, False)
