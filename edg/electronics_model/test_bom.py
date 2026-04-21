@@ -1,10 +1,11 @@
 import unittest
 from csv import DictReader
 from io import StringIO
-from typing import Type, override
+from typing import Type, List, Dict
+
+from typing_extensions import override
 
 from .BomBackend import GenerateBom
-from .NetlistGenerator import Netlist
 from .RefdesRefinementPass import RefdesRefinementPass
 from .test_netlist import TestBasicCircuit, TestMultisinkCircuit
 from .CircuitBlock import FootprintBlock
@@ -30,17 +31,17 @@ class TestPnpRotOffset(FootprintBlock):
 
 class BomTestCase(unittest.TestCase):
     @staticmethod
-    def generate_bom(design: Type[Block], refinements: Refinements = Refinements()) -> Netlist:
+    def generate_bom(design: Type[Block], refinements: Refinements = Refinements()) -> List[Dict[str, str]]:
         compiled = ScalaCompiler.compile(design, refinements)
         compiled.append_values(RefdesRefinementPass().run(compiled))
-        return GenerateBom().run(compiled)
-
-    def test_basic_bom(self) -> None:
-        boms = self.generate_bom(TestBasicCircuit)
+        boms = GenerateBom().run(compiled)
         assert len(boms) == 1
         f = StringIO(boms[0][1])
         bom_csv_reader = DictReader(f)
-        bom_csv_dict = list(bom_csv_reader)
+        return list(bom_csv_reader)
+
+    def test_basic_bom(self) -> None:
+        bom_csv_dict = self.generate_bom(TestBasicCircuit)
         self.assertEqual(bom_csv_dict[0]["Designator"], "C1")
         self.assertEqual(bom_csv_dict[0]["Footprint"], "Capacitor_SMD:C_0603_1608Metric")
         self.assertEqual(bom_csv_dict[0]["Quantity"], "1")
@@ -56,11 +57,7 @@ class BomTestCase(unittest.TestCase):
 
     def test_multisink_bom(self) -> None:
         # test aggregation of similar components
-        boms = self.generate_bom(TestMultisinkCircuit)
-        assert len(boms) == 1
-        f = StringIO(boms[0][1])
-        bom_csv_reader = DictReader(f)
-        bom_csv_dict = list(bom_csv_reader)
+        bom_csv_dict = self.generate_bom(TestMultisinkCircuit)
         self.assertEqual(bom_csv_dict[0]["Designator"], "C1")
         self.assertEqual(bom_csv_dict[0]["Footprint"], "Capacitor_SMD:C_0603_1608Metric")
         self.assertEqual(bom_csv_dict[0]["Quantity"], "1")
@@ -70,11 +67,7 @@ class BomTestCase(unittest.TestCase):
 
     def test_pnp_bom(self) -> None:
         # test aggregation of similar components
-        boms = self.generate_bom(TestPnpRotOffset)
-        assert len(boms) == 1
-        f = StringIO(boms[0][1])
-        bom_csv_reader = DictReader(f)
-        bom_csv_dict = list(bom_csv_reader)
+        bom_csv_dict = self.generate_bom(TestPnpRotOffset)
         self.assertEqual(bom_csv_dict[0]["Designator"], "U1")
         self.assertEqual(float(bom_csv_dict[0]["PNP Rotation Offset"]), 90)
         self.assertEqual(float(bom_csv_dict[0]["PNP Offset X"]), 1.0)
