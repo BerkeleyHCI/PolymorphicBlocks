@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List, Any, Union, Mapping
+from typing import Optional, Dict, List, Any, Union, Mapping, Literal
 
 from pydantic import BaseModel
 
@@ -10,8 +10,11 @@ from edg.core.TransformUtil import TransformContext, Path
 
 
 class CompiledParam(BaseModel):
-    path: List[str]
-    type: str
+    path: str
+    # TODO support array sub-type
+    type: Union[
+        Literal["floating"], Literal["integer"], Literal["boolean"], Literal["text"], Literal["range"], Literal["array"]
+    ]
     expr: Optional[str]  # expression used in assign, if available
     value: Optional[Any]  # solved value, if available
 
@@ -21,7 +24,7 @@ class CompiledPortArray(BaseModel):
 
 
 class CompiledPort(BaseModel):
-    path: List[str]
+    path: str
     cls: str  # self class
     # path of connected port, if connected
     # for block ports, this is either the link port or the exported port
@@ -32,7 +35,7 @@ class CompiledPort(BaseModel):
 
 
 class CompiledLink(BaseModel):
-    path: List[str]
+    path: str
     cls: str  # self class
     params: Dict[str, CompiledParam]
     ports: Dict[str, CompiledPort]
@@ -40,7 +43,7 @@ class CompiledLink(BaseModel):
 
 
 class CompiledBlock(BaseModel):
-    path: List[str]
+    path: str
     cls: str  # self class
     superclasses: List[str]  # all superclasses
     params: Dict[str, CompiledParam]
@@ -54,8 +57,8 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
     """Transform a design into the CompiledBlock and friend data structure for export to a human-readable format."""
 
     @staticmethod
-    def _path_to_path(path: Path) -> List[str]:
-        return list(path.to_tuple())
+    def _path_to_path(path: Path) -> str:
+        return ".".join(path.to_tuple())
 
     @staticmethod
     def _libpath_to_str(libpath: edgir.LibraryPath) -> str:
