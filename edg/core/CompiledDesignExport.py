@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List, Any, Union, Mapping, Literal
+from typing import Optional, Dict, List, Any, Union, Mapping, Literal, override
 
 from pydantic import BaseModel
 
@@ -66,6 +66,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
     def _libpath_to_str(libpath: edgir.LibraryPath) -> str:
         return libpath.target.name
 
+    @override
     def transform_block(
         self,
         context: TransformContext,
@@ -93,6 +94,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
             links=dict(links),
         )
 
+    @override
     def transform_port(
         self,
         context: TransformContext,
@@ -107,6 +109,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
             ports=dict(ports),
         )
 
+    @override
     def transform_link(
         self,
         context: TransformContext,

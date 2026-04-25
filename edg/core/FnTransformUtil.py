@@ -1,6 +1,7 @@
 from typing import TypeVar, Generic, Mapping, Union, Dict
 
 from .. import edgir
+from .ScalaCompilerInterface import CompiledDesign
 from .TransformUtil import TransformContext, Path
 
 # these type vars define the post-transform-result of blocks, ports, or links
@@ -16,9 +17,9 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
     (through the `transform_*` methods, which are given the post-order results of their elements).
     """
 
-    def transform(self, design: edgir.Design) -> TransformedBlock:
+    def transform(self, design: CompiledDesign) -> TransformedBlock:
         """Entry point for the transform. Transforms the design and returns the  result."""
-        context = TransformContext(Path.empty(), design)
+        context = TransformContext(Path.empty(), design.contents)
         return self.visit_block(context, design.contents)
 
     def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedPort:
