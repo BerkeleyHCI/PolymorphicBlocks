@@ -105,7 +105,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
         elt: Union[edgir.Port, edgir.PortArray],
         ports: Mapping[str, TransformedPort],
     ) -> TransformedPort:
-        """Post-order processing of a port. By default, returns the port unchanged."""
+        """transform_block, but for ports."""
         return None  # type: ignore
 
     def transform_block(
@@ -127,5 +127,5 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
         ports: Mapping[str, TransformedPort],
         links: Mapping[str, TransformedLink],
     ) -> TransformedLink:
-        """Post-order processing of a link. By default, returns the link unchanged."""
+        """transform_block, but for links."""
         return None  # type: ignore

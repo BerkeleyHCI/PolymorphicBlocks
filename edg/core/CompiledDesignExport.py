@@ -1,6 +1,10 @@
-from typing import Optional, Dict, List, Any, Union
+from typing import Optional, Dict, List, Any, Union, Mapping
 
-from pydantic import RootModel, BaseModel
+from pydantic import BaseModel
+
+from edg import edgir
+from edg.core.FnTransformUtil import FnTransformBase, TransformedPort, TransformedBlock, TransformedLink
+from edg.core.TransformUtil import TransformContext, Path
 
 """A compiled design, as a human-readable Pydantic / JSON-able version of the IR data structure."""
 
@@ -44,3 +48,42 @@ class CompiledBlock(BaseModel):
     blocks: Dict[str, "CompiledBlock"]  # sub-blocks
     links: Dict[str, CompiledLink]
     # TODO: all constraints?
+
+
+class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock, CompiledLink]):
+    """Transform a design into the CompiledBlock and friend data structure for export to a human-readable format."""
+
+    @staticmethod
+    def _path_to_path(context: Path) -> List[str]:
+        return list(context.path.to_tuple())
+
+    @staticmethod
+    def _libpath_to_str(libpath: edgir.LibraryPath) -> str:
+        return libpath.target.name
+
+    def transform_block(
+        self,
+        context: TransformContext,
+        elt: edgir.HierarchyBlock,
+        ports: Mapping[str, CompiledPort],
+        blocks: Mapping[str, CompiledBlock],
+        links: Mapping[str, CompiledLink],
+    ) -> CompiledBlock:
+        return CompiledBlock(
+            path=self._path_to_path(context.path),
+            cls=self._libpath_to_str(elt.self_class),
+            superclasses=[self._libpath_to_str(cls) for cls in elt.superclasses]
+            + [self._libpath_to_str(cls) for cls in elt.super_superclasses],
+            params={
+                param_pair.name: CompiledParam(
+                    path=self._path_to_path(context.path.append_param(param_pair.name)),
+                    type=param_pair.value.WhichOneof("value"),
+                    expr=None,  # TODO IMPLEMENT ME
+                    value=None,  # TODO IMPLEMENT ME
+                )
+                for param_pair in elt.params
+            },
+            ports=dict(ports),
+            blocks=dict(blocks),
+            links=dict(links),
+        )
