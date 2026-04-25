@@ -17,10 +17,14 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
     (through the `transform_*` methods, which are given the post-order results of their elements).
     """
 
-    def transform(self, design: CompiledDesign) -> TransformedBlock:
-        """Entry point for the transform. Transforms the design and returns the  result."""
-        context = TransformContext(Path.empty(), design.contents)
-        return self.visit_block(context, design.contents)
+    def __init__(self, design: CompiledDesign) -> None:
+        self.design = design
+
+    def transform(self) -> TransformedBlock:
+        """Entry point for the transform. Transforms the design and returns the result.
+        Should only be called once per object, undefined behavior if called multiple times."""
+        context = TransformContext(Path.empty(), self.design.contents)
+        return self.visit_block(context, self.design.contents)
 
     def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedPort:
         if elt.HasField("port"):

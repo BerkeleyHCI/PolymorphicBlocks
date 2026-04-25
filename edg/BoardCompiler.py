@@ -49,7 +49,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     netlist_all = NetlistBackend().run(compiled)
     bom_all = GenerateBom().run(compiled)
     svgpcb_all = SvgPcbBackend().run(compiled)
-    compiled_json = CompiledDesignExportTransform().transform(compiled)
+    compiled_json = CompiledDesignExportTransform(compiled).transform()
     assert len(netlist_all) == 1
 
     if target_dir_name is not None:
@@ -64,7 +64,9 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
                 svgpcb_file.write(svgpcb_all[0][1])
 
         with open(compiled_json_filename, "w", encoding="utf-8") as compiled_json_file:
-            compiled_json_file.write(compiled_json.model_dump_json(indent=2))
+            compiled_json_file.write(
+                CompiledDesignExportTransform.postprocess_serialized_json(compiled_json.model_dump_json(indent=2))
+            )
 
     return compiled
 
