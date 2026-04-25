@@ -52,7 +52,8 @@ object CompilerServerMain {
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
         errors = errors.map(_.toIr),
-        solvedValues = constPropToSolved(compiler.getAllSolved)
+        solvedValues = constPropToSolved(compiler.getAllSolved),
+        connections = Vector()
       )
       result
     } catch {
