@@ -1,16 +1,16 @@
-from typing import TypeVar, Generic, Mapping, Union
+from typing import TypeVar, Generic, Mapping, Union, Dict
 
 from .. import edgir
 from .TransformUtil import TransformContext, Path
 
 # these type vars define the post-transform-result of blocks, ports, or links
 # these can be set to None if unused
-TransformedBlock = TypeVar("TransformedBlock", default=None)
 TransformedPort = TypeVar("TransformedPort", default=None)
+TransformedBlock = TypeVar("TransformedBlock", default=None)
 TransformedLink = TypeVar("TransformedLink", default=None)
 
 
-class FnTransformBase(Generic[TransformedBlock, TransformedPort, TransformedLink]):
+class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink]):
     """A design tree walking / transform base class that provides the traversal structure.
     Supports both pre-order processing (through the `visit_*` methods) and post-order processing
     (through the `transform_*` methods, which are given the post-order results of their elements).
@@ -21,54 +21,94 @@ class FnTransformBase(Generic[TransformedBlock, TransformedPort, TransformedLink
         context = TransformContext(Path.empty(), design)
         return self.visit_block(context, design.contents)
 
+    def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedPort:
+        pass
+
     def _visit_blocklike(self, context: TransformContext, elt: edgir.BlockLike) -> TransformedBlock:
         pass
 
-    def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedBlock:
+    def _visit_linklike(self, context: TransformContext, elt: edgir.LinkLike) -> TransformedLink:
         pass
 
-    def _visit_linklike(self, context: TransformContext, elt: edgir.LinkLike) -> TransformedBlock:
-        pass
+    def visit_port(self, context: TransformContext, elt: Union[edgir.Port, edgir.PortArray]) -> TransformedPort:
+        """visit_block, but for ports."""
+        transformed_ports: Dict[str, TransformedPort] = {}
+        if isinstance(elt, edgir.Port):
+            for port_pair in elt.ports:
+                transformed_ports[port_pair.name] = self._visit_portlike(
+                    context.append_port(port_pair.name), port_pair.value
+                )
+        elif isinstance(elt, edgir.PortArray):
+            for port_pair in elt.ports.ports:
+                transformed_ports[port_pair.name] = self._visit_portlike(
+                    context.append_port(port_pair.name), port_pair.value
+                )
+        else:
+            raise TypeError(f"unknown elt type {type(elt)}")
+        return self.transform_port(context, elt, transformed_ports)
 
-    def visit_block(self, context: TransformContext, block: edgir.HierarchyBlock) -> TransformedBlock:
+    def visit_block(self, context: TransformContext, elt: edgir.HierarchyBlock) -> TransformedBlock:
         """Called during root-down traversal of the design. Returns the transformed results.
         This call "lasts" for the duration of traversal of the block and all its contained elements.
         Optionally add pre-hooks for pre-order processing."""
-        pass
+        transformed_ports: Dict[str, TransformedPort] = {}
+        for port_pair in elt.ports:
+            transformed_ports[port_pair.name] = self._visit_portlike(
+                context.append_port(port_pair.name), port_pair.value
+            )
+        transformed_blocks: Dict[str, TransformedBlock] = {}
+        for block_pair in elt.blocks:
+            transformed_blocks[block_pair.name] = self._visit_blocklike(
+                context.append_block(block_pair.name), block_pair.value
+            )
+        transformed_links: Dict[str, TransformedLink] = {}
+        for link_pair in elt.links:
+            transformed_links[link_pair.name] = self._visit_linklike(
+                context.append_link(link_pair.name), link_pair.value
+            )
+        return self.transform_block(context, elt, transformed_ports, transformed_blocks, transformed_links)
 
-    def visit_port(self, context: TransformContext, port: Union[edgir.Port, edgir.PortArray]) -> TransformedPort:
-        """visit_block, but for ports."""
-        pass
-
-    def visit_link(self, context: TransformContext, link: edgir.Link) -> TransformedLink:
+    def visit_link(self, context: TransformContext, elt: edgir.Link) -> TransformedLink:
         """visit_block, but for links."""
-        pass
+        transformed_ports: Dict[str, TransformedPort] = {}
+        for port_pair in elt.ports:
+            transformed_ports[port_pair.name] = self._visit_portlike(
+                context.append_port(port_pair.name), port_pair.value
+            )
+        transformed_links: Dict[str, TransformedLink] = {}
+        for link_pair in elt.links:
+            transformed_links[link_pair.name] = self._visit_linklike(
+                context.append_link(link_pair.name), link_pair.value
+            )
+        return self.transform_link(context, elt, transformed_ports, transformed_links)
+
+    def transform_port(
+        self,
+        context: TransformContext,
+        elt: Union[edgir.Port, edgir.PortArray],
+        ports: Mapping[str, TransformedPort],
+    ) -> TransformedPort:
+        """Post-order processing of a port. By default, returns the port unchanged."""
+        return None  # type: ignore
 
     def transform_block(
         self,
         context: TransformContext,
         elt: edgir.HierarchyBlock,
-        blocks: Mapping[str, TransformedBlock],
         ports: Mapping[str, TransformedPort],
+        blocks: Mapping[str, TransformedBlock],
         links: Mapping[str, TransformedLink],
     ) -> TransformedBlock:
         """Called after all of a block's contained elements have been transformed, and is given the results of those
         transforms. Returns the transformed result of the block itself."""
-        raise NotImplementedError
-
-    def transform_port(
-        self,
-        elt: Union[edgir.Port, edgir.PortArray],
-        ports: Mapping[str, TransformedPort],
-    ) -> TransformedPort:
-        """Post-order processing of a port. By default, returns the port unchanged."""
-        raise NotImplementedError
+        return None  # type: ignore
 
     def transform_link(
         self,
+        context: TransformContext,
         elt: edgir.Link,
         ports: Mapping[str, TransformedPort],
         links: Mapping[str, TransformedLink],
     ) -> TransformedLink:
         """Post-order processing of a link. By default, returns the link unchanged."""
-        raise NotImplementedError
+        return None  # type: ignore
