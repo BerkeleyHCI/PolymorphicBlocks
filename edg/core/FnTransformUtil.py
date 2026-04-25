@@ -22,13 +22,30 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
         return self.visit_block(context, design.contents)
 
     def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedPort:
-        pass
+        if elt.HasField("port"):
+            return self.visit_port(context, elt.port)
+        elif elt.HasField("array"):
+            return self.visit_port(context, elt.array)
+        elif elt.HasField("lib_elem"):
+            raise ValueError(f"unresolved PortLike lib at {context}")
+        else:
+            raise ValueError(f"unknown PortLike type {type(elt)} at {context}")
 
     def _visit_blocklike(self, context: TransformContext, elt: edgir.BlockLike) -> TransformedBlock:
-        pass
+        if elt.HasField("hierarchy"):
+            return self.visit_block(context, elt.hierarchy)
+        elif elt.HasField("lib_elem"):
+            raise ValueError(f"unresolved BlockLike lib at {context}")
+        else:
+            raise ValueError(f"unknown BlockLike type {type(elt)} at {context}")
 
     def _visit_linklike(self, context: TransformContext, elt: edgir.LinkLike) -> TransformedLink:
-        pass
+        if elt.HasField("link"):
+            return self.visit_link(context, elt.link)
+        elif elt.HasField("lib_elem"):
+            raise ValueError(f"unresolved LinkLike lib at {context}")
+        else:
+            raise ValueError(f"unknown LinkLike type {type(elt)} at {context}")
 
     def visit_port(self, context: TransformContext, elt: Union[edgir.Port, edgir.PortArray]) -> TransformedPort:
         """visit_block, but for ports."""
@@ -44,7 +61,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
                     context.append_port(port_pair.name), port_pair.value
                 )
         else:
-            raise TypeError(f"unknown elt type {type(elt)}")
+            raise TypeError(f"unknown Port type {type(elt)} at {context}")
         return self.transform_port(context, elt, transformed_ports)
 
     def visit_block(self, context: TransformContext, elt: edgir.HierarchyBlock) -> TransformedBlock:
