@@ -78,7 +78,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
 
     def _param_to_compiled(self, path: Path, elt: edgir.ValInit) -> CompiledParam:
         if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
-            value = "<excluded>"
+            value: Optional[Any] = "<excluded>"
         else:
             value = self.design.get_value(path.to_local_path())
             if isinstance(value, Range):  # convert to Pydantic friendly
@@ -86,8 +86,8 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
                 if value == RangeExpr.EMPTY:
                     value = "∅"
                 else:
-                    lower = value.lower
-                    upper = value.upper
+                    lower: Union[float, str] = value.lower
+                    upper: Union[float, str] = value.upper
                     if lower == float("inf"):
                         lower = "inf"
                     elif lower == float("-inf"):
