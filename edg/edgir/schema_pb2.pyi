@@ -8,7 +8,6 @@ Package : edg.schema
 These types contain the highest level data structures we use to
 describe sets of blocks, ports, and links.
 """
-
 from collections import abc as _abc
 from edgir import common_pb2 as _common_pb2
 from edgir import elem_pb2 as _elem_pb2
@@ -18,7 +17,6 @@ from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
-
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -37,13 +35,11 @@ class Library(_message.Message):
     or definitional conflicts. This means that we can shuffle around partial
     libraries, for merging, modification, etc..
     """
-
     DESCRIPTOR: _descriptor.Descriptor
 
     @_typing.final
     class NS(_message.Message):
         """* Library Namespace, avoiding collision w/ edg.name.Namespace"""
-
         DESCRIPTOR: _descriptor.Descriptor
 
         @_typing.final
@@ -55,53 +51,36 @@ class Library(_message.Message):
             NAMESPACE_FIELD_NUMBER: _builtins.int
 
             @_builtins.property
-            def port(self) -> _elem_pb2.Port: ...
-            @_builtins.property
-            def hierarchy_block(self) -> _elem_pb2.HierarchyBlock: ...
-            @_builtins.property
-            def link(self) -> _elem_pb2.Link: ...
-            @_builtins.property
-            def namespace(self) -> Global___Library.NS: ...
-            def __init__(
-                self,
-                *,
-                port: _elem_pb2.Port | None = ...,
-                hierarchy_block: _elem_pb2.HierarchyBlock | None = ...,
-                link: _elem_pb2.Link | None = ...,
-                namespace: Global___Library.NS | None = ...,
-            ) -> None: ...
-            _HasFieldArgType: _TypeAlias = _typing.Literal[
-                "hierarchy_block",
-                b"hierarchy_block",
-                "link",
-                b"link",
-                "namespace",
-                b"namespace",
-                "port",
-                b"port",
-                "type",
-                b"type",
-            ]
+            def port(self) -> _elem_pb2.Port:
+                ...
 
-            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-            _ClearFieldArgType: _TypeAlias = _typing.Literal[
-                "hierarchy_block",
-                b"hierarchy_block",
-                "link",
-                b"link",
-                "namespace",
-                b"namespace",
-                "port",
-                b"port",
-                "type",
-                b"type",
-            ]
+            @_builtins.property
+            def hierarchy_block(self) -> _elem_pb2.HierarchyBlock:
+                ...
 
-            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-            _WhichOneofReturnType_type: _TypeAlias = _typing.Literal["port", "hierarchy_block", "link", "namespace"]
-            _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
+            @_builtins.property
+            def link(self) -> _elem_pb2.Link:
+                ...
 
-            def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None: ...
+            @_builtins.property
+            def namespace(self) -> Global___Library.NS:
+                ...
+
+            def __init__(self, *, port: _elem_pb2.Port | None=..., hierarchy_block: _elem_pb2.HierarchyBlock | None=..., link: _elem_pb2.Link | None=..., namespace: Global___Library.NS | None=...) -> None:
+                ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal['hierarchy_block', b'hierarchy_block', 'link', b'link', 'namespace', b'namespace', 'port', b'port', 'type', b'type']
+
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+                ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal['hierarchy_block', b'hierarchy_block', 'link', b'link', 'namespace', b'namespace', 'port', b'port', 'type', b'type']
+
+            def ClearField(self, field_name: _ClearFieldArgType) -> None:
+                ...
+            _WhichOneofReturnType_type: _TypeAlias = _typing.Literal['port', 'hierarchy_block', 'link', 'namespace']
+            _WhichOneofArgType_type: _TypeAlias = _typing.Literal['type', b'type']
+
+            def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None:
+                ...
 
         @_typing.final
         class MembersEntry(_message.Message):
@@ -111,75 +90,83 @@ class Library(_message.Message):
             key: _builtins.str
 
             @_builtins.property
-            def value(self) -> Global___Library.NS.Val: ...
-            def __init__(self, *, key: _builtins.str = ..., value: Global___Library.NS.Val | None = ...) -> None: ...
-            _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
+            def value(self) -> Global___Library.NS.Val:
+                ...
 
-            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-            _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
+            def __init__(self, *, key: _builtins.str=..., value: Global___Library.NS.Val | None=...) -> None:
+                ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
 
-            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+                ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal['key', b'key', 'value', b'value']
 
+            def ClearField(self, field_name: _ClearFieldArgType) -> None:
+                ...
         MEMBERS_FIELD_NUMBER: _builtins.int
 
         @_builtins.property
-        def members(self) -> _containers.MessageMap[_builtins.str, Global___Library.NS.Val]: ...
-        def __init__(self, *, members: _abc.Mapping[_builtins.str, Global___Library.NS.Val] | None = ...) -> None: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["members", b"members"]
+        def members(self) -> _containers.MessageMap[_builtins.str, Global___Library.NS.Val]:
+            ...
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def __init__(self, *, members: _abc.Mapping[_builtins.str, Global___Library.NS.Val] | None=...) -> None:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['members', b'members']
+
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
 
     @_typing.final
     class LibIdent(_message.Message):
         """* How we identify a library within a set. Will probably
         evolve to capture more metadata.
         """
-
         DESCRIPTOR: _descriptor.Descriptor
         NAME_FIELD_NUMBER: _builtins.int
         name: _builtins.str
 
-        def __init__(self, *, name: _builtins.str = ...) -> None: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name"]
+        def __init__(self, *, name: _builtins.str=...) -> None:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
     ID_FIELD_NUMBER: _builtins.int
     IMPORTS_FIELD_NUMBER: _builtins.int
     ROOT_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def id(self) -> Global___Library.LibIdent: ...
-    @_builtins.property
-    def imports(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
-    @_builtins.property
-    def root(self) -> Global___Library.NS: ...
-    @_builtins.property
-    def meta(self) -> _common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        id: Global___Library.LibIdent | None = ...,
-        imports: _abc.Iterable[_builtins.str] | None = ...,
-        root: Global___Library.NS | None = ...,
-        meta: _common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "meta", b"meta", "root", b"root"]
+    def id(self) -> Global___Library.LibIdent:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "id", b"id", "imports", b"imports", "meta", b"meta", "root", b"root"
-    ]
+    @_builtins.property
+    def imports(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    @_builtins.property
+    def root(self) -> Global___Library.NS:
+        ...
 
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, id: Global___Library.LibIdent | None=..., imports: _abc.Iterable[_builtins.str] | None=..., root: Global___Library.NS | None=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['id', b'id', 'meta', b'meta', 'root', b'root']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['id', b'id', 'imports', b'imports', 'meta', b'meta', 'root', b'root']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___Library: _TypeAlias = Library
 
 @_typing.final
 class Design(_message.Message):
     """* This is a Design for an embedded system at some level of abstraction."""
-
     DESCRIPTOR: _descriptor.Descriptor
     CONTENTS_FIELD_NUMBER: _builtins.int
 
@@ -187,12 +174,14 @@ class Design(_message.Message):
     def contents(self) -> _elem_pb2.HierarchyBlock:
         """* Delegate the actual contents of the design to a hierarchy block, for which ports are ignored"""
 
-    def __init__(self, *, contents: _elem_pb2.HierarchyBlock | None = ...) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["contents", b"contents"]
+    def __init__(self, *, contents: _elem_pb2.HierarchyBlock | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['contents', b'contents']
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["contents", b"contents"]
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['contents', b'contents']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___Design: _TypeAlias = Design

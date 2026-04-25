@@ -7,7 +7,6 @@ Package : edg.lit
 
 Literals for assorted priitive types, i.e fixed constant values.
 """
-
 from collections import abc as _abc
 from edgir import common_pb2 as _common_pb2
 from google.protobuf import descriptor as _descriptor
@@ -16,7 +15,6 @@ from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
-
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -28,16 +26,16 @@ class FloatLit(_message.Message):
     """* The core expression primitives we start with are the value
     literals that we can use
     """
-
     DESCRIPTOR: _descriptor.Descriptor
     VAL_FIELD_NUMBER: _builtins.int
     val: _builtins.float
 
-    def __init__(self, *, val: _builtins.float = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["val", b"val"]
+    def __init__(self, *, val: _builtins.float=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['val', b'val']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___FloatLit: _TypeAlias = FloatLit
 
 @_typing.final
@@ -46,11 +44,12 @@ class IntLit(_message.Message):
     VAL_FIELD_NUMBER: _builtins.int
     val: _builtins.int
 
-    def __init__(self, *, val: _builtins.int = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["val", b"val"]
+    def __init__(self, *, val: _builtins.int=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['val', b'val']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___IntLit: _TypeAlias = IntLit
 
 @_typing.final
@@ -59,11 +58,12 @@ class BoolLit(_message.Message):
     VAL_FIELD_NUMBER: _builtins.int
     val: _builtins.bool
 
-    def __init__(self, *, val: _builtins.bool = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["val", b"val"]
+    def __init__(self, *, val: _builtins.bool=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['val', b'val']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___BoolLit: _TypeAlias = BoolLit
 
 @_typing.final
@@ -72,11 +72,12 @@ class TextLit(_message.Message):
     VAL_FIELD_NUMBER: _builtins.int
     val: _builtins.str
 
-    def __init__(self, *, val: _builtins.str = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["val", b"val"]
+    def __init__(self, *, val: _builtins.str=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['val', b'val']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___TextLit: _TypeAlias = TextLit
 
 @_typing.final
@@ -86,17 +87,23 @@ class RangeLit(_message.Message):
     MAXIMUM_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def minimum(self) -> Global___ValueLit: ...
+    def minimum(self) -> Global___ValueLit:
+        ...
+
     @_builtins.property
-    def maximum(self) -> Global___ValueLit: ...
-    def __init__(self, *, minimum: Global___ValueLit | None = ..., maximum: Global___ValueLit | None = ...) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["maximum", b"maximum", "minimum", b"minimum"]
+    def maximum(self) -> Global___ValueLit:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["maximum", b"maximum", "minimum", b"minimum"]
+    def __init__(self, *, minimum: Global___ValueLit | None=..., maximum: Global___ValueLit | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['maximum', b'maximum', 'minimum', b'minimum']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['maximum', b'maximum', 'minimum', b'minimum']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___RangeLit: _TypeAlias = RangeLit
 
 @_typing.final
@@ -111,24 +118,31 @@ class StructLit(_message.Message):
         key: _builtins.str
 
         @_builtins.property
-        def value(self) -> Global___ValueLit: ...
-        def __init__(self, *, key: _builtins.str = ..., value: Global___ValueLit | None = ...) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
+        def value(self) -> Global___ValueLit:
+            ...
 
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
+        def __init__(self, *, key: _builtins.str=..., value: Global___ValueLit | None=...) -> None:
+            ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['key', b'key', 'value', b'value']
 
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
     MEMBERS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def members(self) -> _containers.MessageMap[_builtins.str, Global___ValueLit]: ...
-    def __init__(self, *, members: _abc.Mapping[_builtins.str, Global___ValueLit] | None = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["members", b"members"]
+    def members(self) -> _containers.MessageMap[_builtins.str, Global___ValueLit]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, members: _abc.Mapping[_builtins.str, Global___ValueLit] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['members', b'members']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___StructLit: _TypeAlias = StructLit
 
 @_typing.final
@@ -137,12 +151,15 @@ class ArrayLit(_message.Message):
     ELTS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def elts(self) -> _containers.RepeatedCompositeFieldContainer[Global___ValueLit]: ...
-    def __init__(self, *, elts: _abc.Iterable[Global___ValueLit] | None = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["elts", b"elts"]
+    def elts(self) -> _containers.RepeatedCompositeFieldContainer[Global___ValueLit]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, elts: _abc.Iterable[Global___ValueLit] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['elts', b'elts']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___ArrayLit: _TypeAlias = ArrayLit
 
 @_typing.final
@@ -158,82 +175,50 @@ class ValueLit(_message.Message):
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def floating(self) -> Global___FloatLit: ...
-    @_builtins.property
-    def integer(self) -> Global___IntLit: ...
-    @_builtins.property
-    def boolean(self) -> Global___BoolLit: ...
-    @_builtins.property
-    def text(self) -> Global___TextLit: ...
-    @_builtins.property
-    def struct(self) -> Global___StructLit: ...
-    @_builtins.property
-    def range(self) -> Global___RangeLit: ...
-    @_builtins.property
-    def array(self) -> Global___ArrayLit: ...
-    @_builtins.property
-    def meta(self) -> _common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        floating: Global___FloatLit | None = ...,
-        integer: Global___IntLit | None = ...,
-        boolean: Global___BoolLit | None = ...,
-        text: Global___TextLit | None = ...,
-        struct: Global___StructLit | None = ...,
-        range: Global___RangeLit | None = ...,
-        array: Global___ArrayLit | None = ...,
-        meta: _common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal[
-        "array",
-        b"array",
-        "boolean",
-        b"boolean",
-        "floating",
-        b"floating",
-        "integer",
-        b"integer",
-        "meta",
-        b"meta",
-        "range",
-        b"range",
-        "struct",
-        b"struct",
-        "text",
-        b"text",
-        "type",
-        b"type",
-    ]
+    def floating(self) -> Global___FloatLit:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "array",
-        b"array",
-        "boolean",
-        b"boolean",
-        "floating",
-        b"floating",
-        "integer",
-        b"integer",
-        "meta",
-        b"meta",
-        "range",
-        b"range",
-        "struct",
-        b"struct",
-        "text",
-        b"text",
-        "type",
-        b"type",
-    ]
+    @_builtins.property
+    def integer(self) -> Global___IntLit:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal[
-        "floating", "integer", "boolean", "text", "struct", "range", "array"
-    ]
-    _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
+    @_builtins.property
+    def boolean(self) -> Global___BoolLit:
+        ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None: ...
+    @_builtins.property
+    def text(self) -> Global___TextLit:
+        ...
 
+    @_builtins.property
+    def struct(self) -> Global___StructLit:
+        ...
+
+    @_builtins.property
+    def range(self) -> Global___RangeLit:
+        ...
+
+    @_builtins.property
+    def array(self) -> Global___ArrayLit:
+        ...
+
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, floating: Global___FloatLit | None=..., integer: Global___IntLit | None=..., boolean: Global___BoolLit | None=..., text: Global___TextLit | None=..., struct: Global___StructLit | None=..., range: Global___RangeLit | None=..., array: Global___ArrayLit | None=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal['floating', 'integer', 'boolean', 'text', 'struct', 'range', 'array']
+    _WhichOneofArgType_type: _TypeAlias = _typing.Literal['type', b'type']
+
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None:
+        ...
 Global___ValueLit: _TypeAlias = ValueLit

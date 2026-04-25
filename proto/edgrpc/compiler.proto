@@ -34,4 +34,10 @@ message CompilerResult {
     edgir.lit.ValueLit value = 2;
   }
   repeated Value solvedValues = 2;
+
+  message Connection {  // from block ports to fully resolved (bypassing exports) links, including inner ports
+    edgir.ref.LocalPath block_port = 1;
+    edgir.ref.LocalPath link_port = 2;
+  }
+    repeated Connection connections = 3;
 }
