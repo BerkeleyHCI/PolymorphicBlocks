@@ -292,6 +292,10 @@ class ConstProp() {
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
 
+  def getAllConnections: Map[DesignPath, DesignPath] = connectedLink.toMap.collect {
+    case (ConnectedLinkRecord.ConnectedLink(port), link) => port -> link
+  }
+
   def getErrors: Seq[ExprError] = {
     paramErrors.flatMap { case (target, errors) =>
       errors.map(error => ExprError(target, error.msg))

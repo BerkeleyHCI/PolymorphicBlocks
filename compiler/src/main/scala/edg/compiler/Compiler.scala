@@ -1703,5 +1703,6 @@ class Compiler private (
   def getParamType(param: IndirectDesignPath): Option[Class[_ <: ExprValue]] = constProp.getType(param)
   def getParamValue(param: IndirectDesignPath): Option[ExprValue] = constProp.getValue(param)
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = constProp.getAllSolved
+  def getAllConnections: Map[DesignPath, DesignPath] = constProp.getAllConnections
   def getConnectedLink(port: DesignPath): Option[DesignPath] = constProp.getConnectedLink(port)
 }
