@@ -3,6 +3,7 @@ __pycache__
 
 examples/*/*.net
 examples/*/*.edg
+examples/*/*.compiled.json
 examples/*/*.pdf
 examples/*/gerbers
 /*.net

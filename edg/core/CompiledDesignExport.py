@@ -3,7 +3,7 @@ from typing import Optional, Dict, List, Any, Union, Mapping
 from pydantic import BaseModel
 
 from edg import edgir
-from edg.core.FnTransformUtil import FnTransformBase, TransformedPort, TransformedBlock, TransformedLink
+from edg.core.FnTransformUtil import FnTransformBase
 from edg.core.TransformUtil import TransformContext, Path
 
 """A compiled design, as a human-readable Pydantic / JSON-able version of the IR data structure."""
@@ -54,8 +54,8 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
     """Transform a design into the CompiledBlock and friend data structure for export to a human-readable format."""
 
     @staticmethod
-    def _path_to_path(context: Path) -> List[str]:
-        return list(context.path.to_tuple())
+    def _path_to_path(path: Path) -> List[str]:
+        return list(path.to_tuple())
 
     @staticmethod
     def _libpath_to_str(libpath: edgir.LibraryPath) -> str:
@@ -77,7 +77,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
             params={
                 param_pair.name: CompiledParam(
                     path=self._path_to_path(context.path.append_param(param_pair.name)),
-                    type=param_pair.value.WhichOneof("value"),
+                    type=param_pair.value.WhichOneof("val"),
                     expr=None,  # TODO IMPLEMENT ME
                     value=None,  # TODO IMPLEMENT ME
                 )
@@ -85,5 +85,42 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
             },
             ports=dict(ports),
             blocks=dict(blocks),
+            links=dict(links),
+        )
+
+    def transform_port(
+        self,
+        context: TransformContext,
+        elt: Union[edgir.Port, edgir.PortArray],
+        ports: Mapping[str, CompiledPort],
+    ) -> CompiledPort:
+        return CompiledPort(
+            path=self._path_to_path(context.path),
+            cls=self._libpath_to_str(elt.self_class),
+            connected_path=None,  # TODO IMPLEMENT ME
+            params={},  # TODO IMPLEMENT ME
+            ports=dict(ports),
+        )
+
+    def transform_link(
+        self,
+        context: TransformContext,
+        elt: edgir.Link,
+        ports: Mapping[str, CompiledPort],
+        links: Mapping[str, CompiledLink],
+    ) -> CompiledLink:
+        return CompiledLink(
+            path=self._path_to_path(context.path),
+            cls=self._libpath_to_str(elt.self_class),
+            params={
+                param_pair.name: CompiledParam(
+                    path=self._path_to_path(context.path.append_param(param_pair.name)),
+                    type=param_pair.value.WhichOneof("val"),
+                    expr=None,  # TODO IMPLEMENT ME
+                    value=None,  # TODO IMPLEMENT ME
+                )
+                for param_pair in elt.params
+            },
+            ports=dict(ports),
             links=dict(links),
         )
