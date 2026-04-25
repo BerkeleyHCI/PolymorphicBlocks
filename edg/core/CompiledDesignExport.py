@@ -8,9 +8,11 @@ from edg.core.TransformUtil import TransformContext, Path
 
 """A compiled design, as a human-readable Pydantic / JSON-able version of the IR data structure."""
 
+PathType = str
+
 
 class CompiledParam(BaseModel):
-    path: str
+    path: PathType
     # TODO support array sub-type
     type: Union[
         Literal["floating"], Literal["integer"], Literal["boolean"], Literal["text"], Literal["range"], Literal["array"]
@@ -24,18 +26,18 @@ class CompiledPortArray(BaseModel):
 
 
 class CompiledPort(BaseModel):
-    path: str
+    path: PathType
     cls: str  # self class
     # path of connected port, if connected
     # for block ports, this is either the link port or the exported port
     # for link ports, this is the block port
-    connected_path: Optional[List[str]]
+    connected_path: Optional[List[PathType]]
     params: Dict[str, CompiledParam]
     ports: Dict[str, "CompiledPort"]
 
 
 class CompiledLink(BaseModel):
-    path: str
+    path: PathType
     cls: str  # self class
     params: Dict[str, CompiledParam]
     ports: Dict[str, CompiledPort]
@@ -43,7 +45,7 @@ class CompiledLink(BaseModel):
 
 
 class CompiledBlock(BaseModel):
-    path: str
+    path: PathType
     cls: str  # self class
     superclasses: List[str]  # all superclasses
     params: Dict[str, CompiledParam]
@@ -57,7 +59,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
     """Transform a design into the CompiledBlock and friend data structure for export to a human-readable format."""
 
     @staticmethod
-    def _path_to_path(path: Path) -> str:
+    def _path_to_path(path: Path) -> PathType:
         return ".".join(path.to_tuple())
 
     @staticmethod
