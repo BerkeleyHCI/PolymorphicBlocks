@@ -57,6 +57,7 @@ class CompiledBlock(BaseModel):
 class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock, CompiledLink]):
     """Transform a design into the CompiledBlock and friends data structure for export to a human-readable format."""
 
+    # these values are excluded since they're very large and not very useful
     _EXCLUDED_PARAM_VALUES = ["matching_parts"]
 
     @staticmethod
