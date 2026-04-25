@@ -20,19 +20,30 @@ class CompilerCheckError(BaseException):
 class CompiledDesign:
     @staticmethod
     def from_compiler_result(result: edgrpc.CompilerResult) -> "CompiledDesign":
-        values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value) for value in result.solvedValues}
-        return CompiledDesign(result.design, values, list(result.errors))
+        connections = [(conn.block_port, conn.link_port) for conn in result.connections]
+        return CompiledDesign(
+            result.design,
+            [(value.path, value.value) for value in result.solvedValues],
+            connections,
+            list(result.errors),
+        )
 
     @staticmethod
     def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> "CompiledDesign":
-        values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value) for value in values}
-        return CompiledDesign(design, values_dict, [])
+        return CompiledDesign(design, [(value.path, value.value) for value in values], [], [])
 
-    def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], errors: List[edgrpc.ErrorRecord]):
+    def __init__(
+        self,
+        design: edgir.Design,
+        values: List[Tuple[edgir.LocalPath, edgir.ValueLit]],
+        connections: List[Tuple[edgir.LocalPath, edgir.LocalPath]],
+        errors: List[edgrpc.ErrorRecord],
+    ):
         self.design = design
         self.contents = design.contents  # convenience accessor
         self.errors = errors
-        self._values = values
+        self._values = {path.SerializeToString(): edgir.valuelit_to_lit(value) for path, value in values}
+        self._connections = connections
 
     def errors_str(self) -> str:
         err_strs = []
