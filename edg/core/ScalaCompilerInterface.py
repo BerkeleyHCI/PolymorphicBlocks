@@ -44,7 +44,10 @@ class CompiledDesign:
         self.errors = errors
         self._values = {path.SerializeToString(): edgir.valuelit_to_lit(value) for path, value in values}
         self._block_to_link_ports = {block_port.SerializeToString(): link_port for block_port, link_port in connections}
-        # self._link_to_block_ports = {link_port.SerializeToString(): block_port for block_port, link_port in connections}
+        self._link_to_block_ports: Dict[bytes, List[edgir.LocalPath]] = {}
+        for block_port, link_port in connections:
+            link_port_str = link_port.SerializeToString()
+            self._link_to_block_ports.setdefault(link_port_str, []).append(block_port)
 
     def errors_str(self) -> str:
         err_strs = []
@@ -76,6 +79,10 @@ class CompiledDesign:
     def get_connected_link_port(self, block_port: edgir.LocalPath) -> Optional[edgir.LocalPath]:
         """For a block port, return the connected link side port."""
         return self._block_to_link_ports.get(block_port.SerializeToString())
+
+    def get_connected_block_ports(self, link_port: edgir.LocalPath) -> Optional[List[edgir.LocalPath]]:
+        """For a link port, return connected block side ports (possibly multiple through an export chain)."""
+        return self._link_to_block_ports.get(link_port.SerializeToString())
 
 
 class ScalaCompilerInstance:

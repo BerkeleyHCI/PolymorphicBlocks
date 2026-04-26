@@ -1191,16 +1191,16 @@ class Compiler private (
     val link = resolveLink(path).asInstanceOf[wir.Link]
 
     // TODO refactor this out, ConnectedLink needs to be centralized
-    def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
+    def setConnectedLink(portSuffix: Seq[String], port: PortLike): Unit = (port: @unchecked) match {
       case _: wir.Port =>
-        constProp.setConnectedLink(path, portPath)
+        constProp.setConnectedLink(path, portSuffix)
       case port: wir.PortArray =>
         port.getPorts.foreach { case (subPortName, subPort) =>
-          setConnectedLink(portPath + subPortName, subPort)
+          setConnectedLink(portSuffix ++ Seq(subPortName), subPort)
         }
     }
     for ((portName, port) <- link.getPorts) {
-      setConnectedLink(path + portName, port)
+      setConnectedLink(Seq(portName), port)
     }
 
     // Queue up sub-trees that need elaboration

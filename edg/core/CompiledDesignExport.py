@@ -1,7 +1,7 @@
 from typing import Optional, Dict, List, Any, Union, Mapping, Literal, override
 import re
 
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 
 from .. import edgir
 from .ConstraintExpr import RangeExpr
@@ -20,26 +20,26 @@ class CompiledParam(BaseModel):
     value: Optional[Any]  # solved value, if available
 
 
-class CompiledPortArray(BaseModel):
-    ports: Dict[str, "CompiledPort"]
+class CompiledPortArray(RootModel[Dict[str, Union["CompiledPort", "CompiledPortArray"]]]):
+    pass
 
 
 class CompiledPort(BaseModel):
     path: PathType  # provide the full path to allow searchability
     cls: str  # self class
     # path of connected port, if connected
-    # for block ports, this is either the link port or the exported port
-    # for link ports, this is the block port
-    connected_path: Optional[PathType]
+    # for block ports, this is the link, if connected to one
+    connected_path: Optional[Union[PathType, List[PathType]]]
+    # note, link ports do not have parameters (they inherit parameters from connected ports and are deduplicated here)
     params: Dict[str, CompiledParam]
-    ports: Dict[str, "CompiledPort"]
+    ports: Dict[str, Union["CompiledPort", CompiledPortArray]]
 
 
 class CompiledLink(BaseModel):
     path: PathType  # provide the full path to allow searchability
     cls: str  # self class
     params: Dict[str, CompiledParam]
-    ports: Dict[str, CompiledPort]
+    ports: Dict[str, Union[CompiledPortArray, CompiledPort]]
     links: Dict[str, "CompiledLink"]
 
 
@@ -54,7 +54,9 @@ class CompiledBlock(BaseModel):
     # TODO: all constraints?
 
 
-class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock, CompiledLink]):
+class CompiledDesignExportTransform(
+    FnTransformBase[Union[CompiledPort, CompiledPortArray], CompiledBlock, CompiledLink]
+):
     """Transform a design into the CompiledBlock and friends data structure for export to a human-readable format."""
 
     # these values are excluded since they're very large and not very useful
@@ -111,7 +113,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
         self,
         context: TransformContext,
         elt: edgir.HierarchyBlock,
-        ports: Mapping[str, CompiledPort],
+        ports: Mapping[str, Union[CompiledPort, CompiledPortArray]],
         blocks: Mapping[str, CompiledBlock],
         links: Mapping[str, CompiledLink],
     ) -> CompiledBlock:
@@ -134,37 +136,48 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
         self,
         context: TransformContext,
         elt: Union[edgir.Port, edgir.PortArray],
-        ports: Mapping[str, CompiledPort],
-    ) -> CompiledPort:
+        ports: Mapping[str, Union[CompiledPort, CompiledPortArray]],
+    ) -> Union[CompiledPort, CompiledPortArray]:
         if isinstance(elt, edgir.Port):
-            params = {
-                param_pair.name: self._param_to_compiled(context.path.append_param(param_pair.name), param_pair.value)
-                for param_pair in elt.params
-            }
-        else:
-            params = {}
+            if not context.path.links:
+                params = {
+                    param_pair.name: self._param_to_compiled(
+                        context.path.append_param(param_pair.name), param_pair.value
+                    )
+                    for param_pair in elt.params
+                }
+            else:
+                params = {}
 
-        if not context.path.links:
-            connected_path: Optional[edgir.LocalPath] = self._design.get_connected_link_port(
-                context.path.to_local_path()
+            if not context.path.links:
+                link_path_opt = self._design.get_connected_link_port(context.path.to_local_path())
+                if link_path_opt is not None:
+                    connected_path: Optional[Union[PathType, List[PathType]]] = self._localpath_to_path(link_path_opt)
+                else:
+                    connected_path = None
+            else:
+                block_paths_opt = self._design.get_connected_block_ports(context.path.to_local_path())
+                if block_paths_opt is not None:
+                    connected_path = [self._localpath_to_path(link_path) for link_path in block_paths_opt]
+                else:
+                    connected_path = None
+
+            return CompiledPort(
+                path=self._path_to_path(context.path),
+                cls=self._libpath_to_str(elt.self_class),
+                connected_path=connected_path,
+                params=params,
+                ports=dict(ports),
             )
-        else:
-            connected_path = None
-
-        return CompiledPort(
-            path=self._path_to_path(context.path),
-            cls=self._libpath_to_str(elt.self_class),
-            connected_path=self._localpath_to_path(connected_path) if connected_path is not None else None,
-            params=params,
-            ports=dict(ports),
-        )
+        elif isinstance(elt, edgir.PortArray):
+            return CompiledPortArray(dict(ports))
 
     @override
     def transform_link(
         self,
         context: TransformContext,
         elt: edgir.Link,
-        ports: Mapping[str, CompiledPort],
+        ports: Mapping[str, Union[CompiledPort, CompiledPortArray]],
         links: Mapping[str, CompiledLink],
     ) -> CompiledLink:
         return CompiledLink(
