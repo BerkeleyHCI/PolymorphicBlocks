@@ -59,6 +59,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
         drain_voltage: RangeLike,
         drain_current: RangeLike,
         *,
+        drain_voltage_margin: FloatLike = 1.25,
         gate_voltage: RangeLike = (0, 0),
         gate_threshold_voltage: RangeLike = Range.all(),
         rds_on: RangeLike = Range.all(),
@@ -72,14 +73,18 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
         self.drain = self.Port(Passive.empty())
         self.gate = self.Port(Passive.empty())
 
-        self.drain_voltage = self.ArgParameter(drain_voltage)
-        self.drain_current = self.ArgParameter(drain_current)
-        self.gate_voltage = self.ArgParameter(gate_voltage)
-        self.gate_threshold_voltage = self.ArgParameter(gate_threshold_voltage)
-        self.rds_on = self.ArgParameter(rds_on)
-        self.gate_charge = self.ArgParameter(gate_charge)
-        self.power = self.ArgParameter(power)
-        self.channel = self.ArgParameter(channel)
+        self.drain_voltage = self.ArgParameter(drain_voltage, doc="operating Vds (voltage from drain to source)")
+        self.drain_current = self.ArgParameter(drain_current, doc="operating Ids (current into drain)")
+        self.gate_voltage = self.ArgParameter(gate_voltage, doc="operating Vgs (voltage from gate to source)")
+        self.gate_threshold_voltage = self.ArgParameter(gate_threshold_voltage, doc="requirement for Vgs,th")
+        self.rds_on = self.ArgParameter(rds_on, doc="requirement for Rds,on, the on-state resistance")
+        self.gate_charge = self.ArgParameter(gate_charge, doc="requirement for gate charge")
+        self.power = self.ArgParameter(power, doc="operating power dissipation")
+        self.channel = self.ArgParameter(channel, doc="FET type, either 'N' or 'P'")
+
+        self.drain_voltage_margin = self.ArgParameter(
+            drain_voltage_margin, doc="Vds rating margin, eg 1.25 means voltage rating >=1.25x operating voltage"
+        )
 
         self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
         self.actual_drain_current_rating = self.Parameter(RangeExpr())
@@ -196,6 +201,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
         super().__init__(*args, **kwargs)
         self.generator_param(
             self.drain_voltage,
+            self.drain_voltage_margin,
             self.drain_current,
             self.gate_voltage,
             self.gate_threshold_voltage,
@@ -210,7 +216,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
         return (
             super()._row_filter(row)
             and row[self.CHANNEL] == self.get(self.channel)
-            and self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING])
+            and (self.get(self.drain_voltage) * self.get(self.drain_voltage_margin)).fuzzy_in(row[self.VDS_RATING])
             and self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING])
             and self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING])
             and (row[self.VGS_DRIVE].lower in self.get(self.gate_threshold_voltage))

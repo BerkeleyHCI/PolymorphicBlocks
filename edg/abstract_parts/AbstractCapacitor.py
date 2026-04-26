@@ -29,7 +29,7 @@ class UnpolarizedCapacitor(PassiveComponent):
     ) -> None:
         super().__init__()
 
-        self.capacitance = self.ArgParameter(capacitance)
+        self.capacitance = self.ArgParameter(capacitance, doc="requirement for capacitance")
         self.voltage = self.ArgParameter(voltage, doc="operating voltage range across the device")
 
         # this old style is deprecated and emits a DeprecationWarning when used

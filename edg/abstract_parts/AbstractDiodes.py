@@ -64,15 +64,22 @@ class Diode(KiCadImportableBlock, BaseDiode):
         reverse_voltage: RangeLike,
         current: RangeLike,
         *,
+        reverse_voltage_margin: FloatLike = 1.25,
         voltage_drop: RangeLike = Range.all(),
         reverse_recovery_time: RangeLike = Range.all(),
     ) -> None:
         super().__init__()
 
-        self.reverse_voltage = self.ArgParameter(reverse_voltage)
-        self.current = self.ArgParameter(current)
-        self.voltage_drop = self.ArgParameter(voltage_drop)
-        self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
+        self.reverse_voltage = self.ArgParameter(reverse_voltage, doc="operating Vr (reverse voltage across device)")
+        self.current = self.ArgParameter(current, doc="operating If (forward current through device)")
+        self.voltage_drop = self.ArgParameter(voltage_drop, doc="requirement for forward voltage drop")
+        self.reverse_recovery_time = self.ArgParameter(
+            reverse_recovery_time, doc="requirement for reverse recovery time"
+        )
+
+        self.reverse_voltage_margin = self.ArgParameter(
+            reverse_voltage_margin, doc="Vr rating margin, eg 1.25 means voltage rating >=1.25x operating voltage"
+        )
 
         self.actual_voltage_rating = self.Parameter(RangeExpr())
         self.actual_current_rating = self.Parameter(RangeExpr())
@@ -110,13 +117,21 @@ class TableDiode(PartsTableSelector, Diode):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
+        self.generator_param(
+            self.reverse_voltage,
+            self.current,
+            self.reverse_voltage_margin,
+            self.voltage_drop,
+            self.reverse_recovery_time,
+        )
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
         return (
             super()._row_filter(row)
-            and self.get(self.reverse_voltage).fuzzy_in(row[self.VOLTAGE_RATING])
+            and (self.get(self.reverse_voltage) * self.get(self.reverse_voltage_margin)).fuzzy_in(
+                row[self.VOLTAGE_RATING]
+            )
             and self.get(self.current).fuzzy_in(row[self.CURRENT_RATING])
             and row[self.FORWARD_VOLTAGE].fuzzy_in(self.get(self.voltage_drop))
             and row[self.REVERSE_RECOVERY].fuzzy_in(self.get(self.reverse_recovery_time))

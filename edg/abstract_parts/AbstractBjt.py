@@ -40,6 +40,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
         collector_voltage: RangeLike,
         collector_current: RangeLike,
         *,
+        collector_voltage_margin: FloatLike = 1.25,
         gain: RangeLike = Range.all(),
         power: RangeLike = Range.exact(0),
         channel: StringLike = StringExpr(),
@@ -50,11 +51,17 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
         self.collector = self.Port(Passive.empty())
         self.emitter = self.Port(Passive.empty())
 
-        self.collector_voltage = self.ArgParameter(collector_voltage)
-        self.collector_current = self.ArgParameter(collector_current)
-        self.gain = self.ArgParameter(gain)
-        self.power = self.ArgParameter(power)
-        self.channel = self.ArgParameter(channel)
+        self.collector_voltage = self.ArgParameter(
+            collector_voltage, doc="operating Vce (voltage from collector to emitter)"
+        )
+        self.collector_current = self.ArgParameter(collector_current, doc="operating Ic (current into collector)")
+        self.gain = self.ArgParameter(gain, doc="requirement for gain")
+        self.power = self.ArgParameter(power, doc="operating power dissipation")
+        self.channel = self.ArgParameter(channel, doc="BJT type, either 'PNP' or 'NPN'")
+
+        self.collector_voltage_margin = self.ArgParameter(
+            collector_voltage_margin, doc="Vce rating margin, eg 1.25 means voltage rating >=1.25x operating voltage"
+        )
 
         self.actual_collector_voltage_rating = self.Parameter(RangeExpr())
         self.actual_collector_current_rating = self.Parameter(RangeExpr())
@@ -117,14 +124,23 @@ class TableBjt(PartsTableSelector, Bjt):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.collector_voltage, self.collector_current, self.gain, self.power, self.channel)
+        self.generator_param(
+            self.collector_voltage,
+            self.collector_current,
+            self.collector_voltage_margin,
+            self.gain,
+            self.power,
+            self.channel,
+        )
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
         return (
             super()._row_filter(row)
             and row[self.CHANNEL] == self.get(self.channel)
-            and self.get(self.collector_voltage).fuzzy_in(row[self.VCE_RATING])
+            and (self.get(self.collector_voltage) * self.get(self.collector_voltage_margin)).fuzzy_in(
+                row[self.VCE_RATING]
+            )
             and self.get(self.collector_current).fuzzy_in(row[self.ICE_RATING])
             and row[self.GAIN].fuzzy_in(self.get(self.gain))
             and self.get(self.power).fuzzy_in(row[self.POWER_RATING])
