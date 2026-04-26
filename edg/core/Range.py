@@ -135,7 +135,9 @@ class Range:
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Range):
             return False
-        return self.lower == other.lower and self.upper == other.upper
+        return (self.lower == other.lower and self.upper == other.upper) or (
+            math.isnan(self.lower) and math.isnan(other.lower) and math.isnan(self.upper) and math.isnan(other.upper)
+        )
 
     def center(self) -> float:
         return (self.lower + self.upper) / 2

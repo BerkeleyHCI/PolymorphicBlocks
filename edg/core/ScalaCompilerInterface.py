@@ -20,19 +20,34 @@ class CompilerCheckError(BaseException):
 class CompiledDesign:
     @staticmethod
     def from_compiler_result(result: edgrpc.CompilerResult) -> "CompiledDesign":
-        values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value) for value in result.solvedValues}
-        return CompiledDesign(result.design, values, list(result.errors))
+        connections = [(conn.block_port, conn.link_port) for conn in result.connections]
+        return CompiledDesign(
+            result.design,
+            [(value.path, value.value) for value in result.solvedValues],
+            connections,
+            list(result.errors),
+        )
 
     @staticmethod
     def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> "CompiledDesign":
-        values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value) for value in values}
-        return CompiledDesign(design, values_dict, [])
+        return CompiledDesign(design, [(value.path, value.value) for value in values], [], [])
 
-    def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], errors: List[edgrpc.ErrorRecord]):
+    def __init__(
+        self,
+        design: edgir.Design,
+        values: List[Tuple[edgir.LocalPath, edgir.ValueLit]],
+        connections: List[Tuple[edgir.LocalPath, edgir.LocalPath]],
+        errors: List[edgrpc.ErrorRecord],
+    ):
         self.design = design
         self.contents = design.contents  # convenience accessor
         self.errors = errors
-        self._values = values
+        self._values = {path.SerializeToString(): edgir.valuelit_to_lit(value) for path, value in values}
+        self._block_to_link_ports = {block_port.SerializeToString(): link_port for block_port, link_port in connections}
+        self._link_to_block_ports: Dict[bytes, List[edgir.LocalPath]] = {}
+        for block_port, link_port in connections:
+            link_port_str = link_port.SerializeToString()
+            self._link_to_block_ports.setdefault(link_port_str, []).append(block_port)
 
     def errors_str(self) -> str:
         err_strs = []
@@ -60,6 +75,14 @@ class CompiledDesign:
             value_path_str = value_path.SerializeToString()
             assert value_path_str not in self._values
             self._values[value_path_str] = edgir.valuelit_to_lit(value_value)
+
+    def get_connected_link_port(self, block_port: edgir.LocalPath) -> Optional[edgir.LocalPath]:
+        """For a block port, return the connected link side port."""
+        return self._block_to_link_ports.get(block_port.SerializeToString())
+
+    def get_connected_block_ports(self, link_port: edgir.LocalPath) -> Optional[List[edgir.LocalPath]]:
+        """For a link port, return connected block side ports (possibly multiple through an export chain)."""
+        return self._link_to_block_ports.get(link_port.SerializeToString())
 
 
 class ScalaCompilerInstance:

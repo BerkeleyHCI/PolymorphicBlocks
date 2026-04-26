@@ -42,6 +42,16 @@ object CompilerServerMain {
     }.toSeq
   }
 
+  private def constPropConnectionToConnection(vals: Map[DesignPath, DesignPath])
+      : Seq[edgcompiler.CompilerResult.Connection] = {
+    vals.map { case (block, link) =>
+      edgcompiler.CompilerResult.Connection(
+        blockPort = Some(block.asIndirect.toLocalPath),
+        linkPort = Some(link.asIndirect.toLocalPath)
+      )
+    }.toSeq
+  }
+
   def compile(request: CompilerRequest, library: PythonInterfaceLibrary): CompilerResult = {
     try {
       val refinements = Refinements(request.getRefinements)
@@ -52,7 +62,8 @@ object CompilerServerMain {
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
         errors = errors.map(_.toIr),
-        solvedValues = constPropToSolved(compiler.getAllSolved)
+        solvedValues = constPropToSolved(compiler.getAllSolved),
+        connections = constPropConnectionToConnection(compiler.getAllConnections)
       )
       result
     } catch {

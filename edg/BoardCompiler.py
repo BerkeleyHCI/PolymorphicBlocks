@@ -3,7 +3,7 @@ import inspect
 from contextlib import suppress
 from typing import Type, Optional, Tuple
 
-from .core import Block, ScalaCompiler, CompiledDesign
+from .core import Block, ScalaCompiler, CompiledDesign, CompiledDesignExportTransform
 from .electronics_model.NetlistBackend import NetlistBackend  # imported separately b/c mypy confuses with the modules
 from .electronics_model.SvgPcbBackend import SvgPcbBackend
 from .electronics_model.RefdesRefinementPass import RefdesRefinementPass
@@ -21,6 +21,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
         netlist_filename = os.path.join(target_dir, f"{target_name}.net")
         bom_filename = os.path.join(target_dir, f"{target_name}.csv")
         svgpcb_filename = os.path.join(target_dir, f"{target_name}.svgpcb.js")
+        compiled_json_filename = os.path.join(target_dir, f"{target_name}.compiled.json")
 
         with suppress(FileNotFoundError):
             os.remove(design_filename)
@@ -30,6 +31,8 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
             os.remove(bom_filename)
         with suppress(FileNotFoundError):
             os.remove(svgpcb_filename)
+        with suppress(FileNotFoundError):
+            os.remove(compiled_json_filename)
 
     compiled = ScalaCompiler.compile(design, ignore_errors=True)
     compiled.append_values(RefdesRefinementPass().run(compiled))
@@ -46,6 +49,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     netlist_all = NetlistBackend().run(compiled)
     bom_all = GenerateBom().run(compiled)
     svgpcb_all = SvgPcbBackend().run(compiled)
+    compiled_json = CompiledDesignExportTransform(compiled).transform()
     assert len(netlist_all) == 1
 
     if target_dir_name is not None:
@@ -56,8 +60,13 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
             bom_file.write(bom_all[0][1])
 
         if svgpcb_all:
-            with open(svgpcb_filename, "w", encoding="utf-8") as bom_file:
-                bom_file.write(svgpcb_all[0][1])
+            with open(svgpcb_filename, "w", encoding="utf-8") as svgpcb_file:
+                svgpcb_file.write(svgpcb_all[0][1])
+
+        with open(compiled_json_filename, "w", encoding="utf-8") as compiled_json_file:
+            compiled_json_file.write(
+                CompiledDesignExportTransform.postprocess_serialized_json(compiled_json.model_dump_json(indent=2))
+            )
 
     return compiled
 

@@ -106,9 +106,32 @@ class CompilerResult(_message.Message):
 
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
+    @_typing.final
+    class Connection(_message.Message):
+        """from block ports to fully resolved (bypassing exports) links, including inner ports"""
+
+        DESCRIPTOR: _descriptor.Descriptor
+        BLOCK_PORT_FIELD_NUMBER: _builtins.int
+        LINK_PORT_FIELD_NUMBER: _builtins.int
+
+        @_builtins.property
+        def block_port(self) -> _ref_pb2.LocalPath: ...
+        @_builtins.property
+        def link_port(self) -> _ref_pb2.LocalPath: ...
+        def __init__(
+            self, *, block_port: _ref_pb2.LocalPath | None = ..., link_port: _ref_pb2.LocalPath | None = ...
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["block_port", b"block_port", "link_port", b"link_port"]
+
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["block_port", b"block_port", "link_port", b"link_port"]
+
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
     DESIGN_FIELD_NUMBER: _builtins.int
     ERRORS_FIELD_NUMBER: _builtins.int
     SOLVEDVALUES_FIELD_NUMBER: _builtins.int
+    CONNECTIONS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
     def design(self) -> _schema_pb2.Design: ...
@@ -116,18 +139,21 @@ class CompilerResult(_message.Message):
     def errors(self) -> _containers.RepeatedCompositeFieldContainer[Global___ErrorRecord]: ...
     @_builtins.property
     def solvedValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___CompilerResult.Value]: ...
+    @_builtins.property
+    def connections(self) -> _containers.RepeatedCompositeFieldContainer[Global___CompilerResult.Connection]: ...
     def __init__(
         self,
         *,
         design: _schema_pb2.Design | None = ...,
         errors: _abc.Iterable[Global___ErrorRecord] | None = ...,
         solvedValues: _abc.Iterable[Global___CompilerResult.Value] | None = ...,
+        connections: _abc.Iterable[Global___CompilerResult.Connection] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["design", b"design"]
 
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
     _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "design", b"design", "errors", b"errors", "solvedValues", b"solvedValues"
+        "connections", b"connections", "design", b"design", "errors", b"errors", "solvedValues", b"solvedValues"
     ]
 
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...

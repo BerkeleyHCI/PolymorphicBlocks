@@ -26,6 +26,9 @@ object ConnectedLinkResult {
   case class MissingConnectedLink(port: DesignPath) extends ConnectedLinkResult
 }
 
+// for port connectivity, stores both the link path and the port (on the link) path
+case class ConnectedLinkPort(linkPath: DesignPath, portSuffix: Seq[String])
+
 /** Parameter propagation, evaluation, and resolution associated with a single design. General philosophy: this should
   * not refer to any particular design instance, so the design can continue to be transformed (though those
   * transformations must be strictly additive with regards to assignments and assertions)
@@ -48,7 +51,7 @@ class ConstProp() {
   // Undeclared parameters cannot have values set, but can be forced (though the value is not effective until declared)
   private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()
 
-  private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]() // tracks the port -> link paths
+  private val connectedLink = DependencyGraph[ConnectedLinkRecord, ConnectedLinkPort]() // tracks the port -> link paths
 
   // Params that have a forced/override value, so they arent over-assigned.
   private val forcedParams = mutable.Set[IndirectDesignPath]()
@@ -80,7 +83,7 @@ class ConstProp() {
       case Some((connected, postfix)) =>
         connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(connected)) match {
           case Some(connectedLinkPath) =>
-            resolveConnectedLink(connectedLinkPath.asIndirect ++ postfix)
+            resolveConnectedLink(connectedLinkPath.linkPath.asIndirect ++ postfix)
           case None =>
             ConnectedLinkResult.MissingConnectedLink(connected)
         }
@@ -104,7 +107,7 @@ class ConstProp() {
           params.setValue(port.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false)) // dummy value
         case _ => throw new IllegalArgumentException()
       }
-      connectedLink.setValue(ready, DesignPath())
+      connectedLink.setValue(ready, ConnectedLinkPort(DesignPath(), Seq()))
     }
 
     var readyList = Iterable[IndirectDesignPath]()
@@ -163,8 +166,9 @@ class ConstProp() {
     update()
   }
 
-  def setConnectedLink(linkPath: DesignPath, portPath: DesignPath): Unit = {
-    connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(portPath), linkPath)
+  def setConnectedLink(linkPath: DesignPath, portSuffix: Seq[String]): Unit = {
+    val portPath = linkPath ++ portSuffix
+    connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(portPath), ConnectedLinkPort(linkPath, portSuffix))
     params.setValue(portPath.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false)) // dummy value
 
     update()
@@ -274,7 +278,7 @@ class ConstProp() {
   }
 
   def getConnectedLink(port: DesignPath): Option[DesignPath] = {
-    connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(port))
+    connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(port)).map(_.linkPath)
   }
 
   /** Returns the type (as a class of ExprValue) of a parameter.
@@ -291,6 +295,12 @@ class ConstProp() {
   }
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
+
+  def getAllConnections: Map[DesignPath, DesignPath] = connectedLink.toMap.collect {
+    case (ConnectedLinkRecord.ConnectedLink(towardsBlockPort), ConnectedLinkPort(linkPath, linkPortSuffix))
+      if towardsBlockPort != (linkPath ++ linkPortSuffix) =>
+      towardsBlockPort -> (linkPath ++ linkPortSuffix)
+  }
 
   def getErrors: Seq[ExprError] = {
     paramErrors.flatMap { case (target, errors) =>
