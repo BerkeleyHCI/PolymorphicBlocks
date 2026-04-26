@@ -18,13 +18,13 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
     """
 
     def __init__(self, design: CompiledDesign) -> None:
-        self.design = design
+        self._design = design
 
     def transform(self) -> TransformedBlock:
         """Entry point for the transform. Transforms the design and returns the result.
         Should only be called once per object, undefined behavior if called multiple times."""
-        context = TransformContext(Path.empty(), self.design.contents)
-        return self.visit_block(context, self.design.contents)
+        context = TransformContext(Path.empty(), self._design.contents)
+        return self.visit_block(context, self._design.contents)
 
     def _visit_portlike(self, context: TransformContext, elt: edgir.PortLike) -> TransformedPort:
         if elt.HasField("port"):

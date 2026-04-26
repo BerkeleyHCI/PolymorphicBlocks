@@ -43,7 +43,8 @@ class CompiledDesign:
         self.contents = design.contents  # convenience accessor
         self.errors = errors
         self._values = {path.SerializeToString(): edgir.valuelit_to_lit(value) for path, value in values}
-        self._connections = connections
+        self._block_to_link_ports = {block_port.SerializeToString(): link_port for block_port, link_port in connections}
+        # self._link_to_block_ports = {link_port.SerializeToString(): block_port for block_port, link_port in connections}
 
     def errors_str(self) -> str:
         err_strs = []
@@ -71,6 +72,10 @@ class CompiledDesign:
             value_path_str = value_path.SerializeToString()
             assert value_path_str not in self._values
             self._values[value_path_str] = edgir.valuelit_to_lit(value_value)
+
+    def get_connected_link_port(self, block_port: edgir.LocalPath) -> Optional[edgir.LocalPath]:
+        """For a block port, return the connected link side port."""
+        return self._block_to_link_ports.get(block_port.SerializeToString())
 
 
 class ScalaCompilerInstance:

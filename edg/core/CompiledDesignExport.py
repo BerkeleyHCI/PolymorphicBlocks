@@ -30,7 +30,7 @@ class CompiledPort(BaseModel):
     # path of connected port, if connected
     # for block ports, this is either the link port or the exported port
     # for link ports, this is the block port
-    connected_path: Optional[List[PathType]]
+    connected_path: Optional[PathType]
     params: Dict[str, CompiledParam]
     ports: Dict[str, "CompiledPort"]
 
@@ -65,6 +65,10 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
         return ".".join(path.to_tuple())
 
     @staticmethod
+    def _localpath_to_path(localpath: edgir.LocalPath) -> PathType:
+        return ".".join(edgir.local_path_to_str_list(localpath))
+
+    @staticmethod
     def _libpath_to_str(libpath: edgir.LibraryPath) -> str:
         return libpath.target.name
 
@@ -80,7 +84,7 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
         if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
             value: Optional[Any] = "<excluded>"
         else:
-            value = self.design.get_value(path.to_local_path())
+            value = self._design.get_value(path.to_local_path())
             if isinstance(value, Range):  # convert to Pydantic friendly
                 # JSON can't encode inf / -inf by standard, so convert to strings
                 if value == RangeExpr.EMPTY:
@@ -140,10 +144,17 @@ class CompiledDesignExportTransform(FnTransformBase[CompiledPort, CompiledBlock,
         else:
             params = {}
 
+        if not context.path.links:
+            connected_path: Optional[edgir.LocalPath] = self._design.get_connected_link_port(
+                context.path.to_local_path()
+            )
+        else:
+            connected_path = None
+
         return CompiledPort(
             path=self._path_to_path(context.path),
             cls=self._libpath_to_str(elt.self_class),
-            connected_path=None,  # TODO IMPLEMENT ME
+            connected_path=self._localpath_to_path(connected_path) if connected_path is not None else None,
             params=params,
             ports=dict(ports),
         )
