@@ -34,7 +34,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
         elif elt.HasField("lib_elem"):
             raise ValueError(f"unresolved PortLike lib at {context}")
         else:
-            raise ValueError(f"unknown PortLike type {type(elt)} at {context}")
+            raise ValueError(f"unknown PortLike type {elt.WhichOneof('is')} at {context}")
 
     def _visit_blocklike(self, context: TransformContext, elt: edgir.BlockLike) -> TransformedBlock:
         if elt.HasField("hierarchy"):
@@ -42,15 +42,17 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
         elif elt.HasField("lib_elem"):
             raise ValueError(f"unresolved BlockLike lib at {context}")
         else:
-            raise ValueError(f"unknown BlockLike type {type(elt)} at {context}")
+            raise ValueError(f"unknown BlockLike type {elt.WhichOneof('type')} at {context}")
 
     def _visit_linklike(self, context: TransformContext, elt: edgir.LinkLike) -> TransformedLink:
         if elt.HasField("link"):
             return self.visit_link(context, elt.link)
+        elif elt.HasField("array"):
+            return self.visit_link(context, elt.array)
         elif elt.HasField("lib_elem"):
             raise ValueError(f"unresolved LinkLike lib at {context}")
         else:
-            raise ValueError(f"unknown LinkLike type {type(elt)} at {context}")
+            raise ValueError(f"unknown LinkLike type {elt.WhichOneof('type')} at {context}")
 
     def visit_port(self, context: TransformContext, elt: Union[edgir.Port, edgir.PortArray]) -> TransformedPort:
         """visit_block, but for ports."""
@@ -66,7 +68,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
                     context.append_port(port_pair.name), port_pair.value
                 )
         else:
-            raise TypeError(f"unknown Port type {type(elt)} at {context}")
+            raise TypeError(f"unknown Port type {elt.WhichOneof('is')} at {context}")
         return self.transform_port(context, elt, transformed_ports)
 
     def visit_block(self, context: TransformContext, elt: edgir.HierarchyBlock) -> TransformedBlock:
@@ -90,7 +92,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
             )
         return self.transform_block(context, elt, transformed_ports, transformed_blocks, transformed_links)
 
-    def visit_link(self, context: TransformContext, elt: edgir.Link) -> TransformedLink:
+    def visit_link(self, context: TransformContext, elt: Union[edgir.Link, edgir.LinkArray]) -> TransformedLink:
         """visit_block, but for links."""
         transformed_ports: Dict[str, TransformedPort] = {}
         for port_pair in elt.ports:
@@ -128,7 +130,7 @@ class FnTransformBase(Generic[TransformedPort, TransformedBlock, TransformedLink
     def transform_link(
         self,
         context: TransformContext,
-        elt: edgir.Link,
+        elt: Union[edgir.Link, edgir.LinkArray],
         ports: Mapping[str, TransformedPort],
         links: Mapping[str, TransformedLink],
     ) -> TransformedLink:

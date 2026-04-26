@@ -82,27 +82,35 @@ class CompiledDesignExportTransform(
             return f"array({cls._param_to_type(elt.array)})"
         return param_type
 
+    @classmethod
+    def _param_value_to_json(cls, value: Any) -> Any:
+        if isinstance(value, Range):  # convert to Pydantic friendly
+            # JSON can't encode inf / -inf by standard, so convert to strings
+            if value == RangeExpr.EMPTY:
+                return "∅"
+            else:
+                lower: Union[float, str] = value.lower
+                upper: Union[float, str] = value.upper
+                if lower == float("inf"):
+                    lower = "inf"
+                elif lower == float("-inf"):
+                    lower = "-inf"
+                if upper == float("inf"):
+                    upper = "inf"
+                elif upper == float("-inf"):
+                    upper = "-inf"
+                return (lower, upper)
+        elif isinstance(value, list):
+            return [cls._param_value_to_json(elt) for elt in value]
+        else:
+            return value
+
     def _param_to_compiled(self, path: Path, elt: edgir.ValInit) -> CompiledParam:
         if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
             value: Optional[Any] = "<excluded>"
         else:
-            value = self._design.get_value(path.to_local_path())
-            if isinstance(value, Range):  # convert to Pydantic friendly
-                # JSON can't encode inf / -inf by standard, so convert to strings
-                if value == RangeExpr.EMPTY:
-                    value = "∅"
-                else:
-                    lower: Union[float, str] = value.lower
-                    upper: Union[float, str] = value.upper
-                    if lower == float("inf"):
-                        lower = "inf"
-                    elif lower == float("-inf"):
-                        lower = "-inf"
-                    if upper == float("inf"):
-                        upper = "inf"
-                    elif upper == float("-inf"):
-                        upper = "-inf"
-                    value = (lower, upper)
+            value = self._param_value_to_json(self._design.get_value(path.to_local_path()))
+
         return CompiledParam(
             type=self._param_to_type(elt),
             value=value,
@@ -171,22 +179,31 @@ class CompiledDesignExportTransform(
             )
         elif isinstance(elt, edgir.PortArray):
             return CompiledPortArray(dict(ports))
+        else:
+            raise ValueError(f"unknown port type {type(elt)}")
 
     @override
     def transform_link(
         self,
         context: TransformContext,
-        elt: edgir.Link,
+        elt: Union[edgir.Link, edgir.LinkArray],
         ports: Mapping[str, Union[CompiledPort, CompiledPortArray]],
         links: Mapping[str, CompiledLink],
     ) -> CompiledLink:
+        if isinstance(elt, edgir.Link):
+            params = {
+                param_pair.name: self._param_to_compiled(context.path.append_param(param_pair.name), param_pair.value)
+                for param_pair in elt.params
+            }
+        elif isinstance(elt, edgir.LinkArray):
+            params = {}
+        else:
+            raise ValueError(f"unknown link type {type(elt)}")
+
         return CompiledLink(
             path=self._path_to_path(context.path),
             cls=self._libpath_to_str(elt.self_class),
-            params={
-                param_pair.name: self._param_to_compiled(context.path.append_param(param_pair.name), param_pair.value)
-                for param_pair in elt.params
-            },
+            params=params,
             ports=dict(ports),
             links=dict(links),
         )
