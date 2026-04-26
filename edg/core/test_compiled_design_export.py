@@ -1,6 +1,8 @@
 import unittest
+from typing import cast
 
-from edg import ScalaCompiler, CompiledDesignExportTransform
+from . import *
+from .CompiledDesignExport import CompiledPort
 
 
 class CompiledDesignExportTestCase(unittest.TestCase):
@@ -13,9 +15,9 @@ class CompiledDesignExportTestCase(unittest.TestCase):
         self.assertEqual(result.blocks["sink1"].cls, "edg.core.test_common.TestBlockSink")
         self.assertEqual(result.blocks["sink2"].cls, "edg.core.test_common.TestBlockSink")
         self.assertEqual(result.links["test_net"].cls, "edg.core.test_common.TestLink")
-        self.assertEqual(result.blocks["source"].ports["source"].connected_path, "test_net.source")
-        self.assertEqual(result.blocks["sink1"].ports["sink"].connected_path, "test_net.sinks.0")
-        self.assertEqual(result.blocks["sink2"].ports["sink"].connected_path, "test_net.sinks.1")
+        self.assertEqual(cast(CompiledPort, result.blocks["source"].ports["source"]).connected_path, "test_net.source")
+        self.assertEqual(cast(CompiledPort, result.blocks["sink1"].ports["sink"]).connected_path, "test_net.sinks.0")
+        self.assertEqual(cast(CompiledPort, result.blocks["sink2"].ports["sink"]).connected_path, "test_net.sinks.1")
 
     def test_param_values(self) -> None:
         from .test_simple_expr_eval import TestEvalReductionBlock
