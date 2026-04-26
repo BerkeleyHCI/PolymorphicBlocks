@@ -1,4 +1,5 @@
-from typing import TypeVar, Generic, Mapping, Union, Dict
+from typing import Generic, Mapping, Union, Dict
+from typing_extensions import TypeVar
 
 from .. import edgir
 from .ScalaCompilerInterface import CompiledDesign
