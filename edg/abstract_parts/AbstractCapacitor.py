@@ -1,4 +1,5 @@
 import re
+import warnings
 from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, Tuple, Mapping
 import math
@@ -22,19 +23,24 @@ class UnpolarizedCapacitor(PassiveComponent):
         capacitance: RangeLike,
         voltage: RangeLike,
         *,
-        voltage_rating_derating: FloatLike = 0.5,
+        voltage_rating_derating: FloatLike = float("-inf"),
+        voltage_margin: FloatLike = 2.0,
         exact_capacitance: BoolLike = False,
     ) -> None:
         super().__init__()
 
         self.capacitance = self.ArgParameter(capacitance)
-        self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
+        self.voltage = self.ArgParameter(voltage, doc="operating voltage range")
 
-        # this is the scaling derating factor applied to the rated voltage spec
-        # eg, a value of 0.5 would mean the labeled rated voltage must be 2x the actual voltage
-        # 0.5 is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
-        # this does not apply to capacitance derating, which is handled separately
+        # this old style is deprecated and emits a DeprecationWarning when used
+        # this specifies voltage as a derating factor, so 0.5 requires a voltage rating > 2x the operating voltage
         self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
+
+        # 2x is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
+        # this does not apply to capacitance derating, which is handled separately
+        self.voltage_margin = self.ArgParameter(
+            voltage_margin, doc="voltage rating margin, eg 2.0 means voltage rating is >2x operating voltage"
+        )
 
         # indicates whether the capacitance is exact (True) or nominal (False - typical case)
         # in particular, nominal capacitance does not capacitance derate
@@ -204,7 +210,9 @@ class TableCapacitor(PartsTableSelector, Capacitor):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
+        self.generator_param(
+            self.capacitance, self.voltage, self.voltage_rating_derating, self.voltage_margin, self.exact_capacitance
+        )
 
     @override
     def _row_generate(self, row: PartsTableRow) -> None:
@@ -214,7 +222,16 @@ class TableCapacitor(PartsTableSelector, Capacitor):
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+        if math.isinf(self.get(self.voltage_rating_derating)):
+            derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+            warnings.warn(
+                f"voltage_rating_derating is deprecated and should be replaced with voltage_margin",
+                DeprecationWarning,
+            )
+            assert self.get(self.voltage_margin) == 2.0, "cannot use both voltage_rating_derating and voltage_margin"
+        else:
+            derated_voltage = self.get(self.voltage) * self.get(self.voltage_margin)
+
         return (
             super()._row_filter(row)
             and derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING])
