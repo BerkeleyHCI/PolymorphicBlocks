@@ -7,6 +7,7 @@ Package : edg.common
 This is where we keep shared types that we reuse and don't have a
 good place for.
 """
+
 from collections import abc as _abc
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -15,6 +16,7 @@ from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 import builtins as _builtins
 import sys
 import typing as _typing
+
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -24,6 +26,7 @@ DESCRIPTOR: _descriptor.FileDescriptor
 @_typing.final
 class Metadata(_message.Message):
     """* Arbitrary metadata stored in tree form."""
+
     DESCRIPTOR: _descriptor.Descriptor
 
     @_typing.final
@@ -38,31 +41,24 @@ class Metadata(_message.Message):
             key: _builtins.str
 
             @_builtins.property
-            def value(self) -> Global___Metadata:
-                ...
+            def value(self) -> Global___Metadata: ...
+            def __init__(self, *, key: _builtins.str = ..., value: Global___Metadata | None = ...) -> None: ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-            def __init__(self, *, key: _builtins.str=..., value: Global___Metadata | None=...) -> None:
-                ...
-            _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
 
-            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-                ...
-            _ClearFieldArgType: _TypeAlias = _typing.Literal['key', b'key', 'value', b'value']
+            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-            def ClearField(self, field_name: _ClearFieldArgType) -> None:
-                ...
         NODE_FIELD_NUMBER: _builtins.int
 
         @_builtins.property
-        def node(self) -> _containers.MessageMap[_builtins.str, Global___Metadata]:
-            ...
+        def node(self) -> _containers.MessageMap[_builtins.str, Global___Metadata]: ...
+        def __init__(self, *, node: _abc.Mapping[_builtins.str, Global___Metadata] | None = ...) -> None: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["node", b"node"]
 
-        def __init__(self, *, node: _abc.Mapping[_builtins.str, Global___Metadata] | None=...) -> None:
-            ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal['node', b'node']
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None:
-            ...
     UNKNOWN_FIELD_NUMBER: _builtins.int
     KNOWN_FIELD_NUMBER: _builtins.int
     MEMBERS_FIELD_NUMBER: _builtins.int
@@ -73,16 +69,12 @@ class Metadata(_message.Message):
     known: _builtins.str
     text_leaf: _builtins.str
     bin_leaf: _builtins.bytes
-    '* I wanted to split binary and text data, since we might\n    just want to dump a raw file/image/datasheet in here\n    for safekeeping.\n\n    Mixing up binary and textual formats is just a recipe\n    for trouble.\n    '
+    "* I wanted to split binary and text data, since we might\n    just want to dump a raw file/image/datasheet in here\n    for safekeeping.\n\n    Mixing up binary and textual formats is just a recipe\n    for trouble.\n    "
 
     @_builtins.property
-    def unknown(self) -> Global___Empty:
-        ...
-
+    def unknown(self) -> Global___Empty: ...
     @_builtins.property
-    def members(self) -> Global___Metadata.Members:
-        ...
-
+    def members(self) -> Global___Metadata.Members: ...
     @_builtins.property
     def source_locator(self) -> Global___SourceLocator:
         """Defined formats
@@ -91,31 +83,74 @@ class Metadata(_message.Message):
         """
 
     @_builtins.property
-    def error(self) -> Global___Error:
-        ...
+    def error(self) -> Global___Error: ...
+    def __init__(
+        self,
+        *,
+        unknown: Global___Empty | None = ...,
+        known: _builtins.str = ...,
+        members: Global___Metadata.Members | None = ...,
+        text_leaf: _builtins.str = ...,
+        bin_leaf: _builtins.bytes = ...,
+        source_locator: Global___SourceLocator | None = ...,
+        error: Global___Error | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "bin_leaf",
+        b"bin_leaf",
+        "error",
+        b"error",
+        "known",
+        b"known",
+        "members",
+        b"members",
+        "meta",
+        b"meta",
+        "source_locator",
+        b"source_locator",
+        "text_leaf",
+        b"text_leaf",
+        "type",
+        b"type",
+        "unknown",
+        b"unknown",
+    ]
 
-    def __init__(self, *, unknown: Global___Empty | None=..., known: _builtins.str=..., members: Global___Metadata.Members | None=..., text_leaf: _builtins.str=..., bin_leaf: _builtins.bytes=..., source_locator: Global___SourceLocator | None=..., error: Global___Error | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['bin_leaf', b'bin_leaf', 'error', b'error', 'known', b'known', 'members', b'members', 'meta', b'meta', 'source_locator', b'source_locator', 'text_leaf', b'text_leaf', 'type', b'type', 'unknown', b'unknown']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "bin_leaf",
+        b"bin_leaf",
+        "error",
+        b"error",
+        "known",
+        b"known",
+        "members",
+        b"members",
+        "meta",
+        b"meta",
+        "source_locator",
+        b"source_locator",
+        "text_leaf",
+        b"text_leaf",
+        "type",
+        b"type",
+        "unknown",
+        b"unknown",
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['bin_leaf', b'bin_leaf', 'error', b'error', 'known', b'known', 'members', b'members', 'meta', b'meta', 'source_locator', b'source_locator', 'text_leaf', b'text_leaf', 'type', b'type', 'unknown', b'unknown']
-
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_meta: _TypeAlias = _typing.Literal['members', 'text_leaf', 'bin_leaf', 'source_locator', 'error']
-    _WhichOneofArgType_meta: _TypeAlias = _typing.Literal['meta', b'meta']
-    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal['unknown', 'known']
-    _WhichOneofArgType_type: _TypeAlias = _typing.Literal['type', b'type']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_meta: _TypeAlias = _typing.Literal[
+        "members", "text_leaf", "bin_leaf", "source_locator", "error"
+    ]
+    _WhichOneofArgType_meta: _TypeAlias = _typing.Literal["meta", b"meta"]
+    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal["unknown", "known"]
+    _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
 
     @_typing.overload
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_meta) -> _WhichOneofReturnType_meta | None:
-        ...
-
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_meta) -> _WhichOneofReturnType_meta | None: ...
     @_typing.overload
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None:
-        ...
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None: ...
+
 Global___Metadata: _TypeAlias = Metadata
 
 @_typing.final
@@ -124,45 +159,62 @@ class SourceLocator(_message.Message):
 
     * For locating source data
     """
+
     DESCRIPTOR: _descriptor.Descriptor
 
     class _SourceType:
-        ValueType = _typing.NewType('ValueType', _builtins.int)
+        ValueType = _typing.NewType("ValueType", _builtins.int)
         V: _TypeAlias = ValueType
 
-    class _SourceTypeEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[SourceLocator._SourceType.ValueType], _builtins.type):
+    class _SourceTypeEnumTypeWrapper(
+        _enum_type_wrapper._EnumTypeWrapper[SourceLocator._SourceType.ValueType], _builtins.type
+    ):
         DESCRIPTOR: _descriptor.EnumDescriptor
         UNKNOWN: SourceLocator._SourceType.ValueType
         DEFINITION: SourceLocator._SourceType.ValueType
-        'source defining this class, would be present in library'
+        "source defining this class, would be present in library"
         INSTANTIATION: SourceLocator._SourceType.ValueType
-        'source of instantiation, would be present in design'
+        "source of instantiation, would be present in design"
 
-    class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper):
-        ...
+    class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper): ...
     UNKNOWN: SourceLocator.SourceType.ValueType
     DEFINITION: SourceLocator.SourceType.ValueType
-    'source defining this class, would be present in library'
+    "source defining this class, would be present in library"
     INSTANTIATION: SourceLocator.SourceType.ValueType
-    'source of instantiation, would be present in design'
+    "source of instantiation, would be present in design"
     FILE_PACKAGE_FIELD_NUMBER: _builtins.int
     LINE_OFFSET_FIELD_NUMBER: _builtins.int
     COL_OFFSET_FIELD_NUMBER: _builtins.int
     SOURCE_TYPE_FIELD_NUMBER: _builtins.int
     file_package: _builtins.str
-    'package name (portable, not tied to an absolute path) that locates the file'
+    "package name (portable, not tied to an absolute path) that locates the file"
     line_offset: _builtins.int
-    'line number'
+    "line number"
     col_offset: _builtins.int
-    'character offset within the line'
+    "character offset within the line"
     source_type: Global___SourceLocator.SourceType.ValueType
 
-    def __init__(self, *, file_package: _builtins.str=..., line_offset: _builtins.int=..., col_offset: _builtins.int=..., source_type: Global___SourceLocator.SourceType.ValueType=...) -> None:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['col_offset', b'col_offset', 'file_package', b'file_package', 'line_offset', b'line_offset', 'source_type', b'source_type']
+    def __init__(
+        self,
+        *,
+        file_package: _builtins.str = ...,
+        line_offset: _builtins.int = ...,
+        col_offset: _builtins.int = ...,
+        source_type: Global___SourceLocator.SourceType.ValueType = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "col_offset",
+        b"col_offset",
+        "file_package",
+        b"file_package",
+        "line_offset",
+        b"line_offset",
+        "source_type",
+        b"source_type",
+    ]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
 Global___SourceLocator: _TypeAlias = SourceLocator
 
 @_typing.final
@@ -170,32 +222,41 @@ class Error(_message.Message):
     """* Used to communicate results of analysis / checking passes.
     Limited to Block and Link objects.
     """
+
     DESCRIPTOR: _descriptor.Descriptor
     MESSAGE_FIELD_NUMBER: _builtins.int
     TRACEBACK_FIELD_NUMBER: _builtins.int
     SOURCE_FIELD_NUMBER: _builtins.int
     message: _builtins.str
-    'free-form error message'
+    "free-form error message"
     traceback: _builtins.str
-    'full traceback  TODO: should there be a structured stack trace?'
+    "full traceback  TODO: should there be a structured stack trace?"
 
     @_builtins.property
     def source(self) -> _containers.RepeatedCompositeFieldContainer[Global___SourceLocator]:
         """source locator, eg line of failing constraint"""
 
-    def __init__(self, *, message: _builtins.str=..., traceback: _builtins.str=..., source: _abc.Iterable[Global___SourceLocator] | None=...) -> None:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['message', b'message', 'source', b'source', 'traceback', b'traceback']
+    def __init__(
+        self,
+        *,
+        message: _builtins.str = ...,
+        traceback: _builtins.str = ...,
+        source: _abc.Iterable[Global___SourceLocator] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "message", b"message", "source", b"source", "traceback", b"traceback"
+    ]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
 Global___Error: _TypeAlias = Error
 
 @_typing.final
 class Empty(_message.Message):
     """* Placeholder until I figure out how to import properly"""
+
     DESCRIPTOR: _descriptor.Descriptor
 
-    def __init__(self) -> None:
-        ...
+    def __init__(self) -> None: ...
+
 Global___Empty: _TypeAlias = Empty

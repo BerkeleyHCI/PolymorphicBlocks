@@ -13,6 +13,7 @@ We don't strictly differentiate between library elements and
 elements within a design within the protobuf. In general, when
 there is a library element, we
 """
+
 from collections import abc as _abc
 from edgir import common_pb2 as _common_pb2
 from edgir import expr_pb2 as _expr_pb2
@@ -24,6 +25,7 @@ from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
+
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -36,25 +38,22 @@ class NamedValInit(_message.Message):
     are unordered (whereas we want to preserve ordering to preserve design intent
     through the compiler), we use a sequence of these pairs.
     """
+
     DESCRIPTOR: _descriptor.Descriptor
     NAME_FIELD_NUMBER: _builtins.int
     VALUE_FIELD_NUMBER: _builtins.int
     name: _builtins.str
 
     @_builtins.property
-    def value(self) -> _init_pb2.ValInit:
-        ...
+    def value(self) -> _init_pb2.ValInit: ...
+    def __init__(self, *, name: _builtins.str = ..., value: _init_pb2.ValInit | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    def __init__(self, *, name: _builtins.str=..., value: _init_pb2.ValInit | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "value", b"value"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name', 'value', b'value']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___NamedValInit: _TypeAlias = NamedValInit
 
 @_typing.final
@@ -65,19 +64,15 @@ class NamedValueExpr(_message.Message):
     name: _builtins.str
 
     @_builtins.property
-    def value(self) -> _expr_pb2.ValueExpr:
-        ...
+    def value(self) -> _expr_pb2.ValueExpr: ...
+    def __init__(self, *, name: _builtins.str = ..., value: _expr_pb2.ValueExpr | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    def __init__(self, *, name: _builtins.str=..., value: _expr_pb2.ValueExpr | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "value", b"value"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name', 'value', b'value']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___NamedValueExpr: _TypeAlias = NamedValueExpr
 
 @_typing.final
@@ -88,19 +83,15 @@ class NamedPortLike(_message.Message):
     name: _builtins.str
 
     @_builtins.property
-    def value(self) -> Global___PortLike:
-        ...
+    def value(self) -> Global___PortLike: ...
+    def __init__(self, *, name: _builtins.str = ..., value: Global___PortLike | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    def __init__(self, *, name: _builtins.str=..., value: Global___PortLike | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "value", b"value"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name', 'value', b'value']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___NamedPortLike: _TypeAlias = NamedPortLike
 
 @_typing.final
@@ -111,19 +102,15 @@ class NamedBlockLike(_message.Message):
     name: _builtins.str
 
     @_builtins.property
-    def value(self) -> Global___BlockLike:
-        ...
+    def value(self) -> Global___BlockLike: ...
+    def __init__(self, *, name: _builtins.str = ..., value: Global___BlockLike | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    def __init__(self, *, name: _builtins.str=..., value: Global___BlockLike | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "value", b"value"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name', 'value', b'value']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___NamedBlockLike: _TypeAlias = NamedBlockLike
 
 @_typing.final
@@ -134,19 +121,15 @@ class NamedLinkLike(_message.Message):
     name: _builtins.str
 
     @_builtins.property
-    def value(self) -> Global___LinkLike:
-        ...
+    def value(self) -> Global___LinkLike: ...
+    def __init__(self, *, name: _builtins.str = ..., value: Global___LinkLike | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    def __init__(self, *, name: _builtins.str=..., value: Global___LinkLike | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "value", b"value"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name', 'value', b'value']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___NamedLinkLike: _TypeAlias = NamedLinkLike
 
 @_typing.final
@@ -161,21 +144,13 @@ class Port(_message.Message):
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]:
-        ...
-
+    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]: ...
     @_builtins.property
-    def constraints(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValueExpr]:
-        ...
-
+    def constraints(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValueExpr]: ...
     @_builtins.property
-    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]:
-        ...
-
+    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]: ...
     @_builtins.property
-    def self_class(self) -> _ref_pb2.LibraryPath:
-        ...
-
+    def self_class(self) -> _ref_pb2.LibraryPath: ...
     @_builtins.property
     def superclasses(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
@@ -188,16 +163,39 @@ class Port(_message.Message):
     def meta(self) -> _common_pb2.Metadata:
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
 
-    def __init__(self, *, params: _abc.Iterable[Global___NamedValInit] | None=..., constraints: _abc.Iterable[Global___NamedValueExpr] | None=..., ports: _abc.Iterable[Global___NamedPortLike] | None=..., self_class: _ref_pb2.LibraryPath | None=..., superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'self_class', b'self_class']
+    def __init__(
+        self,
+        *,
+        params: _abc.Iterable[Global___NamedValInit] | None = ...,
+        constraints: _abc.Iterable[Global___NamedValueExpr] | None = ...,
+        ports: _abc.Iterable[Global___NamedPortLike] | None = ...,
+        self_class: _ref_pb2.LibraryPath | None = ...,
+        superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "self_class", b"self_class"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['constraints', b'constraints', 'meta', b'meta', 'params', b'params', 'ports', b'ports', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "constraints",
+        b"constraints",
+        "meta",
+        b"meta",
+        "params",
+        b"params",
+        "ports",
+        b"ports",
+        "self_class",
+        b"self_class",
+        "super_superclasses",
+        b"super_superclasses",
+        "superclasses",
+        b"superclasses",
+    ]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
 Global___Port: _TypeAlias = Port
 
 @_typing.final
@@ -210,15 +208,12 @@ class PortArray(_message.Message):
         PORTS_FIELD_NUMBER: _builtins.int
 
         @_builtins.property
-        def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]:
-            ...
+        def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]: ...
+        def __init__(self, *, ports: _abc.Iterable[Global___NamedPortLike] | None = ...) -> None: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["ports", b"ports"]
 
-        def __init__(self, *, ports: _abc.Iterable[Global___NamedPortLike] | None=...) -> None:
-            ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal['ports', b'ports']
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None:
-            ...
     SELF_CLASS_FIELD_NUMBER: _builtins.int
     PORTS_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
@@ -230,33 +225,37 @@ class PortArray(_message.Message):
         """
 
     @_builtins.property
-    def ports(self) -> Global___PortArray.Ports:
-        ...
-
+    def ports(self) -> Global___PortArray.Ports: ...
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
+    def meta(self) -> _common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        self_class: _ref_pb2.LibraryPath | None = ...,
+        ports: Global___PortArray.Ports | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "contains", b"contains", "meta", b"meta", "ports", b"ports", "self_class", b"self_class"
+    ]
 
-    def __init__(self, *, self_class: _ref_pb2.LibraryPath | None=..., ports: Global___PortArray.Ports | None=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['contains', b'contains', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "contains", b"contains", "meta", b"meta", "ports", b"ports", "self_class", b"self_class"
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['contains', b'contains', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_contains: _TypeAlias = _typing.Literal["ports"]
+    _WhichOneofArgType_contains: _TypeAlias = _typing.Literal["contains", b"contains"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_contains: _TypeAlias = _typing.Literal['ports']
-    _WhichOneofArgType_contains: _TypeAlias = _typing.Literal['contains', b'contains']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_contains) -> _WhichOneofReturnType_contains | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_contains) -> _WhichOneofReturnType_contains | None:
-        ...
 Global___PortArray: _TypeAlias = PortArray
 
 @_typing.final
 class PortLike(_message.Message):
     """* Wrapper for different port like elements"""
+
     DESCRIPTOR: _descriptor.Descriptor
     UNDEFINED_FIELD_NUMBER: _builtins.int
     LIB_ELEM_FIELD_NUMBER: _builtins.int
@@ -264,36 +263,38 @@ class PortLike(_message.Message):
     ARRAY_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def undefined(self) -> _common_pb2.Empty:
-        ...
-
+    def undefined(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def lib_elem(self) -> _ref_pb2.LibraryPath:
-        ...
-
+    def lib_elem(self) -> _ref_pb2.LibraryPath: ...
     @_builtins.property
     def port(self) -> Global___Port:
         """* 'port' disallowed w/in the library"""
 
     @_builtins.property
-    def array(self) -> Global___PortArray:
-        ...
+    def array(self) -> Global___PortArray: ...
+    def __init__(
+        self,
+        *,
+        undefined: _common_pb2.Empty | None = ...,
+        lib_elem: _ref_pb2.LibraryPath | None = ...,
+        port: Global___Port | None = ...,
+        array: Global___PortArray | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "array", b"array", "is", b"is", "lib_elem", b"lib_elem", "port", b"port", "undefined", b"undefined"
+    ]
 
-    def __init__(self, *, undefined: _common_pb2.Empty | None=..., lib_elem: _ref_pb2.LibraryPath | None=..., port: Global___Port | None=..., array: Global___PortArray | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'is', b'is', 'lib_elem', b'lib_elem', 'port', b'port', 'undefined', b'undefined']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "array", b"array", "is", b"is", "lib_elem", b"lib_elem", "port", b"port", "undefined", b"undefined"
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'is', b'is', 'lib_elem', b'lib_elem', 'port', b'port', 'undefined', b'undefined']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_is: _TypeAlias = _typing.Literal["undefined", "lib_elem", "port", "array"]
+    _WhichOneofArgType_is: _TypeAlias = _typing.Literal["is", b"is"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_is: _TypeAlias = _typing.Literal['undefined', 'lib_elem', 'port', 'array']
-    _WhichOneofArgType_is: _TypeAlias = _typing.Literal['is', b'is']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_is) -> _WhichOneofReturnType_is | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_is) -> _WhichOneofReturnType_is | None:
-        ...
 Global___PortLike: _TypeAlias = PortLike
 
 @_typing.final
@@ -304,19 +305,15 @@ class Parameter(_message.Message):
     unit: _builtins.str
 
     @_builtins.property
-    def path(self) -> _ref_pb2.LocalPath:
-        ...
+    def path(self) -> _ref_pb2.LocalPath: ...
+    def __init__(self, *, path: _ref_pb2.LocalPath | None = ..., unit: _builtins.str = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["path", b"path"]
 
-    def __init__(self, *, path: _ref_pb2.LocalPath | None=..., unit: _builtins.str=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['path', b'path']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["path", b"path", "unit", b"unit"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['path', b'path', 'unit', b'unit']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___Parameter: _TypeAlias = Parameter
 
 @_typing.final
@@ -327,24 +324,19 @@ class StringDescriptionElement(_message.Message):
     text: _builtins.str
 
     @_builtins.property
-    def param(self) -> Global___Parameter:
-        ...
+    def param(self) -> Global___Parameter: ...
+    def __init__(self, *, text: _builtins.str = ..., param: Global___Parameter | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ElementType", b"ElementType", "param", b"param", "text", b"text"]
 
-    def __init__(self, *, text: _builtins.str=..., param: Global___Parameter | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['ElementType', b'ElementType', 'param', b'param', 'text', b'text']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["ElementType", b"ElementType", "param", b"param", "text", b"text"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['ElementType', b'ElementType', 'param', b'param', 'text', b'text']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_ElementType: _TypeAlias = _typing.Literal["text", "param"]
+    _WhichOneofArgType_ElementType: _TypeAlias = _typing.Literal["ElementType", b"ElementType"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_ElementType: _TypeAlias = _typing.Literal['text', 'param']
-    _WhichOneofArgType_ElementType: _TypeAlias = _typing.Literal['ElementType', b'ElementType']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_ElementType) -> _WhichOneofReturnType_ElementType | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_ElementType) -> _WhichOneofReturnType_ElementType | None:
-        ...
 Global___StringDescriptionElement: _TypeAlias = StringDescriptionElement
 
 @_typing.final
@@ -359,19 +351,15 @@ class HierarchyBlock(_message.Message):
         key: _builtins.str
 
         @_builtins.property
-        def value(self) -> _expr_pb2.ValueExpr:
-            ...
+        def value(self) -> _expr_pb2.ValueExpr: ...
+        def __init__(self, *, key: _builtins.str = ..., value: _expr_pb2.ValueExpr | None = ...) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-        def __init__(self, *, key: _builtins.str=..., value: _expr_pb2.ValueExpr | None=...) -> None:
-            ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal['value', b'value']
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
 
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-            ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal['key', b'key', 'value', b'value']
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None:
-            ...
     PARAMS_FIELD_NUMBER: _builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: _builtins.int
     PORTS_FIELD_NUMBER: _builtins.int
@@ -389,12 +377,10 @@ class HierarchyBlock(_message.Message):
     META_FIELD_NUMBER: _builtins.int
     DESCRIPTION_FIELD_NUMBER: _builtins.int
     is_abstract: _builtins.bool
-    'true if self_class is abstract, and should error if used in a design'
+    "true if self_class is abstract, and should error if used in a design"
 
     @_builtins.property
-    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]:
-        ...
-
+    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]: ...
     @_builtins.property
     def param_defaults(self) -> _containers.MessageMap[_builtins.str, _expr_pb2.ValueExpr]:
         """Refinements may introduce new parameters which would not be assigned a value in the parent class.
@@ -403,9 +389,7 @@ class HierarchyBlock(_message.Message):
         """
 
     @_builtins.property
-    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]:
-        ...
-
+    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]: ...
     @_builtins.property
     def blocks(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedBlockLike]:
         """* Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
@@ -414,9 +398,7 @@ class HierarchyBlock(_message.Message):
         """
 
     @_builtins.property
-    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]:
-        ...
-
+    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]: ...
     @_builtins.property
     def constraints(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValueExpr]:
         """* Connections between internal block and link ports are represented by connected constraints.
@@ -452,23 +434,80 @@ class HierarchyBlock(_message.Message):
         """optional default refinement subclass, only valid for library blocks"""
 
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
-
+    def meta(self) -> _common_pb2.Metadata: ...
     @_builtins.property
-    def description(self) -> _containers.RepeatedCompositeFieldContainer[Global___StringDescriptionElement]:
-        ...
+    def description(self) -> _containers.RepeatedCompositeFieldContainer[Global___StringDescriptionElement]: ...
+    def __init__(
+        self,
+        *,
+        params: _abc.Iterable[Global___NamedValInit] | None = ...,
+        param_defaults: _abc.Mapping[_builtins.str, _expr_pb2.ValueExpr] | None = ...,
+        ports: _abc.Iterable[Global___NamedPortLike] | None = ...,
+        blocks: _abc.Iterable[Global___NamedBlockLike] | None = ...,
+        links: _abc.Iterable[Global___NamedLinkLike] | None = ...,
+        constraints: _abc.Iterable[Global___NamedValueExpr] | None = ...,
+        self_class: _ref_pb2.LibraryPath | None = ...,
+        superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        prerefine_class: _ref_pb2.LibraryPath | None = ...,
+        prerefine_mixins: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        generator: Global___Generator | None = ...,
+        is_abstract: _builtins.bool = ...,
+        default_refinement: _ref_pb2.LibraryPath | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+        description: _abc.Iterable[Global___StringDescriptionElement] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "default_refinement",
+        b"default_refinement",
+        "generator",
+        b"generator",
+        "meta",
+        b"meta",
+        "prerefine_class",
+        b"prerefine_class",
+        "self_class",
+        b"self_class",
+    ]
 
-    def __init__(self, *, params: _abc.Iterable[Global___NamedValInit] | None=..., param_defaults: _abc.Mapping[_builtins.str, _expr_pb2.ValueExpr] | None=..., ports: _abc.Iterable[Global___NamedPortLike] | None=..., blocks: _abc.Iterable[Global___NamedBlockLike] | None=..., links: _abc.Iterable[Global___NamedLinkLike] | None=..., constraints: _abc.Iterable[Global___NamedValueExpr] | None=..., self_class: _ref_pb2.LibraryPath | None=..., superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., prerefine_class: _ref_pb2.LibraryPath | None=..., prerefine_mixins: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., generator: Global___Generator | None=..., is_abstract: _builtins.bool=..., default_refinement: _ref_pb2.LibraryPath | None=..., meta: _common_pb2.Metadata | None=..., description: _abc.Iterable[Global___StringDescriptionElement] | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['default_refinement', b'default_refinement', 'generator', b'generator', 'meta', b'meta', 'prerefine_class', b'prerefine_class', 'self_class', b'self_class']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "blocks",
+        b"blocks",
+        "constraints",
+        b"constraints",
+        "default_refinement",
+        b"default_refinement",
+        "description",
+        b"description",
+        "generator",
+        b"generator",
+        "is_abstract",
+        b"is_abstract",
+        "links",
+        b"links",
+        "meta",
+        b"meta",
+        "param_defaults",
+        b"param_defaults",
+        "params",
+        b"params",
+        "ports",
+        b"ports",
+        "prerefine_class",
+        b"prerefine_class",
+        "prerefine_mixins",
+        b"prerefine_mixins",
+        "self_class",
+        b"self_class",
+        "super_superclasses",
+        b"super_superclasses",
+        "superclasses",
+        b"superclasses",
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['blocks', b'blocks', 'constraints', b'constraints', 'default_refinement', b'default_refinement', 'description', b'description', 'generator', b'generator', 'is_abstract', b'is_abstract', 'links', b'links', 'meta', b'meta', 'param_defaults', b'param_defaults', 'params', b'params', 'ports', b'ports', 'prerefine_class', b'prerefine_class', 'prerefine_mixins', b'prerefine_mixins', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___HierarchyBlock: _TypeAlias = HierarchyBlock
 
 @_typing.final
@@ -482,12 +521,11 @@ class Generator(_message.Message):
         These parameters are the only ones accessible to the generator.
         """
 
-    def __init__(self, *, required_params: _abc.Iterable[_ref_pb2.LocalPath] | None=...) -> None:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['required_params', b'required_params']
+    def __init__(self, *, required_params: _abc.Iterable[_ref_pb2.LocalPath] | None = ...) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["required_params", b"required_params"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
 Global___Generator: _TypeAlias = Generator
 
 @_typing.final
@@ -497,23 +535,19 @@ class BlockLibrary(_message.Message):
     MIXINS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def base(self) -> _ref_pb2.LibraryPath:
-        ...
-
+    def base(self) -> _ref_pb2.LibraryPath: ...
     @_builtins.property
-    def mixins(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]:
-        ...
+    def mixins(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]: ...
+    def __init__(
+        self, *, base: _ref_pb2.LibraryPath | None = ..., mixins: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["base", b"base"]
 
-    def __init__(self, *, base: _ref_pb2.LibraryPath | None=..., mixins: _abc.Iterable[_ref_pb2.LibraryPath] | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['base', b'base']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["base", b"base", "mixins", b"mixins"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['base', b'base', 'mixins', b'mixins']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___BlockLibrary: _TypeAlias = BlockLibrary
 
 @_typing.final
@@ -524,32 +558,35 @@ class BlockLike(_message.Message):
     HIERARCHY_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def undefined(self) -> _common_pb2.Empty:
-        ...
-
+    def undefined(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def lib_elem(self) -> Global___BlockLibrary:
-        ...
-
+    def lib_elem(self) -> Global___BlockLibrary: ...
     @_builtins.property
     def hierarchy(self) -> Global___HierarchyBlock:
         """* not allowed w/in the library"""
 
-    def __init__(self, *, undefined: _common_pb2.Empty | None=..., lib_elem: Global___BlockLibrary | None=..., hierarchy: Global___HierarchyBlock | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['hierarchy', b'hierarchy', 'lib_elem', b'lib_elem', 'type', b'type', 'undefined', b'undefined']
+    def __init__(
+        self,
+        *,
+        undefined: _common_pb2.Empty | None = ...,
+        lib_elem: Global___BlockLibrary | None = ...,
+        hierarchy: Global___HierarchyBlock | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "hierarchy", b"hierarchy", "lib_elem", b"lib_elem", "type", b"type", "undefined", b"undefined"
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['hierarchy', b'hierarchy', 'lib_elem', b'lib_elem', 'type', b'type', 'undefined', b'undefined']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "hierarchy", b"hierarchy", "lib_elem", b"lib_elem", "type", b"type", "undefined", b"undefined"
+    ]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal['undefined', 'lib_elem', 'hierarchy']
-    _WhichOneofArgType_type: _TypeAlias = _typing.Literal['type', b'type']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal["undefined", "lib_elem", "hierarchy"]
+    _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None:
-        ...
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None: ...
+
 Global___BlockLike: _TypeAlias = BlockLike
 
 @_typing.final
@@ -566,25 +603,15 @@ class Link(_message.Message):
     DESCRIPTION_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]:
-        ...
-
+    def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]: ...
     @_builtins.property
-    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]:
-        ...
-
+    def ports(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedPortLike]: ...
     @_builtins.property
-    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]:
-        ...
-
+    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]: ...
     @_builtins.property
-    def constraints(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValueExpr]:
-        ...
-
+    def constraints(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValueExpr]: ...
     @_builtins.property
-    def self_class(self) -> _ref_pb2.LibraryPath:
-        ...
-
+    def self_class(self) -> _ref_pb2.LibraryPath: ...
     @_builtins.property
     def superclasses(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
@@ -598,19 +625,46 @@ class Link(_message.Message):
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
 
     @_builtins.property
-    def description(self) -> _containers.RepeatedCompositeFieldContainer[Global___StringDescriptionElement]:
-        ...
+    def description(self) -> _containers.RepeatedCompositeFieldContainer[Global___StringDescriptionElement]: ...
+    def __init__(
+        self,
+        *,
+        params: _abc.Iterable[Global___NamedValInit] | None = ...,
+        ports: _abc.Iterable[Global___NamedPortLike] | None = ...,
+        links: _abc.Iterable[Global___NamedLinkLike] | None = ...,
+        constraints: _abc.Iterable[Global___NamedValueExpr] | None = ...,
+        self_class: _ref_pb2.LibraryPath | None = ...,
+        superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+        description: _abc.Iterable[Global___StringDescriptionElement] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "self_class", b"self_class"]
 
-    def __init__(self, *, params: _abc.Iterable[Global___NamedValInit] | None=..., ports: _abc.Iterable[Global___NamedPortLike] | None=..., links: _abc.Iterable[Global___NamedLinkLike] | None=..., constraints: _abc.Iterable[Global___NamedValueExpr] | None=..., self_class: _ref_pb2.LibraryPath | None=..., superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., super_superclasses: _abc.Iterable[_ref_pb2.LibraryPath] | None=..., meta: _common_pb2.Metadata | None=..., description: _abc.Iterable[Global___StringDescriptionElement] | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'self_class', b'self_class']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "constraints",
+        b"constraints",
+        "description",
+        b"description",
+        "links",
+        b"links",
+        "meta",
+        b"meta",
+        "params",
+        b"params",
+        "ports",
+        b"ports",
+        "self_class",
+        b"self_class",
+        "super_superclasses",
+        b"super_superclasses",
+        "superclasses",
+        b"superclasses",
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['constraints', b'constraints', 'description', b'description', 'links', b'links', 'meta', b'meta', 'params', b'params', 'ports', b'ports', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___Link: _TypeAlias = Link
 
 @_typing.final
@@ -639,23 +693,36 @@ class LinkArray(_message.Message):
         """includes all exported constraints to map link ports to my ports"""
 
     @_builtins.property
-    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]:
-        ...
-
+    def links(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedLinkLike]: ...
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
+    def meta(self) -> _common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        self_class: _ref_pb2.LibraryPath | None = ...,
+        ports: _abc.Iterable[Global___NamedPortLike] | None = ...,
+        constraints: _abc.Iterable[Global___NamedValueExpr] | None = ...,
+        links: _abc.Iterable[Global___NamedLinkLike] | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "self_class", b"self_class"]
 
-    def __init__(self, *, self_class: _ref_pb2.LibraryPath | None=..., ports: _abc.Iterable[Global___NamedPortLike] | None=..., constraints: _abc.Iterable[Global___NamedValueExpr] | None=..., links: _abc.Iterable[Global___NamedLinkLike] | None=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'self_class', b'self_class']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "constraints",
+        b"constraints",
+        "links",
+        b"links",
+        "meta",
+        b"meta",
+        "ports",
+        b"ports",
+        "self_class",
+        b"self_class",
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['constraints', b'constraints', 'links', b'links', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___LinkArray: _TypeAlias = LinkArray
 
 @_typing.final
@@ -667,34 +734,36 @@ class LinkLike(_message.Message):
     ARRAY_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def undefined(self) -> _common_pb2.Empty:
-        ...
-
+    def undefined(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def lib_elem(self) -> _ref_pb2.LibraryPath:
-        ...
-
+    def lib_elem(self) -> _ref_pb2.LibraryPath: ...
     @_builtins.property
     def link(self) -> Global___Link:
         """* not allowed w/in the library"""
 
     @_builtins.property
-    def array(self) -> Global___LinkArray:
-        ...
+    def array(self) -> Global___LinkArray: ...
+    def __init__(
+        self,
+        *,
+        undefined: _common_pb2.Empty | None = ...,
+        lib_elem: _ref_pb2.LibraryPath | None = ...,
+        link: Global___Link | None = ...,
+        array: Global___LinkArray | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "array", b"array", "lib_elem", b"lib_elem", "link", b"link", "type", b"type", "undefined", b"undefined"
+    ]
 
-    def __init__(self, *, undefined: _common_pb2.Empty | None=..., lib_elem: _ref_pb2.LibraryPath | None=..., link: Global___Link | None=..., array: Global___LinkArray | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'lib_elem', b'lib_elem', 'link', b'link', 'type', b'type', 'undefined', b'undefined']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "array", b"array", "lib_elem", b"lib_elem", "link", b"link", "type", b"type", "undefined", b"undefined"
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'lib_elem', b'lib_elem', 'link', b'link', 'type', b'type', 'undefined', b'undefined']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal["undefined", "lib_elem", "link", "array"]
+    _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_type: _TypeAlias = _typing.Literal['undefined', 'lib_elem', 'link', 'array']
-    _WhichOneofArgType_type: _TypeAlias = _typing.Literal['type', b'type']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_type) -> _WhichOneofReturnType_type | None:
-        ...
 Global___LinkLike: _TypeAlias = LinkLike
