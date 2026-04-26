@@ -30,7 +30,7 @@ class UnpolarizedCapacitor(PassiveComponent):
         super().__init__()
 
         self.capacitance = self.ArgParameter(capacitance)
-        self.voltage = self.ArgParameter(voltage, doc="operating voltage range")
+        self.voltage = self.ArgParameter(voltage, doc="operating voltage range across the device")
 
         # this old style is deprecated and emits a DeprecationWarning when used
         # this specifies voltage as a derating factor, so 0.5 requires a voltage rating > 2x the operating voltage
@@ -39,7 +39,7 @@ class UnpolarizedCapacitor(PassiveComponent):
         # 2x is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
         # this does not apply to capacitance derating, which is handled separately
         self.voltage_margin = self.ArgParameter(
-            voltage_margin, doc="voltage rating margin, eg 2.0 means voltage rating is >2x operating voltage"
+            voltage_margin, doc="voltage rating margin, eg 2.0 means voltage rating >=2x operating voltage"
         )
 
         # indicates whether the capacitance is exact (True) or nominal (False - typical case)
@@ -222,12 +222,13 @@ class TableCapacitor(PartsTableSelector, Capacitor):
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        if math.isinf(self.get(self.voltage_rating_derating)):
+        if not math.isinf(self.get(self.voltage_rating_derating)):
             derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
             warnings.warn(
-                f"voltage_rating_derating is deprecated and should be replaced with voltage_margin",
+                f"voltage_rating_derating is deprecated and should be replaced with voltage_margin which has inverted semantics",
                 DeprecationWarning,
             )
+            # 2.0 must be sync'd up with the default value
             assert self.get(self.voltage_margin) == 2.0, "cannot use both voltage_rating_derating and voltage_margin"
         else:
             derated_voltage = self.get(self.voltage) * self.get(self.voltage_margin)
