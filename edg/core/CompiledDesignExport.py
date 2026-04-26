@@ -214,13 +214,13 @@ class CompiledDesignExportTransform(
         # post-process the json string to compactify the param dict and range lists
         # compress range lists onto one line
         json_str = re.sub(
-            r""""type":\s*"range",(\s*)"value":\s*\[\s*([\S]+),\s*([\S]+)\s*\]""",
-            lambda m: f""""type": "range",{m.group(1)}"value": [{m.group(2)}, {m.group(3)}]""",
+            r'"type":\s*"range",(\s*)"value":\s*\[\s*([\S]+),\s*([\S]+)\s*\]',
+            lambda m: rf'"type": "range",{m.group(1)}"value": [{m.group(2)}, {m.group(3)}]',
             json_str,
         )
         json_str = re.sub(
-            r"""\{\s*"type":\s*"(\S+)",\s*"value":\s*(.+)\s*\}""",
-            lambda m: f"""{{ "type": "{m.group(1)}", "value": {m.group(2)} }}""",
+            r'\{\s*"type":\s*"(\S+)",\s*"value":\s*(.+)\s*\}',
+            lambda m: rf'{{ "type": "{m.group(1)}", "value": {m.group(2)} }}',
             json_str,
         )
         return json_str
