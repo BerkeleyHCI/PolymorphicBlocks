@@ -185,10 +185,7 @@ class IotLedDriver(JlcBoardTop):
                     ["led_drv[3]", "power_path", "inductor", "manual_frequency_rating"],
                     ParamValue(["led_drv[0]", "power_path", "inductor", "manual_frequency_rating"]),
                 ),
-                (
-                    ["reg_3v3", "power_path", "in_cap", "cap", "voltage_rating_derating"],
-                    0.80,
-                ),  # use a 1206 25 oe 35v part
+                (["reg_3v3", "power_path", "in_cap", "cap", "voltage_margin"], 1.25),  # use a 1206 25 oe 35v part
                 (["qwiic", "pwr", "current_draw"], Range(0.0, 0.08)),  # use 1210 inductor
                 (
                     ["mcu", "pi", "c1", "footprint_area"],

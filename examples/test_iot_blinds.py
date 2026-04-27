@@ -167,7 +167,7 @@ class IotRollerBlinds(JlcBoardTop):
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 9e6)),
                 (["drv", "isen_res", "res", "footprint_spec"], "Resistor_SMD:R_1206_3216Metric"),
                 (["drv", "isen_res", "res", "require_basic_part"], False),
-                (["reg_3v3", "power_path", "in_cap", "cap", "voltage_rating_derating"], 1.0),
+                (["reg_3v3", "power_path", "in_cap", "cap", "voltage_margin"], 1.0),
                 # 15uH inductors are more common
                 (["reg_3v3", "power_path", "inductor", "inductance"], Range.from_tolerance(15e-6, 0.2)),
             ],
@@ -319,7 +319,7 @@ class IotCurtainCrawler(JlcBoardTop):
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 9e6)),
                 (["drv", "isen_res", "res", "footprint_spec"], "Resistor_SMD:R_1206_3216Metric"),
                 (["drv", "isen_res", "res", "require_basic_part"], False),
-                (["reg_3v3", "power_path", "in_cap", "cap", "voltage_rating_derating"], 1.0),
+                (["reg_3v3", "power_path", "in_cap", "cap", "voltage_margin"], 1.0),
                 # 15uH inductors are more common
                 (["reg_3v3", "power_path", "inductor", "inductance"], Range.from_tolerance(15e-6, 0.2)),
             ],
