@@ -593,7 +593,7 @@ class Fcml(JlcBoardTop):
                 (Fet, ["footprint_spec"], "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"),  # don't seem to be alternatives
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
                 # for compatibility, this board was laid out before derating was supported and does not compile otherwise
-                (Capacitor, ["voltage_rating_derating"], 1.0),
+                (Capacitor, ["voltage_margin"], 1.0),
             ],
         )
 

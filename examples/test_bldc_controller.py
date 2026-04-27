@@ -247,8 +247,8 @@ class BldcController(JlcBoardTop):
                     ["bldc_drv", "pgnd_res[3]", "res", "res", "footprint_spec"],
                     ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "footprint_spec"]),
                 ),
-                (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
-                (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
+                (["bldc_drv", "vm_cap_bulk", "cap", "voltage_margin"], 1.5),  # allow using a 50V cap
+                (["bldc_drv", "cp_cap", "voltage_margin"], 1.5),  # allow using a 50V cap
                 (["hall", "pwr", "voltage_limits"], Range(4, 5.5)),  # allow with the Feather Vbus diode drop
             ],
             class_refinements=[
