@@ -23,7 +23,7 @@ class UnpolarizedCapacitor(PassiveComponent):
         capacitance: RangeLike,
         voltage: RangeLike,
         *,
-        voltage_rating_derating: FloatLike = float("-inf"),
+        voltage_rating_derating: FloatLike = float("nan"),
         voltage_margin: FloatLike = 2.0,
         exact_capacitance: BoolLike = False,
     ) -> None:
@@ -222,7 +222,7 @@ class TableCapacitor(PartsTableSelector, Capacitor):
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        if not math.isinf(self.get(self.voltage_rating_derating)):
+        if not math.isnan(self.get(self.voltage_rating_derating)):
             derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
             warnings.warn(
                 f"voltage_rating_derating is deprecated and should be replaced with voltage_margin which has inverted semantics",
