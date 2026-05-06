@@ -345,6 +345,19 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
         return self._def_to_proto()
 
+    def _add_doc_metadata(self) -> None:
+        """Adds docstrings to metadata"""
+        metadata_dict: Dict[str, str] = {}
+        if self.__doc__:
+            metadata_dict[""] = inspect.cleandoc(self.__doc__)
+        for name, param in self._parameters.items():
+            if param in self._param_docs:
+                metadata_dict[name] = self._param_docs[param]
+        for name, port in self._ports.items():
+            if port in self._port_docs:
+                metadata_dict[name] = self._port_docs[port]
+        self._docs = self.Metadata(metadata_dict)
+
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
         """Populates the structural parts of a block proto: parameters, ports, superclasses"""
         assert (
@@ -392,6 +405,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
         self._constraints.finalize()  # needed for source locator generation
 
+        self._add_doc_metadata()
         self._populate_metadata(pb.meta, self._metadata, ref_map)
 
     def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
