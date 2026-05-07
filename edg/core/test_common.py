@@ -35,9 +35,11 @@ class TestPortSink(TestPortBase):
 
 
 class TestBlockSink(Block):
+    """Sink block"""
+
     def __init__(self) -> None:
         super().__init__()
-        self.sink = self.Port(TestPortSink(), optional=True)
+        self.sink = self.Port(TestPortSink(), optional=True, doc="Sink port")
 
 
 ImplicitSink = PortTag(TestPortSink)
@@ -50,9 +52,11 @@ class TestBlockImplicitSink(Block):
 
 
 class TestBlockSource(Block):
+    """Source block"""
+
     def __init__(self) -> None:
         super().__init__()
-        self.source = self.Port(TestPortSource(), optional=True)
+        self.source = self.Port(TestPortSource(), optional=True, doc="Source port")
 
 
 def problem_name_from_module_file(file: str) -> str:

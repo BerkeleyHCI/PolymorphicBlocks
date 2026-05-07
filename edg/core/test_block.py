@@ -31,12 +31,14 @@ class TestBlockSecondNonLibrary(TestBlockSecondSub):  # test that it can skip th
 
 
 class TestBlock(TestBlockBase, TestBlockSecondNonLibrary):
+    """Test docstring"""
+
     def __init__(self) -> None:
         super().__init__()
-        self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
+        self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)), doc="range with initializer")
         self.array_init = self.Parameter(ArrayBoolExpr([False, True, False]))
         self.array_empty = self.Parameter(ArrayStringExpr([]))
-        self.port_lit = self.Port(TestPortBase(117), optional=True)
+        self.port_lit = self.Port(TestPortBase(117), optional=True, doc="port with initializer")
 
 
 class BlockBaseProtoTestCase(unittest.TestCase):
@@ -153,3 +155,10 @@ class BlockProtoTestCase(unittest.TestCase):
         expected_assign.assign.src.array.SetInParent()
         self.assertEqual(self.pb.constraints[5].name, "(init)array_empty")
         self.assertEqual(self.pb.constraints[5].value, expected_assign)
+
+    def test_docs(self) -> None:
+        self.assertEqual(self.pb.meta.members.node["_docs"].members.node[""].text_leaf, "Test docstring")
+        self.assertEqual(
+            self.pb.meta.members.node["_docs"].members.node["range_init"].text_leaf, "range with initializer"
+        )
+        self.assertEqual(self.pb.meta.members.node["_docs"].members.node["port_lit"].text_leaf, "port with initializer")
