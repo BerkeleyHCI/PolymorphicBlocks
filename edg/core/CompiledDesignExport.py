@@ -19,11 +19,12 @@ class CompiledParam(BaseModel):
     # this is minimalistic so the output json is more compact
     type: str
     value: Optional[Any]  # solved value, if available
-    doc: Optional[str]  # doc specified by its parent block, if available
+    doc: Optional[str] = None  # doc specified by its parent block, if available
 
 
-class CompiledPortArray(RootModel[Dict[str, Union["CompiledPort", "CompiledPortArray"]]]):
-    pass
+class CompiledPortArray(BaseModel):
+    doc: Optional[str] = None  # doc specified by its parent block, if available
+    elts: Dict[str, Union["CompiledPort", "CompiledPortArray"]]
 
 
 class CompiledPort(BaseModel):
@@ -32,7 +33,7 @@ class CompiledPort(BaseModel):
     # path of connected port, if connected
     # for block ports, this is the link, if connected to one
     connected_path: Optional[Union[PathType, List[PathType]]]
-    doc: Optional[str]  # doc specified by its parent block, if available
+    doc: Optional[str] = None  # doc specified by its parent block, if available
     # note, link ports do not have parameters (they inherit parameters from connected ports and are deduplicated here)
     params: Dict[str, CompiledParam]
     ports: Dict[str, Union["CompiledPort", CompiledPortArray]]
@@ -50,7 +51,7 @@ class CompiledBlock(BaseModel):
     path: PathType  # provide the full path to allow searchability
     cls: str  # self class
     superclasses: List[str]  # all superclasses
-    doc: Optional[str]  # docstring, if available
+    doc: Optional[str] = None  # docstring, if available
     params: Dict[str, CompiledParam]
     ports: Dict[str, Union[CompiledPortArray, CompiledPort]]
     blocks: Dict[str, "CompiledBlock"]  # sub-blocks
@@ -115,11 +116,7 @@ class CompiledDesignExportTransform(
         else:
             value = self._param_value_to_json(self._design.get_value(path.to_local_path()))
 
-        return CompiledParam(
-            type=self._param_to_type(elt),
-            value=value,
-            doc=None,  # populated in parent block
-        )
+        return CompiledParam(type=self._param_to_type(elt), value=value)
 
     @override
     def transform_block(
@@ -149,7 +146,7 @@ class CompiledDesignExportTransform(
                         param_value.doc = param_doc.text_leaf
 
             for port_name, port_value in ports_dict.items():
-                if port_name in meta_docs.members.node and isinstance(port_value, CompiledPort):
+                if port_name in meta_docs.members.node:
                     port_doc = meta_docs.members.node.get(port_name)
                     if port_doc is not None:
                         port_value.doc = port_doc.text_leaf
@@ -203,12 +200,11 @@ class CompiledDesignExportTransform(
                 path=self._path_to_path(context.path),
                 cls=self._libpath_to_str(elt.self_class),
                 connected_path=connected_path,
-                doc=None,  # populated in parent block
                 params=params,
                 ports=dict(ports),
             )
         elif isinstance(elt, edgir.PortArray):
-            return CompiledPortArray(dict(ports))
+            return CompiledPortArray(elts=dict(ports))
         else:
             raise ValueError(f"unknown port type {type(elt)}")
 
@@ -248,8 +244,13 @@ class CompiledDesignExportTransform(
             json_str,
         )
         json_str = re.sub(
-            r'\{\s*"type":\s*"(\S+)",\s*"value":\s*(.+)\s*,\s*"doc":\s*(.+)\s*\}',
-            lambda m: rf'{{ "type": "{m.group(1)}", "value": {m.group(2)}, "doc": {m.group(3)} }}',
+            r'\{\s*("type":\s*"\S+"),\s*("value":\s*.+)\s*\}',
+            lambda m: rf"{{ {m.group(1)}, {m.group(2)} }}",
+            json_str,
+        )
+        json_str = re.sub(
+            r'\{\s*("type":\s*"\S+"),\s*("value":\s*.+),\s*("doc":\s*.+)\s*\}',
+            lambda m: rf"{{ {m.group(1)}, {m.group(2)}, {m.group(3)} }}",
             json_str,
         )
         return json_str
