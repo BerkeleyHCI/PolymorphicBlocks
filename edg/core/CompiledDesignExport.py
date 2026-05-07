@@ -19,6 +19,7 @@ class CompiledParam(BaseModel):
     # this is minimalistic so the output json is more compact
     type: str
     value: Optional[Any]  # solved value, if available
+    doc: Optional[str]  # doc specified by its parent block, if available
 
 
 class CompiledPortArray(RootModel[Dict[str, Union["CompiledPort", "CompiledPortArray"]]]):
@@ -31,6 +32,7 @@ class CompiledPort(BaseModel):
     # path of connected port, if connected
     # for block ports, this is the link, if connected to one
     connected_path: Optional[Union[PathType, List[PathType]]]
+    doc: Optional[str]  # doc specified by its parent block, if available
     # note, link ports do not have parameters (they inherit parameters from connected ports and are deduplicated here)
     params: Dict[str, CompiledParam]
     ports: Dict[str, Union["CompiledPort", CompiledPortArray]]
@@ -48,6 +50,7 @@ class CompiledBlock(BaseModel):
     path: PathType  # provide the full path to allow searchability
     cls: str  # self class
     superclasses: List[str]  # all superclasses
+    doc: Optional[str]  # docstring, if available
     params: Dict[str, CompiledParam]
     ports: Dict[str, Union[CompiledPortArray, CompiledPort]]
     blocks: Dict[str, "CompiledBlock"]  # sub-blocks
@@ -115,6 +118,7 @@ class CompiledDesignExportTransform(
         return CompiledParam(
             type=self._param_to_type(elt),
             value=value,
+            doc=None,  # populated in parent block
         )
 
     @override
@@ -126,16 +130,40 @@ class CompiledDesignExportTransform(
         blocks: Mapping[str, CompiledBlock],
         links: Mapping[str, CompiledLink],
     ) -> CompiledBlock:
+        ports_dict = dict(ports)
+        params_dict = {
+            param_pair.name: self._param_to_compiled(context.path.append_param(param_pair.name), param_pair.value)
+            for param_pair in elt.params
+        }
+
+        meta_docs = elt.meta.members.node.get("_docs")
+        if meta_docs is not None:
+            block_doc = meta_docs.members.node.get("")
+            if block_doc is not None:
+                block_doc = block_doc.text_leaf
+
+            for param_name, param_value in params_dict.items():
+                if param_name in meta_docs.members.node:
+                    param_doc = meta_docs.members.node.get(param_name)
+                    if param_doc is not None:
+                        param_value.doc = param_doc.text_leaf
+
+            for port_name, port_value in ports_dict.items():
+                if port_name in meta_docs.members.node and isinstance(port_value, CompiledPort):
+                    port_doc = meta_docs.members.node.get(port_name)
+                    if port_doc is not None:
+                        port_value.doc = port_doc.text_leaf
+        else:
+            block_doc = None
+
         return CompiledBlock(
             path=self._path_to_path(context.path),
             cls=self._libpath_to_str(elt.self_class),
             superclasses=[self._libpath_to_str(cls) for cls in elt.superclasses]
             + [self._libpath_to_str(cls) for cls in elt.super_superclasses],
-            params={
-                param_pair.name: self._param_to_compiled(context.path.append_param(param_pair.name), param_pair.value)
-                for param_pair in elt.params
-            },
-            ports=dict(ports),
+            doc=block_doc,
+            params=params_dict,
+            ports=ports_dict,
             blocks=dict(blocks),
             links=dict(links),
         )
@@ -175,6 +203,7 @@ class CompiledDesignExportTransform(
                 path=self._path_to_path(context.path),
                 cls=self._libpath_to_str(elt.self_class),
                 connected_path=connected_path,
+                doc=None,  # populated in parent block
                 params=params,
                 ports=dict(ports),
             )
@@ -219,8 +248,8 @@ class CompiledDesignExportTransform(
             json_str,
         )
         json_str = re.sub(
-            r'\{\s*"type":\s*"(\S+)",\s*"value":\s*(.+)\s*\}',
-            lambda m: rf'{{ "type": "{m.group(1)}", "value": {m.group(2)} }}',
+            r'\{\s*"type":\s*"(\S+)",\s*"value":\s*(.+)\s*,\s*"doc":\s*(.+)\s*\}',
+            lambda m: rf'{{ "type": "{m.group(1)}", "value": {m.group(2)}, "doc": {m.group(3)} }}',
             json_str,
         )
         return json_str
