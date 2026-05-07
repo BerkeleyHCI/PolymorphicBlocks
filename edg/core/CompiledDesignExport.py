@@ -18,7 +18,7 @@ PathType = str
 class CompiledParam(BaseModel):
     # this is minimalistic so the output json is more compact
     type: str
-    value: Optional[Any]  # solved value, if available
+    value: Optional[Any] = None  # solved value, if available
     value_excluded: Optional[bool] = None  # true if value excluded, None otherwise to skip the field
     doc: Optional[str] = None  # doc specified by its parent block, if available
 
@@ -33,7 +33,7 @@ class CompiledPort(BaseModel):
     cls: str  # self class
     # path of connected port, if connected
     # for block ports, this is the link, if connected to one
-    connected_path: Optional[Union[PathType, List[PathType]]]
+    connected_path: Optional[Union[PathType, List[PathType]]] = None
     doc: Optional[str] = None  # doc specified by its parent block, if available
     # note, link ports do not have parameters (they inherit parameters from connected ports and are deduplicated here)
     params: Dict[str, CompiledParam]
@@ -113,7 +113,7 @@ class CompiledDesignExportTransform(
 
     def _param_to_compiled(self, path: Path, elt: edgir.ValInit) -> CompiledParam:
         if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
-            return CompiledParam(type=self._param_to_type(elt), value=None, value_excluded=True)
+            return CompiledParam(type=self._param_to_type(elt), value_excluded=True)
         else:
             value = self._param_value_to_json(self._design.get_value(path.to_local_path()))
             return CompiledParam(type=self._param_to_type(elt), value=value)
