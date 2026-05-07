@@ -19,6 +19,7 @@ class CompiledParam(BaseModel):
     # this is minimalistic so the output json is more compact
     type: str
     value: Optional[Any]  # solved value, if available
+    value_excluded: Optional[bool] = None  # true if value excluded, None otherwise to skip the field
     doc: Optional[str] = None  # doc specified by its parent block, if available
 
 
@@ -112,11 +113,10 @@ class CompiledDesignExportTransform(
 
     def _param_to_compiled(self, path: Path, elt: edgir.ValInit) -> CompiledParam:
         if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
-            value: Optional[Any] = "<excluded>"
+            return CompiledParam(type=self._param_to_type(elt), value=None, value_excluded=True)
         else:
             value = self._param_value_to_json(self._design.get_value(path.to_local_path()))
-
-        return CompiledParam(type=self._param_to_type(elt), value=value)
+            return CompiledParam(type=self._param_to_type(elt), value=value)
 
     @override
     def transform_block(
