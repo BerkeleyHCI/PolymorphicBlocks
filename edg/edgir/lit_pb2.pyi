@@ -150,6 +150,7 @@ class ErrorLit(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
     MESSAGE_FIELD_NUMBER: _builtins.int
     message: _builtins.str
+    "considered propagated if empty"
 
     def __init__(self, *, message: _builtins.str = ...) -> None: ...
     _ClearFieldArgType: _TypeAlias = _typing.Literal["message", b"message"]
