@@ -43,7 +43,7 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapBinarySet for $binarySet")
   def mapUnary(unary: expr.UnaryExpr, `val`: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapUnary for $unary")
-  def mapUnarySet(unarySet: expr.UnarySetExpr, vals: OutputType): OutputType =
+  def mapUnarySet(unarySet: expr.UnarySetExpr, vals: OutputType, emptyValue: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapBinarySet for $unarySet")
   def mapArray(array: expr.ArrayExpr, vals: Seq[OutputType]): OutputType =
     throw new NotImplementedError(s"Undefined mapArray for $array")
@@ -117,7 +117,7 @@ trait ValueExprMap[OutputType] {
     mapUnary(unary, map(unary.`val`.get))
   }
   def wrapUnarySet(unarySet: expr.UnarySetExpr): OutputType = {
-    mapUnarySet(unarySet, map(unarySet.vals.get))
+    mapUnarySet(unarySet, map(unarySet.vals.get), map(unarySet.emptyValue.get))
   }
   def wrapArray(array: expr.ArrayExpr): OutputType = {
     mapArray(array, array.vals.map(value => map(value)))

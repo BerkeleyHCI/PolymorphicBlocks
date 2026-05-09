@@ -155,7 +155,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
 
     evalTest.map(
-      ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"))
+      ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"), ValueExpr.Literal(0, 0))
     ) should equal(ExprResult.Result(IntValue(6)))
   }
 }

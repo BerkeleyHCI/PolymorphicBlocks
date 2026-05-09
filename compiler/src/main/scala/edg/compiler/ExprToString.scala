@@ -143,7 +143,7 @@ class ExprToString() extends ValueExprMap[String] {
     }
   }
 
-  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String): String = unarySet.op match {
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String, emptyValue: String): String = unarySet.op match {
     case UnarySetExprOp(op) => s"$op(${vals})"
     case op => s"unknown[$op](${vals})"
   }

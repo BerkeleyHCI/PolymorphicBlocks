@@ -49,9 +49,11 @@ object ExprBuilder {
       expr = expr.ValueExpr.Expr.Unary(expr.UnaryExpr(op = op, `val` = Some(vals)))
     )
 
-    def UnarySetOp(op: expr.UnarySetExpr.Op, vals: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.UnarySet(expr.UnarySetExpr(op = op, vals = Some(vals)))
-    )
+    def UnarySetOp(op: expr.UnarySetExpr.Op, vals: expr.ValueExpr, emptyValue: expr.ValueExpr): expr.ValueExpr =
+      expr.ValueExpr(
+        expr =
+          expr.ValueExpr.Expr.UnarySet(expr.UnarySetExpr(op = op, vals = Some(vals), emptyValue = Some(emptyValue)))
+      )
 
     def IfThenElse(cond: expr.ValueExpr, tru: expr.ValueExpr, fal: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.IfThenElse(expr.IfThenElseExpr(cond = Some(cond), tru = Some(tru), fal = Some(fal)))

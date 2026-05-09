@@ -307,7 +307,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
           Literal.Boolean(false),
           Literal.Boolean(true),
           Literal.Boolean(false),
-        ))
+        )),
+        ValueExpr.Array(Seq())
       )
     ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false), BooleanValue(true))))
 
@@ -318,7 +319,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
           Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
           Literal.Array(Seq(Literal.Integer(2))),
           Literal.Array(Seq(Literal.Integer(3), Literal.Integer(4), Literal.Integer(5))),
-        ))
+        )),
+        ValueExpr.Array(Seq())
       )
     ) should equal(ArrayValue(Seq(IntValue(0), IntValue(1), IntValue(2), IntValue(3), IntValue(4), IntValue(5))))
 
@@ -329,7 +331,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
           ValueExpr.Literal(Seq(
             Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
             Literal.Array(Seq(Literal.Boolean(true))),
-          ))
+          )),
+          ValueExpr.Array(Seq())
         )
       )
     }

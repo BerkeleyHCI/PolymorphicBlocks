@@ -70,10 +70,14 @@ class ExprEvaluatePartial(refResolver: IndirectDesignPath => Option[ExprValue], 
     case ExprResult.Result(resVal) => ExprResult.Result(ExprEvaluate.evalUnary(unary, resVal))
   }
 
-  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprResult): ExprResult = vals match {
-    case vals @ ExprResult.Missing(_) => vals
-    case ExprResult.Result(vals) => ExprResult.Result(ExprEvaluate.evalUnarySet(unarySet, vals))
-  }
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprResult, emptyValue: ExprResult): ExprResult =
+    (vals, emptyValue) match {
+      case (ExprResult.Missing(vals), ExprResult.Missing(emptyValue)) => ExprResult.Missing(vals ++ emptyValue)
+      case (vals @ ExprResult.Missing(_), _) => vals
+      case (_, emptyValue @ ExprResult.Missing(_)) => emptyValue
+      case (ExprResult.Result(vals), ExprResult.Result(emptyValue)) =>
+        ExprResult.Result(ExprEvaluate.evalUnarySet(unarySet, vals, emptyValue))
+    }
 
   override def mapArray(array: expr.ArrayExpr, vals: Seq[ExprResult]): ExprResult = {
     val missing = vals.collect {

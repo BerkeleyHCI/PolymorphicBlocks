@@ -919,7 +919,8 @@ class Compiler private (
                     path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                     ValueExpr.UnarySetOp(
                       expr.UnarySetExpr.Op.FLATTEN,
-                      ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                      ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss),
+                      ValueExpr.Array(Seq())
                     ),
                     path,
                     ""
@@ -1235,7 +1236,8 @@ class Compiler private (
                   path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(
                     expr.UnarySetExpr.Op.FLATTEN,
-                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss),
+                    ValueExpr.Array(Seq())
                   ),
                   path,
                   ""

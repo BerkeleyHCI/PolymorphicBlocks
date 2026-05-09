@@ -97,11 +97,11 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
         constraints = SeqMap(
           "calcSum" -> ValueExpr.Assign(
             Ref("sum"),
-            ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")))
+            ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")), ValueExpr.Literal(0.0))
           ),
           "calcHull" -> ValueExpr.Assign(
             Ref("hull"),
-            ValueExpr.UnarySetOp(Op.HULL, ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")))
+            ValueExpr.UnarySetOp(Op.HULL, ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")), ValueExpr.Literal(0.0))
           ),
         )
       ),
