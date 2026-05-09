@@ -148,6 +148,7 @@ message UnarySetExpr {
   }
   Op op = 1;
   ValueExpr vals = 4;
+  ValueExpr empty_value = 5;  // value returned on an empty set, especially for reductions
 }
 
 message BinaryExpr {

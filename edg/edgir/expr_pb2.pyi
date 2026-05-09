@@ -170,17 +170,26 @@ class UnarySetExpr(_message.Message):
     "Flatten[A] : Set[Set[A]] -> Set[A]\n    Given an array of array of elements, flattens the inner array.\n    Alternatively stated, concatenates all of the elements of the outer arrary\n    "
     OP_FIELD_NUMBER: _builtins.int
     VALS_FIELD_NUMBER: _builtins.int
+    EMPTY_VALUE_FIELD_NUMBER: _builtins.int
     op: Global___UnarySetExpr.Op.ValueType
 
     @_builtins.property
     def vals(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def empty_value(self) -> Global___ValueExpr:
+        """value returned on an empty set, especially for reductions"""
+
     def __init__(
-        self, *, op: Global___UnarySetExpr.Op.ValueType = ..., vals: Global___ValueExpr | None = ...
+        self,
+        *,
+        op: Global___UnarySetExpr.Op.ValueType = ...,
+        vals: Global___ValueExpr | None = ...,
+        empty_value: Global___ValueExpr | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["vals", b"vals"]
+    _HasFieldArgType: _TypeAlias = _typing.Literal["empty_value", b"empty_value", "vals", b"vals"]
 
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["op", b"op", "vals", b"vals"]
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["empty_value", b"empty_value", "op", b"op", "vals", b"vals"]
 
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
