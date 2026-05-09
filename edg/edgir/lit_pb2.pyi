@@ -146,6 +146,19 @@ class ArrayLit(_message.Message):
 Global___ArrayLit: _TypeAlias = ArrayLit
 
 @_typing.final
+class ErrorLit(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    MESSAGE_FIELD_NUMBER: _builtins.int
+    message: _builtins.str
+
+    def __init__(self, *, message: _builtins.str = ...) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["message", b"message"]
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___ErrorLit: _TypeAlias = ErrorLit
+
+@_typing.final
 class ValueLit(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
     FLOATING_FIELD_NUMBER: _builtins.int
@@ -155,6 +168,7 @@ class ValueLit(_message.Message):
     STRUCT_FIELD_NUMBER: _builtins.int
     RANGE_FIELD_NUMBER: _builtins.int
     ARRAY_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
@@ -172,6 +186,10 @@ class ValueLit(_message.Message):
     @_builtins.property
     def array(self) -> Global___ArrayLit: ...
     @_builtins.property
+    def error(self) -> Global___ErrorLit:
+        """propagating error, either created by the user or the compiler"""
+
+    @_builtins.property
     def meta(self) -> _common_pb2.Metadata: ...
     def __init__(
         self,
@@ -183,6 +201,7 @@ class ValueLit(_message.Message):
         struct: Global___StructLit | None = ...,
         range: Global___RangeLit | None = ...,
         array: Global___ArrayLit | None = ...,
+        error: Global___ErrorLit | None = ...,
         meta: _common_pb2.Metadata | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal[
@@ -190,6 +209,8 @@ class ValueLit(_message.Message):
         b"array",
         "boolean",
         b"boolean",
+        "error",
+        b"error",
         "floating",
         b"floating",
         "integer",
@@ -212,6 +233,8 @@ class ValueLit(_message.Message):
         b"array",
         "boolean",
         b"boolean",
+        "error",
+        b"error",
         "floating",
         b"floating",
         "integer",
@@ -230,7 +253,7 @@ class ValueLit(_message.Message):
 
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     _WhichOneofReturnType_type: _TypeAlias = _typing.Literal[
-        "floating", "integer", "boolean", "text", "struct", "range", "array"
+        "floating", "integer", "boolean", "text", "struct", "range", "array", "error"
     ]
     _WhichOneofArgType_type: _TypeAlias = _typing.Literal["type", b"type"]
 
