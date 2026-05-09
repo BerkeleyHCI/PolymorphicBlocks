@@ -115,6 +115,9 @@ object ExprBuilder {
   }
 
   object Literal {
+    def Error(msg: Option[String]): lit.ValueLit =
+      lit.ValueLit(`type` = lit.ValueLit.Type.Error(lit.ErrorLit(msg.getOrElse(""))))
+
     def Floating(value: Double): lit.ValueLit = Floating(value.toFloat)
     def Floating(value: Float): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Floating(lit.FloatLit(value)))
 
