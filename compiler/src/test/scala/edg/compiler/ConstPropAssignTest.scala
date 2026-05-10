@@ -185,7 +185,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(3))
 
     constProp.getErrors should not be empty
-    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
+    assert(constProp.getAllSolved(IndirectDesignPath() + "a").isInstanceOf[ErrorValue])
   }
 
   it should "not propagate generated ErrorValues" in {

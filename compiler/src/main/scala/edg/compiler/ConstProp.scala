@@ -260,7 +260,8 @@ class ConstProp() {
   }
 
   /** Returns the value of a parameter, or None if it does not have a value (yet?). Can be used to check if parameters
-    * are resolved yet by testing against None. Cannot return an ErrorValue
+    * are resolved yet by testing against None.
+    * Overassigns return their first value for consistency.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     resolveConnectedLink(param) match {
@@ -290,7 +291,13 @@ class ConstProp() {
     paramTypes.keySet.toSet -- params.knownValueKeys
   }
 
-  def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
+  private def getOverassignValues: Map[IndirectDesignPath, ErrorValue] = {
+    overassigns.map { case (target, sources) =>
+      target -> ErrorValue(Some(s"overassign from " + sources.map(_.toString).mkString(", ")))
+    }.toMap
+  }
+
+  def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap ++ getOverassignValues
 
   def getAllConnections: Map[DesignPath, DesignPath] = connectedLink.toMap.collect {
     case (ConnectedLinkRecord.ConnectedLink(towardsBlockPort), ConnectedLinkPort(linkPath, linkPortSuffix))
@@ -299,8 +306,10 @@ class ConstProp() {
   }
 
   def getErrors: Seq[ExprError] = {
-    (params.toMap.collect { case (target, ErrorValue(Some(msg))) => ExprError(target, msg) } ++ overassigns.map {
-      case (target, sources) => ExprError(target, s"overassign from " + sources.map(_.toString).mkString(", "))
+    (params.toMap.collect { case (target, ErrorValue(Some(msg))) =>
+      ExprError(target, msg)
+    } ++ getOverassignValues.map {
+      case (target, error) => ExprError(target, error.msg.get)
     }).toSeq
   }
 }
