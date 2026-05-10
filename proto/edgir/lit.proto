@@ -42,7 +42,7 @@ message ArrayLit {
 }
 
 message ErrorLit {
-  string message = 1;  // considered propagated if empty
+  string message = 1;  // if errors propagate, empty means this was propagated to avoid error spam
 }
 
 message ValueLit {
@@ -56,7 +56,7 @@ message ValueLit {
     RangeLit  range    = 10;
     ArrayLit  array    = 11;
 
-    ErrorLit  error    = 99;  // propagating error, either created by the user or the compiler
+    ErrorLit  error    = 99;  // may either propagate or be treated as unsolved
   }
 
   edgir.common.Metadata meta = 127;
