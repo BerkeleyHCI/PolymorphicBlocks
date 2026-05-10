@@ -260,8 +260,7 @@ class ConstProp() {
   }
 
   /** Returns the value of a parameter, or None if it does not have a value (yet?). Can be used to check if parameters
-    * are resolved yet by testing against None.
-    * Overassigns return their first value for consistency.
+    * are resolved yet by testing against None. Overassigns return their first value for consistency.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     resolveConnectedLink(param) match {

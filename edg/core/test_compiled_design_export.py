@@ -38,5 +38,5 @@ class CompiledDesignExportTestCase(unittest.TestCase):
 
         compiled = ScalaCompiler.compile(TestEvalExprErrorBlock, ignore_errors=True)
         result = CompiledDesignExportTransform(compiled).transform()
-        self.assertIn("overassign", result.params["overassign_float"].error)
+        self.assertIn("overassign", cast(str, result.params["overassign_float"].error))
         self.assertEqual(result.params["overassign_float"].value, None)
