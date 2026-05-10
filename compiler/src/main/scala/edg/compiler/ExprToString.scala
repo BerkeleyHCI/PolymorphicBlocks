@@ -30,6 +30,7 @@ class ExprToString() extends ValueExprMap[String] {
       val arrayElts = array.elts.map(mapLiteral)
       s"[${arrayElts.mkString(", ")}]"
     case lit.ValueLit.Type.Struct(_) => "unsupported struct"
+    case lit.ValueLit.Type.Error(literal) => s"error(${literal.message})"
     case lit.ValueLit.Type.Empty => "(empty)"
   }
 
@@ -143,7 +144,7 @@ class ExprToString() extends ValueExprMap[String] {
     }
   }
 
-  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String): String = unarySet.op match {
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: String, emptyValue: String): String = unarySet.op match {
     case UnarySetExprOp(op) => s"$op(${vals})"
     case op => s"unknown[$op](${vals})"
   }

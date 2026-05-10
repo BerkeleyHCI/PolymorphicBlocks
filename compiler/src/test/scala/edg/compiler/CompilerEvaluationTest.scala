@@ -91,11 +91,15 @@ class CompilerEvaluationTest extends AnyFlatSpec with CompilerTestUtil {
           "calcSourceFloat" -> ValueExpr.Assign(Ref("sourceFloat"), ValueExpr.Ref("source", "floatVal")),
           "calcSinkSum" -> ValueExpr.Assign(
             Ref("sinkSum"),
-            ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal")))
+            ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("sinks"), Ref("sumVal")), ValueExpr.Literal(0.0))
           ),
           "calcSinkIntersect" -> ValueExpr.Assign(
             Ref("sinkIntersect"),
-            ValueExpr.UnarySetOp(Op.INTERSECTION, ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal")))
+            ValueExpr.UnarySetOp(
+              Op.INTERSECTION,
+              ValueExpr.MapExtract(Ref("sinks"), Ref("intersectVal")),
+              ValueExpr.Literal(Float.NegativeInfinity, Float.PositiveInfinity)
+            )
           ),
         )
       ),

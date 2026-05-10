@@ -50,10 +50,12 @@ class LinkTestCase(unittest.TestCase):
         expected_constr.assign.src.binary.lhs.unary_set.op = edgir.UnarySetExpr.MINIMUM
         expected_constr.assign.src.binary.lhs.unary_set.vals.map_extract.container.ref.steps.add().name = "sinks"
         expected_constr.assign.src.binary.lhs.unary_set.vals.map_extract.path.steps.add().name = "float_param"
+        expected_constr.assign.src.binary.lhs.unary_set.empty_value.literal.floating.val = float("inf")
 
         expected_constr.assign.src.binary.rhs.unary_set.op = edgir.UnarySetExpr.MAXIMUM
         expected_constr.assign.src.binary.rhs.unary_set.vals.map_extract.container.ref.steps.add().name = "sinks"
         expected_constr.assign.src.binary.rhs.unary_set.vals.map_extract.path.steps.add().name = "float_param"
+        expected_constr.assign.src.binary.rhs.unary_set.empty_value.literal.floating.val = float("-inf")
         self.assertIn(expected_constr, constraints)
 
         expected_constr = edgir.ValueExpr()
@@ -69,6 +71,8 @@ class LinkTestCase(unittest.TestCase):
         expected_constr.assign.src.unary_set.op = edgir.UnarySetExpr.INTERSECTION
         expected_constr.assign.src.unary_set.vals.map_extract.container.ref.steps.add().name = "sinks"
         expected_constr.assign.src.unary_set.vals.map_extract.path.steps.add().name = "range_limit"
+        expected_constr.assign.src.unary_set.empty_value.literal.range.minimum.floating.val = float("-inf")
+        expected_constr.assign.src.unary_set.empty_value.literal.range.maximum.floating.val = float("inf")
         self.assertIn(expected_constr, constraints)
 
         expected_constr = edgir.ValueExpr()

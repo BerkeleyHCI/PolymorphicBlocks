@@ -59,7 +59,9 @@ object ExprEvaluate {
             val lower = contribMax * targetMin
             val upper = contribMin * targetMax
             if (lower > upper) {
-              ErrorValue(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
+              ErrorValue(
+                Some(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
+              )
             } else {
               RangeValue(lower, upper)
             }
@@ -293,8 +295,8 @@ object ExprEvaluate {
       case (Op.MIN, RangeValue(valMin, _)) => FloatValue(valMin)
       case (Op.MAX, RangeValue(_, valMax)) => FloatValue(valMax)
 
-      case (Op.MAX, RangeEmpty) => ErrorValue("max(RangeEmpty) is undefined")
-      case (Op.MIN, RangeEmpty) => ErrorValue("min(RangeEmpty) is undefined")
+      case (Op.MAX, RangeEmpty) => ErrorValue(Some("max(RangeEmpty) is undefined"))
+      case (Op.MIN, RangeEmpty) => ErrorValue(Some("min(RangeEmpty) is undefined"))
 
       case (Op.CENTER, RangeValue(valMin, valMax)) => FloatValue((valMin + valMax) / 2)
       case (Op.WIDTH, RangeValue(valMin, valMax)) => FloatValue(math.abs(valMax - valMin))
@@ -303,11 +305,11 @@ object ExprEvaluate {
     }
   }
 
-  def evalUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue): ExprValue = {
+  def evalUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue, emptyValue: ExprValue): ExprValue = {
     import expr.UnarySetExpr.Op
     (unarySet.op, vals) match {
+      case (_, ArrayValue.Empty(_)) => emptyValue
       // In this case we don't do numeric promotion
-      case (Op.SUM, ArrayValue.Empty(_)) => FloatValue(0) // TODO type needs to be dynamic
       case (Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
       case (Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
       case (Op.SUM, ArrayValue.ExtractBoolean(vals)) => IntValue(vals.count(_ == true))
@@ -315,13 +317,11 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case ArrayValue.UnpackRange.EmptyArray() =>
-            RangeValue(0, 0) // unreachable in practice, superseded by float 0 case
+          case ArrayValue.UnpackRange.EmptyArray() => // empty array case handled above
+            throw new AssertionError("compiler internal error, shouldn't happen")
         }
 
-      case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
       case (Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
-      case (Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(false)
       case (Op.ANY_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.contains(true))
 
       // TODO better support for empty arrays?
@@ -335,11 +335,10 @@ object ExprEvaluate {
       case (Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
       case (Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
-      case (Op.SET_EXTRACT, ArrayValue.Empty(_)) => ErrorValue("set_extract(empty) is undefined")
       case (Op.SET_EXTRACT, ArrayValue(vals)) => if (vals.forall(_ == vals.head)) {
           vals.head
         } else {
-          ErrorValue(f"set_extract($vals) with non-equal values")
+          ErrorValue(Some(f"set_extract($vals) with non-equal values"))
         }
 
       // Any empty value means the expression result is empty
@@ -349,13 +348,11 @@ object ExprEvaluate {
             if (maxMin <= minMax) {
               RangeValue(maxMin, minMax)
             } else { // does not intersect, null set
-              ErrorValue(f"intersection($extracted) produces empty set")
+              ErrorValue(Some(f"intersection($extracted) produces empty set"))
             }
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          // The implicit initial value of intersect is the full range
-          case ArrayValue.UnpackRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
-          case _ => ErrorValue(f"intersection($vals) is undefined")
+          case _ => ErrorValue(Some(f"intersection($vals) is undefined"))
         }
 
       // Any value is used (empty effectively discarded)
@@ -363,7 +360,8 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
+          case ArrayValue.UnpackRange.EmptyArray() => // empty array case handled above
+            throw new AssertionError("compiler internal error, shouldn't happen")
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
@@ -408,7 +406,7 @@ object ExprEvaluate {
     case (FloatPromotable(lhs), FloatPromotable(rhs)) => if (lhs <= rhs) {
         RangeValue(lhs, rhs)
       } else {
-        ErrorValue(s"range($minimum, $maximum) is malformed, $minimum > $maximum")
+        ErrorValue(Some(s"range($minimum, $maximum) is malformed, $minimum > $maximum"))
       }
     case _ => throw new ExprEvaluateException(s"Unknown range operands types $minimum $maximum from $range")
   }
@@ -442,8 +440,8 @@ class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprV
   override def mapUnary(unary: expr.UnaryExpr, `val`: ExprValue): ExprValue =
     ExprEvaluate.evalUnary(unary, `val`)
 
-  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue): ExprValue =
-    ExprEvaluate.evalUnarySet(unarySet, vals)
+  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue, emptyValue: ExprValue): ExprValue =
+    ExprEvaluate.evalUnarySet(unarySet, vals, emptyValue)
 
   override def mapArray(array: expr.ArrayExpr, vals: Seq[ExprValue]): ExprValue =
     ExprEvaluate.evalArray(array, vals)

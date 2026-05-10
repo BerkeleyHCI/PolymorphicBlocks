@@ -54,7 +54,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Literal(0))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
   }
@@ -67,7 +67,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.MAXIMUM, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(Op.MAXIMUM, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Literal(0))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(5)))
   }
@@ -77,10 +77,14 @@ class ConstPropArrayTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i.toFloat, (i + 4).toFloat) }, Seq("ports"), Seq("param"))
 
-    constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "reduce", ValInit.Range)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.INTERSECTION, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(
+        Op.INTERSECTION,
+        ValueExpr.MapExtract(Ref("ports"), "param"),
+        ValueExpr.Literal(Float.NegativeInfinity, Float.PositiveInfinity)
+      )
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(RangeValue(3.0, 4.0)))
   }
@@ -92,9 +96,9 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Array(Seq()))
     )
-    constProp.getValue(IndirectDesignPath() + "reduce") should equal(None)
+    assert(constProp.getValue(IndirectDesignPath() + "reduce").get.isInstanceOf[ErrorValue])
     constProp.getErrors should not be empty
   }
 
@@ -106,7 +110,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Literal(Seq()))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(2)))
   }
@@ -119,7 +123,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"))
+      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Literal(0))
     )
 
     addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))

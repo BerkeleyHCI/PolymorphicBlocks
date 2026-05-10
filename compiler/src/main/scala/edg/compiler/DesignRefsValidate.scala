@@ -34,8 +34,12 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
   override def mapUnary(unary: expr.UnaryExpr, `val`: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     `val`
   }
-  override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
-    vals
+  override def mapUnarySet(
+      unarySet: expr.UnarySetExpr,
+      vals: Seq[ref.LocalPath],
+      emptyValue: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
+    vals ++ emptyValue
   }
   override def mapArray(array: expr.ArrayExpr, vals: Seq[Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
     vals.flatten

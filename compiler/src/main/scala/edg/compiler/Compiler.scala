@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 10
+  final val kExpectedProtoVersion = 11
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -919,7 +919,8 @@ class Compiler private (
                     path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                     ValueExpr.UnarySetOp(
                       expr.UnarySetExpr.Op.FLATTEN,
-                      ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                      ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss),
+                      ValueExpr.Array(Seq())
                     ),
                     path,
                     ""
@@ -1235,7 +1236,8 @@ class Compiler private (
                   path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                   ValueExpr.UnarySetOp(
                     expr.UnarySetExpr.Op.FLATTEN,
-                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss),
+                    ValueExpr.Array(Seq())
                   ),
                   path,
                   ""

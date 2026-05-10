@@ -25,6 +25,10 @@ object ExprValue {
   }
 
   def fromValueLit(literal: lit.ValueLit): ExprValue = literal.`type` match {
+    case lit.ValueLit.Type.Error(literal) => ErrorValue(literal.message match {
+        case "" => None
+        case msg => Some(msg)
+      })
     case lit.ValueLit.Type.Floating(literal) => FloatValue(literal.`val`.toFloat)
     case lit.ValueLit.Type.Integer(literal) => IntValue(literal.`val`)
     case lit.ValueLit.Type.Boolean(literal) => BooleanValue(literal.`val`)
@@ -45,6 +49,11 @@ object ExprValue {
     case lit.ValueLit.Type.Empty | lit.ValueLit.Type.Struct(_) =>
       throw new IllegalArgumentException(s"unsupported literal $literal")
   }
+}
+
+case class ErrorValue(msg: Option[String]) extends ExprValue {
+  def toLit: lit.ValueLit = Literal.Error(msg)
+  def toStringValue: String = s"error(${msg.getOrElse("")})"
 }
 
 // These should be consistent with what is in init.proto
@@ -206,10 +215,4 @@ case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
     val valuesString = values.map { _.toStringValue }.mkString(", ")
     s"[$valuesString]"
   }
-}
-
-// a special value not in the IR that indicates and error
-case class ErrorValue(msg: String) extends ExprValue {
-  override def toLit: lit.ValueLit = throw new IllegalArgumentException("cannot convert error value to literal")
-  override def toStringValue: String = msg
 }

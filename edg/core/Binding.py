@@ -307,7 +307,9 @@ class UnarySetOpBinding(Binding):
     def __repr__(self) -> str:
         return f"UnarySetOp({self.op}, ...)"
 
-    def __init__(self, src: ConstraintExpr, op: Union[NumericOp, BoolOp, EqOp, RangeSetOp]):
+    def __init__(
+        self, src: ConstraintExpr, op: Union[NumericOp, BoolOp, EqOp, RangeSetOp], empty_value: ConstraintExpr
+    ):
         self.op_map = {
             NumericOp.negate: edgir.UnarySetExpr.NEGATE,
             NumericOp.invert: edgir.UnarySetExpr.INVERT,
@@ -327,6 +329,7 @@ class UnarySetOpBinding(Binding):
         super().__init__()
         self.src = src
         self.op = op
+        self.empty_value = empty_value
 
     @override
     def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
@@ -336,6 +339,7 @@ class UnarySetOpBinding(Binding):
     def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
         pb.unary_set.op = self.op_map[self.op]
         self.src._populate_expr_proto(pb.unary_set.vals, ref_map)
+        self.empty_value._populate_expr_proto(pb.unary_set.empty_value, ref_map)
 
 
 class BinaryOpBinding(Binding):
