@@ -28,6 +28,27 @@ class EvalExprTestCase(unittest.TestCase):
         self.assertEqual(self.compiled.get_value(["sum_range"]), Range(9.0, 14.0))
 
 
+class TestEvalExprErrorBlock(Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.overassign_float = self.Parameter(FloatExpr())
+
+    @override
+    def contents(self) -> None:
+        self.assign(self.overassign_float, 1.0)
+        self.assign(self.overassign_float, 2.0)
+
+
+class EvalExprErrorTestCase(unittest.TestCase):
+    @override
+    def setUp(self) -> None:
+        self.compiled = ScalaCompiler.compile(TestEvalExprErrorBlock, ignore_errors=True)
+
+    def test_sum(self) -> None:
+        self.assertEqual(len(self.compiled.errors), 1)
+        self.assertIsInstance(self.compiled.get_value(["overassign_float"]), edgir.ErrorValue)
+
+
 class TestReductionLink(Link):
     def __init__(self) -> None:
         super().__init__()

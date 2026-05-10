@@ -1,4 +1,4 @@
-from typing import Union, Optional, Iterable, TYPE_CHECKING, List, cast, overload
+from typing import Union, Optional, Iterable, TYPE_CHECKING, List, cast, overload, NamedTuple
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
@@ -74,7 +74,11 @@ def resolve_portlike(port: PortLike) -> PortTypes:
         raise ValueError(f"bad portlike {port}")
 
 
-LitLeafTypes = Union[bool, float, "Range", str]  # TODO for Range: fix me, this prevents a circular import
+class ErrorValue(NamedTuple):
+    msg: str
+
+
+LitLeafTypes = Union[bool, float, "Range", str, ErrorValue]  # TODO for Range: fix me, this prevents a circular import
 LitTypes = Union[LitLeafTypes, List[LitLeafTypes]]
 
 
@@ -97,6 +101,8 @@ def valuelit_to_lit(expr: ValueLit) -> LitTypes:
             raise ValueError(f"bad valuelit array {expr}")
         else:
             return cast(List[LitLeafTypes], elts)
+    elif expr.HasField("error"):
+        return ErrorValue(expr.error.message)
     else:
         raise ValueError(f"bad valuelit {expr}")
 
