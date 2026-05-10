@@ -126,6 +126,8 @@ def lit_to_valuelit(value: LitTypes) -> ValueLit:
         pb.array.SetInParent()
         for elt in value:
             pb.array.elts.add().CopyFrom(lit_to_valuelit(elt))
+    elif isinstance(value, ErrorValue):
+        pb.error.message = value.msg
     else:
         raise ValueError(f"unknown lit {value}")
     return pb
