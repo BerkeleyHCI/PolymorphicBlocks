@@ -61,6 +61,7 @@ class FlattenBinding(Binding):
     def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
         pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
         self.elts._populate_expr_proto(pb.unary_set.vals, ref_map)
+        pb.unary_set.empty_value.literal.array.SetInParent()  # mark as empty array
 
 
 @non_library
