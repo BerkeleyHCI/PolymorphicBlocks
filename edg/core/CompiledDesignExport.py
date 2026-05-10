@@ -2,7 +2,7 @@ from typing import Optional, Dict, List, Any, Union, Mapping
 from typing_extensions import override
 import re
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel
 
 from .. import edgir
 from .ConstraintExpr import RangeExpr
@@ -19,6 +19,7 @@ class CompiledParam(BaseModel):
     # this is minimalistic so the output json is more compact
     type: str
     value: Optional[Any] = None  # solved value, if available
+    error: Optional[str] = None  # if value is an error, the error message, otherwise None
     value_excluded: Optional[bool] = None  # true if value excluded, None otherwise to skip the field
     doc: Optional[str] = None  # doc specified by its parent block, if available
 
@@ -112,11 +113,13 @@ class CompiledDesignExportTransform(
             return value
 
     def _param_to_compiled(self, path: Path, elt: edgir.ValInit) -> CompiledParam:
-        if path.params[-1] in self._EXCLUDED_PARAM_VALUES:
+        value = self._design.get_value(path.to_local_path())
+        if isinstance(value, edgir.ErrorValue):
+            return CompiledParam(type=self._param_to_type(elt), error=value.msg)
+        elif path.params[-1] in self._EXCLUDED_PARAM_VALUES:
             return CompiledParam(type=self._param_to_type(elt), value_excluded=True)
         else:
-            value = self._param_value_to_json(self._design.get_value(path.to_local_path()))
-            return CompiledParam(type=self._param_to_type(elt), value=value)
+            return CompiledParam(type=self._param_to_type(elt), value=self._param_value_to_json(value))
 
     @override
     def transform_block(

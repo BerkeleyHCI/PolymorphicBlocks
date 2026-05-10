@@ -32,3 +32,11 @@ class CompiledDesignExportTestCase(unittest.TestCase):
         result = CompiledDesignExportTransform(compiled).transform()
         self.assertEqual(result.links["link"].params["range_sum"].value, (6.0, 130.0))
         self.assertEqual(result.links["link"].params["range_intersection"].value, (5.0, 10.0))
+
+    def test_param_error(self) -> None:
+        from .test_simple_expr_eval import TestEvalExprErrorBlock
+
+        compiled = ScalaCompiler.compile(TestEvalExprErrorBlock, ignore_errors=True)
+        result = CompiledDesignExportTransform(compiled).transform()
+        self.assertIn("overassign", result.params["overassign_float"].error)
+        self.assertEqual(result.params["overassign_float"].value, None)
