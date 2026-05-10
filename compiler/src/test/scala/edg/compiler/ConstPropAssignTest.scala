@@ -178,6 +178,16 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
   }
 
+  it should "error on overassign" in {
+    val constProp = new ConstProp()
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
+    constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
+    constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(3))
+
+    constProp.getErrors should not be empty
+    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
+  }
+
   it should "not propagate generated ErrorValues" in {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
@@ -193,8 +203,9 @@ class ConstPropAssignTest extends AnyFlatSpec {
       ValueExpr.BinOp(Op.SHRINK_MULT, ValueExpr.Literal(1, 1), ValueExpr.Ref("x")),
     )
     constProp.addAssignValue(IndirectDesignPath() + "x", RangeValue(0, 2))
-    assert(constProp.getValue(IndirectDesignPath() + "a").get.isInstanceOf[ErrorValue])
-    assert(constProp.getValue(IndirectDesignPath() + "b").get.isInstanceOf[ErrorValue])
+
     constProp.getErrors should not be empty
+    assert(constProp.getValue(IndirectDesignPath() + "a").get.isInstanceOf[ErrorValue])
+    constProp.getValue(IndirectDesignPath() + "b") shouldBe None
   }
 }
