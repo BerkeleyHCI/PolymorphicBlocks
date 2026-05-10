@@ -59,7 +59,9 @@ object ExprEvaluate {
             val lower = contribMax * targetMin
             val upper = contribMin * targetMax
             if (lower > upper) {
-              ErrorValue(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
+              ErrorValue(
+                Some(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
+              )
             } else {
               RangeValue(lower, upper)
             }
@@ -293,8 +295,8 @@ object ExprEvaluate {
       case (Op.MIN, RangeValue(valMin, _)) => FloatValue(valMin)
       case (Op.MAX, RangeValue(_, valMax)) => FloatValue(valMax)
 
-      case (Op.MAX, RangeEmpty) => ErrorValue("max(RangeEmpty) is undefined")
-      case (Op.MIN, RangeEmpty) => ErrorValue("min(RangeEmpty) is undefined")
+      case (Op.MAX, RangeEmpty) => ErrorValue(Some("max(RangeEmpty) is undefined"))
+      case (Op.MIN, RangeEmpty) => ErrorValue(Some("min(RangeEmpty) is undefined"))
 
       case (Op.CENTER, RangeValue(valMin, valMax)) => FloatValue((valMin + valMax) / 2)
       case (Op.WIDTH, RangeValue(valMin, valMax)) => FloatValue(math.abs(valMax - valMin))
@@ -336,7 +338,7 @@ object ExprEvaluate {
       case (Op.SET_EXTRACT, ArrayValue(vals)) => if (vals.forall(_ == vals.head)) {
           vals.head
         } else {
-          ErrorValue(f"set_extract($vals) with non-equal values")
+          ErrorValue(Some(f"set_extract($vals) with non-equal values"))
         }
 
       // Any empty value means the expression result is empty
@@ -346,11 +348,11 @@ object ExprEvaluate {
             if (maxMin <= minMax) {
               RangeValue(maxMin, minMax)
             } else { // does not intersect, null set
-              ErrorValue(f"intersection($extracted) produces empty set")
+              ErrorValue(Some(f"intersection($extracted) produces empty set"))
             }
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case _ => ErrorValue(f"intersection($vals) is undefined")
+          case _ => ErrorValue(Some(f"intersection($vals) is undefined"))
         }
 
       // Any value is used (empty effectively discarded)
@@ -404,7 +406,7 @@ object ExprEvaluate {
     case (FloatPromotable(lhs), FloatPromotable(rhs)) => if (lhs <= rhs) {
         RangeValue(lhs, rhs)
       } else {
-        ErrorValue(s"range($minimum, $maximum) is malformed, $minimum > $maximum")
+        ErrorValue(Some(s"range($minimum, $maximum) is malformed, $minimum > $maximum"))
       }
     case _ => throw new ExprEvaluateException(s"Unknown range operands types $minimum $maximum from $range")
   }

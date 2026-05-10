@@ -51,25 +51,25 @@ class ConstProp() {
   // Undeclared parameters cannot have values set, but can be forced (though the value is not effective until declared)
   private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()
 
+  // This tracks overassign errors and their sources, which otherwise breaks the immutability of the dependency graph
+  private val overassigns = mutable.HashMap[IndirectDesignPath, mutable.HashSet[IndirectDesignPath]]()
+
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, ConnectedLinkPort]() // tracks the port -> link paths
 
   // Params that have a forced/override value, so they arent over-assigned.
   private val forcedParams = mutable.Set[IndirectDesignPath]()
 
-  // Errors that were generated during the process of resolving parameters, including overassigns
-  // A value may or may not exist (and may or not have been propagated) in the param dependency graph
-  private val paramErrors = mutable.HashMap[IndirectDesignPath, mutable.ListBuffer[ErrorValue]]()
-
   def initFrom(that: ConstProp): Unit = {
-    require(paramAssign.isEmpty && paramSource.isEmpty && paramTypes.isEmpty && forcedParams.isEmpty
-      && paramErrors.isEmpty)
+    require(
+      paramAssign.isEmpty && paramSource.isEmpty && paramTypes.isEmpty && forcedParams.isEmpty && overassigns.isEmpty
+    )
     paramAssign.addAll(that.paramAssign)
     paramSource.addAll(that.paramSource)
     params.initFrom(that.params)
     paramTypes.addAll(that.paramTypes)
     connectedLink.initFrom(that.connectedLink)
     forcedParams.addAll(that.forcedParams)
-    paramErrors.addAll(that.paramErrors)
+    overassigns.addAll(that.overassigns)
   }
 
   //
@@ -116,14 +116,11 @@ class ConstProp() {
       readyList.foreach { constrTarget =>
         val assign = paramAssign(constrTarget)
         new ExprEvaluatePartial(getValue, assign.root).map(assign.value) match {
+          case ExprResult.Result(result @ ErrorValue(_)) =>
+            params.setValue(constrTarget, result, stop = true)
+            onParamSolved(constrTarget, result)
           case ExprResult.Result(result) =>
-            result match {
-              case result @ ErrorValue(_) =>
-                paramErrors.getOrElseUpdate(constrTarget, mutable.ListBuffer()).append(result)
-                params.clearReadyNode(constrTarget)
-              case result => params.setValue(constrTarget, result)
-            }
-
+            params.setValue(constrTarget, result)
             onParamSolved(constrTarget, result)
           case ExprResult.Missing(missing) => // account for CONNECTED_LINK prefix
             val missingCorrected = missing.map { path =>
@@ -211,10 +208,9 @@ class ConstProp() {
     } else {
       if (!forcedParams.contains(target)) {
         if (params.nodeDefinedAt(target)) { // TODO add propagated assign
-          val (prevRoot, prevConstr, _) = paramSource.get(target).getOrElse("?", "?", "")
-          paramErrors.getOrElseUpdate(target, mutable.ListBuffer()).append(
-            ErrorValue(s"over-assign from $root.$constrName, prev assigned from $prevRoot.$prevConstr")
-          )
+          val (prevRoot, prevConstr, _) = paramSource(target)
+          overassigns.getOrElseUpdate(target, mutable.HashSet()).add(root.asIndirect + constrName)
+          overassigns.getOrElseUpdate(target, mutable.HashSet()).add(prevRoot.asIndirect + prevConstr)
           return // first set "wins"
         }
         params.addNode(target, paramTypesDep)
@@ -291,7 +287,7 @@ class ConstProp() {
     * references.
     */
   def getUnsolved: Set[IndirectDesignPath] = {
-    paramTypes.keySet.toSet -- params.knownValueKeys -- paramErrors.keys
+    paramTypes.keySet.toSet -- params.knownValueKeys
   }
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
@@ -303,8 +299,8 @@ class ConstProp() {
   }
 
   def getErrors: Seq[ExprError] = {
-    paramErrors.flatMap { case (target, errors) =>
-      errors.map(error => ExprError(target, error.msg))
-    }.toSeq
+    (params.toMap.collect { case (target, ErrorValue(Some(msg))) => ExprError(target, msg) } ++ overassigns.map {
+      case (target, sources) => ExprError(target, s"overassign from " + sources.map(_.toString).mkString(", "))
+    }).toSeq
   }
 }

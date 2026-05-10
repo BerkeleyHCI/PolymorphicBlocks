@@ -80,7 +80,11 @@ class ConstPropArrayTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.INTERSECTION, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Literal(Float.NegativeInfinity, Float.PositiveInfinity))
+      ValueExpr.UnarySetOp(
+        Op.INTERSECTION,
+        ValueExpr.MapExtract(Ref("ports"), "param"),
+        ValueExpr.Literal(Float.NegativeInfinity, Float.PositiveInfinity)
+      )
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(RangeValue(3.0, 4.0)))
   }
@@ -94,7 +98,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
       IndirectDesignPath() + "reduce",
       ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"), ValueExpr.Array(Seq()))
     )
-    constProp.getValue(IndirectDesignPath() + "reduce") should equal(None)
+    assert(constProp.getValue(IndirectDesignPath() + "reduce").get.isInstanceOf[ErrorValue])
     constProp.getErrors should not be empty
   }
 

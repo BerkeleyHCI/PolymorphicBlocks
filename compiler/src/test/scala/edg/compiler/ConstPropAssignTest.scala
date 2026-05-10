@@ -193,8 +193,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
       ValueExpr.BinOp(Op.SHRINK_MULT, ValueExpr.Literal(1, 1), ValueExpr.Ref("x")),
     )
     constProp.addAssignValue(IndirectDesignPath() + "x", RangeValue(0, 2))
-    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
-    constProp.getValue(IndirectDesignPath() + "b") should equal(None)
+    assert(constProp.getValue(IndirectDesignPath() + "a").get.isInstanceOf[ErrorValue])
+    assert(constProp.getValue(IndirectDesignPath() + "b").get.isInstanceOf[ErrorValue])
     constProp.getErrors should not be empty
   }
 }
