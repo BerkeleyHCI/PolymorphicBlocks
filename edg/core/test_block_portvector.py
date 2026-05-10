@@ -234,4 +234,5 @@ class VectorConstraintProtoTestCase(unittest.TestCase):
         expected_constr.assign.src.unary_set.op = edgir.UnarySetExpr.SUM
         expected_constr.assign.src.unary_set.vals.map_extract.container.ref.steps.add().name = "vector"
         expected_constr.assign.src.unary_set.vals.map_extract.path.steps.add().name = "float_param"
+        expected_constr.assign.src.unary_set.empty_value.literal.floating.val = 0
         self.assertIn(expected_constr, constraints)

@@ -106,10 +106,10 @@ class ArrayExpr(
         self._elt_sample: ArrayEltType = self._elt_type()._new_bind(SampleElementBinding())
 
     def all_unique(self) -> BoolExpr:
-        return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_unique, BoolExpr(True)))
+        return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_unique, BoolExpr._to_expr_type(True)))
 
     def all_equal(self) -> BoolExpr:
-        return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_equal, BoolExpr(True)))
+        return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_equal, BoolExpr._to_expr_type(True)))
 
 
 ArrayBoolLike = Union["ArrayBoolExpr", Sequence[BoolLike]]
@@ -119,16 +119,16 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     _elt_type = BoolExpr
 
     def __invert__(self) -> ArrayBoolExpr:
-        return self._new_bind(UnarySetOpBinding(self, BoolOp.op_not, ArrayBoolExpr([])))
+        return self._new_bind(UnarySetOpBinding(self, BoolOp.op_not, ArrayBoolExpr._to_expr_type([])))
 
     def any(self) -> BoolExpr:
-        return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or, BoolExpr(False)))
+        return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or, BoolExpr._to_expr_type(False)))
 
     def all(self) -> BoolExpr:
-        return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and, BoolExpr(True)))
+        return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and, BoolExpr._to_expr_type(True)))
 
     def count(self) -> IntExpr:
-        return IntExpr()._new_bind(UnarySetOpBinding(self, NumericOp.sum, IntExpr(0)))
+        return IntExpr()._new_bind(UnarySetOpBinding(self, NumericOp.sum, IntExpr._to_expr_type(0)))
 
 
 ArrayIntLike = Union["ArrayIntExpr", Sequence[IntLike]]
@@ -138,7 +138,7 @@ class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):
     _elt_type = IntExpr
 
     def sum(self) -> IntExpr:
-        return self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.sum, IntExpr(0)))
+        return self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.sum, IntExpr._to_expr_type(0)))
 
 
 ArrayFloatLike = Union["ArrayFloatExpr", Sequence[FloatLike]]
@@ -148,13 +148,13 @@ class ArrayFloatExpr(ArrayExpr[FloatExpr, List[float], ArrayFloatLike]):
     _elt_type = FloatExpr
 
     def sum(self) -> FloatExpr:
-        return self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.sum, FloatExpr(0)))
+        return self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.sum, FloatExpr._to_expr_type(0)))
 
     def min(self) -> FloatExpr:
-        return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min, FloatExpr(float("inf"))))
+        return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.min, FloatExpr._to_expr_type(float("inf"))))
 
     def max(self) -> FloatExpr:
-        return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max, FloatExpr(float("-inf"))))
+        return FloatExpr()._new_bind(UnarySetOpBinding(self, RangeSetOp.max, FloatExpr._to_expr_type(float("-inf"))))
 
 
 ArrayRangeLike = Union["ArrayRangeExpr", Sequence[RangeLike]]
@@ -174,7 +174,7 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
     def __rtruediv__(self, other: Union[FloatLike, RangeLike]) -> ArrayRangeExpr:
         """Broadcast-pointwise invert-and-multiply (division with array as rhs)"""
         return self._create_binary_set_op(
-            self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.invert, ArrayRangeExpr([]))),
+            self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.invert, ArrayRangeExpr._to_expr_type([]))),
             RangeExpr._to_expr_type(other),
             NumericOp.mul,
         )
@@ -185,10 +185,17 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
         return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, RangeExpr._to_expr_type(other), EqOp.all_equal))
 
     def intersection(self) -> RangeExpr:
-        return self._elt_type._new_bind(UnarySetOpBinding(self, RangeSetOp.intersection, RangeExpr(RangeExpr.ALL)))
+        return self._elt_type._new_bind(
+            UnarySetOpBinding(self, RangeSetOp.intersection, RangeExpr._to_expr_type(RangeExpr.ALL))
+        )
 
     def hull(self) -> RangeExpr:
-        return self._elt_type._new_bind(UnarySetOpBinding(self, RangeSetOp.hull, RangeExpr(RangeExpr.EMPTY)))
+        return self._elt_type._new_bind(
+            UnarySetOpBinding(self, RangeSetOp.hull, RangeExpr._to_expr_type(RangeExpr.EMPTY))
+        )
+
+    def sum(self) -> RangeExpr:
+        return self._elt_type._new_bind(UnarySetOpBinding(self, NumericOp.sum, RangeExpr._to_expr_type((0, 0))))
 
 
 ArrayStringLike = Union["ArrayStringExpr", Sequence[StringLike]]
