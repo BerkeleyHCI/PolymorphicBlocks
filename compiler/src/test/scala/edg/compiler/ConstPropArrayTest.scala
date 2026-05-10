@@ -77,7 +77,7 @@ class ConstPropArrayTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i.toFloat, (i + 4).toFloat) }, Seq("ports"), Seq("param"))
 
-    constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
+    constProp.addDeclaration(DesignPath() + "reduce", ValInit.Range)
     constProp.addAssignExpr(
       IndirectDesignPath() + "reduce",
       ValueExpr.UnarySetOp(

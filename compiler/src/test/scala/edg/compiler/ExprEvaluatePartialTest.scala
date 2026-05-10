@@ -158,7 +158,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       ValueExpr.UnarySetOp(
         expr.UnarySetExpr.Op.SUM,
         ValueExpr.MapExtract(Ref("container"), "inner"),
-        ValueExpr.Literal(0, 0)
+        ValueExpr.Literal(0)
       )
     ) should equal(ExprResult.Result(IntValue(6)))
   }

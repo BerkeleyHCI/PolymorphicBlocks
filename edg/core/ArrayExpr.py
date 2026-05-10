@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import Generic, Any, Type, Optional, Union, Iterable, Sequence, List
 
 from typing_extensions import TypeVar, override

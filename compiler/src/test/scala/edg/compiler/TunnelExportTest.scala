@@ -101,7 +101,11 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           "calcHull" -> ValueExpr.Assign(
             Ref("hull"),
-            ValueExpr.UnarySetOp(Op.HULL, ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")), ValueExpr.Literal(0.0))
+            ValueExpr.UnarySetOp(
+              Op.HULL,
+              ValueExpr.MapExtract(Ref("ports"), Ref("floatVal")),
+              ValueExpr.Literal(0.0, 0.0)
+            )
           ),
         )
       ),

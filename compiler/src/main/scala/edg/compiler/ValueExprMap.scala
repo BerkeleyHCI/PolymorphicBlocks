@@ -44,7 +44,7 @@ trait ValueExprMap[OutputType] {
   def mapUnary(unary: expr.UnaryExpr, `val`: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapUnary for $unary")
   def mapUnarySet(unarySet: expr.UnarySetExpr, vals: OutputType, emptyValue: OutputType): OutputType =
-    throw new NotImplementedError(s"Undefined mapBinarySet for $unarySet")
+    throw new NotImplementedError(s"Undefined mapUnarySet for $unarySet")
   def mapArray(array: expr.ArrayExpr, vals: Seq[OutputType]): OutputType =
     throw new NotImplementedError(s"Undefined mapArray for $array")
   def mapStruct(struct: expr.StructExpr, vals: Map[String, OutputType]): OutputType =
