@@ -317,7 +317,7 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case ArrayValue.UnpackRange.EmptyArray() =>
+          case ArrayValue.UnpackRange.EmptyArray() =>  // empty array case handled above
             throw new AssertionError("compiler internal error, shouldn't happen")
         }
 
@@ -360,7 +360,7 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case ArrayValue.UnpackRange.EmptyArray() =>
+          case ArrayValue.UnpackRange.EmptyArray() =>  // empty array case handled above
             throw new AssertionError("compiler internal error, shouldn't happen")
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
