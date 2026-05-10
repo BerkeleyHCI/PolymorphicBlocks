@@ -393,6 +393,12 @@ message ValueExpr {
     ConnectedExpr    connectedArray   = 19;  // array to array connect, where allocate means allocate a subarray
     ExportedExpr     exportedArray    = 20;  // array to array export, where allocate means allocate a subarray
 
+    ExportedExpr     exportedTap = 23; // single port to single port export, where the exterior can already be assigned
+                                       // - parameters do not propagate, internal port must not have parameter values
+                                       // - the internal port's link resolves to the external port
+                                       // - the exterior port may have multiple exportedTaps connected to it, along with
+                                       //   a standard exported connection
+
     AssignExpr assign    = 17;
 
     // These Exprs support cross-hierarchy operations

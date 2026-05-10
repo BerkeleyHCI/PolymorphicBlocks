@@ -658,6 +658,7 @@ class ValueExpr(_message.Message):
     EXPORTED_FIELD_NUMBER: _builtins.int
     CONNECTEDARRAY_FIELD_NUMBER: _builtins.int
     EXPORTEDARRAY_FIELD_NUMBER: _builtins.int
+    EXPORTEDTAP_FIELD_NUMBER: _builtins.int
     ASSIGN_FIELD_NUMBER: _builtins.int
     EXPORTEDTUNNEL_FIELD_NUMBER: _builtins.int
     ASSIGNTUNNEL_FIELD_NUMBER: _builtins.int
@@ -705,7 +706,17 @@ class ValueExpr(_message.Message):
         """array to array export, where allocate means allocate a subarray"""
 
     @_builtins.property
-    def assign(self) -> Global___AssignExpr: ...
+    def exportedTap(self) -> Global___ExportedExpr:
+        """single port to single port export, where the exterior can already be assigned"""
+
+    @_builtins.property
+    def assign(self) -> Global___AssignExpr:
+        """- parameters do not propagate, internal port must not have parameter values
+        - the internal port's link resolves to the external port
+        - the exterior port may have multiple exportedTaps connected to it, along with
+          a standard exported connection
+        """
+
     @_builtins.property
     def exportedTunnel(self) -> Global___ExportedExpr:
         """These Exprs support cross-hierarchy operations
@@ -748,6 +759,7 @@ class ValueExpr(_message.Message):
         exported: Global___ExportedExpr | None = ...,
         connectedArray: Global___ConnectedExpr | None = ...,
         exportedArray: Global___ExportedExpr | None = ...,
+        exportedTap: Global___ExportedExpr | None = ...,
         assign: Global___AssignExpr | None = ...,
         exportedTunnel: Global___ExportedExpr | None = ...,
         assignTunnel: Global___AssignExpr | None = ...,
@@ -773,6 +785,8 @@ class ValueExpr(_message.Message):
         b"exported",
         "exportedArray",
         b"exportedArray",
+        "exportedTap",
+        b"exportedTap",
         "exportedTunnel",
         b"exportedTunnel",
         "expr",
@@ -819,6 +833,8 @@ class ValueExpr(_message.Message):
         b"exported",
         "exportedArray",
         b"exportedArray",
+        "exportedTap",
+        b"exportedTap",
         "exportedTunnel",
         b"exportedTunnel",
         "expr",
@@ -862,6 +878,7 @@ class ValueExpr(_message.Message):
         "exported",
         "connectedArray",
         "exportedArray",
+        "exportedTap",
         "assign",
         "exportedTunnel",
         "assignTunnel",
