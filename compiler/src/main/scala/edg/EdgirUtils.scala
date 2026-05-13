@@ -39,6 +39,13 @@ object EdgirUtils {
           case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
           case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
+      case expr.ValueExpr.Expr.ExportedTap(exported) =>
+        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+          case (true, false) => fn(exported.getExteriorPort)
+          case (false, true) => fn(exported.getInternalBlockPort)
+          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
       case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => fn(exported.getExteriorPort)
@@ -56,6 +63,7 @@ object EdgirUtils {
     def expandedSingleConstraintsMaybe: Seq[expr.ValueExpr] = connection.expr match {
       case expr.ValueExpr.Expr.Connected(_) => connection.expandedConstraints
       case expr.ValueExpr.Expr.Exported(_) => connection.expandedConstraints
+      case expr.ValueExpr.Expr.ExportedTap(_) => connection.expandedConstraints
       case expr.ValueExpr.Expr.ExportedTunnel(_) => connection.expandedConstraints
       case _ => Seq()
     }
@@ -69,6 +77,12 @@ object EdgirUtils {
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
         }
       case expr.ValueExpr.Expr.Exported(exportedContainer) =>
+        exportedContainer.expanded match {
+          case Seq() => Seq(connection)
+          case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(single)))
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
+        }
+      case expr.ValueExpr.Expr.ExportedTap(exportedContainer) =>
         exportedContainer.expanded match {
           case Seq() => Seq(connection)
           case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(single)))
@@ -149,7 +163,9 @@ object EdgirUtils {
         val base = connectedContainer.expanded match {
           case Seq() => connectedContainer
           case Seq(single) => single
-          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
+          case _ => throw new IllegalArgumentException(
+              s"unexpected multiple expanded in connected ${connectedContainer.expanded}"
+            )
         }
         val newExpanded = (fn.lift(base.getBlockPort), fn.lift(base.getLinkPort)) match {
           case (Some(newBlockPort), None) => base.update(_.blockPort := newBlockPort)
@@ -162,7 +178,24 @@ object EdgirUtils {
         val base = exportedContainer.expanded match {
           case Seq() => exportedContainer
           case Seq(single) => single
-          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
+          case _ => throw new IllegalArgumentException(
+              s"unexpected multiple expanded in exported ${exportedContainer.expanded}"
+            )
+        }
+        val newExpanded = (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
+          case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
+          case (None, Some(newInternalPort)) => base.update(_.internalBlockPort := newInternalPort)
+          case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
+        connection.update(_.exported.expanded := Seq(newExpanded))
+      case expr.ValueExpr.Expr.ExportedTap(exportedContainer) =>
+        val base = exportedContainer.expanded match {
+          case Seq() => exportedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(
+            s"unexpected multiple expanded in exported ${exportedContainer.expanded}"
+          )
         }
         val newExpanded = (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
           case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
@@ -175,7 +208,9 @@ object EdgirUtils {
         val base = exportedContainer.expanded match {
           case Seq() => exportedContainer
           case Seq(single) => single
-          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
+          case _ => throw new IllegalArgumentException(
+              s"unexpected multiple expanded in connected ${exportedContainer.expanded}"
+            )
         }
         val newExpanded = (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
           case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
