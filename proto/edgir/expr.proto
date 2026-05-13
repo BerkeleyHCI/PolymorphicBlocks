@@ -361,6 +361,11 @@ message ConnectedExpr {
 message ExportedExpr {
   ValueExpr exterior_port = 1;
   ValueExpr internal_block_port  = 2;
+  bool tap = 4;  // if true, this is a tap, which allows the exterior port to have multiple internal connections
+  // (one non-tap connection, and optionally multiple tap connections)
+  // These additional rules apply to export taps:
+  // - parameters do not propagate, internal port should not have parameter values
+  // - the internal port's link resolves to the external port
 
   repeated ExportedExpr expanded = 3;  // see comment in ConnectedExpr
 }
@@ -392,12 +397,6 @@ message ValueExpr {
     ExportedExpr     exported    = 16;  // single port to single port export
     ConnectedExpr    connectedArray   = 19;  // array to array connect, where allocate means allocate a subarray
     ExportedExpr     exportedArray    = 20;  // array to array export, where allocate means allocate a subarray
-
-    ExportedExpr     exportedTap = 23; // single port to single port export, where the exterior can already be assigned
-                                       // - parameters do not propagate, internal port must not have parameter values
-                                       // - the internal port's link resolves to the external port
-                                       // - the exterior port may have multiple exportedTaps connected to it, along with
-                                       //   a standard exported connection
 
     AssignExpr assign    = 17;
 
