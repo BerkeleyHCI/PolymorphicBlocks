@@ -352,14 +352,6 @@ class Compiler private (
           containerPath,
           s"$containerPath.$constrName"
         )
-      case Some((constrName, expr.ValueExpr.Expr.ExportedTap(exported))) =>
-        val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
-        constProp.addAssignEqual(
-          containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-          exportedToTop.asIndirect + IndirectStep.IsConnected,
-          containerPath,
-          s"$containerPath.$constrName"
-        )
       case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) => // same as exported case
         // Since the exterior port refers to a child block of the current container,
         // it would not have been elaborated yet so we cannot inspect into it.
@@ -518,18 +510,6 @@ class Compiler private (
               )
               constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
             }
-            true
-          case _ => false // anything with allocates is not processed
-        }
-      case expr.ValueExpr.Expr.ExportedTap(exported) =>
-        (exported.getExteriorPort, exported.getInternalBlockPort) match {
-          case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-            require(!isInLink)
-            elaboratePending.addNode(
-              ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
-              Seq(ElaborateRecord.Port(blockPath ++ extPort))
-            )
-            constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
             true
           case _ => false // anything with allocates is not processed
         }

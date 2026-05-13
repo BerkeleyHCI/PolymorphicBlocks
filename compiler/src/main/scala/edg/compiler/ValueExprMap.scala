@@ -23,7 +23,6 @@ trait ValueExprMap[OutputType] {
       case expr.ValueExpr.Expr.MapExtract(valueExpr) => wrapMapExtract(valueExpr)
       case expr.ValueExpr.Expr.Connected(valueExpr) => wrapConnected(valueExpr)
       case expr.ValueExpr.Expr.Exported(valueExpr) => wrapExported(valueExpr)
-      case expr.ValueExpr.Expr.ExportedTap(valueExpr) => wrapExportedTap(valueExpr)
       case expr.ValueExpr.Expr.ConnectedArray(valueExpr) => wrapConnectedArray(valueExpr)
       case expr.ValueExpr.Expr.ExportedArray(valueExpr) => wrapExportedArray(valueExpr)
       case expr.ValueExpr.Expr.ExportedTunnel(valueExpr) => wrapExportedTunnel(valueExpr)
@@ -75,14 +74,6 @@ trait ValueExprMap[OutputType] {
       expandedInternalBlockPort: OutputType
   ): OutputType =
     throw new NotImplementedError(s"Undefined mapExported for $exported")
-  def mapExportedTap(
-      exported: expr.ExportedExpr,
-      exteriorPort: OutputType,
-      internalBlockPort: OutputType,
-      expandedExteriorPort: OutputType,
-      expandedInternalBlockPort: OutputType
-  ): OutputType =
-    throw new NotImplementedError(s"Undefined mapExportedTap for $exported")
   // for array connect and export: expanded is empty is expanded is empty
   def mapConnectedArray(
       connected: expr.ConnectedExpr,
@@ -175,27 +166,6 @@ trait ValueExprMap[OutputType] {
       case _ => throw new IllegalArgumentException
     }
     mapExported(exported, containerExteriorValue, containerInteriorValue, expandedExteriorValue, expandedInteriorValue)
-  }
-  def wrapExportedTap(exported: expr.ExportedExpr): OutputType = {
-    val containerExteriorValue = map(exported.exteriorPort.get)
-    val containerInteriorValue = map(exported.internalBlockPort.get)
-    val expandedExteriorValue = exported.expanded match {
-      case Seq() => containerExteriorValue
-      case Seq(expanded) => map(expanded.getExteriorPort)
-      case _ => throw new IllegalArgumentException
-    }
-    val expandedInteriorValue = exported.expanded match {
-      case Seq() => containerInteriorValue
-      case Seq(expanded) => map(expanded.getInternalBlockPort)
-      case _ => throw new IllegalArgumentException
-    }
-    mapExportedTap(
-      exported,
-      containerExteriorValue,
-      containerInteriorValue,
-      expandedExteriorValue,
-      expandedInteriorValue
-    )
   }
   def wrapConnectedArray(connected: expr.ConnectedExpr): OutputType = {
     mapConnectedArray(
