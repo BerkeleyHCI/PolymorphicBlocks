@@ -498,12 +498,14 @@ class Compiler private (
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             if (!isInLink) {
+              require(!exported.tap, "TODO support export tap")
               elaboratePending.addNode(
                 ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
                 Seq(ElaborateRecord.Port(blockPath ++ extPort))
               )
               constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
             } else { // for links, the internal port is towards the inner link, so the args are flipped
+              require(!exported.tap, "tap not allowed in links")
               elaboratePending.addNode(
                 ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort, blockPath),
                 Seq(ElaborateRecord.Port(blockPath ++ intPort))
@@ -514,6 +516,7 @@ class Compiler private (
           case _ => false // anything with allocates is not processed
         }
       case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
+        require(!exported.tap, "tap not allowed in tunnel")
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             require(!isInLink)
