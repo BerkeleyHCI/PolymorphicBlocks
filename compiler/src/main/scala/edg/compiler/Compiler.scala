@@ -37,7 +37,7 @@ object ElaborateRecord {
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
   // connectedLink and linkParams.
-  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, root: DesignPath)
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, root: DesignPath, tap: Boolean = false)
       extends ElaborateTask
 
   // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
@@ -278,13 +278,15 @@ class Compiler private (
     // All connected ports should have params
     val toLinkPort = resolvePort(connect.toLinkPortPath).asInstanceOf[wir.HasParams]
     val connectedParam = toLinkPort.getParams.keys.map(IndirectStep.Element(_))
-    for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
-      constProp.addAssignEqual(
-        connect.toLinkPortPath.asIndirect + connectedStep,
-        connect.toBlockPortPath.asIndirect + connectedStep,
-        connect.root,
-        "connect"
-      )
+    if (!connect.tap) {
+      for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
+        constProp.addAssignEqual(
+          connect.toLinkPortPath.asIndirect + connectedStep,
+          connect.toBlockPortPath.asIndirect + connectedStep,
+          connect.root,
+          "connect"
+        )
+      }
     }
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
@@ -295,7 +297,8 @@ class Compiler private (
             ElaborateRecord.Connect(
               connect.toLinkPortPath + portName,
               connect.toBlockPortPath + portName,
-              connect.root
+              connect.root,
+              connect.tap
             ),
             Seq()
           )
@@ -498,9 +501,8 @@ class Compiler private (
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             if (!isInLink) {
-              require(!exported.tap, "TODO support export tap")
               elaboratePending.addNode(
-                ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
+                ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath, tap = exported.tap),
                 Seq(ElaborateRecord.Port(blockPath ++ extPort))
               )
               constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
