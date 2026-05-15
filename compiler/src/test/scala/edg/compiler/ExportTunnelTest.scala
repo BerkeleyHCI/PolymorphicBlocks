@@ -14,7 +14,7 @@ import scala.collection.SeqMap
 
 /** Tests tunnel exports.
   */
-class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
+class ExportTunnelTest extends AnyFlatSpec with CompilerTestUtil {
   import edgir.expr.expr.UnarySetExpr.Op
   val library = Library(
     ports = Seq(
