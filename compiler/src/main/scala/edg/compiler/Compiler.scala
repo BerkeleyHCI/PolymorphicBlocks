@@ -278,14 +278,16 @@ class Compiler private (
     // All connected ports should have params
     val toLinkPort = resolvePort(connect.toLinkPortPath).asInstanceOf[wir.HasParams]
     val connectedParam = toLinkPort.getParams.keys.map(IndirectStep.Element(_))
-    if (!connect.tap) {
-      for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
+    for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
+      if (!connect.tap) {
         constProp.addAssignEqual(
           connect.toLinkPortPath.asIndirect + connectedStep,
           connect.toBlockPortPath.asIndirect + connectedStep,
           connect.root,
           "connect"
         )
+      } else {
+        constProp.addRequiredEmpty(connect.toBlockPortPath.asIndirect + connectedStep)
       }
     }
 
