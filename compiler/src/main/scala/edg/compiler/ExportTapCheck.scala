@@ -24,13 +24,16 @@ class ExportTapCheck(compiler: Compiler)
     val (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) = (exported.getExteriorPort, exported.getInternalBlockPort)
     portParams(containingPath ++ extPort).flatMap { paramName =>
       val paramPath = containingPath.asIndirect ++ intPort + paramName
-      compiler.getValue(paramPath) match {
+      val exportedErrors = compiler.getValue(paramPath) match {
         case Some(_) => Seq(CompilerError.ExprError(
             paramPath,
             "export tap internal port parameter must be undefined"
           ))
         case None => Seq()
       }
+      exportedErrors ++ exported.expanded.flatMap(expr =>
+        mapExported(containingPath, exportName, expr)
+      )
     }
   }
 
@@ -57,17 +60,17 @@ class ExportTapCheck(compiler: Compiler)
               "inconsistent export tap array port elements"
             ))
           }
-        exportedArrayContainerErrors ++ exported.expanded.flatMap(expr =>
-          mapExported(containingPath, constrName, expr)
-        )
-      case _ => Seq() // non-assertions ignored
+        exportedArrayContainerErrors ++ mapExported(containingPath, constrName, exported)
+      case _ => Seq() // other constructs ignored
     }
   }
 
   override def mapPort(path: DesignPath, port: elem.Port, ports: SeqMap[String, Unit]): Unit = {
     portParams.put(path, port.params.asPairs.map { case (name, _) => name }.toSeq)
   }
-  override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {}
+  override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {
+    portParams.put(path, Seq())
+  }
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {}
 
   override def mapBlock(
