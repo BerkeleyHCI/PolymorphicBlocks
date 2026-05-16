@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, Dict, List, cast
+from typing import Optional, Dict, List, cast, override
 
 from .. import edgir
 from ..core import TransformUtil, CompiledDesign
@@ -18,12 +18,22 @@ class BoardScopedTransform(TransformUtil.Transform):
             TransformUtil.Path.empty(): TransformUtil.Path.empty()
         }  # always initialized in parent
 
-    @abstractmethod
     def visit_block_scoped(
         self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, block: edgir.BlockTypes
     ) -> None:
-        raise NotImplementedError
+        pass
 
+    def visit_link_scoped(
+        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.Link
+    ) -> None:
+        pass
+
+    def visit_linkarray_scoped(
+        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.LinkArray
+    ) -> None:
+        pass
+
+    @override
     def visit_block(self, context: TransformContext, block: edgir.HierarchyBlock) -> None:
         scope = self._board_scopes[context.path]
 
@@ -46,3 +56,9 @@ class BoardScopedTransform(TransformUtil.Transform):
                 self._board_scopes[context.path.append_block(block_pair.name)] = scope
 
         self.visit_block_scoped(context, scope, block)
+
+    def visit_link(self, context: TransformContext, link: edgir.Link) -> None:
+        self.visit_link_scoped(context, self._board_scopes[context.path.block_component()], link)
+
+    def visit_linkarray(self, context: TransformContext, link: edgir.LinkArray) -> None:
+        self.visit_linkarray_scoped(context, self._board_scopes[context.path.block_component()], link)

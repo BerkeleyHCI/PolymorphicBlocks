@@ -4,6 +4,7 @@ from typing import *
 
 from typing_extensions import override
 
+from .BoradScopedTransform import BoardScopedTransform
 from .. import edgir
 from ..core import *
 
@@ -63,7 +64,7 @@ ClassPaths = Dict[
 ]  # Path -> class names corresponding to shortened path name
 
 
-class NetlistTransform(TransformUtil.Transform):
+class NetlistTransform(BoardScopedTransform):
     @staticmethod
     def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
         if port.HasField("port"):
@@ -79,50 +80,32 @@ class NetlistTransform(TransformUtil.Transform):
             raise ValueError(f"don't know how to flatten netlistable port {port}")
 
     def __init__(self, design: CompiledDesign):
+        super().__init__(design)
+
         self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
         self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
         self.path_traverse_order: List[TransformUtil.Path] = []
 
-        self.design = design
-
     def process_blocklike(
-        self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
+        self,
+        path: TransformUtil.Path,
+        scope: Optional[TransformUtil.Path],
+        block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock],
     ) -> None:
-        scope = self.scopes[path]  # including footprint and exports, and everything within a link
+        if scope is not None:
+            scope_obj: Optional[BoardScope] = self.scopes[scope]
+        else:
+            scope_obj = None
 
         if isinstance(block, edgir.HierarchyBlock):
-            if "fp_subboard" in block.meta.members.node:
-                fp_external_blocks = self.design.get_value(path.to_tuple() + ("fp_external_blocks",))
-                assert isinstance(fp_external_blocks, list)
-                external_blocks: Optional[List[str]] = cast(List[str], fp_external_blocks)
-                if "fp_subblocks_ignored" in block.meta.members.node:
-                    internal_scope = None
-                else:
-                    raise NotImplementedError("support subboard")
-            else:
-                external_blocks = None
-                internal_scope = scope
-
-            for block_pair in block.blocks:
-                if external_blocks is not None and block_pair.name not in external_blocks:
-                    self.scopes[path.append_block(block_pair.name)] = internal_scope
-                else:
-                    self.scopes[path.append_block(block_pair.name)] = scope
-            for link_pair in block.links:  # links considered to be the same scope as self
-                self.scopes[path.append_link(link_pair.name)] = scope
-
             class_path = self.class_paths[path]
             for block_pair in block.blocks:
                 self.class_paths[path.append_block(block_pair.name)] = class_path + [
                     block_pair.value.hierarchy.self_class
                 ]
 
-        elif isinstance(block, (edgir.Link, edgir.LinkArray)):
-            for link_pair in block.links:
-                self.scopes[path.append_link(link_pair.name)] = scope
-
-        if "nets" in block.meta.members.node and scope is not None:
+        if "nets" in block.meta.members.node and scope_obj is not None:
             # add self as a net
             # list conversion to deal with iterable-once
             flat_ports = list(
@@ -130,11 +113,11 @@ class NetlistTransform(TransformUtil.Transform):
                     *[self.flatten_port(path.append_port(port_pair.name), port_pair.value) for port_pair in block.ports]
                 )
             )
-            scope.edges.setdefault(path, []).extend(flat_ports)
+            scope_obj.edges.setdefault(path, []).extend(flat_ports)
             for port_path in flat_ports:
-                scope.edges.setdefault(port_path, []).append(path)
+                scope_obj.edges.setdefault(port_path, []).append(path)
 
-        if "nets_packed" in block.meta.members.node and scope is not None:
+        if "nets_packed" in block.meta.members.node and scope_obj is not None:
             # this connects the first source to all destinations, then asserts all the sources are equal
             # this leaves the sources unconnected, to be connected externally and checked at the end
             src_port_name = block.meta.members.node["nets_packed"].members.node["src"].text_leaf
@@ -147,20 +130,20 @@ class NetlistTransform(TransformUtil.Transform):
             )
             assert flat_srcs, "missing source port(s) for packed net"
             for dst_path in flat_dsts:
-                scope.edges.setdefault(flat_srcs[0], []).append(dst_path)
-                scope.edges.setdefault(dst_path, []).append(flat_srcs[0])
+                scope_obj.edges.setdefault(flat_srcs[0], []).append(dst_path)
+                scope_obj.edges.setdefault(dst_path, []).append(flat_srcs[0])
             for src_path in flat_srcs:  # assert all sources connected
                 for dst_path in flat_srcs:
-                    scope.assert_connected.append((src_path, dst_path))
+                    scope_obj.assert_connected.append((src_path, dst_path))
 
-        if "fp_is_footprint" in block.meta.members.node and scope is not None:
-            footprint_name = self.design.get_value(path.to_tuple() + ("fp_footprint",))
-            footprint_pinning = self.design.get_value(path.to_tuple() + ("fp_pinning",))
-            mfr = self.design.get_value(path.to_tuple() + ("fp_mfr",))
-            part = self.design.get_value(path.to_tuple() + ("fp_part",))
-            value = self.design.get_value(path.to_tuple() + ("fp_value",))
-            refdes = self.design.get_value(path.to_tuple() + ("fp_refdes",))
-            lcsc_part = self.design.get_value(path.to_tuple() + ("lcsc_part",))
+        if "fp_is_footprint" in block.meta.members.node and scope_obj is not None:
+            footprint_name = self._design.get_value(path.to_tuple() + ("fp_footprint",))
+            footprint_pinning = self._design.get_value(path.to_tuple() + ("fp_pinning",))
+            mfr = self._design.get_value(path.to_tuple() + ("fp_mfr",))
+            part = self._design.get_value(path.to_tuple() + ("fp_part",))
+            value = self._design.get_value(path.to_tuple() + ("fp_value",))
+            refdes = self._design.get_value(path.to_tuple() + ("fp_refdes",))
+            lcsc_part = self._design.get_value(path.to_tuple() + ("lcsc_part",))
 
             assert isinstance(footprint_name, str)
             assert isinstance(footprint_pinning, list)
@@ -173,7 +156,9 @@ class NetlistTransform(TransformUtil.Transform):
             part_comps = [part, f"({mfr})" if mfr else ""]
             part_str = " ".join(filter(None, part_comps))
             value_str = value if value else (part if part else "")
-            scope.footprints[path] = NetBlock(footprint_name, refdes, part_str, value_str, path, self.class_paths[path])
+            scope_obj.footprints[path] = NetBlock(
+                footprint_name, refdes, part_str, value_str, path, self.class_paths[path]
+            )
 
             for pin_spec in footprint_pinning:
                 assert isinstance(pin_spec, str)
@@ -183,23 +168,23 @@ class NetlistTransform(TransformUtil.Transform):
                 pin_port_path = edgir.LocalPathList(pin_spec_split[1].split("."))
 
                 src_path = path.follow(pin_port_path, block)[0]
-                scope.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
-                scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
+                scope_obj.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
+                scope_obj.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
         for constraint_pair in block.constraints:
-            if scope is not None:
+            if scope_obj is not None:
                 if constraint_pair.value.HasField("connected"):
-                    self.process_connected(path, block, scope, constraint_pair.value.connected)
+                    self.process_connected(path, block, scope_obj, constraint_pair.value.connected)
                 elif constraint_pair.value.HasField("connectedArray"):
                     for expanded_connect in constraint_pair.value.connectedArray.expanded:
-                        self.process_connected(path, block, scope, expanded_connect)
+                        self.process_connected(path, block, scope_obj, expanded_connect)
                 elif constraint_pair.value.HasField("exported"):
-                    self.process_exported(path, block, scope, constraint_pair.value.exported)
+                    self.process_exported(path, block, scope_obj, constraint_pair.value.exported)
                 elif constraint_pair.value.HasField("exportedArray"):
                     for expanded_export in constraint_pair.value.exportedArray.expanded:
-                        self.process_exported(path, block, scope, expanded_export)
+                        self.process_exported(path, block, scope_obj, expanded_export)
                 elif constraint_pair.value.HasField("exportedTunnel"):
-                    self.process_exported(path, block, scope, constraint_pair.value.exportedTunnel)
+                    self.process_exported(path, block, scope_obj, constraint_pair.value.exportedTunnel)
 
     def process_connected(
         self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope, constraint: edgir.ConnectedExpr
@@ -253,19 +238,25 @@ class NetlistTransform(TransformUtil.Transform):
             raise ValueError(f"can't connect types {elt1}, {elt2}")
 
     @override
-    def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
+    def visit_block_scoped(
+        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, block: edgir.BlockTypes
+    ) -> None:
         self.path_traverse_order.append(context.path)
-        self.process_blocklike(context.path, block)
+        self.process_blocklike(context.path, scope, block)
 
     @override
-    def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
+    def visit_link_scoped(
+        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.Link
+    ) -> None:
         self.path_traverse_order.append(context.path)
-        self.process_blocklike(context.path, link)
+        self.process_blocklike(context.path, scope, link)
 
     @override
-    def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
+    def visit_linkarray_scoped(
+        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.LinkArray
+    ) -> None:
         self.path_traverse_order.append(context.path)
-        self.process_blocklike(context.path, link)
+        self.process_blocklike(context.path, scope, link)
 
     @override
     def visit_portlike(self, context: TransformUtil.TransformContext, port: edgir.PortLike) -> None:
@@ -352,7 +343,7 @@ class NetlistTransform(TransformUtil.Transform):
             key=lambda pair: path_ordering[pair[0].port_component(must_have_port=False)],
         )
 
-        board_refdes_prefix = self.design.get_value(("refdes_prefix",))
+        board_refdes_prefix = self._design.get_value(("refdes_prefix",))
         if board_refdes_prefix is not None:
             assert isinstance(board_refdes_prefix, str)
             net_prefix = board_refdes_prefix
@@ -381,7 +372,7 @@ class NetlistTransform(TransformUtil.Transform):
         return Netlist(netlist_footprints, netlist_nets)
 
     def run(self) -> Netlist:
-        self.transform_design(self.design.design)
+        self.transform_design(self._design.design)
 
         return self.scope_to_netlist(self.all_scopes[0])  # TODO support multiple scopes
 
