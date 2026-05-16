@@ -73,7 +73,7 @@ class TestArrayWrapperCircuit(DesignTop):
         self.sink = self.Block(SinkArrayWrapperBlock())
 
         self.vpos = self.connect(self.source.pos, self.sink.ports.request("1"))
-        self.vneg = self.connect(self.source.neg, self.sink.ports.request("2"))
+        self.gnd = self.connect(self.source.neg, self.sink.ports.request("2"))
 
 
 class NetlistArrayWrapperTestCase(unittest.TestCase):
@@ -103,6 +103,7 @@ class NetlistArrayWrapperTestCase(unittest.TestCase):
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("ports", "1", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "model").append_port("ports", "1", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("ports", "1", "net"),
                 ],
             ),
@@ -115,6 +116,7 @@ class NetlistArrayWrapperTestCase(unittest.TestCase):
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("ports", "2", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "model").append_port("ports", "2", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("ports", "2", "net"),
                 ],
             ),

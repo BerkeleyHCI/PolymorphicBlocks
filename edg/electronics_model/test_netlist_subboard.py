@@ -97,10 +97,9 @@ class SinkWrapperPassiveBlock(WrapperSubboardBlock):
         super().contents()
 
         # these define the modeling and are internal
-        self.model1 = self.Block(TestFakeSink())
-        self.model2 = self.Block(TestFakeSink())
-        self.vpos = self.connect(self.pos, self.model1.pos, self.model2.pos)
-        self.gnd = self.connect(self.neg, self.model1.neg, self.model2.neg)
+        self.model = self.Block(TestFakeSink())
+        self.vpos = self.connect(self.pos, self.model.pos)
+        self.gnd = self.connect(self.neg, self.model.neg)
 
         # these define the external interface block
         self.wrapper = self.Block(SinkWrapperPassiveExterior(), external=True)
@@ -192,6 +191,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "model").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos"),
                 ],
             ),
@@ -204,6 +204,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "model").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg"),
                 ],
             ),
