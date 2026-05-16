@@ -2,12 +2,32 @@ import unittest
 
 from typing_extensions import override
 
+from .. import FootprintBlock
 from ..core import Block, TransformUtil
 from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
-from . import WrapperFootprintBlock, VoltageSink
+from . import SubboardBlock, VoltageSink
 
 
-class SinkWrapperBlock(WrapperFootprintBlock):
+class SinkWrapperExterior(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.pos = self.Port(VoltageSink.empty())  # must remain empty
+        self.neg = self.Port(VoltageSink.empty())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.footprint(  # only this footprint shows up
+            "L",
+            "Inductor_SMD:L_0603_1608Metric",  # distinct footprint and value from internal blocks
+            {"1": self.pos, "2": self.neg},
+            value="100",
+        )
+
+
+class SinkWrapperBlock(SubboardBlock):
     """Wrapper block with a single footprint for two internal sinks whose footprints are ignored."""
 
     def __init__(self) -> None:
@@ -20,17 +40,16 @@ class SinkWrapperBlock(WrapperFootprintBlock):
     def contents(self) -> None:
         super().contents()
 
+        # these define the modeling and are internal
         self.model1 = self.Block(TestFakeSink())
         self.model2 = self.Block(TestFakeSink())
         self.vpos = self.connect(self.pos, self.model1.pos, self.model2.pos)
         self.gnd = self.connect(self.neg, self.model1.neg, self.model2.neg)
 
-        self.footprint(  # only this footprint shows up
-            "L",
-            "Inductor_SMD:L_0603_1608Metric",  # distinct footprint and value from internal blocks
-            {"1": self.pos, "2": self.neg},
-            value="100",
-        )
+        # these define the external interface block
+        self.wrapper = self.Block(SinkWrapperBlock(), external=True)
+        self.export_tap(self.pos, self.wrapper.pos)
+        self.export_tap(self.neg, self.wrapper.neg)
 
 
 class TestWrapperCircuit(Block):
