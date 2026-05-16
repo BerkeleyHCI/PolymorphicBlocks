@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Optional, Dict, List, cast, override
 
 from .. import edgir
@@ -19,17 +18,17 @@ class BoardScopedTransform(TransformUtil.Transform):
         }  # always initialized in parent
 
     def visit_block_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, block: edgir.BlockTypes
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], block: edgir.BlockTypes
     ) -> None:
         pass
 
     def visit_link_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.Link
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], link: edgir.Link
     ) -> None:
         pass
 
     def visit_linkarray_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.LinkArray
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], link: edgir.LinkArray
     ) -> None:
         pass
 
@@ -57,8 +56,10 @@ class BoardScopedTransform(TransformUtil.Transform):
 
         self.visit_block_scoped(context, scope, block)
 
+    @override
     def visit_link(self, context: TransformContext, link: edgir.Link) -> None:
         self.visit_link_scoped(context, self._board_scopes[context.path.block_component()], link)
 
+    @override
     def visit_linkarray(self, context: TransformContext, link: edgir.LinkArray) -> None:
         self.visit_linkarray_scoped(context, self._board_scopes[context.path.block_component()], link)

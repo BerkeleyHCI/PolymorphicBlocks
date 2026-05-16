@@ -34,7 +34,7 @@ class RefdesTransform(BoardScopedTransform):
 
     @override
     def visit_block_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, block: edgir.BlockTypes
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], block: edgir.BlockTypes
     ) -> None:
         if "fp_is_footprint" in block.meta.members.node and scope is not None:
             refdes_prefix = self._design.get_value(context.path.to_tuple() + ("fp_refdes_prefix",))

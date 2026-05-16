@@ -239,21 +239,21 @@ class NetlistTransform(BoardScopedTransform):
 
     @override
     def visit_block_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, block: edgir.BlockTypes
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], block: edgir.BlockTypes
     ) -> None:
         self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, scope, block)
 
     @override
     def visit_link_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.Link
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], link: edgir.Link
     ) -> None:
         self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, scope, link)
 
     @override
     def visit_linkarray_scoped(
-        self, context: TransformUtil.TransformContext, scope: TransformUtil.Path, link: edgir.LinkArray
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], link: edgir.LinkArray
     ) -> None:
         self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, scope, link)

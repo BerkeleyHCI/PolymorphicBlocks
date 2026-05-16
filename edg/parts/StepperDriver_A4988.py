@@ -245,6 +245,7 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
         self.out2a = self.Port(DigitalSource.empty())
         self.out2b = self.Port(DigitalSource.empty())
 
+    @override
     def contents(self) -> None:
         self.footprint(
             "U",
@@ -300,8 +301,6 @@ class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock, GeneratorBlock):
     @override
     def generate(self) -> None:
         super().generate()
-
-        self.connect(self.pwr, self.model.vbb2)
 
         self.wrapper = self.Block(PololuA4988_Device(), external=True)
 
