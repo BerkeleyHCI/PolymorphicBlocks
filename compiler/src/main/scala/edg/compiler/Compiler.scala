@@ -852,12 +852,17 @@ class Compiler private (
 
                     case expr.ValueExpr.Expr.ExportedArray(exported) => // note internal port is portPostfix
                       val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
-                      constProp.addAssignEqual(
-                        path.asIndirect ++ extPostfix + IndirectStep.Elements,
-                        path.asIndirect ++ portPostfix + IndirectStep.Elements,
-                        path,
-                        constrName
-                      )
+                      if (!exported.tap) {
+                        // elements propagates outwards in non-tap case, elements do not propagate in tap case
+                        constProp.addAssignEqual(
+                          path.asIndirect ++ extPostfix + IndirectStep.Elements,
+                          path.asIndirect ++ portPostfix + IndirectStep.Elements,
+                          path,
+                          constrName
+                        )
+                      } else {
+                        // TODO: assert elements equal in tap case
+                      }
                       constProp.addAssignEqual(
                         path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                         path.asIndirect ++ extPostfix + IndirectStep.Allocated,

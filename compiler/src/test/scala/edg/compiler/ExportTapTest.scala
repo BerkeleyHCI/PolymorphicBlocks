@@ -81,9 +81,8 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       Block.Block(
         "emptyLeafArrayBlock",
-        ports = SeqMap(
-          "port" -> Port.Array("port"), // does not contribute concrete values
-        ),
+        ports = SeqMap( // port definition must be synchronized with the outer block
+          "port" -> Port.Array("port", Seq("0", "1"), Port.Library("port"))),
       ),
       Block.Block(
         "exportArrayTapBlock",
@@ -184,7 +183,7 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
     ))
     val (compiler, compiled) = testCompile(inputDesign, library)
 
-    compiler.getValue(IndirectDesignPath() + "tap" + "tap" + "port" + IndirectStep.Allocated) should equal(
+    compiler.getValue(IndirectDesignPath() + "tap" + "innerTap" + "port" + IndirectStep.Allocated) should equal(
       Some(ArrayValue(Seq(TextValue("0"), TextValue("1"))))
     )
     compiler.getValue(IndirectDesignPath() + "link" + "floatSum") should equal(
