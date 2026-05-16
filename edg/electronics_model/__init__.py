@@ -2,7 +2,6 @@ from ..core import *
 
 from .CircuitBlock import (
     FootprintBlock,
-    WrapperFootprintBlock,
     CircuitPortBridge,
     CircuitPortAdapter,
     NetBlock,

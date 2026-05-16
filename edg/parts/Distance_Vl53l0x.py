@@ -1,6 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
+from .PassiveConnector_Header import PinSocket254
 from .JlcPart import JlcPart
 
 
@@ -100,7 +101,7 @@ class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
         self.vdd_cap[1] = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
 
-class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
+class Vl53l0xConnector(Vl53l0x, WrapperSubboardBlock):
     """Connector to an external VL53L0X breakout board.
     Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
     This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd
@@ -110,18 +111,13 @@ class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
     @override
     def generate(self) -> None:
         super().generate()
-        self.footprint(
-            "J",
-            "Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical",
-            {
-                "1": self.pwr,
-                "2": self.gnd,
-                "3": self.i2c.scl,
-                "4": self.i2c.sda,
-                "5": self.ic.gpio1,
-                "6": self.ic.xshut,
-            },
-        )
+        self.conn = self.Block(PinSocket254(6), external=True)
+        self.export_tap(self.pwr.net, self.conn.pins.request("1"))
+        self.export_tap(self.gnd.net, self.conn.pins.request("2"))
+        self.export_tap(self.i2c.scl.net, self.conn.pins.request("3"))
+        self.export_tap(self.i2c.sda.net, self.conn.pins.request("4"))
+        self.export_tap(self.ic.gpio1.net, self.conn.pins.request("5"))
+        self.export_tap(self.ic.xshut.net, self.conn.pins.request("6"))
 
 
 class Vl53l0xArray(DistanceSensor, GeneratorBlock):

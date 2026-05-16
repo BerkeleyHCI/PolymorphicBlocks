@@ -140,7 +140,6 @@ class NetlistWrapperTestCase(unittest.TestCase):
         )
         self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
 
-        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
         self.assertIn(
             Net(
                 "vpos",
@@ -165,6 +164,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
             ),
             net.nets,
         )
+        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
 
     def test_wrapper_passive_netlist(self) -> None:
         net = NetlistTestCase.generate_net(TestWrapperPassiveCircuit)
@@ -185,7 +185,6 @@ class NetlistWrapperTestCase(unittest.TestCase):
         )
         self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
 
-        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
         self.assertIn(
             Net(
                 "vpos",
@@ -210,3 +209,4 @@ class NetlistWrapperTestCase(unittest.TestCase):
             ),
             net.nets,
         )
+        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
