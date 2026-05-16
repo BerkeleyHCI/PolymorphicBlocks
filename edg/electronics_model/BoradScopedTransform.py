@@ -34,7 +34,7 @@ class BoardScopedTransform(TransformUtil.Transform):
             if "fp_subblocks_ignored" in block.meta.members.node:
                 internal_scope = None
             else:
-                raise NotImplementedError("support subboard")
+                internal_scope = context.path
         else:
             external_blocks = None
             internal_scope = scope
