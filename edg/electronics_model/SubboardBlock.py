@@ -2,7 +2,9 @@ from typing import List, Tuple, override, Any
 from typing_extensions import TypeVar
 
 from ..core import *
+from ..core.Core import Refable
 from ..core.HdlUserExceptions import UnconnectableError
+from .. import edgir
 
 
 class SubboardBlock(Block):
@@ -41,6 +43,21 @@ class SubboardBlock(Block):
         if type(exterior_port) != type(internal_port):
             raise UnconnectableError("Exported ports must be the same type")
         self._export_taps.append((exterior_port, internal_port))
+
+    @override
+    def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
+        super()._populate_def_proto_hierarchy(pb, ref_map)
+        for exterior_port, internal_port in self._export_taps:
+            internal_port_name = internal_port._name_from(self).replace(".", "_")
+            constraint_pb = edgir.add_pair(pb.constraints, f"(export_tap){internal_port_name}")
+            if isinstance(exterior_port, Vector):
+                constraint_pb.exportedArray.exterior_port.ref.CopyFrom(ref_map[exterior_port])
+                constraint_pb.exportedArray.internal_block_port.ref.CopyFrom(ref_map[internal_port])
+                constraint_pb.exportedArray.tap = True
+            else:
+                constraint_pb.exported.exterior_port.ref.CopyFrom(ref_map[exterior_port])
+                constraint_pb.exported.internal_block_port.ref.CopyFrom(ref_map[internal_port])
+                constraint_pb.exported.tap = True
 
 
 class WrapperSubboardBlock(SubboardBlock):
