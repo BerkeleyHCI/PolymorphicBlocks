@@ -232,19 +232,18 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
         self.step = self.Port(DigitalSink.empty())
         self.dir = self.Port(DigitalSink.empty())
 
-        self.reset = self.Port(DigitalSink.empty(), optional=True)
-        self.sleep = self.Port(DigitalSink.empty(), optional=True)
         self.enable = self.Port(DigitalSink.empty(), optional=True)
         self.reset = self.Port(DigitalSink.empty(), optional=True)
+        self.sleep = self.Port(DigitalSink.empty(), optional=True)
 
         self.ms1 = self.Port(DigitalSink.empty())
         self.ms2 = self.Port(DigitalSink.empty())
         self.ms3 = self.Port(DigitalSink.empty())
 
         self.out1a = self.Port(DigitalSource.empty())
-        self.out1b = self.Export(DigitalSource.empty())
-        self.out2a = self.Export(DigitalSource.empty())
-        self.out2b = self.Export(DigitalSource.empty())
+        self.out1b = self.Port(DigitalSource.empty())
+        self.out2a = self.Port(DigitalSource.empty())
+        self.out2b = self.Port(DigitalSource.empty())
 
     def contents(self) -> None:
         self.footprint(
@@ -282,10 +281,10 @@ class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock, GeneratorBlock):
         self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
         self.generator_param(self.step_resolution)
 
-        self.model = self.Block(A4988())
+        self.model = self.Block(A4988(itrip=2 * Amp(tol=0.15)))
         self.gnd = self.Export(self.model.gnd, [Common])
-        self.pwr = self.Export(self.model.vbb1)
-        self.pwr_logic = self.Export(self.model.vdd)
+        self.pwr = self.Export(self.model.pwr)
+        self.pwr_logic = self.Export(self.model.pwr_logic)
 
         self.step = self.Export(self.model.step)
         self.dir = self.Export(self.model.dir)
