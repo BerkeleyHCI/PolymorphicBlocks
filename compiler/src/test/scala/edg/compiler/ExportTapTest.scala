@@ -189,5 +189,10 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "link" + "floatSum") should equal(
       Some(FloatValue(3.0))
     )
+    compiler.getValue(
+      IndirectDesignPath() + "tap" + "innerTap" + "port" + "0" + IndirectStep.ConnectedLink + "floatSum"
+    ) should equal(
+      Some(FloatValue(3.0))
+    )
   }
 }
