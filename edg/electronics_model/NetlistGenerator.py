@@ -94,7 +94,7 @@ class NetlistTransform(BoardScopedTransform):
         block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock],
     ) -> None:
         if scope is not None:
-            scope_obj: Optional[BoardScope] = self.scopes[scope]
+            scope_obj: Optional[BoardScope] = self.scopes.setdefault(scope, BoardScope.empty(scope))
         else:
             scope_obj = None
 
@@ -374,7 +374,8 @@ class NetlistTransform(BoardScopedTransform):
     def run(self) -> Netlist:
         self.transform_design(self._design.design)
 
-        return self.scope_to_netlist(self.all_scopes[0])  # TODO support multiple scopes
+        assert len(self.all_scopes) == 1, "TODO: support multiple boards"
+        return self.scope_to_netlist(self.all_scopes[0])
 
 
 class PathShortener:
