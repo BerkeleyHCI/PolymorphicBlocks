@@ -12,7 +12,7 @@ from . import WrapperSubboardBlock, VoltageSink
 class TestFakeSinkArray(GeneratorBlock, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.ports = self.Port(Vector(VoltageSink()))  # must remain empty
+        self.ports = self.Port(Vector(VoltageSink()))
         self.generator_param(self.ports.requested())
 
     @override
