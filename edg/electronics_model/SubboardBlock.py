@@ -16,6 +16,8 @@ class SubboardBlock(Block):
         self._external_blocks: List[Block] = []
         self._export_taps: List[Tuple[Port, Port]] = []
 
+        self.fp_external_blocks = self.Parameter(ArrayStringExpr())  # names of all external blocks
+
     BlockType = TypeVar("BlockType", bound=Block)
 
     @override
@@ -46,7 +48,10 @@ class SubboardBlock(Block):
 
     @override
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
+        self.assign(self.fp_external_blocks, [self._blocks.name_of(block) for block in self._external_blocks])
+
         super()._populate_def_proto_hierarchy(pb, ref_map)
+
         for exterior_port, internal_port in self._export_taps:
             internal_port_name = internal_port._name_from(self).replace(".", "_")
             constraint_pb = edgir.add_pair(pb.constraints, f"(export_tap){internal_port_name}")

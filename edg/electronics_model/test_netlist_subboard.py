@@ -2,10 +2,10 @@ import unittest
 
 from typing_extensions import override
 
-from .. import FootprintBlock
+from .. import FootprintBlock, DesignTop
 from ..core import Block, TransformUtil
 from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
-from . import SubboardBlock, VoltageSink
+from . import SubboardBlock, WrapperSubboardBlock, VoltageSink
 
 
 class SinkWrapperExterior(FootprintBlock):
@@ -27,7 +27,7 @@ class SinkWrapperExterior(FootprintBlock):
         )
 
 
-class SinkWrapperBlock(SubboardBlock):
+class SinkWrapperBlock(WrapperSubboardBlock):
     """Wrapper block with a single footprint for two internal sinks whose footprints are ignored."""
 
     def __init__(self) -> None:
@@ -52,7 +52,7 @@ class SinkWrapperBlock(SubboardBlock):
         self.export_tap(self.neg, self.wrapper.neg)
 
 
-class TestWrapperCircuit(Block):
+class TestWrapperCircuit(DesignTop):
     @override
     def contents(self) -> None:
         super().contents()
