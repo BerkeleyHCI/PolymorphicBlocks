@@ -11,8 +11,6 @@ import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.SeqMap
 
-/** Tests export taps.
-  */
 class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
   import edgir.expr.expr.UnarySetExpr.Op
   val library = Library(
