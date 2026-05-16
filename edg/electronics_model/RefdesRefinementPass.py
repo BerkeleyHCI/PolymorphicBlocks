@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Set, Optional
+from typing import List, Tuple, Dict, Set, Optional, cast
 
 from typing_extensions import override
 
@@ -38,12 +38,25 @@ class RefdesTransform(TransformUtil.Transform):
     @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
         scope = self.scopes[context.path]
-        internal_scope = scope
-        if "fp_is_wrapper" in block.meta.members.node:  # wrapper internal blocks ignored
-            internal_scope = None
+
+        # TODO: deduplicate this with NetlistTransform scopes logic
+        if "fp_subboard" in block.meta.members.node:
+            fp_external_blocks = self.design.get_value(context.path.to_tuple() + ("fp_external_blocks",))
+            assert isinstance(fp_external_blocks, list)
+            external_blocks: Optional[List[str]] = cast(List[str], fp_external_blocks)
+            if "fp_subblocks_ignored" in block.meta.members.node:
+                internal_scope = None
+            else:
+                raise NotImplementedError("support subboard")
+        else:
+            external_blocks = None
+            internal_scope = scope
 
         for block_pair in block.blocks:
-            self.scopes[context.path.append_block(block_pair.name)] = internal_scope
+            if external_blocks is not None and block_pair.name not in external_blocks:
+                self.scopes[context.path.append_block(block_pair.name)] = internal_scope
+            else:
+                self.scopes[context.path.append_block(block_pair.name)] = scope
 
         if "fp_is_footprint" in block.meta.members.node and scope is not None:
             refdes_prefix = self.design.get_value(context.path.to_tuple() + ("fp_refdes_prefix",))
