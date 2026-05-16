@@ -236,14 +236,15 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
         self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.sleep = self.Port(DigitalSink.empty(), optional=True)
 
-        self.ms1 = self.Port(DigitalSink.empty())
-        self.ms2 = self.Port(DigitalSink.empty())
-        self.ms3 = self.Port(DigitalSink.empty())
-
         self.out1a = self.Port(DigitalSource.empty())
         self.out1b = self.Port(DigitalSource.empty())
         self.out2a = self.Port(DigitalSource.empty())
         self.out2b = self.Port(DigitalSource.empty())
+
+        # unlike the other ports, these are directly connected and not tapped and must have modeling
+        self.ms1 = self.Port(DigitalSink())
+        self.ms2 = self.Port(DigitalSink())
+        self.ms3 = self.Port(DigitalSink())
 
     @override
     def contents(self) -> None:

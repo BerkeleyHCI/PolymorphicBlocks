@@ -3,7 +3,7 @@ import unittest
 from typing_extensions import override
 
 from .. import FootprintBlock, DesignTop
-from ..core import Block, TransformUtil
+from ..core import TransformUtil
 from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
 from . import SubboardBlock, WrapperSubboardBlock, VoltageSink, Passive
 
