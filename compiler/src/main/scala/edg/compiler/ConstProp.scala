@@ -53,8 +53,6 @@ class ConstProp() {
 
   // This tracks overassign errors and their sources, which otherwise breaks the immutability of the dependency graph
   private val overassigns = mutable.HashMap[IndirectDesignPath, mutable.HashSet[IndirectDesignPath]]()
-  // This tracks which parameters must be empty (undefined)
-  private val requiredEmpty = mutable.HashSet[IndirectDesignPath]()
 
   private val connectedLink = DependencyGraph[ConnectedLinkRecord, ConnectedLinkPort]() // tracks the port -> link paths
 
@@ -261,11 +259,6 @@ class ConstProp() {
     )
   }
 
-  /** Adds a requirement that some param is undefined */
-  def addRequiredEmpty(target: IndirectDesignPath): Unit = {
-    requiredEmpty.add(target)
-  }
-
   /** Returns the value of a parameter, or None if it does not have a value (yet?). Can be used to check if parameters
     * are resolved yet by testing against None. Overassigns return their first value for consistency.
     */
@@ -316,8 +309,6 @@ class ConstProp() {
       ExprError(target, msg)
     } ++ getOverassignValues.map {
       case (target, error) => ExprError(target, error.msg.get)
-    } ++ requiredEmpty.collect {
-      case target if params.getValue(target).isDefined => ExprError(target, "must be undefined")
     }).toSeq
   }
 }
