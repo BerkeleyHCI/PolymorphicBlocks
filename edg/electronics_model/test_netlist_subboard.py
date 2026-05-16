@@ -47,7 +47,7 @@ class SinkWrapperBlock(SubboardBlock):
         self.gnd = self.connect(self.neg, self.model1.neg, self.model2.neg)
 
         # these define the external interface block
-        self.wrapper = self.Block(SinkWrapperBlock(), external=True)
+        self.wrapper = self.Block(SinkWrapperExterior(), external=True)
         self.export_tap(self.pos, self.wrapper.pos)
         self.export_tap(self.neg, self.wrapper.neg)
 
