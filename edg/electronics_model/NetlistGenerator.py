@@ -4,7 +4,7 @@ from typing import *
 
 from typing_extensions import override
 
-from .BoradScopedTransform import BoardScopedTransform
+from .BoardScopedTransform import BoardScopedTransform
 from .. import edgir
 from ..core import *
 

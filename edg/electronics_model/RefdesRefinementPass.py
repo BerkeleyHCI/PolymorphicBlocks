@@ -2,7 +2,7 @@ from typing import List, Tuple, Dict, Set, Optional, cast
 
 from typing_extensions import override
 
-from .BoradScopedTransform import BoardScopedTransform
+from .BoardScopedTransform import BoardScopedTransform
 from .. import edgir
 from ..core import CompiledDesign, TransformUtil
 from ..core.BaseRefinementPass import BaseRefinementPass
