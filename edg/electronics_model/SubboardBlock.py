@@ -9,7 +9,11 @@ from .. import edgir
 
 class SubboardBlock(Block):
     """A block that is a sub-board, where all its blocks not marked external are part of a different board.
-    Provides the export_tap construct to tack connectors onto ports without breaking modeling."""
+    Provides the export_tap construct to tack connectors onto ports without breaking modeling.
+
+    IMPORTANT: pseudo-blocks like bridges and adapters are considered internal blocks and do not affect
+    netlisting in the exterior board. In general, external blocks should only be connected via export-tap
+    and not direct connections where they may generate pseudo-blocks that end up in the wrong board."""
 
     def __init__(self) -> None:
         super().__init__()

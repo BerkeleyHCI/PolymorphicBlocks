@@ -221,9 +221,11 @@ class A4988(GeneratorBlock):
             self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
 
 
-class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
-    def __init__(self) -> None:
+class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
+    def __init__(self, step_resolution: IntLike) -> None:
         super().__init__()
+        self.step_resolution = self.ArgParameter(step_resolution)
+        self.generator_param(self.step_resolution)
 
         self.gnd = self.Port(Ground.empty())
         self.pwr = self.Port(VoltageSink.empty())
@@ -247,7 +249,32 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
         self.ms3 = self.Port(DigitalSink())
 
     @override
-    def contents(self) -> None:
+    def generate(self) -> None:
+        # TODO: deduplicate w/ A4988 application circuit
+        step_resolution = self.get(self.step_resolution)
+        if step_resolution == 1:  # full step
+            ms1: HasPassivePort = self.gnd
+            ms2: HasPassivePort = self.gnd
+            ms3: HasPassivePort = self.gnd
+        elif step_resolution == 2:  # half step
+            ms1 = self.pwr_logic
+            ms2 = self.gnd
+            ms3 = self.gnd
+        elif step_resolution == 4:  # quarter step
+            ms1 = self.gnd
+            ms2 = self.pwr_logic
+            ms3 = self.gnd
+        elif step_resolution == 8:  # eighth step
+            ms1 = self.gnd
+            ms2 = self.pwr_logic
+            ms3 = self.pwr_logic
+        elif step_resolution == 16:  # sixteenth step
+            ms1 = self.pwr_logic
+            ms2 = self.pwr_logic
+            ms3 = self.pwr_logic
+        else:
+            raise ValueError(f"unknown step_resolution {step_resolution}")
+
         self.footprint(
             "U",
             "edg:DIP-16_W12.70mm",
@@ -264,9 +291,9 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
                 "10": self.step,
                 "11": self.sleep,
                 "12": self.reset,
-                "13": self.ms3,
-                "14": self.ms2,
-                "15": self.ms1,
+                "13": ms3,
+                "14": ms2,
+                "15": ms1,
                 "16": self.enable,
             },
             mfr="Pololu",
@@ -275,13 +302,12 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock):
         )
 
 
-class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock, GeneratorBlock):
+class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock):
     """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
 
     def __init__(self, step_resolution: IntLike = 16):
         super().__init__()
         self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
-        self.generator_param(self.step_resolution)
 
         self.model = self.Block(A4988(itrip=2 * Amp(tol=0.15)))
         self.gnd = self.Export(self.model.gnd, [Common])
@@ -300,29 +326,10 @@ class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock, GeneratorBlock):
         self.out2b = self.Export(self.model.out2b)
 
     @override
-    def generate(self) -> None:
-        super().generate()
+    def contents(self) -> None:
+        super().contents()
 
-        self.wrapper = self.Block(PololuA4988_Device(), external=True)
-
-        # TODO: deduplicate w/ A4988 application circuit
-        step_resolution = self.get(self.step_resolution)
-        if step_resolution == 1:  # full step
-            self.connect(self.gnd.as_digital_source(), self.wrapper.ms1, self.wrapper.ms2, self.wrapper.ms3)
-        elif step_resolution == 2:  # half step
-            self.connect(self.gnd.as_digital_source(), self.wrapper.ms2, self.wrapper.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.wrapper.ms1)
-        elif step_resolution == 4:  # quarter step
-            self.connect(self.gnd.as_digital_source(), self.wrapper.ms1, self.wrapper.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.wrapper.ms2)
-        elif step_resolution == 8:  # eighth step
-            self.connect(self.gnd.as_digital_source(), self.wrapper.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.wrapper.ms1, self.wrapper.ms2)
-        elif step_resolution == 16:  # sixteenth step
-            self.connect(self.pwr_logic.as_digital_source(), self.wrapper.ms1, self.wrapper.ms2, self.wrapper.ms3)
-        else:
-            raise ValueError(f"unknown step_resolution {step_resolution}")
-
+        self.wrapper = self.Block(PololuA4988_Device(self.step_resolution), external=True)
         self.export_tap(self.gnd, self.wrapper.gnd)
         self.export_tap(self.pwr, self.wrapper.pwr)
         self.export_tap(self.pwr_logic, self.wrapper.pwr_logic)
