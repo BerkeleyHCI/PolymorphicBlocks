@@ -190,5 +190,4 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
       Some(FloatValue(3.0))
     )
   }
-
 }
