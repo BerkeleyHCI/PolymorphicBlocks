@@ -98,6 +98,25 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
           "tap" -> Constraint.ExportedArray(Ref("port"), Ref("innerTap", "port"), tap = true),
         )
       ),
+      Block.Block(
+        "emptyLeafArrayBlockBad",
+        ports = SeqMap( // contains mismatched port elements
+          "port" -> Port.Array("port", Seq("0"), Port.Library("port"))),
+      ),
+      Block.Block(
+        "exportArrayTapBlockBad",
+        ports = SeqMap(
+          "port" -> Port.Array("port"),
+        ),
+        blocks = SeqMap(
+          "inner" -> Block.Library("leafArrayBlock"),
+          "innerTap" -> Block.Library("emptyLeafArrayBlockBad")
+        ),
+        constraints = SeqMap(
+          "export" -> Constraint.ExportedArray(Ref("port"), Ref("inner", "port")),
+          "tap" -> Constraint.ExportedArray(Ref("port"), Ref("innerTap", "port"), tap = true),
+        )
+      ),
     ),
     links = Seq(
       Link.Link(
@@ -158,7 +177,7 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
         "tapConnect" -> Constraint.Connected(Ref("tap", "port"), Ref.Allocate(Ref("link", "ports"))),
       )
     ))
-    an[TestFailedException] should be thrownBy testCompile(inputDesign, library) // test the test helper code
+    an[TestFailedException] should be thrownBy testCompile(inputDesign, library)
   }
 
   "Compiler on design with tap export array" should "propagate allocated values" in {
@@ -194,5 +213,28 @@ class ExportTapTest extends AnyFlatSpec with CompilerTestUtil {
     ) should equal(
       Some(FloatValue(3.0))
     )
+  }
+
+  "Compiler on design with tap export array with inconsistent elements" should "error" in {
+    val inputDesign = Design(Block.Block(
+      "topDesign",
+      blocks = SeqMap(
+        "tap" -> Block.Library("exportArrayTapBlockBad"),
+      ),
+      links = SeqMap(
+        "link" -> Link.Library("link")
+      ),
+      constraints = SeqMap(
+        "tapConnect0" -> Constraint.Connected(
+          Ref.Allocate(Ref("tap", "port"), Some("0")),
+          Ref.Allocate(Ref("link", "ports"))
+        ),
+        "tapConnect1" -> Constraint.Connected(
+          Ref.Allocate(Ref("tap", "port"), Some("1")),
+          Ref.Allocate(Ref("link", "ports"))
+        ),
+      )
+    ))
+    an[TestFailedException] should be thrownBy testCompile(inputDesign, library)
   }
 }
