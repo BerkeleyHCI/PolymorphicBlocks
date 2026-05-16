@@ -88,10 +88,11 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink"], "1")],  # ensure extraneous nets not generated
+                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
                 ],
             ),
             net.nets,
@@ -99,10 +100,11 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink"], "2")],
+                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
                 ],
             ),
             net.nets,

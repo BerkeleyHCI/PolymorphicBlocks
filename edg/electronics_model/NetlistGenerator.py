@@ -89,15 +89,26 @@ class NetlistTransform(TransformUtil.Transform):
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
-        # TODO may need rethought to support multi-board assemblies
         scope = self.scopes[path]  # including footprint and exports, and everything within a link
-        internal_scope = scope  # for internal blocks
 
         if isinstance(block, edgir.HierarchyBlock):
-            if "fp_is_wrapper" in block.meta.members.node:  # wrapper internal blocks ignored
-                internal_scope = None
+            if "fp_subboard" in block.meta.members.node:
+                fp_external_blocks = self.design.get_value(path.to_tuple() + ("fp_external_blocks",))
+                assert isinstance(fp_external_blocks, list)
+                external_blocks: Optional[List[str]] = cast(List[str], fp_external_blocks)
+                if "fp_subblocks_ignored" in block.meta.members.node:
+                    internal_scope = None
+                else:
+                    raise NotImplementedError("support subboard")
+            else:
+                external_blocks = None
+                internal_scope = scope
+
             for block_pair in block.blocks:
-                self.scopes[path.append_block(block_pair.name)] = internal_scope
+                if external_blocks is not None and block_pair.name not in external_blocks:
+                    self.scopes[path.append_block(block_pair.name)] = internal_scope
+                else:
+                    self.scopes[path.append_block(block_pair.name)] = scope
             for link_pair in block.links:  # links considered to be the same scope as self
                 self.scopes[path.append_link(link_pair.name)] = scope
 

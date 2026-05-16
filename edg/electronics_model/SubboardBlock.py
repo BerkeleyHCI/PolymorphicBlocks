@@ -16,6 +16,7 @@ class SubboardBlock(Block):
         self._external_blocks: List[Block] = []
         self._export_taps: List[Tuple[Port, Port]] = []
 
+        self.fp_subboard = self.Metadata("A")  # dummy distinct value
         self.fp_external_blocks = self.Parameter(ArrayStringExpr())  # names of all external blocks
 
     BlockType = TypeVar("BlockType", bound=Block)
@@ -71,4 +72,4 @@ class WrapperSubboardBlock(SubboardBlock):
 
     def __init__(self) -> None:
         super().__init__()
-        # TODO flag wrapper block
+        self.fp_subblocks_ignored = self.Metadata("B")  # dummy distinct value
