@@ -21,7 +21,8 @@ class NetlistBackend(BaseBackend):
         else:
             raise ValueError(f"Invalid RefdesMode value {refdes_mode_arg}")
 
-        netlist = NetlistTransform(design).run()
-        netlist_string = kicad.generate_netlist(netlist, refdes_mode)
-
-        return [(edgir.LocalPath(), netlist_string)]
+        board_netlists = NetlistTransform(design).run()
+        return [
+            (netlist_path.to_local_path(), kicad.generate_netlist(netlist, refdes_mode))
+            for (netlist_path, netlist) in board_netlists.items()
+        ]

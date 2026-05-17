@@ -2,13 +2,14 @@ import unittest
 
 from typing_extensions import override
 
-from .. import FootprintBlock, DesignTop
+from .NetlistGenerator import NetlistTransform
+from .. import FootprintBlock, DesignTop, ScalaCompiler, RefdesRefinementPass
 from ..core import TransformUtil
-from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
-from . import SubboardBlock, WrapperSubboardBlock, VoltageSink, Passive
+from .test_netlist import TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
+from . import SubboardBlock, VoltageSink
 
 
-class SinkWrapperExterior(FootprintBlock):
+class SinkSubboardExterior(FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
 
@@ -20,15 +21,15 @@ class SinkWrapperExterior(FootprintBlock):
         super().contents()
 
         self.footprint(  # only this footprint shows up
-            "L",
-            "Inductor_SMD:L_0603_1608Metric",  # distinct footprint and value from internal blocks
+            "R",
+            "Resistor_SMD:R_0603_1608Metric",
             {"1": self.pos, "2": self.neg},
-            value="100",
+            value="200",
         )
 
 
-class SinkWrapperBlock(WrapperSubboardBlock):
-    """Wrapper block with a single footprint for two internal sinks whose footprints are ignored."""
+class SinkSubboardBlock(SubboardBlock):
+    """Subboard block with a single footprint for two internal sinks whose footprints are ignored."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -40,104 +41,53 @@ class SinkWrapperBlock(WrapperSubboardBlock):
     def contents(self) -> None:
         super().contents()
 
-        # these define the modeling and are internal
-        self.model1 = self.Block(TestFakeSink())
-        self.model2 = self.Block(TestFakeSink())
-        self.vpos = self.connect(self.pos, self.model1.pos, self.model2.pos)
-        self.gnd = self.connect(self.neg, self.model1.neg, self.model2.neg)
+        # these blocks are part of the sub-board
+        self.inner1 = self.Block(TestFakeSink())
+        self.inner2 = self.Block(TestFakeSink())
+        self.vpos = self.connect(self.pos, self.inner1.pos, self.inner2.pos)
+        self.gnd = self.connect(self.neg, self.inner1.neg, self.inner2.neg)
 
         # these define the external interface block
-        self.wrapper = self.Block(SinkWrapperExterior(), external=True)
+        self.wrapper = self.Block(SinkSubboardExterior(), external=True)
         self.export_tap(self.pos, self.wrapper.pos)
         self.export_tap(self.neg, self.wrapper.neg)
 
 
-class TestWrapperCircuit(DesignTop):
+class TestSubboardCircuit(DesignTop):
     @override
     def contents(self) -> None:
         super().contents()
 
         self.source = self.Block(TestFakeSource())
-        self.sink = self.Block(SinkWrapperBlock())
+        self.sink = self.Block(SinkSubboardBlock())
 
         self.vpos = self.connect(self.source.pos, self.sink.pos)
         self.gnd = self.connect(self.source.neg, self.sink.neg)
 
 
-class SinkWrapperPassiveExterior(FootprintBlock):
-    def __init__(self) -> None:
-        super().__init__()
+class NetlistSubboardTestCase(unittest.TestCase):
+    def test_subboard_netlist(self) -> None:
+        compiled = ScalaCompiler.compile(TestSubboardCircuit)
+        compiled.append_values(RefdesRefinementPass().run(compiled))
+        board_netlists = NetlistTransform(compiled).run()
 
-        self.pos = self.Port(Passive.empty())  # must remain empty
-        self.neg = self.Port(Passive.empty())
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.footprint(  # only this footprint shows up
-            "L",
-            "Inductor_SMD:L_0603_1608Metric",  # distinct footprint and value from internal blocks
-            {"1": self.pos, "2": self.neg},
-            value="100",
-        )
-
-
-class SinkWrapperPassiveBlock(WrapperSubboardBlock):
-    """Wrapper block that taps the passive sub-port on its external port."""
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.pos = self.Port(VoltageSink.empty())
-        self.neg = self.Port(VoltageSink.empty())
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        # these define the modeling and are internal
-        self.model = self.Block(TestFakeSink())
-        self.vpos = self.connect(self.pos, self.model.pos)
-        self.gnd = self.connect(self.neg, self.model.neg)
-
-        # these define the external interface block
-        self.wrapper = self.Block(SinkWrapperPassiveExterior(), external=True)
-        self.export_tap(self.pos.net, self.wrapper.pos)
-        self.export_tap(self.neg.net, self.wrapper.neg)
-
-
-class TestWrapperPassiveCircuit(DesignTop):
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.source = self.Block(TestFakeSource())
-        self.sink = self.Block(SinkWrapperPassiveBlock())
-
-        self.vpos = self.connect(self.source.pos, self.sink.pos)
-        self.gnd = self.connect(self.source.neg, self.sink.neg)
-
-
-class NetlistWrapperTestCase(unittest.TestCase):
-    def test_wrapper_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestWrapperCircuit)
+        top_net = board_netlists[TransformUtil.Path.empty()]
 
         self.assertIn(
             NetBlock(
-                "Inductor_SMD:L_0603_1608Metric",
-                "L1",
+                "Resistor_SMD:R_0603_1608Metric",
+                "R3",
                 "",
-                "100",
+                "200",
                 ["sink", "wrapper"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperBlock",
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperExterior",
+                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_model.test_netlist_subboard.SinkSubboardExterior",
                 ],
             ),
-            net.blocks,
+            top_net.blocks,
         )
-        self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
+        self.assertEqual(len(top_net.blocks), 2)  # should only generate top-level source and sink
 
         self.assertIn(
             Net(
@@ -149,7 +99,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
                 ],
             ),
-            net.nets,
+            top_net.nets,
         )
         self.assertIn(
             Net(
@@ -161,53 +111,65 @@ class NetlistWrapperTestCase(unittest.TestCase):
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
                 ],
             ),
-            net.nets,
+            top_net.nets,
         )
-        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
+        self.assertEqual(len(top_net.nets), 2)  # ensure empty nets pruned
 
-    def test_wrapper_passive_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestWrapperPassiveCircuit)
-
+        inner_net = board_netlists[TransformUtil.Path.empty().append_block("sink")]
         self.assertIn(
             NetBlock(
-                "Inductor_SMD:L_0603_1608Metric",
-                "L1",
+                "Resistor_SMD:R_0603_1608Metric",
+                "R1",
                 "",
-                "100",
-                ["sink", "wrapper"],
+                "1k",
+                ["sink", "inner1"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperPassiveBlock",
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperPassiveExterior",
+                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_model.test_netlist.TestFakeSink",
                 ],
             ),
-            net.blocks,
+            inner_net.blocks,
         )
-        self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
+        self.assertIn(
+            NetBlock(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R2",
+                "",
+                "1k",
+                ["sink", "inner2"],
+                [
+                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_model.test_netlist.TestFakeSink",
+                ],
+            ),
+            inner_net.blocks,
+        )
+        self.assertEqual(len(inner_net.blocks), 2)
 
         self.assertIn(
             Net(
-                "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
+                "sink.vpos",
+                [NetPin(["sink", "inner1"], "1"), NetPin(["sink", "inner2"], "1")],
                 [
-                    TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "model").append_port("pos", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner1").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner2").append_port("pos", "net"),
                 ],
             ),
-            net.nets,
+            inner_net.nets,
         )
         self.assertIn(
             Net(
-                "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
+                "sink.gnd",
+                [NetPin(["sink", "inner1"], "2"), NetPin(["sink", "inner2"], "2")],
                 [
-                    TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "model").append_port("neg", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner1").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner2").append_port("neg", "net"),
                 ],
             ),
-            net.nets,
+            inner_net.nets,
         )
-        self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
+        self.assertEqual(len(inner_net.nets), 2)  # ensure empty nets pruned

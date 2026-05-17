@@ -39,7 +39,7 @@ class DummyResistor(Resistor, FootprintBlock):
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):
     def test_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(
+        net = NetlistTestCase.generate_single_net(
             KiCadBlackboxTop,
             refinements=Refinements(
                 class_refinements=[

@@ -78,7 +78,7 @@ class TestArrayWrapperCircuit(DesignTop):
 
 class NetlistArrayWrapperTestCase(unittest.TestCase):
     def test_wrapper_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestArrayWrapperCircuit)
+        net = NetlistTestCase.generate_single_net(TestArrayWrapperCircuit)
 
         self.assertIn(
             NetBlock(

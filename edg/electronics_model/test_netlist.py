@@ -197,13 +197,15 @@ class TestDualHierarchyCircuit(Block):
 
 class NetlistTestCase(unittest.TestCase):
     @staticmethod
-    def generate_net(design: Type[Block], refinements: Refinements = Refinements()) -> Netlist:
+    def generate_single_net(design: Type[Block], refinements: Refinements = Refinements()) -> Netlist:
         compiled = ScalaCompiler.compile(design, refinements)
         compiled.append_values(RefdesRefinementPass().run(compiled))
-        return NetlistTransform(compiled).run()
+        board_netlists = NetlistTransform(compiled).run()
+        assert len(board_netlists) == 1, "expected exactly one netlist from design"
+        return list(board_netlists.values())[0]
 
     def test_single_netlist(self) -> None:
-        net = self.generate_net(TestSinglePart)
+        net = self.generate_single_net(TestSinglePart)
 
         # check that the top-level path element is never pruned, even when the design is one element
         self.assertIn(
@@ -219,7 +221,7 @@ class NetlistTestCase(unittest.TestCase):
         )
 
     def test_basic_netlist(self) -> None:
-        net = self.generate_net(TestBasicCircuit)
+        net = self.generate_single_net(TestBasicCircuit)
 
         self.assertIn(
             Net(
@@ -267,7 +269,7 @@ class NetlistTestCase(unittest.TestCase):
         )
 
     def test_multisink_netlist(self) -> None:
-        net = self.generate_net(TestMultisinkCircuit)
+        net = self.generate_single_net(TestMultisinkCircuit)
 
         self.assertIn(
             Net(
@@ -328,7 +330,7 @@ class NetlistTestCase(unittest.TestCase):
         )
 
     def test_multinet_netlist(self) -> None:
-        net = self.generate_net(TestMultinetCircuit)
+        net = self.generate_single_net(TestMultinetCircuit)
 
         self.assertIn(
             Net(
@@ -399,7 +401,7 @@ class NetlistTestCase(unittest.TestCase):
         )
 
     def test_hierarchy_netlist(self) -> None:
-        net = self.generate_net(TestHierarchyCircuit)
+        net = self.generate_single_net(TestHierarchyCircuit)
 
         self.assertIn(
             Net(
@@ -452,7 +454,7 @@ class NetlistTestCase(unittest.TestCase):
         )
 
     def test_dual_hierarchy_netlist(self) -> None:
-        net = self.generate_net(TestDualHierarchyCircuit)
+        net = self.generate_single_net(TestDualHierarchyCircuit)
 
         self.assertIn(
             Net(

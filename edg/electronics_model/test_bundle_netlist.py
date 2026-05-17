@@ -123,7 +123,7 @@ class TestCanCircuit(DesignTop):
 
 class BundleNetlistTestCase(unittest.TestCase):
     def test_spi_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestSpiCircuit)
+        net = NetlistTestCase.generate_single_net(TestSpiCircuit)
 
         self.assertIn(
             Net(
@@ -237,7 +237,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         )
 
     def test_uart_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestUartCircuit)
+        net = NetlistTestCase.generate_single_net(TestUartCircuit)
 
         self.assertIn(
             Net(
@@ -285,7 +285,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         )
 
     def test_can_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestCanCircuit)
+        net = NetlistTestCase.generate_single_net(TestCanCircuit)
 
         self.assertIn(
             Net(
