@@ -190,7 +190,7 @@ class SvgPcbTransform(TransformUtil.Transform):
 class SvgPcbBackend(BaseBackend):
     @override
     def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
-        netlist = NetlistTransform(design).run()
+        netlist = list(NetlistTransform(design).run().values())[0]  # only generate for top-level board
         result = self._generate(design, netlist)
         return [(edgir.LocalPath(), result)]
 
@@ -213,7 +213,7 @@ class SvgPcbBackend(BaseBackend):
         svgpcb_block_bboxes = [BlackBoxBlock(block.path, block.bbox) for block in svgpcb_blocks]
 
         # handle footprints
-        netlist = NetlistTransform(design).run()
+        netlist = list(NetlistTransform(design).run().values())[0]  # only generate for top-level board
         svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
         other_blocks = filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
         arranged_blocks = arrange_blocks(other_blocks, svgpcb_block_bboxes)

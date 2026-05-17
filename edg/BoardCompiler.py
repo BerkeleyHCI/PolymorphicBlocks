@@ -3,6 +3,7 @@ import inspect
 from contextlib import suppress
 from typing import Type, Optional, Tuple
 
+from . import edgir
 from .core import Block, ScalaCompiler, CompiledDesign, CompiledDesignExportTransform
 from .electronics_model.NetlistBackend import NetlistBackend  # imported separately b/c mypy confuses with the modules
 from .electronics_model.SvgPcbBackend import SvgPcbBackend
@@ -18,7 +19,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
         assert os.path.isdir(target_dir), f"target_dir {target_dir} to compile_board must be directory"
 
         design_filename = os.path.join(target_dir, f"{target_name}.edg")
-        netlist_filename = os.path.join(target_dir, f"{target_name}.net")
+        netlist_filename_prefix = os.path.join(target_dir, f"{target_name}")
         bom_filename = os.path.join(target_dir, f"{target_name}.csv")
         svgpcb_filename = os.path.join(target_dir, f"{target_name}.svgpcb.js")
         compiled_json_filename = os.path.join(target_dir, f"{target_name}.compiled.json")
@@ -26,7 +27,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
         with suppress(FileNotFoundError):
             os.remove(design_filename)
         with suppress(FileNotFoundError):
-            os.remove(netlist_filename)
+            os.remove(netlist_filename_prefix + ".net")  # TODO remove subboard netlists
         with suppress(FileNotFoundError):
             os.remove(bom_filename)
         with suppress(FileNotFoundError):
@@ -48,13 +49,21 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
 
     netlist_all = NetlistBackend().run(compiled)
     bom_all = GenerateBom().run(compiled)
+    assert len(bom_all) == 1
     svgpcb_all = SvgPcbBackend().run(compiled)
+    assert len(svgpcb_all) == 1
     compiled_json = CompiledDesignExportTransform(compiled).transform()
-    assert len(netlist_all) == 1
 
     if target_dir_name is not None:
-        with open(netlist_filename, "w", encoding="utf-8") as net_file:
-            net_file.write(netlist_all[0][1])
+        for path, netlist in netlist_all:
+            path_str = edgir.local_path_to_str_list(path)
+            if path_str:
+                net_filename = netlist_filename_prefix + ".net"
+            else:
+                net_filename = netlist_filename_prefix + "_".join(path_str) + ".net"
+
+            with open(net_filename, "w", encoding="utf-8") as net_file:
+                net_file.write(netlist)
 
         with open(bom_filename, "w", encoding="utf-8") as bom_file:
             bom_file.write(bom_all[0][1])
