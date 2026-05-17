@@ -58,7 +58,6 @@ class BoardScope(NamedTuple):
         return BoardScope(path, {}, {}, {}, [])
 
 
-Scopes = Dict[TransformUtil.Path, Optional[BoardScope]]  # Block -> board scope (reference, aliased across entries)
 ClassPaths = Dict[
     TransformUtil.Path, List[edgir.LibraryPath]
 ]  # Path -> class names corresponding to shortened path name
@@ -82,7 +81,9 @@ class NetlistTransform(BoardScopedTransform):
     def __init__(self, design: CompiledDesign):
         super().__init__(design)
 
-        self.scopes: Scopes = {TransformUtil.Path.empty(): BoardScope.empty(TransformUtil.Path.empty())}
+        self.scopes: Dict[TransformUtil.Path, Optional[BoardScope]] = {
+            TransformUtil.Path.empty(): BoardScope.empty(TransformUtil.Path.empty())
+        }  # board scope path to scope object
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
         self.path_traverse_order: List[TransformUtil.Path] = []
 

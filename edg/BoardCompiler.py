@@ -27,7 +27,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
         with suppress(FileNotFoundError):
             os.remove(design_filename)
         for filename in os.listdir(target_dir):
-            if filename.startswith(netlist_filename_prefix) and filename.endswith(".net"):
+            if filename.startswith(target_name) and filename.endswith(".net"):
                 os.remove(os.path.join(target_dir, filename))
         with suppress(FileNotFoundError):
             os.remove(bom_filename)
@@ -61,7 +61,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
             if path_str:
                 net_filename = netlist_filename_prefix + ".net"
             else:
-                net_filename = netlist_filename_prefix + "_".join(path_str) + ".net"
+                net_filename = netlist_filename_prefix + "_" + "_".join(path_str) + ".net"
 
             with open(net_filename, "w", encoding="utf-8") as net_file:
                 net_file.write(netlist)
