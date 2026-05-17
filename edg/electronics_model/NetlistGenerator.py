@@ -97,6 +97,12 @@ class NetlistTransform(BoardScopedTransform):
         else:
             scope_obj = None
 
+        if isinstance(block, edgir.HierarchyBlock) and "fp_subboard" in block.meta.members.node:
+            # only valid for sub-board blocks, where some things happen in the parent scope
+            parent_scope: Optional[TransformUtil.Path] = self._board_parent_scopes[path]
+        else:
+            parent_scope = None
+
         if isinstance(block, edgir.HierarchyBlock):
             class_path = self.class_paths[path]
             for block_pair in block.blocks:
@@ -170,18 +176,33 @@ class NetlistTransform(BoardScopedTransform):
                 scope_obj.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
                 scope_obj.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
-        for constraint_pair in block.constraints:
-            if scope_obj is not None:
+        if scope_obj is not None:
+            for constraint_pair in block.constraints:
                 if constraint_pair.value.HasField("connected"):
                     self.process_connected(path, block, scope_obj, constraint_pair.value.connected)
                 elif constraint_pair.value.HasField("connectedArray"):
                     for expanded_connect in constraint_pair.value.connectedArray.expanded:
                         self.process_connected(path, block, scope_obj, expanded_connect)
                 elif constraint_pair.value.HasField("exported"):
-                    self.process_exported(path, block, scope_obj, constraint_pair.value.exported)
+                    block_name = constraint_pair.value.exported.internal_block_port.ref.steps[0].name
+                    if (
+                        parent_scope is not None
+                        and self._board_parent_scopes[path.append_block(block_name)] == parent_scope
+                    ):
+                        self.process_exported(path, block, self.scopes[parent_scope], constraint_pair.value.exported)
+                    else:
+                        self.process_exported(path, block, scope_obj, constraint_pair.value.exported)
                 elif constraint_pair.value.HasField("exportedArray"):
-                    for expanded_export in constraint_pair.value.exportedArray.expanded:
-                        self.process_exported(path, block, scope_obj, expanded_export)
+                    block_name = constraint_pair.value.exported.internal_block_port.ref.steps[0].name
+                    if (
+                        parent_scope is not None
+                        and self._board_parent_scopes[path.append_block(block_name)] == parent_scope
+                    ):
+                        for expanded_export in constraint_pair.value.exportedArray.expanded:
+                            self.process_exported(path, block, self.scopes[parent_scope], expanded_export)
+                    else:
+                        for expanded_export in constraint_pair.value.exportedArray.expanded:
+                            self.process_exported(path, block, scope_obj, expanded_export)
                 elif constraint_pair.value.HasField("exportedTunnel"):
                     self.process_exported(path, block, scope_obj, constraint_pair.value.exportedTunnel)
 
