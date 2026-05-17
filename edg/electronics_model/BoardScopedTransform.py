@@ -1,4 +1,5 @@
-from typing import Optional, Dict, List, cast, override
+from typing import Optional, Dict, List, cast
+from typing_extensions import override
 
 from .. import edgir
 from ..core import TransformUtil, CompiledDesign
