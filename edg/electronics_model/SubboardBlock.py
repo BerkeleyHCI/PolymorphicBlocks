@@ -1,5 +1,5 @@
-from typing import List, Tuple, override, Any
-from typing_extensions import TypeVar
+from typing import List, Tuple, Any
+from typing_extensions import TypeVar, override
 
 from ..core import *
 from ..core.Core import Refable
@@ -18,7 +18,7 @@ class SubboardBlock(Block):
     def __init__(self) -> None:
         super().__init__()
         self._external_blocks: List[Block] = []
-        self._export_taps: List[Tuple[Port, Port]] = []
+        self._export_taps: List[Tuple[BasePort, BasePort]] = []
 
         self.fp_subboard = self.Metadata("A")  # dummy distinct value
         self.fp_external_blocks = self.Parameter(ArrayStringExpr())  # names of all external blocks
@@ -36,7 +36,7 @@ class SubboardBlock(Block):
             self._external_blocks.append(ret)
         return ret
 
-    def export_tap(self, exterior_port: Port, internal_port: Port) -> None:
+    def export_tap(self, exterior_port: BasePort, internal_port: BasePort) -> None:
         """Connects an exterior port (on self) to an interior port (on an internal block)
         as a non-propagating connection which may coexist with other connections on the exterior port
         (but not the interior port).
@@ -47,7 +47,7 @@ class SubboardBlock(Block):
         internal_port_parent = internal_port._block_parent()
         if internal_port_parent is None or internal_port_parent._parent is not self:
             raise UnconnectableError("Internal port must be a block within this block")
-        if type(exterior_port) != type(internal_port):
+        if exterior_port._type_of() != internal_port._type_of():
             raise UnconnectableError("Exported ports must be the same type")
         self._export_taps.append((exterior_port, internal_port))
 
