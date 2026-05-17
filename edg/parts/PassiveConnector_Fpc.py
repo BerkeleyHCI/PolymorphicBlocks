@@ -46,7 +46,7 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
         self.ext_contact = self.ArgParameter(ext_contact)
         self.int_contact = self.ArgParameter(int_contact)
         self.pins = self.Port(Vector(Passive.empty()))
-        self.generator_param(self.length, self.cable, self.ext_contact, self.int_contact)
+        self.generator_param(self.length, self.pins.requested(), self.cable, self.ext_contact, self.int_contact)
 
     @override
     def generate(self) -> None:

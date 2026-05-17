@@ -6,6 +6,25 @@ from edg import *
 from .util import run_test_board
 
 
+class JoystickSubboard(SubboardBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.stick = self.Block(XboxElite2Joystick())
+        self.gnd = self.Export(self.stick.gnd, [Common])
+        self.pwr = self.Export(self.stick.pwr, [Power])
+        self.sw = self.Export(self.stick.sw)
+        self.ax1 = self.Export(self.stick.ax1)
+        self.ax2 = self.Export(self.stick.ax2)
+
+        self.conn = self.Block(Fpc050Pair(6), external=True)
+        self.export_tap(self.gnd.net, self.conn.pins.request("1"))
+        self.export_tap(self.pwr.net, self.conn.pins.request("2"))
+        self.export_tap(self.sw.net, self.conn.pins.request("4"))
+        self.export_tap(self.ax1.net, self.conn.pins.request("5"))
+        self.export_tap(self.ax2.net, self.conn.pins.request("6"))
+
+
 class BleJoystick(JlcBoardTop):
     """BLE joystick with XYAB buttons"""
 
@@ -69,7 +88,7 @@ class BleJoystick(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
-            self.stick = imp.Block(XboxElite2Joystick())
+            self.stick = imp.Block(JoystickSubboard())
             (self.ax1_div,), _ = self.chain(
                 self.stick.ax1,
                 imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10) * kOhm)),
