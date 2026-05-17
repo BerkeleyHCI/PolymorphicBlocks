@@ -145,3 +145,27 @@ class NetlistSubboardTestCase(unittest.TestCase):
             inner_net.blocks,
         )
         self.assertEqual(len(inner_net.blocks), 2)
+
+        self.assertIn(
+            Net(
+                "sink.inner1.pos",
+                [NetPin(["sink", "inner1"], "1"), NetPin(["sink", "inner2"], "1")],
+                [
+                    TransformUtil.Path.empty().append_block("sink", "inner1").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner2").append_port("pos", "net"),
+                ],
+            ),
+            inner_net.nets,
+        )
+        self.assertIn(
+            Net(
+                "sink.inner1.neg",
+                [NetPin(["sink", "inner1"], "2"), NetPin(["sink", "inner2"], "2")],
+                [
+                    TransformUtil.Path.empty().append_block("sink", "inner1").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "inner2").append_port("neg", "net"),
+                ],
+            ),
+            inner_net.nets,
+        )
+        self.assertEqual(len(inner_net.nets), 2)  # ensure empty nets pruned
