@@ -58,7 +58,7 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     if target_dir_name is not None:
         for path, netlist in netlist_all:
             path_str = edgir.local_path_to_str_list(path)
-            if path_str:
+            if not path_str:
                 net_filename = netlist_filename_prefix + ".net"
             else:
                 net_filename = netlist_filename_prefix + "_" + "_".join(path_str) + ".net"
