@@ -15,7 +15,7 @@ class BoardScopedTransform(TransformUtil.Transform):
     def __init__(self, design: CompiledDesign) -> None:
         super().__init__()
         self._design = design
-        self._board_scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {
+        self._board_parent_scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {
             TransformUtil.Path.empty(): TransformUtil.Path.empty()
         }  # always initialized in parent
 
@@ -36,7 +36,7 @@ class BoardScopedTransform(TransformUtil.Transform):
 
     @override
     def visit_block(self, context: TransformContext, block: edgir.HierarchyBlock) -> None:
-        scope = self._board_scopes[context.path]
+        parent_scope = self._board_parent_scopes[context.path]
 
         if "fp_subboard" in block.meta.members.node:
             fp_external_blocks = self._design.get_value(context.path.to_tuple() + ("fp_external_blocks",))
@@ -48,20 +48,20 @@ class BoardScopedTransform(TransformUtil.Transform):
                 internal_scope = context.path
         else:
             external_blocks = None
-            internal_scope = scope
+            internal_scope = parent_scope
 
         for block_pair in block.blocks:
             if external_blocks is not None and block_pair.name not in external_blocks:
-                self._board_scopes[context.path.append_block(block_pair.name)] = internal_scope
+                self._board_parent_scopes[context.path.append_block(block_pair.name)] = internal_scope
             else:
-                self._board_scopes[context.path.append_block(block_pair.name)] = scope
+                self._board_parent_scopes[context.path.append_block(block_pair.name)] = parent_scope
 
-        self.visit_block_scoped(context, scope, block)
+        self.visit_block_scoped(context, internal_scope, block)
 
     @override
     def visit_link(self, context: TransformContext, link: edgir.Link) -> None:
-        self.visit_link_scoped(context, self._board_scopes[context.path.block_component()], link)
+        self.visit_link_scoped(context, self._board_parent_scopes[context.path.block_component()], link)
 
     @override
     def visit_linkarray(self, context: TransformContext, link: edgir.LinkArray) -> None:
-        self.visit_linkarray_scoped(context, self._board_scopes[context.path.block_component()], link)
+        self.visit_linkarray_scoped(context, self._board_parent_scopes[context.path.block_component()], link)
