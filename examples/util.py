@@ -9,13 +9,12 @@ def run_test_board(design: Type[Block]) -> None:
 
     compile_board_inplace(design)
 
-    dirname = os.path.dirname(inspect.getfile(design))
-    ref_net_filenames = [
-        f[:-4] for f in os.listdir(dirname) if f.startswith(design.__name__) and f.endswith(".net.ref")
-    ]
+    dirname = os.path.join(os.path.dirname(inspect.getfile(design)), design.__name__)
+    ref_net_filenames = [f for f in os.listdir(dirname) if f.startswith(design.__name__) and f.endswith(".net.ref")]
     net_filenames = [f for f in os.listdir(dirname) if f.startswith(design.__name__) and f.endswith(".net")]
 
-    assert set(ref_net_filenames) == set(
+    assert net_filenames, "no netlist files found"
+    assert set(f[:-4] for f in ref_net_filenames) == set(
         net_filenames
     ), f"reference netlist files {ref_net_filenames} do not match generated netlist files {net_filenames}"
 
