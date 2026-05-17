@@ -28,7 +28,7 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
     and connector contact side.
 
     Parameters:
-        cable = "same" | "opposite: whether the FPC cable has contacts on the same side (Type A, mirror pin numbering)
+        cable = "same" | "opposite": whether the FPC cable has contacts on the same side (Type A, mirror pin numbering)
         or opposite sides (Type B, same pin numbering both sides)
         ext_contact, int_contact = "top" | "bottom": the contact side for the external and internal connectors, respectively.
     """
@@ -71,6 +71,7 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
         length = self.get(self.length)
         assert length > 0, "explicit length required"
 
+        # this determines whether to mirror the internal-side pinning
         if self.get(self.cable) == "same":  # assuming same side contact side connectors
             mirror = True
         else:
