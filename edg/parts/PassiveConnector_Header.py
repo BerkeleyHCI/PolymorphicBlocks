@@ -53,6 +53,17 @@ class PinSocket254(FootprintPassiveConnector):
         )
 
 
+class PinSocket254Pair(SubboardConnectorPair):
+    """2.54mm pin socket (external) - header (internal) pair for sub-board connectors."""
+
+    def __init__(self, length: IntLike = 0) -> None:
+        super().__init__()
+        self.ext = self.Block(PinSocket254(length), external=True)
+        self.int = self.Block(PinHeader254(length))
+        self.pins = self.Export(self.int.pins)
+        self.export_tap(self.pins, self.ext.pins)
+
+
 class PinHeader254DualShroudedInline(FootprintPassiveConnector):
     """Generic 2.54mm dual-row pin header in edge-inline."""
 
