@@ -52,8 +52,6 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
         ext_contact = self.get(self.ext_contact)
-        int_contact = self.get(self.int_contact)
-
         if ext_contact == "top":
             self.ext: Fpc050 = self.Block(Fpc050Top(self.length), external=True)
         elif ext_contact == "bot":
@@ -61,6 +59,7 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
         else:
             raise ValueError(f"invalid ext_contact")
 
+        int_contact = self.get(self.int_contact)
         if int_contact == "top":
             self.int: Fpc050 = self.Block(Fpc050Top(self.length))
         elif int_contact == "bot":
