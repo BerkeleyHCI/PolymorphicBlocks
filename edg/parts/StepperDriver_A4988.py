@@ -221,82 +221,60 @@ class A4988(GeneratorBlock):
             self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
 
 
-class PololuA4988(BrushedMotorDriver, WrapperFootprintBlock, GeneratorBlock):
-    """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
-
-    def __init__(self, step_resolution: IntLike = 16):
+class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
+    def __init__(self, step_resolution: IntLike) -> None:
         super().__init__()
-        self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
+        self.step_resolution = self.ArgParameter(step_resolution)
         self.generator_param(self.step_resolution)
 
-        self.model = self.Block(A4988_Device())
-        self.gnd = self.Export(self.model.gnd, [Common])
-        self.pwr = self.Export(self.model.vbb1)
-        self.pwr_logic = self.Export(self.model.vdd)
+        self.gnd = self.Port(Ground.empty())
+        self.pwr = self.Port(VoltageSink.empty())
+        self.pwr_logic = self.Port(VoltageSink.empty())
 
-        self.step = self.Export(self.model.step)
-        self.dir = self.Export(self.model.dir)
+        self.step = self.Port(DigitalSink.empty())
+        self.dir = self.Port(DigitalSink.empty())
 
-        self.enable = self.Port(DigitalSink.empty(), optional=True, doc="disables FET outputs when high")
-        self.reset = self.Port(DigitalSink.empty(), optional=True, doc="forces translator to Home state when low")
-        self.sleep = self.Port(
-            DigitalSink.empty(), optional=True, doc="disables device (to reduce current draw) when low"
-        )
+        self.enable = self.Port(DigitalSink.empty(), optional=True)
+        self.reset = self.Port(DigitalSink.empty(), optional=True)
+        self.sleep = self.Port(DigitalSink.empty(), optional=True)
         self.generator_param(self.enable.is_connected(), self.reset.is_connected(), self.sleep.is_connected())
 
-        self.out1a = self.Export(self.model.out1a)
-        self.out1b = self.Export(self.model.out1b)
-        self.out2a = self.Export(self.model.out2a)
-        self.out2b = self.Export(self.model.out2b)
+        self.out1a = self.Port(DigitalSource.empty())
+        self.out1b = self.Port(DigitalSource.empty())
+        self.out2a = self.Port(DigitalSource.empty())
+        self.out2b = self.Port(DigitalSource.empty())
+
+        # unlike the other ports, these are directly connected and not tapped and must have modeling
+        self.ms1 = self.Port(DigitalSink())
+        self.ms2 = self.Port(DigitalSink())
+        self.ms3 = self.Port(DigitalSink())
 
     @override
     def generate(self) -> None:
-        super().generate()
-
-        self.connect(self.pwr, self.model.vbb2)
-
         # TODO: deduplicate w/ A4988 application circuit
         step_resolution = self.get(self.step_resolution)
         if step_resolution == 1:  # full step
-            self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
+            ms1: HasPassivePort = self.gnd
+            ms2: HasPassivePort = self.gnd
+            ms3: HasPassivePort = self.gnd
         elif step_resolution == 2:  # half step
-            self.connect(self.gnd.as_digital_source(), self.model.ms2, self.model.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.model.ms1)
+            ms1 = self.pwr_logic
+            ms2 = self.gnd
+            ms3 = self.gnd
         elif step_resolution == 4:  # quarter step
-            self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.model.ms2)
+            ms1 = self.gnd
+            ms2 = self.pwr_logic
+            ms3 = self.gnd
         elif step_resolution == 8:  # eighth step
-            self.connect(self.gnd.as_digital_source(), self.model.ms3)
-            self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2)
+            ms1 = self.pwr_logic
+            ms2 = self.pwr_logic
+            ms3 = self.gnd
         elif step_resolution == 16:  # sixteenth step
-            self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
+            ms1 = self.pwr_logic
+            ms2 = self.pwr_logic
+            ms3 = self.pwr_logic
         else:
             raise ValueError(f"unknown step_resolution {step_resolution}")
-
-        if self.get(self.enable.is_connected()):
-            self.connect(self.enable, self.model.enable)
-        else:
-            self.connect(self.gnd.as_digital_source(), self.model.enable)
-
-        if self.get(self.reset.is_connected()):
-            self.connect(self.reset, self.model.reset)
-        else:
-            self.connect(self.pwr_logic.as_digital_source(), self.model.reset)
-
-        if self.get(self.sleep.is_connected()):
-            self.connect(self.sleep, self.model.sleep)
-        else:
-            self.connect(self.pwr_logic.as_digital_source(), self.model.sleep)
-
-        # these are implemented internal to the breakout board
-        (self.dummy_vreg,), _ = self.chain(self.Block(DummyVoltageSink()), self.model.vreg)
-        (self.dummy_vcp,), _ = self.chain(self.Block(DummyPassive()), self.model.vcp)
-        (self.dummy_cp1,), _ = self.chain(self.Block(DummyPassive()), self.model.cp1)
-        (self.dummy_cp2,), _ = self.chain(self.Block(DummyPassive()), self.model.cp2)
-        (self.dummy_rosc,), _ = self.chain(self.Block(DummyPassive()), self.model.rosc)
-        (self.dummy_ref,), _ = self.chain(self.Block(DummyAnalogSource()), self.model.ref)
-        (self.dummy_sense1,), _ = self.chain(self.Block(DummyPassive()), self.model.sense1)
-        (self.dummy_sense2,), _ = self.chain(self.Block(DummyPassive()), self.model.sense2)
 
         self.footprint(
             "U",
@@ -312,14 +290,56 @@ class PololuA4988(BrushedMotorDriver, WrapperFootprintBlock, GeneratorBlock):
                 "8": self.gnd,
                 "9": self.dir,
                 "10": self.step,
-                "11": self.model.sleep,
-                "12": self.model.reset,
-                "13": self.model.ms3,
-                "14": self.model.ms2,
-                "15": self.model.ms1,
-                "16": self.model.enable,
+                "11": self.sleep if self.get(self.sleep.is_connected()) else self.pwr_logic,
+                "12": self.reset if self.get(self.reset.is_connected()) else self.pwr_logic,
+                "13": ms3,
+                "14": ms2,
+                "15": ms1,
+                "16": self.enable if self.get(self.enable.is_connected()) else self.gnd,
             },
             mfr="Pololu",
             part="1182",
             datasheet="https://www.pololu.com/product/1182",
         )
+
+
+class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock):
+    """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
+
+    def __init__(self, step_resolution: IntLike = 16):
+        super().__init__()
+        self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
+
+        self.model = self.Block(A4988(itrip=2 * Amp(tol=0.15)))
+        self.gnd = self.Export(self.model.gnd, [Common])
+        self.pwr = self.Export(self.model.pwr)
+        self.pwr_logic = self.Export(self.model.pwr_logic)
+
+        self.step = self.Export(self.model.step)
+        self.dir = self.Export(self.model.dir)
+        self.enable = self.Export(self.model.enable, optional=True)
+        self.reset = self.Export(self.model.reset, optional=True)
+        self.sleep = self.Export(self.model.sleep, optional=True)
+
+        self.out1a = self.Export(self.model.out1a)
+        self.out1b = self.Export(self.model.out1b)
+        self.out2a = self.Export(self.model.out2a)
+        self.out2b = self.Export(self.model.out2b)
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.wrapper = self.Block(PololuA4988_Device(self.step_resolution), external=True)
+        self.export_tap(self.gnd, self.wrapper.gnd)
+        self.export_tap(self.pwr, self.wrapper.pwr)
+        self.export_tap(self.pwr_logic, self.wrapper.pwr_logic)
+        self.export_tap(self.step, self.wrapper.step)
+        self.export_tap(self.dir, self.wrapper.dir)
+        self.export_tap(self.enable, self.wrapper.enable)
+        self.export_tap(self.reset, self.wrapper.reset)
+        self.export_tap(self.sleep, self.wrapper.sleep)
+        self.export_tap(self.out1a, self.wrapper.out1a)
+        self.export_tap(self.out1b, self.wrapper.out1b)
+        self.export_tap(self.out2a, self.wrapper.out2a)
+        self.export_tap(self.out2b, self.wrapper.out2b)

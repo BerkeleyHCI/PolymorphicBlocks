@@ -361,6 +361,11 @@ message ConnectedExpr {
 message ExportedExpr {
   ValueExpr exterior_port = 1;
   ValueExpr internal_block_port  = 2;
+  bool tap = 4;  // if true, this is a tap, which allows the exterior port to have multiple internal connections
+  // (one non-tap connection, and optionally multiple tap connections)
+  // These additional rules apply to export taps:
+  // - parameters do not propagate, internal port should not have parameter values
+  // - the internal port's link resolves to the external port
 
   repeated ExportedExpr expanded = 3;  // see comment in ConnectedExpr
 }

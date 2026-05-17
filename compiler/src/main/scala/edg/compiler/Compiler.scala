@@ -37,7 +37,7 @@ object ElaborateRecord {
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
   // connectedLink and linkParams.
-  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, root: DesignPath)
+  case class Connect(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath, root: DesignPath, tap: Boolean = false)
       extends ElaborateTask
 
   // Elaborates the contents of a port array, based on the port array's ELEMENTS parameter.
@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 11
+  final val kExpectedProtoVersion = 12
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -279,12 +279,14 @@ class Compiler private (
     val toLinkPort = resolvePort(connect.toLinkPortPath).asInstanceOf[wir.HasParams]
     val connectedParam = toLinkPort.getParams.keys.map(IndirectStep.Element(_))
     for (connectedStep <- connectedParam) { // note: can't happen for top level connect!
-      constProp.addAssignEqual(
-        connect.toLinkPortPath.asIndirect + connectedStep,
-        connect.toBlockPortPath.asIndirect + connectedStep,
-        connect.root,
-        "connect"
-      )
+      if (!connect.tap) { // tap is non-propagating
+        constProp.addAssignEqual(
+          connect.toLinkPortPath.asIndirect + connectedStep,
+          connect.toBlockPortPath.asIndirect + connectedStep,
+          connect.root,
+          "connect"
+        )
+      }
     }
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
@@ -295,7 +297,8 @@ class Compiler private (
             ElaborateRecord.Connect(
               connect.toLinkPortPath + portName,
               connect.toBlockPortPath + portName,
-              connect.root
+              connect.root,
+              connect.tap
             ),
             Seq()
           )
@@ -499,11 +502,12 @@ class Compiler private (
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             if (!isInLink) {
               elaboratePending.addNode(
-                ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
+                ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath, tap = exported.tap),
                 Seq(ElaborateRecord.Port(blockPath ++ extPort))
               )
               constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
             } else { // for links, the internal port is towards the inner link, so the args are flipped
+              require(!exported.tap, "tap not allowed in links")
               elaboratePending.addNode(
                 ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort, blockPath),
                 Seq(ElaborateRecord.Port(blockPath ++ intPort))
@@ -514,6 +518,7 @@ class Compiler private (
           case _ => false // anything with allocates is not processed
         }
       case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
+        require(!exported.tap, "tap not allowed in tunnel")
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
             require(!isInLink)
@@ -845,12 +850,14 @@ class Compiler private (
 
                     case expr.ValueExpr.Expr.ExportedArray(exported) => // note internal port is portPostfix
                       val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
-                      constProp.addAssignEqual(
-                        path.asIndirect ++ extPostfix + IndirectStep.Elements,
-                        path.asIndirect ++ portPostfix + IndirectStep.Elements,
-                        path,
-                        constrName
-                      )
+                      if (!exported.tap) { // elements do not propagate in tap case, but are checked to be equal
+                        constProp.addAssignEqual(
+                          path.asIndirect ++ extPostfix + IndirectStep.Elements,
+                          path.asIndirect ++ portPostfix + IndirectStep.Elements,
+                          path,
+                          constrName
+                        )
+                      }
                       constProp.addAssignEqual(
                         path.asIndirect ++ portPostfix + IndirectStep.Allocated,
                         path.asIndirect ++ extPostfix + IndirectStep.Allocated,

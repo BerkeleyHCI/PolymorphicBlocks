@@ -1,6 +1,6 @@
 package edg
 
-import edg.compiler.{Compiler, DesignAssertionCheck, DesignRefsValidate, DesignStructuralValidate}
+import edg.compiler.{Compiler, DesignAssertionCheck, DesignRefsValidate, DesignStructuralValidate, ExportTapCheck}
 import edg.wir.{EdgirLibrary, Refinements}
 import edgir.schema.schema.{Design, Library}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -19,6 +19,7 @@ trait CompilerTestUtil extends AnyFlatSpec {
     new DesignStructuralValidate().map(compiled) shouldBe empty
     new DesignRefsValidate().validate(compiled) shouldBe empty
     new DesignAssertionCheck(compiler).map(compiled) shouldBe empty
+    new ExportTapCheck(compiler).map(compiled) shouldBe empty
     expectedDesign match { // toProtoString is a more readable and diff-able
       case Some(expectedDesign) => compiled should equal(expectedDesign)
       case _ =>

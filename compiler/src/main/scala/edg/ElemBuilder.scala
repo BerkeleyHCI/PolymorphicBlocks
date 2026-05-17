@@ -44,23 +44,27 @@ object ElemBuilder {
     def Exported(
         external: ref.LocalPath,
         internal: ref.LocalPath,
-        expanded: Seq[expr.ValueExpr] = Seq()
+        expanded: Seq[expr.ValueExpr] = Seq(),
+        tap: Boolean = false
     ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.Exported(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
         internalBlockPort = Some(ValueExpr.Ref(internal)),
-        expanded = expanded.map(_.getExported)
+        expanded = expanded.map(_.getExported),
+        tap = tap
       ))
     )
     def ExportedArray(
         external: ref.LocalPath,
         internal: ref.LocalPath,
-        expanded: Seq[expr.ValueExpr] = Seq()
+        expanded: Seq[expr.ValueExpr] = Seq(),
+        tap: Boolean = false
     ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
         internalBlockPort = Some(ValueExpr.Ref(internal)),
-        expanded = expanded.map(_.getExported)
+        expanded = expanded.map(_.getExported),
+        tap = tap
       ))
     )
     // variation for map_extract

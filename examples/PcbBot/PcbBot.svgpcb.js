@@ -210,22 +210,22 @@ const R9 = board.add(R_0603_1608Metric, {
   translate: pt(2.510, 3.494), rotate: 0,
   id: 'R9'
 })
-// tof.elt[0]
+// tof.elt[0].conn
 const J4 = board.add(PinSocket_1x06_P2_54mm_Vertical, {
   translate: pt(1.457, 2.309), rotate: 0,
   id: 'J4'
 })
-// tof.elt[1]
+// tof.elt[1].conn
 const J5 = board.add(PinSocket_1x06_P2_54mm_Vertical, {
   translate: pt(1.636, 2.309), rotate: 0,
   id: 'J5'
 })
-// tof.elt[2]
+// tof.elt[2].conn
 const J6 = board.add(PinSocket_1x06_P2_54mm_Vertical, {
   translate: pt(1.815, 2.309), rotate: 0,
   id: 'J6'
 })
-// tof.elt[3]
+// tof.elt[3].conn
 const J7 = board.add(PinSocket_1x06_P2_54mm_Vertical, {
   translate: pt(1.994, 2.309), rotate: 0,
   id: 'J7'
@@ -570,10 +570,10 @@ board.setNetlist([
   {name: "mcu.program_en_node", pads: [["U3", "3"], ["R8", "2"], ["C7", "1"]]},
   {name: "mcu.program_boot_node", pads: [["U3", "27"], ["SW2", "1"], ["D7", "2"]]},
   {name: "led.package.k", pads: [["D7", "1"], ["R9", "1"]]},
-  {name: "tof.elt[0].ic.gpio1", pads: [["J4", "5"]]},
-  {name: "tof.elt[1].ic.gpio1", pads: [["J5", "5"]]},
-  {name: "tof.elt[2].ic.gpio1", pads: [["J6", "5"]]},
-  {name: "tof.elt[3].ic.gpio1", pads: [["J7", "5"]]},
+  {name: "tof.elt[0].int", pads: [["J4", "5"]]},
+  {name: "tof.elt[1].int", pads: [["J5", "5"]]},
+  {name: "tof.elt[2].int", pads: [["J6", "5"]]},
+  {name: "tof.elt[3].int", pads: [["J7", "5"]]},
   {name: "imu.int1", pads: [["U5", "4"]]},
   {name: "imu.int2", pads: [["U5", "9"]]},
   {name: "mag.drdy", pads: [["U6", "15"]]},

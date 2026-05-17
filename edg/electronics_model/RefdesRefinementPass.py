@@ -1,7 +1,8 @@
-from typing import List, Tuple, Dict, Set, Optional
+from typing import List, Tuple, Dict, Set, Optional, cast
 
 from typing_extensions import override
 
+from .BoardScopedTransform import BoardScopedTransform
 from .. import edgir
 from ..core import CompiledDesign, TransformUtil
 from ..core.BaseRefinementPass import BaseRefinementPass
@@ -17,36 +18,26 @@ class RefdesRefinementPass(BaseRefinementPass):
         ]
 
 
-class RefdesTransform(TransformUtil.Transform):
+class RefdesTransform(BoardScopedTransform):
     def __init__(self, design: CompiledDesign):
-        self.design = design
+        super().__init__(design)
 
-        board_refdes_prefix = self.design.get_value(("refdes_prefix",))
+        board_refdes_prefix = design.get_value(("refdes_prefix",))
         if board_refdes_prefix is None:
             self.board_refdes_prefix = ""
         else:
             assert isinstance(board_refdes_prefix, str)
             self.board_refdes_prefix = board_refdes_prefix
 
-        self.scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {
-            TransformUtil.Path.empty(): TransformUtil.Path.empty()
-        }
-
         self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
         self.refdes_last: Dict[Tuple[TransformUtil.Path, str], int] = {}  # (scope, prefix) -> num
 
     @override
-    def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-        scope = self.scopes[context.path]
-        internal_scope = scope
-        if "fp_is_wrapper" in block.meta.members.node:  # wrapper internal blocks ignored
-            internal_scope = None
-
-        for block_pair in block.blocks:
-            self.scopes[context.path.append_block(block_pair.name)] = internal_scope
-
+    def visit_block_scoped(
+        self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], block: edgir.BlockTypes
+    ) -> None:
         if "fp_is_footprint" in block.meta.members.node and scope is not None:
-            refdes_prefix = self.design.get_value(context.path.to_tuple() + ("fp_refdes_prefix",))
+            refdes_prefix = self._design.get_value(context.path.to_tuple() + ("fp_refdes_prefix",))
             assert isinstance(refdes_prefix, str)
 
             refdes_id = self.refdes_last.get((scope, refdes_prefix), 0) + 1
@@ -54,5 +45,5 @@ class RefdesTransform(TransformUtil.Transform):
             self.block_refdes_list.append((context.path, self.board_refdes_prefix + refdes_prefix + str(refdes_id)))
 
     def run(self) -> List[Tuple[TransformUtil.Path, str]]:
-        self.transform_design(self.design.design)
+        self.transform_design(self._design.design)
         return self.block_refdes_list

@@ -191,7 +191,11 @@ class ExprToString() extends ValueExprMap[String] {
       expandedExteriorPort: String,
       expandedInterorPort: String
   ): String = {
-    s"exported($exteriorPort, $internalBlockPort)"
+    if (!exported.tap) {
+      s"exported($exteriorPort, $internalBlockPort)"
+    } else {
+      s"exported[tap]($exteriorPort, $internalBlockPort)"
+    }
   }
 
   override def mapExportedTunnel(
