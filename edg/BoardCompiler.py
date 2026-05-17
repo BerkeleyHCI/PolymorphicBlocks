@@ -26,8 +26,9 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
 
         with suppress(FileNotFoundError):
             os.remove(design_filename)
-        with suppress(FileNotFoundError):
-            os.remove(netlist_filename_prefix + ".net")  # TODO remove subboard netlists
+        for filename in os.listdir(target_dir):
+            if filename.startswith(netlist_filename_prefix) and filename.endswith(".net"):
+                os.remove(os.path.join(target_dir, filename))
         with suppress(FileNotFoundError):
             os.remove(bom_filename)
         with suppress(FileNotFoundError):
