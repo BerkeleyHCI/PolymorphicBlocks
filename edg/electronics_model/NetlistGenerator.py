@@ -184,14 +184,11 @@ class NetlistTransform(BoardScopedTransform):
         # this may cause inner connections to leach out into the parent scope, or
         # result in extraneous connections in either scope,
         # but is much simpler implementation-wise
-        if parent_scope_obj is not None and scope_obj is not None and parent_scope_obj is not scope_obj:
-            all_scopes = [scope_obj, parent_scope_obj]
-        elif scope_obj is not None:
-            all_scopes = [scope_obj]
-        elif parent_scope_obj is not None:
-            all_scopes = [parent_scope_obj]
-        else:
-            all_scopes = []
+        all_scopes = []
+        if scope_obj is not None:
+            all_scopes.append(scope_obj)
+        if parent_scope_obj is not None and parent_scope_obj is not scope_obj:
+            all_scopes.append(parent_scope_obj)
 
         if all_scopes:
             for constraint_pair in block.constraints:
