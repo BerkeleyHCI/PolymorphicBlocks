@@ -125,11 +125,13 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
                 [
                     NetPin(["source"], "1"),
                     NetPin(["sink", "conn", "external"], "1"),
-                ],  # ensure extraneous nets not generated
+                ],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "conn").append_port("pos"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "internal").append_port("pos"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("pos"),
                 ],
             ),
             top_net.nets,
@@ -137,11 +139,13 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
+                [NetPin(["source"], "2"), NetPin(["sink", "conn", "external"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "conn").append_port("neg"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "internal").append_port("neg"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("neg"),
                 ],
             ),
             top_net.nets,
@@ -151,13 +155,28 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         inner_net = board_netlists[TransformUtil.Path.empty().append_block("sink")]
         self.assertIn(
             NetBlock(
+                "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+                "J1",
+                "",
+                "",
+                ["sink", "conn", "internal"],
+                [
+                    "edg.electronics_model.test_netlist_connector_pair.SinkConnectorPairBlock",
+                    "edg.electronics_model.test_netlist_connector_pair.SinkConnectorPair",
+                    "edg.electronics_model.test_netlist_connector_pair.SinkInternalConnector",
+                ],
+            ),
+            inner_net.blocks,
+        )
+        self.assertIn(
+            NetBlock(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink", "inner1"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_model.test_netlist_connector_pair.SinkConnectorPairBlock",
                     "edg.electronics_model.test_netlist.TestFakeSink",
                 ],
             ),
@@ -171,13 +190,13 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
                 "1k",
                 ["sink", "inner2"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_model.test_netlist_connector_pair.SinkConnectorPairBlock",
                     "edg.electronics_model.test_netlist.TestFakeSink",
                 ],
             ),
             inner_net.blocks,
         )
-        self.assertEqual(len(inner_net.blocks), 2)
+        self.assertEqual(len(inner_net.blocks), 3)
 
         self.assertIn(
             Net(

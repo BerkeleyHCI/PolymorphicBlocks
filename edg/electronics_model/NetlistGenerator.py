@@ -98,10 +98,9 @@ class NetlistTransform(BoardScopedTransform):
         else:
             scope_obj = None
 
-        if isinstance(block, edgir.HierarchyBlock) and "fp_subboard" in block.meta.members.node:
-            # only valid for sub-board blocks, where some things happen in the parent scope
+        if isinstance(block, edgir.HierarchyBlock):
             parent_scope = self._board_parent_scopes[path]
-            if parent_scope is not None:
+            if parent_scope is not None and parent_scope is not scope_obj:
                 parent_scope_obj: Optional[BoardScope] = self.scopes[parent_scope]
             else:
                 parent_scope_obj = None
