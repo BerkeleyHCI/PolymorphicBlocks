@@ -130,8 +130,8 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 "100",
                 ["sink", "wrapper"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperBlock",
-                    "edg.electronics_model.test_netlist_subboard.SinkWrapperExterior",
+                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperBlock",
+                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperExterior",
                 ],
             ),
             net.blocks,

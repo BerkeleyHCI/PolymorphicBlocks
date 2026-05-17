@@ -180,12 +180,20 @@ class NetlistTransform(BoardScopedTransform):
                 scope_obj.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
                 scope_obj.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
-        if scope_obj is not None:
-            if parent_scope_obj is not None:
-                all_scopes = [scope_obj, parent_scope_obj]
-            else:
-                all_scopes = [scope_obj]
+        # for blocks with mixed scope, connections happen in both scopes, since blocks may be in either
+        # this may cause inner connections to leach out into the parent scope, or
+        # result in extraneous connections in either scope,
+        # but is much simpler implementation-wise
+        if parent_scope_obj is not None and scope_obj is not None and parent_scope_obj is not scope_obj:
+            all_scopes = [scope_obj, parent_scope_obj]
+        elif scope_obj is not None:
+            all_scopes = [scope_obj]
+        elif parent_scope_obj is not None:
+            all_scopes = [parent_scope_obj]
+        else:
+            all_scopes = []
 
+        if all_scopes:
             for constraint_pair in block.constraints:
                 if constraint_pair.value.HasField("connected"):
                     self.process_connected(path, block, all_scopes, constraint_pair.value.connected)
