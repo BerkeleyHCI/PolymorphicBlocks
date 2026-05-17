@@ -105,7 +105,7 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         self.assertIn(
             NetBlock(
                 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical",
-                "J1",
+                "J2",
                 "",
                 "",
                 ["sink", "conn", "external"],
@@ -122,11 +122,14 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
+                [
+                    NetPin(["source"], "1"),
+                    NetPin(["sink", "conn", "external"], "1"),
+                ],  # ensure extraneous nets not generated
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("pos", "net"),
                 ],
             ),
             top_net.nets,

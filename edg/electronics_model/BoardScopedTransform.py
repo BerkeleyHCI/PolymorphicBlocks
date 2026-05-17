@@ -39,12 +39,14 @@ class BoardScopedTransform(TransformUtil.Transform):
     def visit_block(self, context: TransformContext, block: edgir.HierarchyBlock) -> None:
         parent_scope = self._board_parent_scopes[context.path]
 
-        if "fp_subboard" in block.meta.members.node:
+        if "fp_subboard" in block.meta.members.node or "fp_subboard_connector_pair" in block.meta.members.node:
             fp_external_blocks = self._design.get_value(context.path.to_tuple() + ("fp_external_blocks",))
             assert isinstance(fp_external_blocks, list)
             external_blocks: Optional[List[str]] = cast(List[str], fp_external_blocks)
             if "fp_subblocks_ignored" in block.meta.members.node:
                 internal_scope = None
+            elif "fp_subboard_connector_pair" in block.meta.members.node:
+                internal_scope = self._board_scopes[TransformUtil.Path.empty().append_block(*context.path.blocks[:-1])]
             else:
                 internal_scope = context.path
         else:
