@@ -100,7 +100,7 @@ class NetlistTransform(BoardScopedTransform):
 
         if isinstance(block, edgir.HierarchyBlock):
             parent_scope = self._board_parent_scopes[path]
-            if parent_scope is not None and parent_scope is not scope_obj:
+            if parent_scope is not None and parent_scope != scope:
                 parent_scope_obj: Optional[BoardScope] = self.scopes[parent_scope]
             else:
                 parent_scope_obj = None

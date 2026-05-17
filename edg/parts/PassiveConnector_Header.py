@@ -54,7 +54,8 @@ class PinSocket254(FootprintPassiveConnector):
 
 
 class PinSocket254Pair(SubboardConnectorPair):
-    """2.54mm pin socket (external) - header (internal) pair for sub-board connectors."""
+    """2.54mm pin socket (external) - header (internal) pair for sub-board connectors,
+    matching same pin-number to pin-number."""
 
     def __init__(self, length: IntLike = 0) -> None:
         super().__init__()
