@@ -7,20 +7,14 @@ from ..core.HdlUserExceptions import UnconnectableError
 from .. import edgir
 
 
-class SubboardBlock(Block):
-    """A block that is a sub-board, where all its blocks not marked external are part of a different board.
-    Provides the export_tap construct to tack connectors onto ports without breaking modeling.
-
-    IMPORTANT: pseudo-blocks like bridges and adapters are considered internal blocks and do not affect
-    netlisting in the exterior board. In general, external blocks should only be connected via export-tap
-    and not direct connections where they may generate pseudo-blocks that end up in the wrong board."""
+@non_library
+class HasSubboardBlockApi(Block):
+    """Base class that provides the subboard construction API."""
 
     def __init__(self) -> None:
         super().__init__()
         self._external_blocks: List[Block] = []
         self._export_taps: List[Tuple[BasePort, BasePort]] = []
-
-        self.fp_subboard = self.Metadata("A")  # dummy distinct value
         self.fp_external_blocks = self.Parameter(ArrayStringExpr())  # names of all external blocks
 
     BlockType = TypeVar("BlockType", bound=Block)
@@ -70,6 +64,19 @@ class SubboardBlock(Block):
                 constraint_pb.exported.tap = True
 
 
+class SubboardBlock(HasSubboardBlockApi, Block):
+    """A block that is a sub-board, where all its blocks not marked external are part of a different board.
+    Provides the export_tap construct to tack connectors onto ports without breaking modeling.
+
+    IMPORTANT: pseudo-blocks like bridges and adapters are considered internal blocks and do not affect
+    netlisting in the exterior board. In general, external blocks should only be connected via export-tap
+    and not direct connections where they may generate pseudo-blocks that end up in the wrong board."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.fp_subboard = self.Metadata("A")  # dummy distinct value
+
+
 class WrapperSubboardBlock(SubboardBlock):
     """A wrapper block where the internal blocks are skipped for netlisting and used for modeling only.
     Useful for eg, dev boards that only generate a connector or socket but re-use modeling from the raw subcircuit."""
@@ -77,3 +84,23 @@ class WrapperSubboardBlock(SubboardBlock):
     def __init__(self) -> None:
         super().__init__()
         self.fp_subblocks_ignored = self.Metadata("B")  # dummy distinct value
+
+
+class SubboardConnectorPair(HasSubboardBlockApi, Block):
+    """A block meant for a connector pair, one in the exterior and one in the interior, of a SubboardBlock.
+    When in a SubboardBlock scope and marked external, this inherits the parent and self board scope of its container,
+    so inner Blocks marked external are part of the SubboardBlock's parent scope, while internal Blocks
+    are part of the SubboardBlock's inner scope.
+
+    Inner SubboardConnectorPairs marked external similarly inherit board scopes of its containing
+    SubboardConnectorPair.
+
+    Recommended convention, similar to SubboardBlock, is to directly export ports from the internal Block
+    while export-tapping ports from the external Block.
+
+    These should not be instantiated outside a SubboardBlock or SubblockConnectorPair.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.fp_subboard_connector_pair = self.Metadata("C")  # dummy distinct value

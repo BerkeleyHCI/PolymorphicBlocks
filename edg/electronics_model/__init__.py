@@ -7,7 +7,7 @@ from .CircuitBlock import (
     NetBlock,
     CircuitPort,
 )
-from .SubboardBlock import SubboardBlock, WrapperSubboardBlock
+from .SubboardBlock import SubboardBlock, WrapperSubboardBlock, SubboardConnectorPair
 
 from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry, nHenry
 from .Units import Volt, mVolt, Watt, Amp, mAmp, uAmp, nAmp, pAmp
