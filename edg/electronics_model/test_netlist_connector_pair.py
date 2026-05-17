@@ -201,10 +201,16 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "sink.vpos",
-                [NetPin(["sink", "inner1"], "1"), NetPin(["sink", "inner2"], "1")],
+                [
+                    NetPin(["sink", "inner1"], "1"),
+                    NetPin(["sink", "inner2"], "1"),
+                    NetPin(["sink", "conn", "internal"], "1"),
+                ],
                 [
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "conn").append_port("pos"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "internal").append_port("pos"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("pos"),
                     TransformUtil.Path.empty().append_block("sink", "inner1").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner2").append_port("pos", "net"),
                 ],
@@ -214,10 +220,16 @@ class NetlistConnectorPairTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "sink.gnd",
-                [NetPin(["sink", "inner1"], "2"), NetPin(["sink", "inner2"], "2")],
+                [
+                    NetPin(["sink", "inner1"], "2"),
+                    NetPin(["sink", "inner2"], "2"),
+                    NetPin(["sink", "conn", "internal"], "2"),
+                ],
                 [
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
-                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "conn").append_port("neg"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "internal").append_port("neg"),
+                    TransformUtil.Path.empty().append_block("sink", "conn", "external").append_port("neg"),
                     TransformUtil.Path.empty().append_block("sink", "inner1").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner2").append_port("neg", "net"),
                 ],
