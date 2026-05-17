@@ -82,8 +82,7 @@ class NetlistTransform(BoardScopedTransform):
     def __init__(self, design: CompiledDesign):
         super().__init__(design)
 
-        self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
-        self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
+        self.scopes: Scopes = {TransformUtil.Path.empty(): BoardScope.empty(TransformUtil.Path.empty())}
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
         self.path_traverse_order: List[TransformUtil.Path] = []
 
@@ -371,11 +370,10 @@ class NetlistTransform(BoardScopedTransform):
 
         return Netlist(netlist_footprints, netlist_nets)
 
-    def run(self) -> Netlist:
+    def run(self) -> Dict[TransformUtil.Path, Netlist]:
         self.transform_design(self._design.design)
 
-        assert len(self.all_scopes) == 1, "TODO: support multiple boards"
-        return self.scope_to_netlist(self.all_scopes[0])
+        return {path: self.scope_to_netlist(scope) for path, scope in self.scopes.items() if scope is not None}
 
 
 class PathShortener:

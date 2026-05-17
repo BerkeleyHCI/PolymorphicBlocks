@@ -78,7 +78,7 @@ class TestInvalidPackedDevices(DesignTop):
 
 class MultipackNetlistTestCase(unittest.TestCase):
     def test_packed_netlist(self) -> None:
-        net = NetlistTestCase.generate_net(TestPackedDevices)
+        net = NetlistTestCase.generate_single_net(TestPackedDevices)
 
         self.assertIn(
             Net(
@@ -152,4 +152,4 @@ class MultipackNetlistTestCase(unittest.TestCase):
         from .NetlistGenerator import InvalidPackingException
 
         with self.assertRaises(InvalidPackingException):
-            NetlistTestCase.generate_net(TestInvalidPackedDevices)
+            NetlistTestCase.generate_single_net(TestInvalidPackedDevices)

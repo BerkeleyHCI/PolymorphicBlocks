@@ -30,7 +30,7 @@ class RefdesTransform(BoardScopedTransform):
             self.board_refdes_prefix = board_refdes_prefix
 
         self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
-        self.refdes_last: Dict[Tuple[TransformUtil.Path, str], int] = {}  # (scope, prefix) -> num
+        self.refdes_last: Dict[str, int] = {}  # prefix -> num
 
     @override
     def visit_block_scoped(
@@ -40,8 +40,8 @@ class RefdesTransform(BoardScopedTransform):
             refdes_prefix = self._design.get_value(context.path.to_tuple() + ("fp_refdes_prefix",))
             assert isinstance(refdes_prefix, str)
 
-            refdes_id = self.refdes_last.get((scope, refdes_prefix), 0) + 1
-            self.refdes_last[(scope, refdes_prefix)] = refdes_id
+            refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
+            self.refdes_last[refdes_prefix] = refdes_id
             self.block_refdes_list.append((context.path, self.board_refdes_prefix + refdes_prefix + str(refdes_id)))
 
     def run(self) -> List[Tuple[TransformUtil.Path, str]]:
