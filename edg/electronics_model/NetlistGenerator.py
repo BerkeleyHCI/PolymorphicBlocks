@@ -99,9 +99,13 @@ class NetlistTransform(BoardScopedTransform):
 
         if isinstance(block, edgir.HierarchyBlock) and "fp_subboard" in block.meta.members.node:
             # only valid for sub-board blocks, where some things happen in the parent scope
-            parent_scope: Optional[TransformUtil.Path] = self._board_parent_scopes[path]
+            parent_scope = self._board_parent_scopes[path]
+            if parent_scope is not None:
+                parent_scope_obj: Optional[BoardScope] = self.scopes[parent_scope]
+            else:
+                parent_scope_obj = None
         else:
-            parent_scope = None
+            parent_scope_obj = None
 
         if isinstance(block, edgir.HierarchyBlock):
             class_path = self.class_paths[path]
@@ -177,80 +181,79 @@ class NetlistTransform(BoardScopedTransform):
                 scope_obj.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
         if scope_obj is not None:
+            if parent_scope_obj is not None:
+                all_scopes = [scope_obj, parent_scope_obj]
+            else:
+                all_scopes = [scope_obj]
+
             for constraint_pair in block.constraints:
                 if constraint_pair.value.HasField("connected"):
-                    self.process_connected(path, block, scope_obj, constraint_pair.value.connected)
+                    self.process_connected(path, block, all_scopes, constraint_pair.value.connected)
                 elif constraint_pair.value.HasField("connectedArray"):
                     for expanded_connect in constraint_pair.value.connectedArray.expanded:
-                        self.process_connected(path, block, scope_obj, expanded_connect)
+                        self.process_connected(path, block, all_scopes, expanded_connect)
                 elif constraint_pair.value.HasField("exported"):
-                    block_name = constraint_pair.value.exported.internal_block_port.ref.steps[0].name
-                    if (
-                        parent_scope is not None
-                        and self._board_parent_scopes[path.append_block(block_name)] == parent_scope
-                    ):
-                        self.process_exported(path, block, self.scopes[parent_scope], constraint_pair.value.exported)
-                    else:
-                        self.process_exported(path, block, scope_obj, constraint_pair.value.exported)
+                    self.process_exported(path, block, all_scopes, constraint_pair.value.exported)
                 elif constraint_pair.value.HasField("exportedArray"):
-                    block_name = constraint_pair.value.exported.internal_block_port.ref.steps[0].name
-                    if (
-                        parent_scope is not None
-                        and self._board_parent_scopes[path.append_block(block_name)] == parent_scope
-                    ):
-                        for expanded_export in constraint_pair.value.exportedArray.expanded:
-                            self.process_exported(path, block, self.scopes[parent_scope], expanded_export)
-                    else:
-                        for expanded_export in constraint_pair.value.exportedArray.expanded:
-                            self.process_exported(path, block, scope_obj, expanded_export)
+                    for expanded_export in constraint_pair.value.exportedArray.expanded:
+                        self.process_exported(path, block, all_scopes, expanded_export)
                 elif constraint_pair.value.HasField("exportedTunnel"):
-                    self.process_exported(path, block, scope_obj, constraint_pair.value.exportedTunnel)
+                    self.process_exported(path, block, all_scopes, constraint_pair.value.exportedTunnel)
 
     def process_connected(
-        self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope, constraint: edgir.ConnectedExpr
+        self,
+        path: TransformUtil.Path,
+        current: edgir.EltTypes,
+        scopes: List[BoardScope],
+        constraint: edgir.ConnectedExpr,
     ) -> None:
         if constraint.expanded:
             assert len(constraint.expanded) == 1
-            self.process_connected(path, current, scope, constraint.expanded[0])
+            self.process_connected(path, current, scopes, constraint.expanded[0])
             return
         assert constraint.block_port.HasField("ref")
         assert constraint.link_port.HasField("ref")
         self.connect_ports(
-            scope, path.follow(constraint.block_port.ref, current), path.follow(constraint.link_port.ref, current)
+            scopes, path.follow(constraint.block_port.ref, current), path.follow(constraint.link_port.ref, current)
         )
 
     def process_exported(
-        self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope, constraint: edgir.ExportedExpr
+        self,
+        path: TransformUtil.Path,
+        current: edgir.EltTypes,
+        scopes: List[BoardScope],
+        constraint: edgir.ExportedExpr,
     ) -> None:
         if constraint.expanded:
             assert len(constraint.expanded) == 1
-            self.process_exported(path, current, scope, constraint.expanded[0])
+            self.process_exported(path, current, scopes, constraint.expanded[0])
             return
         assert constraint.internal_block_port.HasField("ref")
         assert constraint.exterior_port.HasField("ref")
         self.connect_ports(
-            scope,
+            scopes,
             path.follow(constraint.internal_block_port.ref, current),
             path.follow(constraint.exterior_port.ref, current),
         )
 
     def connect_ports(
         self,
-        scope: BoardScope,
+        scopes: List[BoardScope],
         elt1: Tuple[TransformUtil.Path, edgir.EltTypes],
         elt2: Tuple[TransformUtil.Path, edgir.EltTypes],
     ) -> None:
         """Recursively connect ports, including containers and leaf ports. Net-ness is ignored here."""
         if isinstance(elt1[1], edgir.Port) and isinstance(elt2[1], edgir.Port):
-            scope.edges.setdefault(elt1[0], []).append(elt2[0])
-            scope.edges.setdefault(elt2[0], []).append(elt1[0])
+            for scope in scopes:
+                scope.edges.setdefault(elt1[0], []).append(elt2[0])
+                scope.edges.setdefault(elt2[0], []).append(elt1[0])
 
             elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
             elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
             assert elt1_names == elt2_names, f"mismatched port sub-ports in types {elt1}, {elt2}"
             for key in elt2_names:
                 self.connect_ports(
-                    scope,
+                    scopes,
                     (elt1[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt1[1].ports, key))),
                     (elt2[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt2[1].ports, key))),
                 )

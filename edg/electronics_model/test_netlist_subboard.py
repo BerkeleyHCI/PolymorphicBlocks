@@ -148,9 +148,11 @@ class NetlistSubboardTestCase(unittest.TestCase):
 
         self.assertIn(
             Net(
-                "sink.inner1.pos",
+                "sink.vpos",
                 [NetPin(["sink", "inner1"], "1"), NetPin(["sink", "inner2"], "1")],
                 [
+                    TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner1").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner2").append_port("pos", "net"),
                 ],
@@ -159,9 +161,11 @@ class NetlistSubboardTestCase(unittest.TestCase):
         )
         self.assertIn(
             Net(
-                "sink.inner1.neg",
+                "sink.gnd",
                 [NetPin(["sink", "inner1"], "2"), NetPin(["sink", "inner2"], "2")],
                 [
+                    TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner1").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink", "inner2").append_port("neg", "net"),
                 ],

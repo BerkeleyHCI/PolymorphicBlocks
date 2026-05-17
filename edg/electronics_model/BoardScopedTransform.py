@@ -18,6 +18,7 @@ class BoardScopedTransform(TransformUtil.Transform):
         self._board_parent_scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {
             TransformUtil.Path.empty(): TransformUtil.Path.empty()
         }  # always initialized in parent
+        self._board_scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {}
 
     def visit_block_scoped(
         self, context: TransformUtil.TransformContext, scope: Optional[TransformUtil.Path], block: edgir.BlockTypes
@@ -50,6 +51,8 @@ class BoardScopedTransform(TransformUtil.Transform):
             external_blocks = None
             internal_scope = parent_scope
 
+        self._board_scopes[context.path] = internal_scope
+
         for block_pair in block.blocks:
             if external_blocks is not None and block_pair.name not in external_blocks:
                 self._board_parent_scopes[context.path.append_block(block_pair.name)] = internal_scope
@@ -60,8 +63,8 @@ class BoardScopedTransform(TransformUtil.Transform):
 
     @override
     def visit_link(self, context: TransformContext, link: edgir.Link) -> None:
-        self.visit_link_scoped(context, self._board_parent_scopes[context.path.block_component()], link)
+        self.visit_link_scoped(context, self._board_scopes[context.path.block_component()], link)
 
     @override
     def visit_linkarray(self, context: TransformContext, link: edgir.LinkArray) -> None:
-        self.visit_linkarray_scoped(context, self._board_parent_scopes[context.path.block_component()], link)
+        self.visit_linkarray_scoped(context, self._board_scopes[context.path.block_component()], link)
