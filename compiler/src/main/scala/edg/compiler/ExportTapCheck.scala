@@ -13,7 +13,7 @@ import scala.collection.mutable
 /** Checks export tap validity, that inner-side parameters are undefined and elements are consistent.
   */
 class ExportTapCheck(compiler: Compiler)
-    extends DesignMap[Unit, Seq[CompilerError], Seq[CompilerError]] {
+    extends DesignMap[Unit, Seq[CompilerError], Unit] {
   val portParams = mutable.HashMap[DesignPath, Seq[String]]()
 
   def mapExported(
@@ -78,11 +78,11 @@ class ExportTapCheck(compiler: Compiler)
       block: elem.HierarchyBlock,
       ports: SeqMap[String, Unit],
       blocks: SeqMap[String, Seq[CompilerError]],
-      links: SeqMap[String, Seq[CompilerError]]
+      links: SeqMap[String, Unit]
   ): Seq[CompilerError] = {
     block.constraints.asPairs.flatMap {
       case (name, constr) => mapConstraint(path, name, constr)
-    }.toSeq ++ blocks.values.flatten ++ links.values.flatten
+    }.toSeq ++ blocks.values.flatten
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): Seq[CompilerError] = {
     Seq() // block library errors should be checked elsewhere
@@ -92,19 +92,18 @@ class ExportTapCheck(compiler: Compiler)
       path: DesignPath,
       link: elem.Link,
       ports: SeqMap[String, Unit],
-      links: SeqMap[String, Seq[CompilerError]]
-  ): Seq[CompilerError] = {
-    Seq() // export tap not valid in links
-  }
+      links: SeqMap[String, Unit]
+  ): Unit = {} // export tap not valid in links
+
   override def mapLinkArray(
       path: DesignPath,
       link: elem.LinkArray,
       ports: SeqMap[String, Unit],
-      links: SeqMap[String, Seq[CompilerError]]
-  ): Seq[CompilerError] = {
-    Seq() // export tap not valid in links
-  }
-  override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Seq[CompilerError] = {
-    Seq() // link library errors should be checked elsewhere
-  }
+      links: SeqMap[String, Unit]
+  ): Unit = {} // export tap not valid in links
+
+  override def mapLinkLibrary(
+      path: DesignPath,
+      link: ref.LibraryPath
+  ): Unit = {} // link library errors should be checked elsewhere
 }
