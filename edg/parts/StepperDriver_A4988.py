@@ -237,6 +237,7 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
         self.enable = self.Port(DigitalSink.empty(), optional=True)
         self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.sleep = self.Port(DigitalSink.empty(), optional=True)
+        self.generator_param(self.enable.is_connected(), self.reset.is_connected(), self.sleep.is_connected())
 
         self.out1a = self.Port(DigitalSource.empty())
         self.out1b = self.Port(DigitalSource.empty())
@@ -265,9 +266,9 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
             ms2 = self.pwr_logic
             ms3 = self.gnd
         elif step_resolution == 8:  # eighth step
-            ms1 = self.gnd
+            ms1 = self.pwr_logic
             ms2 = self.pwr_logic
-            ms3 = self.pwr_logic
+            ms3 = self.gnd
         elif step_resolution == 16:  # sixteenth step
             ms1 = self.pwr_logic
             ms2 = self.pwr_logic
@@ -289,12 +290,12 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
                 "8": self.gnd,
                 "9": self.dir,
                 "10": self.step,
-                "11": self.sleep,
-                "12": self.reset,
+                "11": self.sleep if self.get(self.sleep.is_connected()) else self.pwr_logic,
+                "12": self.reset if self.get(self.reset.is_connected()) else self.pwr_logic,
                 "13": ms3,
                 "14": ms2,
                 "15": ms1,
-                "16": self.enable,
+                "16": self.enable if self.get(self.enable.is_connected()) else self.gnd,
             },
             mfr="Pololu",
             part="1182",

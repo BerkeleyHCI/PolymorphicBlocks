@@ -7,7 +7,8 @@ from ..core.TransformUtil import TransformContext
 
 class BoardScopedTransform(TransformUtil.Transform):
     """Transform subclass that handles board scoping for sub-boards and wrappers.
-    Board scopes are defined as a Path (root for the "main" board) or None (for sub-board wrappers).
+    Board scopes are defined as a Path (root for the "main" board) or None (for sub-board wrappers
+    that discard their implementation).
     Subclasses may define additional data structures, indexed by this board scope Path."""
 
     def __init__(self, design: CompiledDesign) -> None:
