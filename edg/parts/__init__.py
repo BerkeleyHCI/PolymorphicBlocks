@@ -40,7 +40,13 @@ from .Opamp_Lmv321 import Lmv321
 from .Inamp_Ina826 import Ina826
 from .CeramicResonator_Cstne import Cstne
 
-from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
+from .PassiveConnector_Header import (
+    PinHeader254,
+    PinHeader254Vertical,
+    PinHeader254Horizontal,
+    PinSocket254,
+    PinSocket254Pair,
+)
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
 from .PassiveConnector_Header import (
@@ -63,6 +69,7 @@ from .PassiveConnector_Fpc import (
     Fpc050,
     Fpc050Top,
     Fpc050Bottom,
+    Fpc050Pair,
     Fpc050BottomFlip,
     HiroseFh12sh,
     Afc01,

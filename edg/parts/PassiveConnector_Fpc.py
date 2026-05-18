@@ -23,6 +23,74 @@ class Fpc050Bottom(Fpc050):
     IMPORTANT: the pin numbering scheme differs for top- and bottom-contact connectors."""
 
 
+class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
+    """Pair of FPC connectors for sub-board connectors, parameterized by length (pins), cable geometry / type,
+    and connector contact side.
+
+    Parameters:
+        cable = "same" | "opposite": whether the FPC cable has contacts on the same side (Type A, mirror pin numbering)
+        or opposite sides (Type B, same pin numbering both sides)
+        ext_contact, int_contact = "top" | "bottom": the contact side for the external and internal connectors, respectively.
+    """
+
+    def __init__(
+        self,
+        length: IntLike = 0,
+        cable: StringLike = "same",
+        ext_contact: StringLike = "bot",
+        int_contact: StringLike = "bot",
+    ) -> None:
+        super().__init__()
+        self.length = self.ArgParameter(length)
+        self.cable = self.ArgParameter(cable)
+        self.ext_contact = self.ArgParameter(ext_contact)
+        self.int_contact = self.ArgParameter(int_contact)
+        self.pins = self.Port(Vector(Passive.empty()))
+        self.generator_param(self.length, self.pins.requested(), self.cable, self.ext_contact, self.int_contact)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        ext_contact = self.get(self.ext_contact)
+        if ext_contact == "top":
+            self.ext: Fpc050 = self.Block(Fpc050Top(self.length), external=True)
+        elif ext_contact == "bot":
+            self.ext = self.Block(Fpc050Bottom(self.length), external=True)
+        else:
+            raise ValueError(f"invalid ext_contact")
+
+        int_contact = self.get(self.int_contact)
+        if int_contact == "top":
+            self.int: Fpc050 = self.Block(Fpc050Top(self.length))
+        elif int_contact == "bot":
+            self.int = self.Block(Fpc050Bottom(self.length))
+        else:
+            raise ValueError(f"invalid int_contact")
+
+        length = self.get(self.length)
+        assert length > 0, "explicit length required"
+
+        # this determines whether to mirror the internal-side pinning
+        cable = self.get(self.cable)
+        if cable == "same":  # assuming same side contact side connectors
+            mirror = True
+        elif cable == "opposite":
+            mirror = False
+        else:
+            raise ValueError(f"invalid cable")
+        if ext_contact != int_contact:  # account for different contact side
+            mirror = not mirror
+
+        self.pins.defined()
+        for pin_num in self.get(self.pins.requested()):
+            pin = self.pins.append_elt(Passive.empty(), pin_num)
+            self.export_tap(pin, self.ext.pins.request(pin_num))
+            if mirror:
+                self.connect(pin, self.int.pins.request(str(length - (int(pin_num) - 1))))
+            else:
+                self.connect(pin, self.int.pins.request(pin_num))
+
+
 class Fpc050BottomFlip(Fpc050Bottom, GeneratorBlock):
     """Flipped FPC connector - bottom entry connector is top entry on the opposite board side.
     Reverses the pin ordering to reflect the mirroring."""
@@ -37,6 +105,7 @@ class Fpc050BottomFlip(Fpc050Bottom, GeneratorBlock):
         super().generate()
         self.conn = self.Block(Fpc050Top(self.length))
         length = self.get(self.length)
+        assert length > 0, "explicit length required"
         for pin in self.get(self.pins.requested()):
             self.connect(
                 self.pins.append_elt(Passive.empty(), pin), self.conn.pins.request(str(length - (int(pin) - 1)))
