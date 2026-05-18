@@ -71,10 +71,13 @@ class Fpc050Pair(SubboardConnectorPair, GeneratorBlock):
         assert length > 0, "explicit length required"
 
         # this determines whether to mirror the internal-side pinning
-        if self.get(self.cable) == "same":  # assuming same side contact side connectors
+        cable = self.get(self.cable)
+        if cable == "same":  # assuming same side contact side connectors
             mirror = True
-        else:
+        elif cable == "opposite":
             mirror = False
+        else:
+            raise ValueError(f"invalid cable")
         if ext_contact != int_contact:  # account for different contact side
             mirror = not mirror
 

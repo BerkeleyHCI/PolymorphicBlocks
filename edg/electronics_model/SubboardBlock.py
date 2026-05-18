@@ -99,7 +99,7 @@ class SubboardConnectorPair(HasSubboardBlockApi, Block):
     while export-tapping ports from the external Block. The external Block should be generated first
     for refdes ordering. This block's pin numbering should correspond to the external Block.
 
-    These should not be instantiated outside a SubboardBlock or SubblockConnectorPair. Bad things can happen.
+    These should not be instantiated outside a SubboardBlock or SubboardConnectorPair. Bad things can happen.
     """
 
     def __init__(self) -> None:
