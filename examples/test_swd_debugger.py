@@ -170,7 +170,6 @@ class SwdDebugger(JlcBoardTop):
             ],
             instance_values=[
                 (["refdes_prefix"], "S"),  # unique refdes for panelization
-                (["mcu", "crystal", "frequency"], Range.from_tolerance(8000000, 0.005)),
                 (
                     ["mcu", "pin_assigns"],
                     [
