@@ -59,7 +59,7 @@ class PinSocket254Pair(SubboardConnectorPair, GeneratorBlock):
 
     Optionally can be reversed, with the header being on the external side and the socket being on the internal side."""
 
-    def __init__(self, length: IntLike = 0, reversed: BoolLike = False) -> None:
+    def __init__(self, length: IntLike = 0, *, reversed: BoolLike = False) -> None:
         super().__init__()
         self.length = self.ArgParameter(length)
         self.reversed = self.ArgParameter(reversed)
