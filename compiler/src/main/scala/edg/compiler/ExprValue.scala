@@ -55,9 +55,9 @@ object ErrorValue {
   def aggregate(exprs: Seq[ExprValue]): Option[ErrorValue] = {
     val errors = exprs.collect { case error: ErrorValue => error }
     errors match {
-        case Seq() => None
-        case Seq(single) => Some(single)
-        case multiple => Some(aggregateErrors(multiple))
+      case Seq() => None
+      case Seq(single) => Some(single)
+      case multiple => Some(aggregateErrors(multiple))
     }
   }
 
