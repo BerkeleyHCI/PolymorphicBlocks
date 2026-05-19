@@ -298,7 +298,7 @@ class Stm32f103Base(
     GeneratorBlock,
 ):
     DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device
-    DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+    DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # as in common dev boards / eval boards
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
