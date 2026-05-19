@@ -51,6 +51,26 @@ object ExprValue {
   }
 }
 
+object ErrorValue {
+  def aggregate(exprs: Seq[ExprValue]): Option[ErrorValue] = {
+    val errors = exprs.collect { case error: ErrorValue => error }
+    errors match {
+        case Seq() => None
+        case Seq(single) => Some(single)
+        case multiple => Some(aggregateErrors(multiple))
+    }
+  }
+
+  private def aggregateErrors(errors: Seq[ErrorValue]): ErrorValue = {
+    val msgs = errors.flatMap(_.msg)
+    if (msgs.isEmpty) {
+      ErrorValue(None)
+    } else {
+      ErrorValue(Some(msgs.mkString("; ")))
+    }
+  }
+}
+
 case class ErrorValue(msg: Option[String]) extends ExprValue {
   def toLit: lit.ValueLit = Literal.Error(msg)
   def toStringValue: String = s"error(${msg.getOrElse("")})"
