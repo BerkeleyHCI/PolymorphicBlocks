@@ -26,8 +26,30 @@ class UsbLink(Link):
         )
 
 
+class UsbHostBridge(PortBridge):
+    def __init__(self) -> None:
+        super().__init__()
+        self.outer_port = self.Port(UsbHostPort.empty())
+        self.inner_link = self.Port(UsbDevicePort.empty())
+
+    @override
+    def contents(self) -> None:
+        from .DigitalPorts import DigitalBidirBridge
+
+        super().contents()
+
+        self.dm_bridge = self.Block(DigitalBidirBridge())
+        self.connect(self.outer_port.dm, self.dm_bridge.outer_port)
+        self.connect(self.dm_bridge.inner_link, self.inner_link.dm)
+
+        self.dp_bridge = self.Block(DigitalBidirBridge())
+        self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
+        self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
+
+
 class UsbHostPort(Port[UsbLink]):
     link_type = UsbLink
+    bridge_type = UsbHostBridge
 
     def __init__(self) -> None:
         super().__init__()
