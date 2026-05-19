@@ -188,7 +188,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     assert(constProp.getAllSolved(IndirectDesignPath() + "a").isInstanceOf[ErrorValue])
   }
 
-  it should "not propagate generated ErrorValues" in {
+  it should "not propagate ErrorValue-valued parameters" in {
     import edgir.expr.expr.BinaryExpr.Op
     val constProp = new ConstProp()
     constProp.addDeclaration(DesignPath() + "x", ValInit.Range)
@@ -207,5 +207,22 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getErrors should not be empty
     assert(constProp.getValue(IndirectDesignPath() + "a").get.isInstanceOf[ErrorValue])
     constProp.getValue(IndirectDesignPath() + "b") shouldBe None
+  }
+
+  it should "propagate ErrorValues" in {
+    import edgir.expr.expr.BinaryExpr.Op
+    val constProp = new ConstProp()
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Range)
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "a",
+      ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.BinOp(Op.SHRINK_MULT, ValueExpr.Literal(1, 1), ValueExpr.Literal(0, 2)),
+        ValueExpr.Literal(0, 0)
+      ),
+    )
+
+    constProp.getErrors should not be empty
+    assert(constProp.getValue(IndirectDesignPath() + "a").get.isInstanceOf[ErrorValue])
   }
 }

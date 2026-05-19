@@ -15,6 +15,12 @@ object ExprEvaluate {
 
   def evalBinary(binary: expr.BinaryExpr, lhs: ExprValue, rhs: ExprValue): ExprValue = {
     import expr.BinaryExpr.Op
+
+    ErrorValue.aggregate(Seq(lhs, rhs)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
+
     binary.op match {
       // Note promotion rules: range takes precedence, then float, then int
       case Op.ADD => (lhs, rhs) match {
@@ -223,6 +229,12 @@ object ExprEvaluate {
 
   def evalBinarySet(binarySet: expr.BinarySetExpr, lhs: ExprValue, rhs: ExprValue): ExprValue = {
     import expr.BinarySetExpr.Op
+
+    ErrorValue.aggregate(Seq(lhs, rhs)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
+
     binarySet.op match {
       // Note promotion rules: range takes precedence, then float, then int
       // TODO: can we deduplicate these cases to delegate them to evalBinary?
@@ -272,6 +284,12 @@ object ExprEvaluate {
 
   def evalUnary(unary: expr.UnaryExpr, `val`: ExprValue): ExprValue = {
     import expr.UnaryExpr.Op
+
+    ErrorValue.aggregate(Seq(`val`)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
+
     (unary.op, `val`) match {
       case (Op.NEGATE, `val`) => `val` match {
           case RangeValue(valMin, valMax) =>
@@ -307,6 +325,13 @@ object ExprEvaluate {
 
   def evalUnarySet(unarySet: expr.UnarySetExpr, vals: ExprValue, emptyValue: ExprValue): ExprValue = {
     import expr.UnarySetExpr.Op
+
+    // note this does not short circuit out emptyValue if vals is not empty
+    ErrorValue.aggregate(Seq(vals, emptyValue)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
+
     (unarySet.op, vals) match {
       case (_, ArrayValue.Empty(_)) => emptyValue
       // In this case we don't do numeric promotion
@@ -402,29 +427,42 @@ object ExprEvaluate {
 
   def evalStruct(struct: expr.StructExpr, vals: Map[String, ExprValue]): ExprValue = ???
 
-  def evalRange(range: expr.RangeExpr, minimum: ExprValue, maximum: ExprValue): ExprValue = (minimum, maximum) match {
-    case (FloatPromotable(lhs), FloatPromotable(rhs)) => if (lhs <= rhs) {
-        RangeValue(lhs, rhs)
-      } else {
-        ErrorValue(Some(s"range($minimum, $maximum) is malformed, $minimum > $maximum"))
-      }
-    case _ => throw new ExprEvaluateException(s"Unknown range operands types $minimum $maximum from $range")
+  def evalRange(range: expr.RangeExpr, minimum: ExprValue, maximum: ExprValue): ExprValue = {
+    ErrorValue.aggregate(Seq(minimum, maximum)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
+
+    (minimum, maximum) match {
+      case (FloatPromotable(lhs), FloatPromotable(rhs)) => if (lhs <= rhs) {
+          RangeValue(lhs, rhs)
+        } else {
+          ErrorValue(Some(s"range($minimum, $maximum) is malformed, $minimum > $maximum"))
+        }
+      case _ => throw new ExprEvaluateException(s"Unknown range operands types $minimum $maximum from $range")
+    }
   }
 
   def evalIfThenElse(ite: expr.IfThenElseExpr, cond: ExprValue, tru: ExprValue, fal: ExprValue): ExprValue =
     cond match {
+      case ErrorValue(_) => cond
       case BooleanValue(true) => tru
       case BooleanValue(false) => fal
       case _ => throw new ExprEvaluateException(s"Unknown condition types if $cond then $tru else $fal from $ite")
     }
 
-  def evalExtract(extract: expr.ExtractExpr, container: ExprValue, index: ExprValue): ExprValue =
+  def evalExtract(extract: expr.ExtractExpr, container: ExprValue, index: ExprValue): ExprValue = {
+    ErrorValue.aggregate(Seq(container, index)) match {
+      case Some(errorValue) => return errorValue // errors propagation takes priority
+      case None => () // continue with normal evaluation
+    }
     (container, index) match {
       case (ArrayValue(container), IntValue(index)) => container(index.toInt)
       case _ => throw new ExprEvaluateException(
           s"Unknown operand types for extract element $index from $container from $extract"
         )
     }
+  }
 }
 
 class ExprEvaluate(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprValue] {
