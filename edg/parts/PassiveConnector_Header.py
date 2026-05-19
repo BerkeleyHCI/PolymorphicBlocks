@@ -67,11 +67,12 @@ class PinSocket254Pair(SubboardConnectorPair, GeneratorBlock):
 
         self.pins = self.Port(Vector(Passive.empty()))
 
+    @override
     def generate(self) -> None:
         super().generate()
         if not self.get(self.reversed):
-            self.ext = self.Block(PinSocket254(self.length), external=True)
-            self.int = self.Block(PinHeader254(self.length))
+            self.ext: PassiveConnector = self.Block(PinSocket254(self.length), external=True)
+            self.int: PassiveConnector = self.Block(PinHeader254(self.length))
         else:
             self.ext = self.Block(PinHeader254(self.length), external=True)
             self.int = self.Block(PinSocket254(self.length))
