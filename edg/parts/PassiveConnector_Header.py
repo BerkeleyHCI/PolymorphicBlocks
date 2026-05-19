@@ -53,15 +53,29 @@ class PinSocket254(FootprintPassiveConnector):
         )
 
 
-class PinSocket254Pair(SubboardConnectorPair):
+class PinSocket254Pair(SubboardConnectorPair, GeneratorBlock):
     """2.54mm pin socket (external) - header (internal) pair for sub-board connectors,
-    matching same pin-number to pin-number."""
+    matching same pin-number to pin-number.
 
-    def __init__(self, length: IntLike = 0) -> None:
+    Optionally can be reversed, with the header being on the external side and the socket being on the internal side."""
+
+    def __init__(self, length: IntLike = 0, reversed: BoolLike = False) -> None:
         super().__init__()
-        self.ext = self.Block(PinSocket254(length), external=True)
-        self.int = self.Block(PinHeader254(length))
-        self.pins = self.Export(self.int.pins)
+        self.length = self.ArgParameter(length)
+        self.reversed = self.ArgParameter(reversed)
+        self.generator_param(self.reversed)
+
+        self.pins = self.Port(Vector(Passive.empty()))
+
+    def generate(self) -> None:
+        super().generate()
+        if not self.get(self.reversed):
+            self.ext = self.Block(PinSocket254(self.length), external=True)
+            self.int = self.Block(PinHeader254(self.length))
+        else:
+            self.ext = self.Block(PinHeader254(self.length), external=True)
+            self.int = self.Block(PinSocket254(self.length))
+        self.connect(self.pins, self.int.pins)
         self.export_tap(self.pins, self.ext.pins)
 
 
