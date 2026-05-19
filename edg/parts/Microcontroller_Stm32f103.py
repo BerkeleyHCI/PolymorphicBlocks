@@ -268,7 +268,7 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
     }
     PACKAGE = "Package_QFP:LQFP-48_7x7mm_P0.5mm"
     PART = "STM32F103xxT6"
-    LCSC_PART = "C8734"  # C8T6 variant - basic part
+    LCSC_PART = "C8304"  # max memory CBT6 variant
     # C77994 for GD32F103C8T6, probably mostly drop-in compatible, NOT basic part
     LCSC_BASIC_PART = True
 
@@ -298,7 +298,7 @@ class Stm32f103Base(
     GeneratorBlock,
 ):
     DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device
-    DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+    DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # as in common dev boards / eval boards
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

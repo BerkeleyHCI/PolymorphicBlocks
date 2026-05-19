@@ -16,7 +16,11 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()))  # high-priority source
         self.pwr_in_diode = self.Port(VoltageSink(current_draw=RangeExpr()))  # low-priority source
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(
+            VoltageSource(  # use the spec voltage drop to avoid circular dependencies downstream
+                voltage_out=self.pwr_in.link().voltage.hull(self.pwr_in_diode.link().voltage - voltage_drop),
+            )
+        )
 
         self.diode = self.Block(
             Diode(
@@ -33,15 +37,6 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
         )
         self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
         self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_drawn)
-        self.assign(
-            self.pwr_out.voltage_out,
-            self.pwr_in.link().voltage.hull(
-                (
-                    self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
-                    self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower(),
-                )
-            ),
-        )
 
         self.connect(self.pwr_in_diode.net, self.diode.anode)
         self.connect(self.pwr_out.net, self.pwr_in.net, self.diode.cathode)
@@ -55,7 +50,13 @@ class DiodePowerMerge(PowerConditioner, Block):
 
         self.pwr_in1 = self.Port(VoltageSink(current_draw=RangeExpr()))
         self.pwr_in2 = self.Port(VoltageSink(current_draw=RangeExpr()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(
+            VoltageSource(  # use the spec voltage drop to avoid circular dependencies downstream
+                voltage_out=(self.pwr_in1.link().voltage - voltage_drop).hull(
+                    self.pwr_in2.link().voltage - voltage_drop
+                )
+            )
+        )
 
         output_lower = (
             self.pwr_in1.link().voltage.lower().min(self.pwr_in2.link().voltage.lower())
@@ -78,17 +79,6 @@ class DiodePowerMerge(PowerConditioner, Block):
             )
         )
 
-        self.assign(
-            self.pwr_out.voltage_out,
-            (
-                (self.pwr_in1.link().voltage.lower() - self.diode1.actual_voltage_drop.upper()).min(
-                    self.pwr_in2.link().voltage.lower() - self.diode2.actual_voltage_drop.upper()
-                ),
-                (self.pwr_in1.link().voltage.upper() - self.diode1.actual_voltage_drop.lower()).max(
-                    self.pwr_in2.link().voltage.upper() - self.diode2.actual_voltage_drop.lower()
-                ),
-            ),
-        )
         self.assign(self.pwr_in1.current_draw, self.pwr_out.link().current_drawn)
         self.assign(self.pwr_in2.current_draw, self.pwr_out.link().current_drawn)
 

@@ -136,6 +136,7 @@ class TofArray(JlcBoardTop):
                 (["can", "conn"], MolexSl),
             ],
             instance_values=[
+                (["mcu", "crystal", "frequency"], Range.from_tolerance(12000000, 0.005)),  # legacy default crystal
                 (
                     ["mcu", "pin_assigns"],
                     [
