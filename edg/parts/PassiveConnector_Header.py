@@ -59,18 +59,18 @@ class PinSocket254Pair(SubboardConnectorPair, GeneratorBlock):
 
     Optionally can be reversed, with the header being on the external side and the socket being on the internal side."""
 
-    def __init__(self, length: IntLike = 0, *, reversed: BoolLike = False) -> None:
+    def __init__(self, length: IntLike = 0, *, reverse: BoolLike = False) -> None:
         super().__init__()
         self.length = self.ArgParameter(length)
-        self.reversed = self.ArgParameter(reversed)
-        self.generator_param(self.reversed)
+        self.reverse = self.ArgParameter(reverse)
+        self.generator_param(self.reverse)
 
         self.pins = self.Port(Vector(Passive.empty()))
 
     @override
     def generate(self) -> None:
         super().generate()
-        if not self.get(self.reversed):
+        if not self.get(self.reverse):
             self.ext: PassiveConnector = self.Block(PinSocket254(self.length), external=True)
             self.int: PassiveConnector = self.Block(PinHeader254(self.length))
         else:
