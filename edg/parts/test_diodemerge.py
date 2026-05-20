@@ -36,5 +36,9 @@ class DiodeMergeTestCase(unittest.TestCase):
         self.assertEqual(compiled.get_value(["dut", "pwr_ins", "0", "current_draw"]), Range(0.5, 1.5))
         self.assertEqual(compiled.get_value(["dut", "pwr_ins", "1", "current_draw"]), Range(0.5, 1.5))
         self.assertEqual(compiled.get_value(["dut", "diodes[0]", "fp_footprint"]), "Diode_SMD:D_SOD-123")
+        self.assertEqual(compiled.get_value(["dut", "diodes[0]", "current"]), Range(0.5, 1.5))
+        self.assertEqual(compiled.get_value(["dut", "diodes[0]", "reverse_voltage"]), Range(0, 2.0))
         self.assertEqual(compiled.get_value(["dut", "diodes[1]", "fp_footprint"]), "Diode_SMD:D_SOD-123")
+        self.assertEqual(compiled.get_value(["dut", "diodes[1]", "current"]), Range(0.5, 1.5))
+        self.assertEqual(compiled.get_value(["dut", "diodes[1]", "reverse_voltage"]), Range(0, 10.0))
         self.assertEqual(compiled.get_value(["dut", "diodes[2]", "fp_footprint"]), None)  # doesn't exist

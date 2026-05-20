@@ -68,7 +68,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
             pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), name)
             self.diodes[name] = diode = self.Block(
                 Diode(
-                    reverse_voltage=(0, pwr_in.link().voltage.upper() - input_hull.lower()),
+                    reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
                     current=self.pwr_out.link().current_drawn,
                     voltage_drop=self.voltage_drop,
                     reverse_recovery_time=self.reverse_recovery_time,
