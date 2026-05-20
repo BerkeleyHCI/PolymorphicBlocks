@@ -1,10 +1,10 @@
 import unittest
 
 from .JlcDiode import *
-from .. import DiodePowerMerge, BoardTop
+from .PowerConditioning import DiodePowerMerge
 
 
-class DiodeMergeTestTop(BoardTop):
+class DiodeMergeTestTop(DesignTop):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(DiodePowerMerge(voltage_drop=(0, 1) * Volt))
