@@ -45,7 +45,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
 class DiodePowerMerge(PowerConditioner, Block):
     """Diode power merge block for two voltage sources."""
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float("inf"))) -> None:
+    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
 
         self.pwr_in1 = self.Port(VoltageSink(current_draw=RangeExpr()))
