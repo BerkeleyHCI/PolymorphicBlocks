@@ -55,7 +55,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
         self.generator_param(self.pwr_ins.requested())
 
     @override
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         input_hull = self.pwr_ins.map_extract(lambda pwr_in: pwr_in.link().voltage).hull()
