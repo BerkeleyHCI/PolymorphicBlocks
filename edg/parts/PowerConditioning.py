@@ -1,5 +1,5 @@
 import warnings
-from typing import Optional, cast, Any
+from typing import Optional, Any
 
 from typing_extensions import override
 
@@ -42,49 +42,63 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
         self.connect(self.pwr_out.net, self.pwr_in.net, self.diode.cathode)
 
 
-class DiodePowerMerge(PowerConditioner, Block):
-    """Diode power merge block for two voltage sources."""
+class DiodePowerMerge(PowerConditioner, GeneratorBlock):
+    """Diode power merge block for multiple voltage sources."""
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float("inf"))) -> None:
+    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
+        self.voltage_drop = self.ArgParameter(voltage_drop)
+        self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
 
-        self.pwr_in1 = self.Port(VoltageSink(current_draw=RangeExpr()))
-        self.pwr_in2 = self.Port(VoltageSink(current_draw=RangeExpr()))
-        self.pwr_out = self.Port(
-            VoltageSource(  # use the spec voltage drop to avoid circular dependencies downstream
-                voltage_out=(self.pwr_in1.link().voltage - voltage_drop).hull(
-                    self.pwr_in2.link().voltage - voltage_drop
+        self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
+        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.generator_param(self.pwr_ins.requested())
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        input_hull = self.pwr_ins.map_extract(lambda pwr_in: pwr_in.link().voltage).hull()
+        # use the spec voltage drop to avoid circular dependencies downstream
+        self.assign(self.pwr_out.voltage_out, input_hull - self.voltage_drop)
+
+        requested = self.get(self.pwr_ins.requested())
+        assert len(requested) > 0, "power inputs required"
+
+        self.diodes = ElementDict[Diode]()
+        self.pwr_ins.defined()
+        for name in requested:
+            pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), name)
+            self.diodes[name] = diode = self.Block(
+                Diode(
+                    reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
+                    current=self.pwr_out.link().current_drawn,
+                    voltage_drop=self.voltage_drop,
+                    reverse_recovery_time=self.reverse_recovery_time,
                 )
             )
-        )
+            self.connect(pwr_in.net, diode.anode)
+            self.connect(self.pwr_out.net, diode.cathode)
 
-        output_lower = (
-            self.pwr_in1.link().voltage.lower().min(self.pwr_in2.link().voltage.lower())
-            - RangeExpr._to_expr_type(voltage_drop).upper()
-        )
-        self.diode1 = self.Block(
-            Diode(
-                reverse_voltage=(0, self.pwr_in1.link().voltage.upper() - output_lower),
-                current=self.pwr_out.link().current_drawn,
-                voltage_drop=voltage_drop,
-                reverse_recovery_time=reverse_recovery_time,
+    def __getattr__(self, item: str) -> Any:
+        if item == "pwr_in1":
+            warnings.warn(
+                f"Use pwr_ins.request(...) instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
-        )
-        self.diode2 = self.Block(
-            Diode(
-                reverse_voltage=(0, self.pwr_in2.link().voltage.upper() - output_lower),
-                current=self.pwr_out.link().current_drawn,
-                voltage_drop=voltage_drop,
-                reverse_recovery_time=reverse_recovery_time,
+            return self.pwr_ins.request("1")
+        elif item == "pwr_in2":
+            warnings.warn(
+                f"Use pwr_ins.request(...) instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
-        )
-
-        self.assign(self.pwr_in1.current_draw, self.pwr_out.link().current_drawn)
-        self.assign(self.pwr_in2.current_draw, self.pwr_out.link().current_drawn)
-
-        self.connect(self.pwr_in1.net, self.diode1.anode)
-        self.connect(self.pwr_in2.net, self.diode2.anode)
-        self.connect(self.pwr_out.net, self.diode1.cathode, self.diode2.cathode)
+            return self.pwr_ins.request("2")
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
 
 
 class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
