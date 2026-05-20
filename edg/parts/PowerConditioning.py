@@ -59,6 +59,9 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
         super().generate()
 
         input_hull = self.pwr_ins.map_extract(lambda pwr_in: pwr_in.link().voltage).hull()
+        # use the spec voltage drop to avoid circular dependencies downstream
+        self.assign(self.pwr_out.voltage_out, input_hull - self.voltage_drop)
+
         requested = self.get(self.pwr_ins.requested())
         assert len(requested) > 0, "power inputs required"
 
@@ -76,9 +79,6 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
             )
             self.connect(pwr_in.net, diode.anode)
             self.connect(self.pwr_out.net, diode.cathode)
-
-        # use the spec voltage drop to avoid circular dependencies downstream
-        self.assign(self.pwr_out.voltage_out, input_hull - self.voltage_drop)
 
     def __getattr__(self, item: str) -> Any:
         if item == "pwr_in1":
