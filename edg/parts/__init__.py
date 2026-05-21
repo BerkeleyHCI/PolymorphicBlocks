@@ -2,6 +2,7 @@ from ..abstract_parts import *
 
 from .analog import *
 from .connector import *
+from .debug import *
 from .display import *
 from .interface import *
 from .microcontroller import *
@@ -26,13 +27,6 @@ from .SpeakerDriver_Max98357a import Max98357a
 from .CeramicResonator_Cstne import Cstne
 
 
-from .Jumpers import SolderJumperTriangular
-
-from .DebugHeaders import SwdCortexTargetHeader
-from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
-from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
-
-
 from .VoltageReferences import Ref30xx
 
 from .PowerConditioning import (
@@ -50,19 +44,8 @@ from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
 
-from .IoExpander_Pcf8574 import Pcf8574
-from .IoExpander_Pca9554 import Pca9554
-
-
 from .Fuseholder_Nano2 import Nano2Fuseholder
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
-from .CanBlocks import Pesd1can
-from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
-from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
-from .Fusb302b import Fusb302b
-
-from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
-from .TestPoint_Rc import TeRc
 
 
 from .Rtc_Pcf2129 import Pcf2129
@@ -80,21 +63,17 @@ from .Neopixel import (
 
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
-from .CanTransceiver_Iso1050 import Iso1050dub
-from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .CurrentSense_Ad8418 import Ad8418a
 from .FuelGauge_Max17048 import Max17048
 from .BatteryProtector_S8261A import S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
 
-from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
 from .GateDriver_Ncp3420 import Ncp3420
 from .SpiMemory_W25q import W25q
 from .SpiMemory_93Lc import E93Lc_B
-from .UsbUart_Cp2102 import Cp2102
-from .UsbInterface_Ft232h import Ft232hl
+
 from .Logic_74Ahct import L74Ahct1g125
 from .Logic_74Lvc import Sn74lvc1g74, Sn74lvc2g02
 from .Rf_Sx1262 import Sx1262

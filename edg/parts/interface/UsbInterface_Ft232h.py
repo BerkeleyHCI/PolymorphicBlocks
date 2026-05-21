@@ -1,8 +1,8 @@
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .SpiMemory_93Lc import E93Lc_B
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..SpiMemory_93Lc import E93Lc_B
+from ..jlc.JlcPart import JlcPart
 
 
 class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):

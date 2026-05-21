@@ -3,21 +3,22 @@ from typing import Dict, Any, Union
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..jlc.JlcPart import JlcPart
 
 
-class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
+class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
     def __init__(self, addr_lsb: IntLike, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground())
         self.vdd = self.Port(
-            VoltageSink(  # same between TI and NXP versions
-                voltage_limits=(2.5, 6) * Volt, current_draw=(2.5, 100) * uAmp  # TODO propagate current draw from loads
+            VoltageSink(
+                voltage_limits=(2.3, 5.5) * Volt,
+                current_draw=(0.25, 700) * uAmp,  # TODO propagate current draw from loads
             )
         )
 
-        i2c_model = DigitalBidir.from_supply(  # same between TI and NXP versions
+        i2c_model = DigitalBidir.from_supply(
             self.gnd,
             self.vdd,
             current_limits=(-3, 0) * mAmp,
@@ -33,29 +34,29 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     @override
     def generate(self) -> None:
-        super().generate()
         dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
             self.gnd,
             self.vdd,
-            current_limits=(-25, 0.3) * mAmp,  # highly limited sourcing current
-            voltage_limit_tolerance=(-0.5, 0.5) * Volt,
-            input_threshold_factor=(0.3, 0.7),
+            current_limits=(-10, 10) * mAmp,  # sink min @ 2.3v (-24mA typ @ 4.5v), source @ 2.3v
+            voltage_limit_abs=(-0.5, 5.5) * Volt,
+            input_threshold_abs=(0.8, 2.0) * Volt,
+            pullup_capable=True,  # always pullup
         )
 
         addr_lsb = self.get(self.addr_lsb)
         self.require((addr_lsb < 8) & (addr_lsb >= 0), f"addr_lsb={addr_lsb} must be within [0, 8)")
-        self.assign(self.i2c.addresses, [0x20 | addr_lsb])
+        self.assign(self.i2c.addresses, [0x38 | addr_lsb])  # -A variant; otherwise 0x20 | lsb
 
         pinmaps = PinMapUtil(
-            [
-                PinResource("4", {"P0": dout_model}),
-                PinResource("5", {"P1": dout_model}),
-                PinResource("6", {"P2": dout_model}),
-                PinResource("7", {"P3": dout_model}),
-                PinResource("9", {"P4": dout_model}),
-                PinResource("10", {"P5": dout_model}),
-                PinResource("11", {"P6": dout_model}),
-                PinResource("12", {"P7": dout_model}),
+            [  # *PW (TSSOP16) variant
+                PinResource("4", {"IO0": dout_model}),
+                PinResource("5", {"IO1": dout_model}),
+                PinResource("6", {"IO2": dout_model}),
+                PinResource("7", {"IO3": dout_model}),
+                PinResource("9", {"IO4": dout_model}),
+                PinResource("10", {"IO5": dout_model}),
+                PinResource("11", {"IO6": dout_model}),
+                PinResource("12", {"IO7": dout_model}),
             ]
         )
 
@@ -78,22 +79,22 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
         self.footprint(
             "U",
-            "Package_SO:SOIC-16W_7.5x10.3mm_P1.27mm",
+            "Package_SO:TSSOP-16_4.4x5mm_P0.65mm",
             dict(chain(ic_pins.items(), io_pins.items())),
             mfr="NXP",
-            part="PCF8574AT",
-            datasheet="https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf",
+            part="PCA9554APW,118",  # -A variant, in TSSOP16
+            datasheet="https://www.nxp.com/docs/en/data-sheet/PCA9554_9554A.pdf",
             pnp_rot=-90,
         )
-        self.assign(self.lcsc_part, "C86832")
+        self.assign(self.lcsc_part, "C86803")
 
 
-class Pcf8574(IoExpander, PinMappable):
-    """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
+class Pca9554(IoExpander, PinMappable):
+    """8 bit I2C IO expander"""
 
     def __init__(self, addr_lsb: IntLike = 0) -> None:
         super().__init__()
-        self.ic = self.Block(Pcf8574_Device(addr_lsb=addr_lsb, pin_assigns=self.pin_assigns))
+        self.ic = self.Block(Pca9554_Device(addr_lsb=addr_lsb, pin_assigns=self.pin_assigns))
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
@@ -103,4 +104,5 @@ class Pcf8574(IoExpander, PinMappable):
     def contents(self) -> None:
         super().contents()
         self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+        # interestingly, the datasheet doesn't actually call for a local 0.1uF
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)

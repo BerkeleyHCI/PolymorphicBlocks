@@ -40,3 +40,11 @@ from .Fpc import (
     Te1734839,
 )
 from .TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
+
+from .SwdHeaders import SwdCortexTargetHeader
+from .SwdHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
+
+from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
+from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
+
+from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
