@@ -1,12 +1,10 @@
 # Input devices
-from .TactileSwitches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Joystick_Xbox import XboxElite2Joystick
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
 from .RotaryEncoder_Bourns import Pec11s
 from .DirectionSwitch_Alps import Skrh
 
 # output devices
-from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed
 from .Neopixel import (
     Neopixel,
     Ws2812b,

@@ -10,4 +10,3 @@ from .BatteryCharger_Mcp73831 import Mcp73831
 
 from .LedDriver_Al8861 import Al8861
 from .LedDriver_Tps92200 import Tps92200
-from .Fuseholder_Nano2 import Nano2Fuseholder
