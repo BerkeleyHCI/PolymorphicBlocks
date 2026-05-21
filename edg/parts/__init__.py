@@ -1,8 +1,12 @@
 from ..abstract_parts import *
 
-from .connectors import *
-from .microcontrollers import *
+from .analog import *
+from .connector import *
+from .display import *
+from .interface import *
+from .microcontroller import *
 from .power import *
+from .sensor import *
 
 from .jlc import *
 
@@ -58,15 +62,15 @@ from .BootstrapVoltageAdder import BootstrapVoltageAdder
 from .IoExpander_Pcf8574 import Pcf8574
 from .IoExpander_Pca9554 import Pca9554
 
-from edg.parts.connectors.Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
+from edg.parts.connector.Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
 from .Fuseholder_Nano2 import Nano2Fuseholder
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
-from edg.parts.connectors.Banana import Ct3151, Fcr7350
-from edg.parts.connectors.Rf import Bwipx_1_001e, Amphenol901143
+from edg.parts.connector.Banana import Ct3151, Fcr7350
+from edg.parts.connector.Rf import Bwipx_1_001e, Amphenol901143
 
 from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc

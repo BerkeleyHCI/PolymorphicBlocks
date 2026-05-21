@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ....abstract_parts import *
-from ...connectors.Fpc import Fpc030Bottom
+from ...connector.Fpc import Fpc030Bottom
 
 
 class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):

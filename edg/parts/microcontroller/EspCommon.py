@@ -3,8 +3,8 @@ from typing import Any
 from typing_extensions import override
 
 from ...abstract_parts import *
-from ..connectors.Headers import PinHeader254
-from ..connectors.TagConnect import TagConnect
+from ..connector.Headers import PinHeader254
+from ..connector.TagConnect import TagConnect
 
 # contains common blocks for ESP microcontrollers
 

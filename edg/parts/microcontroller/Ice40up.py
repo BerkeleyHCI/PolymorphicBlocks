@@ -4,7 +4,7 @@ from typing_extensions import override
 
 from ...abstract_parts import *
 from ..jlc.JlcPart import JlcPart
-from ..connectors.Headers import PinHeader127DualShrouded
+from ..connector.Headers import PinHeader127DualShrouded
 
 
 class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):

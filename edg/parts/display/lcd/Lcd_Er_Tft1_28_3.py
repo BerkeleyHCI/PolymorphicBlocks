@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from ...connectors.Fpc import Fpc050Bottom
+from ...connector.Fpc import Fpc050Bottom
 from ....abstract_parts import *
 
 

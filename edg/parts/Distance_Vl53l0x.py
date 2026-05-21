@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .connectors.Headers import PinSocket254
+from .connector.Headers import PinSocket254
 from .jlc.JlcPart import JlcPart
 
 

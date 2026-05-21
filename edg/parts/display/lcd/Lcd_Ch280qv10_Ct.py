@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ....abstract_parts import *
-from ...connectors.Fpc import Fpc050Bottom
+from ...connector.Fpc import Fpc050Bottom
 
 
 class Ch280qv10_Ct_Outline(InternalSubcircuit, FootprintBlock):
