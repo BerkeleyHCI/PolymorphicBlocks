@@ -3,7 +3,7 @@ from typing import Any
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):

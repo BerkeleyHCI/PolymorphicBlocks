@@ -2,9 +2,9 @@ from typing import Any
 
 from typing_extensions import override
 
-from edg.abstract_parts import *
-from edg.parts.PassiveConnector_Header import PinHeader254
-from edg.parts.PassiveConnector_TagConnect import TagConnect
+from ...abstract_parts import *
+from ..connectors.Headers import PinHeader254
+from ..connectors.TagConnect import TagConnect
 
 # contains common blocks for ESP microcontrollers
 

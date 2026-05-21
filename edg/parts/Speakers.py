@@ -1,5 +1,4 @@
 from ..abstract_parts import *
-from .JlcPart import JlcPart
 
 
 @abstract_block

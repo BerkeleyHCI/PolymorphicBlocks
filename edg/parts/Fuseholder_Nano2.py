@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from ..electronics_model import Volt, FootprintBlock
 from ..abstract_parts import Fuse
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Nano2Fuseholder(Fuse, JlcPart, FootprintBlock):

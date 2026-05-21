@@ -1,32 +1,20 @@
 from ..abstract_parts import *
 
+from .connectors import *
 from .microcontrollers import *
+from .power import *
 
-from .JlcPart import JlcPart
-from .JlcBlackbox import KiCadJlcBlackbox
+from .jlc import *
 
-from .JlcResistor import JlcResistor
-from .JlcResistorArray import JlcResistorArray
-from .JlcCapacitor import JlcCapacitor
-from .JlcElectrolyticCapacitor import JlcAluminumCapacitor
-from .JlcInductor import JlcInductor
-from .JlcFerriteBead import JlcFerriteBead
 from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed
-from .JlcLed import JlcLed
-from .JlcDiode import JlcDiode, JlcZenerDiode
-from .JlcBjt import JlcBjt
-from .JlcFet import JlcFet, JlcSwitchFet
+
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Joystick_Xbox import XboxElite2Joystick
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
 from .RotaryEncoder_Bourns import Pec11s
 from .DirectionSwitch_Alps import Skrh
-from .JlcCrystal import JlcCrystal
-from .JlcOscillator import JlcOscillator
-from .JlcSwitches import JlcSwitch, Skrtlae010
-from .JlcPptcFuse import JlcPptcFuse
-from .JlcAntenna import JlcAntenna
+
 from .Speakers import Speaker, ConnectorSpeaker
 from .SpeakerDriver_Analog import Lm4871, Tpa2005d1, Pam8302a
 from .SpeakerDriver_Max98357a import Max98357a
@@ -42,43 +30,6 @@ from .Opamp_Lmv321 import Lmv321
 from .Inamp_Ina826 import Ina826
 from .CeramicResonator_Cstne import Cstne
 
-from .PassiveConnector_Header import (
-    PinHeader254,
-    PinHeader254Vertical,
-    PinHeader254Horizontal,
-    PinSocket254,
-    PinSocket254Pair,
-)
-from .PassiveConnector_Header import PinHeader254DualShroudedInline
-from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import (
-    JstXh,
-    JstXhAHorizontal,
-    JstXhAVertical,
-    JstPh,
-    JstPhKVertical,
-    JstPhSmVertical,
-    JstPhKHorizontal,
-    JstPhSmVerticalJlc,
-    JstShSmHorizontal,
-    MolexSl,
-    Picoblade,
-    Picoblade53398,
-    Picoblade53261,
-)
-from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
-from .PassiveConnector_Fpc import (
-    Fpc050,
-    Fpc050Top,
-    Fpc050Bottom,
-    Fpc050Pair,
-    Fpc050BottomFlip,
-    HiroseFh12sh,
-    Afc01,
-    Afc07Top,
-    Te1734839,
-)
-from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
 
 from .Jumpers import SolderJumperTriangular
 
@@ -86,18 +37,9 @@ from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
 from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, Tlv757p, L78l
+
 from .VoltageReferences import Ref30xx
-from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
-from .BuckConverter_Mps import Mp2722
-from .BuckConverter_Ap3418 import Ap3418
-from .BoostConverter_AnalogDevices import Ltc3429
-from .BoostConverter_DiodesInc import Ap3012
-from .BoostConverter_Torex import Xc9142
-from .BoostConverter_TexasInstruments import Tps61040, Lm2733
-from .SwitchedCap_TexasInstruments import Lm2664
-from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
-from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
+
 from .PowerConditioning import (
     SingleDiodePowerMerge,
     DiodePowerMerge,
@@ -116,15 +58,15 @@ from .BootstrapVoltageAdder import BootstrapVoltageAdder
 from .IoExpander_Pcf8574 import Pcf8574
 from .IoExpander_Pca9554 import Pca9554
 
-from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
+from edg.parts.connectors.Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
 from .Fuseholder_Nano2 import Nano2Fuseholder
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
-from .Connector_Banana import Ct3151, Fcr7350
-from .Connector_Rf import Bwipx_1_001e, Amphenol901143
+from edg.parts.connectors.Banana import Ct3151, Fcr7350
+from edg.parts.connectors.Rf import Bwipx_1_001e, Amphenol901143
 
 from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc
@@ -147,17 +89,7 @@ from .Neopixel import (
     NeopixelArray,
     NeopixelArrayCircular,
 )
-from .Lcd_Qt096t_if09 import Qt096t_if09
-from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
-from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
-from .Oled_Er_Oled_091_3 import Er_Oled_091_3
-from .Oled_Er_Oled_096_1_1 import Er_Oled_096_1_1
-from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
-from .Oled_Er_Oled_022 import Er_Oled022_1
-from .Oled_Er_Oled_028 import Er_Oled028_1
-from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
-from .EInk_Er_Epd027_2 import Er_Epd027_2
-from .EInk_WaveshareDriver import Waveshare_Epd
+
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
 from .AnalogSwitch_7400 import Sn74lvc1g3157

@@ -1,8 +1,8 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .PassiveConnector_Header import PinSocket254
-from .JlcPart import JlcPart
+from .connectors.Headers import PinSocket254
+from .jlc.JlcPart import JlcPart
 
 
 class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):

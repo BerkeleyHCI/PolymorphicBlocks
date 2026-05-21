@@ -4,7 +4,7 @@ from math import pi
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, JlcPart):

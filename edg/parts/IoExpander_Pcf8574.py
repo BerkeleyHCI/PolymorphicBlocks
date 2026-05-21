@@ -4,7 +4,7 @@ from typing import Dict, Any, Union
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):

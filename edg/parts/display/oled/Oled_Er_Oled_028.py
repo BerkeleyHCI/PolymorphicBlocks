@@ -1,0 +1,163 @@
+from typing_extensions import override
+
+from ....abstract_parts import *
+from ...connectors.Fpc import Fpc050Bottom
+
+
+class Er_Oled028_1_Outline(InternalSubcircuit, FootprintBlock):
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(
+            "U",
+            "edg:Lcd_Er_Oled028_1_Outline",
+            {},
+            "EastRising",
+            "ER-OLED028-1",
+            datasheet="https://www.buydisplay.com/download/manual/ER-OLED028-1_Series_Datasheet.pdf",
+        )
+
+
+class Er_Oled028_1_Device(InternalSubcircuit, Block):
+    """30-pin FPC connector for the ER-OLED028-1* device, based on the interfacing example
+    https://www.buydisplay.com/download/interfacing/ER-OLED028-1_Interfacing.pdf"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.vss = self.Port(Ground(), [Common])
+        self.vcc = self.Port(
+            VoltageSink(
+                voltage_limits=(11.5, 12.5) * Volt, current_draw=(15.6, 60) * mAmp  # typ 30% display to abs max
+            )
+        )
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
+            )
+        )
+        self.vdd = self.Port(
+            VoltageSource(voltage_out=(2.4, 2.6) * Volt, current_limits=0 * mAmp(tol=0))  # only for external capacitor
+        )
+        self.vci = self.Port(
+            VoltageSink(voltage_limits=(2.4, 3.5) * Volt, current_draw=(20, 300) * uAmp)  # typ sleep to max operating
+        )
+        self.vddio = self.Port(
+            VoltageSink(
+                voltage_limits=(1.65 * Volt, self.vci.link().voltage.upper()),
+                current_draw=(2, 10) * uAmp,  # typ sleep to max sleep, no operating draw given
+            )
+        )
+
+        dio_model = DigitalBidir.from_supply(
+            self.vss,
+            self.vddio,
+            voltage_limit_tolerance=(-0.5, 0.3),  # assumed +0.3 tolerance
+            input_threshold_factor=(0.2, 0.8),
+        )
+        din_model = DigitalSink.from_bidir(dio_model)
+
+        self.bs0 = self.Port(din_model)  # 3-wire (1) / 4-wire (0) serial
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+
+        self.dc = self.Port(din_model)  # ground if unused
+        self.cs = self.Port(din_model)
+        self.res = self.Port(din_model)
+        # pin 21 FR disconnected
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.vsl = self.Port(Passive())
+
+        self.conn = (
+            self.Block(Fpc050Bottom(length=30))
+            .connected(
+                {
+                    ("2", "1", "5", "20"): self.vss,  # VLSS, connect to VSS externally
+                    "30": self.vss,  # NC/GND
+                    ("3", "29"): self.vcc,
+                    "4": self.vcomh,
+                    "25": self.vdd,
+                    "26": self.vci,
+                    "24": self.vddio,
+                    "16": self.bs0,
+                    "17": self.vss,  # BS1, 0 for any serial
+                    "13": self.spi.sck,  # DB0
+                    "12": self.spi.mosi,  # DB1
+                    "18": self.dc,
+                    "19": self.cs,
+                    "20": self.res,
+                    "22": self.iref,
+                    "27": self.vsl,
+                }
+            )
+            .connected(
+                {
+                    ("15", "14"): self.vss,  # RW, ER
+                    (str(x) for x in range(6, 11)): self.vss,  # DB3~DB7
+                }
+            )
+        )
+
+
+class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
+    """SSD1322-based 2.8" 256x64 monochrome OLED."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Er_Oled028_1_Device())
+        self.gnd = self.Export(self.device.vss, [Common])
+        self.vcc = self.Export(self.device.vcc)  # device power
+        self.pwr = self.Export(self.device.vddio)  # logic power
+        self.spi = self.Export(self.device.spi)
+        self.cs = self.Export(self.device.cs)
+        self.dc = self.Export(self.device.dc, optional=True)
+
+        self.generator_param(self.dc.is_connected())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.pwr, self.device.vci)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
+
+        self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
+
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=680 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
+        self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
+
+        self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vdd
+        )
+        self.vci_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vci
+        )
+        self.vci_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vci
+        )
+
+        self.vcc_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vcc
+        )
+        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=10 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vcc
+        )
+
+        self.vsl_res = self.Block(Resistor(resistance=50 * kOhm(tol=0.05)))
+        diode_model = Diode(reverse_voltage=(0, 0) * Volt, current=(0, 0) * Amp, voltage_drop=(0, 1.2) * Volt)
+        self.vsl_d1 = self.Block(diode_model)
+        self.vsl_d2 = self.Block(diode_model)
+        self.connect(self.device.vsl, self.vsl_res.a)
+        self.connect(self.vsl_res.b, self.vsl_d1.anode)
+        self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
+        self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if self.get(self.dc.is_connected()):  # 4-line serial
+            self.connect(self.gnd.as_digital_source(), self.device.bs0)
+        else:  # 3-line serial
+            self.connect(self.pwr.as_digital_source(), self.device.bs0)

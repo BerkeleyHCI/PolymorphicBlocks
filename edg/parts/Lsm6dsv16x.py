@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 from ..abstract_parts import *
 
 

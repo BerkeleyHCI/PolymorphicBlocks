@@ -1,9 +1,7 @@
-from typing import List
-
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):

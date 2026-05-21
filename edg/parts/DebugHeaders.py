@@ -1,8 +1,8 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_TagConnect import TagConnect
+from .connectors.Headers import PinHeader127DualShrouded
+from .connectors.TagConnect import TagConnect
 
 
 class SwdCortexTargetHeader(

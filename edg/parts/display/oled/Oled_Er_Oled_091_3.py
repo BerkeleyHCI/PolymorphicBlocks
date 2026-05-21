@@ -1,0 +1,144 @@
+from typing_extensions import override
+
+from ....abstract_parts import *
+from ...connectors.Fpc import Fpc050Bottom
+
+
+class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
+    """Footprint for OLED panel outline"""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(
+            "U",
+            "edg:Lcd_Er_Oled0.91_3_Outline",
+            {},
+            "EastRising",
+            "ER-OLED-0.91-3",
+            datasheet="https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf",
+        )
+
+
+class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
+    """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
+    internal DC/DC"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.vss = self.Port(Ground(), [Common])
+
+        self.vcc = self.Port(
+            VoltageSource(
+                voltage_out=(6.4, 9) * Volt,
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed, probably does 10-16mA
+            )
+        )
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
+            )
+        )
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
+                ),
+                current_draw=(1, 300) * uAmp,
+            )
+        )
+        self.vbat = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
+                ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+                current_draw=(23, 29) * mAmp,
+            )
+        )
+
+        dio_model = DigitalBidir.from_supply(
+            self.vss,
+            self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
+            input_threshold_factor=(0.2, 0.8),
+        )
+        din_model = DigitalSink.from_bidir(dio_model)
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.dc = self.Port(din_model)
+        self.res = self.Port(din_model)
+        self.cs = self.Port(din_model)
+
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.c2p = self.Port(Passive())
+        self.c2n = self.Port(Passive())
+        self.c1p = self.Port(Passive())
+        self.c1n = self.Port(Passive())
+
+        self.conn = self.Block(Fpc050Bottom(length=15)).connected(
+            {
+                "6": self.vss,
+                "15": self.vcc,
+                "14": self.vcomh,
+                "7": self.vdd,
+                "5": self.vbat,
+                "11": self.spi.sck,
+                "12": self.spi.mosi,
+                "10": self.dc,
+                "9": self.res,
+                "8": self.cs,
+                "13": self.iref,
+                "1": self.c2p,
+                "2": self.c2n,
+                "3": self.c1p,
+                "4": self.c1n,
+            }
+        )
+
+
+class Er_Oled_091_3(Oled, Resettable, Block):
+    """SSD1306-based 0.91" 128x32 monochrome OLED.
+    TODO (maybe?) add the power gating circuit in the reference schematic"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Er_Oled_091_3_Device())
+        self.gnd = self.Export(self.device.vss, [Common])
+        self.pwr = self.Export(self.device.vdd, [Power])
+        self.spi = self.Export(self.device.spi)
+        self.cs = self.Export(self.device.cs)
+        self.dc = self.Export(self.device.dc)
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.pwr, self.device.vbat)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
+
+        self.lcd = self.Block(Er_Oled_091_3_Outline())  # for device outline
+
+        self.c1_cap = self.Block(Capacitor(0.1 * uFarad(tol=0.2), (0, 6.3) * Volt))
+        self.connect(self.c1_cap.pos, self.device.c1p)
+        self.connect(self.c1_cap.neg, self.device.c1n)
+        self.c2_cap = self.Block(Capacitor(0.1 * uFarad(tol=0.2), (0, 6.3) * Volt))
+        self.connect(self.c2_cap.pos, self.device.c2p)
+        self.connect(self.c2_cap.neg, self.device.c2n)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=560 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
+        self.vcomh_cap = self.Block(DecouplingCapacitor((2.2 * 0.8, 10) * uFarad)).connected(
+            self.gnd, self.device.vcomh
+        )
+
+        self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+        self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+        self.vcc_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vcc
+        )
+        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vcc
+        )

@@ -1,7 +1,8 @@
 import unittest
+from typing_extensions import override
 
-from .JlcDiode import *
 from .PowerConditioning import DiodePowerMerge
+from ..abstract_parts import *
 
 
 class DiodeMergeTestTop(DesignTop):

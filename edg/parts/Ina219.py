@@ -1,9 +1,7 @@
-from typing import Tuple, Union
-
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock):

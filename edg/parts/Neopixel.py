@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 @abstract_block_default(lambda: Ws2812b)

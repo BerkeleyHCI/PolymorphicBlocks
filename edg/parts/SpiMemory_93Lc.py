@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
