@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from edg.parts import *
+from ...abstract_parts import *
 
 from .JlcPartsResistorSmd import JlcPartsResistorSmd
 from .JlcPartsMlcc import JlcPartsMlcc

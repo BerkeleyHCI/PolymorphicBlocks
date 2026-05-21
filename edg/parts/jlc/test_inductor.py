@@ -1,6 +1,6 @@
 import unittest
 
-from edg.parts.jlc.JlcInductor import *
+from .JlcInductor import *
 
 
 class JlcInductorTestTop(Block):

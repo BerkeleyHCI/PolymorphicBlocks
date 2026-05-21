@@ -4,7 +4,7 @@ from .core import *
 from .electronics_model import *
 from .abstract_parts import *
 from .parts import *
-from edg.parts.jlcparts import *
+from .parts.jlcparts import *
 
 from .BoardTop import BoardTop, SimpleBoardTop, JlcBoardTop
 
