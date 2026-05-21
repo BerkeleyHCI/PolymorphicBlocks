@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from ...abstract_parts import *
 from ..connector.Headers import PinSocket254
-from ...vendor_parts.jlc import JlcPart
+from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
 class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):

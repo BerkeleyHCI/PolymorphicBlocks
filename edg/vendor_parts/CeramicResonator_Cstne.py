@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .jlc import JlcPart
+from .jlc.JlcPart import JlcPart
 
 
 class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):

@@ -2,7 +2,7 @@ from typing import *
 
 from typing_extensions import override
 
-from ...vendor_parts.jlc import JlcPart
+from ...vendor_parts.jlc.JlcPart import JlcPart
 from ...abstract_parts import *
 
 
