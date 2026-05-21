@@ -3,7 +3,7 @@ from typing import Dict
 from typing_extensions import override
 
 from ....abstract_parts import *
-from ...jlc.JlcPart import JlcPart
+from ....vendor_parts.jlc import JlcPart
 
 
 class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):

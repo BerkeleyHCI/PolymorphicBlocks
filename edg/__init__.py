@@ -6,7 +6,6 @@ from .abstract_parts import *
 from .vendor_parts import *
 from .circuits import *
 from .parts import *
-from .parts.jlcparts import *
 
 from .BoardTop import BoardTop, SimpleBoardTop, JlcBoardTop
 

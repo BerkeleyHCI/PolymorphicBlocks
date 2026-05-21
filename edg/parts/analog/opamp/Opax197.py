@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ....abstract_parts import *
-from ...jlc.JlcPart import JlcPart
+from ....vendor_parts.jlc import JlcPart
 
 
 @non_library

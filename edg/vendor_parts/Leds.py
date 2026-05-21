@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from ..parts.jlc.JlcPart import JlcPart
+from .jlc import JlcPart
 
 
 class SmtLed(Led, FootprintBlock):

@@ -1,7 +1,7 @@
 from typing_extensions import override
 
-from edg.abstract_parts import *
-from edg.parts.jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ...vendor_parts.jlc import JlcPart
 
 
 class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):

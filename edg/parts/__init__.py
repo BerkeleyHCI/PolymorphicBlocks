@@ -11,8 +11,6 @@ from .microcontroller import *
 from .power import *
 from .sensor import *
 
-from .jlc import *
-
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4, MountingHole_NoPad_M2_5

@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from ...abstract_parts import *
 from ..logic.SpiMemory_93Lc import E93Lc_B
-from ..jlc.JlcPart import JlcPart
+from ...vendor_parts.jlc import JlcPart
 
 
 class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
