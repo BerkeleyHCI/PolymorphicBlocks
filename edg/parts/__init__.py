@@ -1,5 +1,7 @@
 from ..abstract_parts import *
 
+from .microcontrollers import *
+
 from .JlcPart import JlcPart
 from .JlcBlackbox import KiCadJlcBlackbox
 
@@ -110,26 +112,6 @@ from .LedDriver_Tps92200 import Tps92200
 from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
-from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
-from .Microcontroller_Stm32f103 import Stm32f103_48
-from .Microcontroller_Stm32f303 import Nucleo_F303k8
-from .Microcontroller_Stm32g031 import Stm32g031_G
-from .Microcontroller_Stm32g431 import Stm32g431kb
-from .Microcontroller_Stm32l432 import Stm32l432k
-from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
-from .Microcontroller_Esp import (
-    EspProgrammingHeader,
-    EspProgrammingAutoReset,
-    EspProgrammingPinHeader254,
-    EspProgrammingTc2030,
-)
-from .Microcontroller_Esp import HasEspProgramming
-from .Microcontroller_Esp import EspAutoProgram
-from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover
-from .Microcontroller_Esp32s3 import Esp32s3_Wroom_1, Freenove_Esp32s3_Wroom
-from .Microcontroller_Esp32c3 import Esp32c3_Wroom02, Esp32c3, Xiao_Esp32c3
-from .Microcontroller_Rp2040 import Rp2040, Xiao_Rp2040
-from .Fpga_Ice40up import Ice40up5k_Sg48
 
 from .IoExpander_Pcf8574 import Pcf8574
 from .IoExpander_Pca9554 import Pca9554

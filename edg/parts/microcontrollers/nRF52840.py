@@ -3,8 +3,8 @@ from typing import *
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .JlcPart import JlcPart
+from edg.abstract_parts import *
+from edg.parts.JlcPart import JlcPart
 
 
 @non_library

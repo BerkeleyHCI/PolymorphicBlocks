@@ -2,8 +2,8 @@ from typing import *
 
 from typing_extensions import override
 
-from .JlcPart import JlcPart
-from ..abstract_parts import *
+from edg.parts.JlcPart import JlcPart
+from edg.abstract_parts import *
 
 
 @abstract_block

@@ -2,9 +2,9 @@ from typing import *
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .JlcPart import JlcPart
-from .PassiveConnector_Header import PinHeader127DualShrouded
+from edg.abstract_parts import *
+from edg.parts.JlcPart import JlcPart
+from edg.parts.PassiveConnector_Header import PinHeader127DualShrouded
 
 
 class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):

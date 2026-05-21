@@ -3,7 +3,7 @@ from typing import *
 
 from typing_extensions import override
 
-from ..abstract_parts import *
+from edg.abstract_parts import *
 
 
 @non_library
