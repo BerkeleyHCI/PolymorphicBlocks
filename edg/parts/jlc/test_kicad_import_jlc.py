@@ -1,6 +1,7 @@
 import unittest
 
 from ...abstract_parts import *
+from . import *  # required to import KicadJlcBackBox
 from ... import edgir
 from ...core import Builder
 

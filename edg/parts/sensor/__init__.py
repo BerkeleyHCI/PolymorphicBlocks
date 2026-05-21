@@ -7,6 +7,7 @@ from .Distance_Vl53l0x import Vl53l0x, Vl53l0xConnector, Vl53l0xArray
 from .EnvironmentalSensor_Bme680 import Bme680
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
+from .Rtc_Pcf2129 import Pcf2129
 
 # compatibility shims
 import deprecated as __deprecated  # not to be exported
