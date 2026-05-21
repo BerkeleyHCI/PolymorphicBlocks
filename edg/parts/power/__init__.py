@@ -1,4 +1,5 @@
 from .converter import *
+from .gate_driver import *
 from .motor import *
 
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack

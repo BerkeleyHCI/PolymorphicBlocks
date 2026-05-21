@@ -1,7 +1,7 @@
 from typing_extensions import override
 
-from ....abstract_parts import *
-from ...jlc.JlcPart import JlcPart
+from edg.abstract_parts import *
+from edg.parts.jlc.JlcPart import JlcPart
 
 
 class A1304_Device(InternalBlock, FootprintBlock, JlcPart):

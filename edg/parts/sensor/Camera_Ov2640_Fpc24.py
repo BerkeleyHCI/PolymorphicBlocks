@@ -1,7 +1,7 @@
 from typing_extensions import override
 
-from ....abstract_parts import *
-from ...connector.Fpc import Fpc050Bottom
+from edg.abstract_parts import *
+from edg.parts.connector.Fpc import Fpc050Bottom
 
 
 class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
