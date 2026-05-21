@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from ..abstract_parts import *
+from ...abstract_parts import *
 
 
 class XboxElite2Joystick(FootprintBlock, HumanInterface):

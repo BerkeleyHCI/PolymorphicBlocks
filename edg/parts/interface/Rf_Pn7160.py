@@ -3,8 +3,8 @@ from math import pi
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..jlc.JlcPart import JlcPart
 
 # TODO: some of these are pretty general RF building blocks and can be moved into shared libraries
 # but until there are enough use cases they'll be buried here for now

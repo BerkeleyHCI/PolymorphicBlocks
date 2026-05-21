@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ...abstract_parts import *
-from ..SpiMemory_93Lc import E93Lc_B
+from ..logic.SpiMemory_93Lc import E93Lc_B
 from ..jlc.JlcPart import JlcPart
 
 

@@ -2,8 +2,8 @@ from typing import Optional, Tuple
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..jlc.JlcPart import JlcPart
 
 
 @abstract_block_default(lambda: Ws2812b)

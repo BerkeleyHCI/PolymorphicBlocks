@@ -1,7 +1,7 @@
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..jlc.JlcPart import JlcPart
 
 
 class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart):

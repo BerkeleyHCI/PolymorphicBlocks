@@ -3,8 +3,8 @@ from math import pi
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ...abstract_parts import *
+from ..jlc.JlcPart import JlcPart
 
 
 class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, JlcPart):
