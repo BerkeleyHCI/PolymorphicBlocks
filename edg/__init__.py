@@ -4,6 +4,7 @@ from .core import *
 from .electronics_model import *
 from .abstract_parts import *
 from .vendor_parts import *
+from .vendor_parts.jlc import *
 from .circuits import *
 from .parts import *
 
