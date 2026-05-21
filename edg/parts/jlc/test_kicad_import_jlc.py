@@ -1,6 +1,6 @@
 import unittest
 
-from .. import *
+from ...abstract_parts import *
 from ... import edgir
 from ...core import Builder
 

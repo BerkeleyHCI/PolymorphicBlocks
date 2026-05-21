@@ -1,14 +1,9 @@
-# Voltage Converters
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, Tlv757p, L78l
-from .TexasInstruments_Buck import Tps561201, Tps54202h
-from .Mp2722 import Mp2722
-from .Ap3418 import Ap3418
-from .AnalogDevices_Boost import Ltc3429
-from .DiodesInc_Boost import Ap3012
-from .Torex_Boost import Xc9142
-from .TexasInstruments_Boost import Tps61040, Lm2733
-from .CustomBuck import CustomSyncBuckConverterIndependent
-from .CustomBuckBoost import CustomSyncBuckBoostConverterPwm
-from .TexasInstruments_SwitchedCap import Lm2664
+from .converter import *
+from .motor import *
+
+from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 
 from .Ref30xx import Ref30xx
+from .FuelGauge_Max17048 import Max17048
+from .BatteryProtector_S8261A import S8261A
+from .BatteryCharger_Mcp73831 import Mcp73831

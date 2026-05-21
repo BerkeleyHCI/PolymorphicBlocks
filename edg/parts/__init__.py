@@ -13,13 +13,6 @@ from .sensor import *
 
 from .jlc import *
 
-from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed
-
-from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
-
-from .Speakers import Speaker, ConnectorSpeaker
-from .SpeakerDriver_Analog import Lm4871, Tpa2005d1, Pam8302a
-from .SpeakerDriver_Max98357a import Max98357a
 
 from .CeramicResonator_Cstne import Cstne
 
@@ -43,9 +36,6 @@ from .Rtc_Pcf2129 import Pcf2129
 
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
-from .FuelGauge_Max17048 import Max17048
-from .BatteryProtector_S8261A import S8261A
-from .BatteryCharger_Mcp73831 import Mcp73831
 
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
@@ -56,11 +46,6 @@ from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4, MountingHole_NoPad_M2_5
 
-from .MotorDriver_L293dd import L293dd
-from .MotorDriver_Drv8833 import Drv8833
-from .MotorDriver_Drv8870 import Drv8870
-from .Bldc_Drv8313 import Drv8313
-from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix

@@ -7,7 +7,6 @@ from .Distance_Vl53l0x import Vl53l0x, Vl53l0xConnector, Vl53l0xArray
 from .EnvironmentalSensor_Bme680 import Bme680
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
-from .Microphone_Sd18ob261 import Sd18ob261
 
 # compatibility shims
 import deprecated as __deprecated  # not to be exported

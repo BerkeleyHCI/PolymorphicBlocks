@@ -1,4 +1,4 @@
-from ..abstract_parts import *
+from ...abstract_parts import *
 
 
 @abstract_block

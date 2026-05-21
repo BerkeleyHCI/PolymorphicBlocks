@@ -2,8 +2,8 @@ from typing import Dict
 
 from typing_extensions import override
 
-from ...abstract_parts import *
-from ..jlc.JlcPart import JlcPart
+from ....abstract_parts import *
+from ...jlc.JlcPart import JlcPart
 
 
 class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):

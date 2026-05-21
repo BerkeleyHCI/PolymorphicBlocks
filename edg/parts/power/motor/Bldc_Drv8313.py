@@ -3,8 +3,8 @@ from typing import Optional
 
 from typing_extensions import override
 
-from ..abstract_parts import *
-from .jlc.JlcPart import JlcPart
+from ....abstract_parts import *
+from ...jlc.JlcPart import JlcPart
 
 
 class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
