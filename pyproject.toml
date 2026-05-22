@@ -37,7 +37,7 @@ where = ["."]
 include = ["edg*"]
 
 [tool.setuptools.package-data]
-"edg" = ["core/resources/edg-compiler-precompiled.jar", "**/*.kicad_sch", "**/*.json", "**/*.csv"]
+"edg" = ["core/resources/edg-compiler-precompiled.jar", "**/*.kicad_sch", "**/*.json", "**/*.csv", "**/py.typed"]
 
 [tool.mypy]
 enable_error_code = ["explicit-override"]
