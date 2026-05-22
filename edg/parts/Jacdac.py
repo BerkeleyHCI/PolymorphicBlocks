@@ -3,7 +3,7 @@ from typing import Optional, Union
 from typing_extensions import override
 
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+from ..vendor_parts.jlc.JlcPart import JlcPart
 
 
 class JacdacDataLink(Link):

@@ -1,0 +1,193 @@
+from typing_extensions import override
+
+from ....abstract_parts import *
+from ...connector.Fpc import Fpc050Bottom
+
+
+class Er_Oled_096_1_1_Outline(InternalSubcircuit, FootprintBlock):
+    """Footprint for OLED panel outline"""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(
+            "U",
+            "edg:Lcd_Er_Oled0.96_1.1_Outline",
+            {},
+            "EastRising",
+            "ER-OLED-0.96-1.1",
+            datasheet="https://www.buydisplay.com/download/manual/ER-OLED0.96-1_Series_Datasheet.pdf",
+        )
+
+
+class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
+    """30-pin FPC connector for the ER-OLED-0.96-1.1* device, configured to run off internal DC/DC"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.vss = self.Port(Ground(), [Common])
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
+                ),
+                current_draw=(1, 300) * uAmp,  # sleep to operating
+            )
+        )
+        self.vcc = self.Port(VoltageSource(voltage_out=(7, 7.5) * Volt, current_limits=0 * mAmp(tol=0)))
+
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
+            )
+        )
+
+        self.vbat = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
+                ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+                current_draw=(18.8, 32.0) * mAmp,  # typ @ 50% on to max @ 100% on
+            )
+        )
+
+        self.c1p = self.Port(Passive())
+        self.c1n = self.Port(Passive())
+        self.c2p = self.Port(Passive())
+        self.c2n = self.Port(Passive())
+
+        din_model = DigitalSink.from_supply(
+            self.vss,
+            self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
+            input_threshold_factor=(0.2, 0.8),
+        )
+
+        self.bs0 = self.Port(din_model)
+        self.bs1 = self.Port(din_model)
+
+        self.res = self.Port(din_model)
+        self.cs = self.Port(din_model)
+        self.dc = self.Port(din_model)
+
+        self.d0 = self.Port(din_model)
+        self.d1 = self.Port(din_model)
+        self.d2 = self.Port(din_model, optional=True)
+
+        self.conn = (
+            self.Block(Fpc050Bottom(length=30))
+            .connected(
+                {
+                    ("8", "1", "30"): self.vss,  # VLSS
+                    "29": self.vss,  # NC/GND
+                    "9": self.vdd,
+                    "28": self.vcc,
+                    "26": self.iref,
+                    "27": self.vcomh,
+                    "6": self.vbat,
+                    "4": self.c1p,
+                    "5": self.c1n,
+                    "2": self.c2p,
+                    "3": self.c2n,
+                    "10": self.bs0,
+                    "11": self.bs1,
+                    "12": self.vss,  # BS2, 0 for any serial
+                    "14": self.res,
+                    "13": self.cs,
+                    "15": self.dc,
+                    "18": self.d0,
+                    "19": self.d1,
+                    "20": self.d2,
+                }
+            )
+            .connected(
+                {
+                    ("17", "16"): self.vss,  # RW, ER
+                    (str(x) for x in range(21, 26)): self.vss,  # DB3~DB7
+                }
+            )
+        )
+
+
+class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
+    """SSD1306-based 0.96" 128x64 monochrome OLED, in either I2C or SPI mode."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Er_Oled_096_1_1_Device())
+        self.gnd = self.Export(self.device.vss, [Common])
+        self.pwr = self.Export(self.device.vdd, [Power])
+        self.spi = self.Port(SpiPeripheral.empty(), optional=True)
+        self.cs = self.Port(DigitalSink.empty(), optional=True)
+        self.dc = self.Port(DigitalSink.empty(), optional=True)
+        self.i2c = self.Port(I2cTarget.empty(), optional=True)
+        self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.pwr, self.device.vbat)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
+
+        self.lcd = self.Block(Er_Oled_096_1_1_Outline())  # for device outline
+
+        self.c1_cap = self.Block(Capacitor(1 * uFarad(tol=0.2), (0, 6.3) * Volt))
+        self.connect(self.c1_cap.pos, self.device.c1p)
+        self.connect(self.c1_cap.neg, self.device.c1n)
+        self.c2_cap = self.Block(Capacitor(1 * uFarad(tol=0.2), (0, 6.3) * Volt))
+        self.connect(self.c2_cap.pos, self.device.c2p)
+        self.connect(self.c2_cap.neg, self.device.c2n)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=390 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
+        self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
+
+        self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vdd
+        )
+        self.vbat_cap = self.Block(DecouplingCapacitor(capacitance=1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vbat
+        )
+        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=(2.2 * 0.8, 10) * uFarad)).connected(
+            self.gnd, self.device.vcc
+        )
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        gnd_digital = self.gnd.as_digital_source()
+
+        if self.get(self.i2c.is_connected()):
+            pwr_digital = (
+                self.pwr.as_digital_source()
+            )  # workaround for issue #259: if this is never used it creates a broken empty adapter
+            self.connect(self.device.bs0, gnd_digital)
+            self.connect(self.device.bs1, pwr_digital)
+
+            self.connect(self.i2c.scl, self.device.d0)
+            self.connect(self.i2c.sda, self.device.d1, self.device.d2)
+            self.connect(self.device.dc, gnd_digital)  # addr, TODO support I2C addr
+            self.connect(self.device.cs, gnd_digital)
+            self.require(~self.spi.is_connected() & ~self.cs.is_connected() & ~self.dc.is_connected())
+            self.assign(self.i2c.addresses, [0x3C])
+        elif self.get(self.spi.is_connected()):
+            self.connect(self.device.bs1, gnd_digital)
+            self.connect(self.spi.sck, self.device.d0)
+            self.connect(self.spi.mosi, self.device.d1)
+            self.connect(self.cs, self.device.cs)
+            # D2 not-connected
+            if self.get(self.dc.is_connected()):  # 4-line SPI
+                self.connect(self.device.bs0, gnd_digital)
+                self.connect(self.dc, self.device.dc)
+            else:  # 3-line SPI
+                pwr_digital = self.pwr.as_digital_source()
+                self.connect(self.device.bs0, pwr_digital)
+                self.connect(self.device.dc, gnd_digital)
+            self.require(~self.i2c.is_connected())
+
+        self.require(self.spi.is_connected() | self.i2c.is_connected())

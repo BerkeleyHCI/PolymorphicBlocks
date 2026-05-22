@@ -1,0 +1,164 @@
+from typing_extensions import override
+
+from ....abstract_parts import *
+from ...connector.Fpc import Fpc050Bottom
+
+
+class Ch280qv10_Ct_Outline(InternalSubcircuit, FootprintBlock):
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(
+            "U",
+            "edg:Lcd_Ch280qv10_Ct_Outline",
+            {},
+            "Adafruit",
+            "2770",
+            datasheet="https://cdn-shop.adafruit.com/product-files/2770/SPEC-CH280QV10-CT_Rev.D.pdf",
+        )
+
+
+class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
+    """50-pin FPC connector for the CH280QV10-CT as sold by Adafruit
+    Pin-compatible with some other 2.8" ILI9341 devices like ER-TFT028A2-4
+    https://www.buydisplay.com/download/manual/ER-TFT028A2-4_Datasheet.pdf
+    LCD only interface is compatible with the resistive touch version.
+    Some other IL9341 devices are 50-pin and share the digital interface but have reversed LED backlight pinning.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.gnd = self.Port(Ground(), [Common])
+        self.iovcc = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # extended range, abs max up to 4.6v
+                ),  # typ 1.8/2.8
+            )
+        )
+        self.vci = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (2.5, 3.6) * Volt, (2.5, 3.3) * Volt  # extended range, abs max up to 4.6v
+                ),  # typ 2.8
+            )
+        )
+
+        self.ledk = self.Port(Ground())
+        self.leda1 = self.Port(Passive())
+        self.leda2 = self.Port(Passive())
+        self.leda3 = self.Port(Passive())
+        self.leda4 = self.Port(Passive())
+
+        dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_factor=(0.3, 0.7))
+        din_model = DigitalSink.from_bidir(dio_model)
+        dout_model = DigitalSource.from_bidir(dio_model)
+
+        self.reset = self.Port(din_model)
+
+        self.im0 = self.Port(din_model)
+        self.im1 = self.Port(din_model)
+        self.im2 = self.Port(din_model)
+        self.im3 = self.Port(din_model)
+
+        self.sdo = self.Port(dout_model)
+        self.sdi = self.Port(din_model)
+        self.wr_rs = self.Port(din_model)
+        self.rs_scl = self.Port(din_model)
+        self.cs = self.Port(din_model)
+        # pin 39 TE out unused
+
+        ctp_dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_abs=(1.0, 1.9) * Volt)
+        self.ctp_i2c = self.Port(I2cTarget(ctp_dio_model, [0x38]), optional=True)
+        # pin 46 is CTQ IRQ, unused (semantics not defined)
+        self.ctp_res = self.Port(DigitalSink.from_bidir(ctp_dio_model))
+        self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
+
+        self.conn = self.Block(Fpc050Bottom(length=50)).connected(
+            {
+                ("43", "48", "49", "50"): self.gnd,
+                ("40", "41"): self.iovcc,
+                "42": self.vci,
+                "1": self.ledk,
+                "2": self.leda1,
+                "3": self.leda2,
+                "4": self.leda3,
+                "5": self.leda4,
+                "10": self.reset,
+                "6": self.im0,
+                "7": self.im1,
+                "8": self.im2,
+                "9": self.im3,
+                "33": self.sdo,
+                "34": self.sdi,
+                "36": self.wr_rs,
+                "37": self.rs_scl,
+                "38": self.cs,
+                "44": self.ctp_i2c.scl,
+                "45": self.ctp_i2c.sda,
+                "47": self.ctp_res,
+            }
+        )
+
+        self.conn.connected(
+            {
+                # per ILI9341 datasheet, fix to VDDI or VSS for pins not in use
+                ("11", "12", "13", "14"): self.gnd,  # VSYNC, HSYNC, DOTCLK, DC
+                (str(x) for x in range(15, 33)): self.gnd,  # DB0-17 unused, must be fixed to VSS level
+                "35": self.iovcc,  # RDX
+            }
+        )
+
+
+class Ch280qv10_Ct(Lcd, Resettable, Block):
+    """ILI9341-based 2.8" 320x240 color TFT supporting SPI interface and with optional capacitive touch
+    Based on this example design https://www.adafruit.com/product/1947 / https://learn.adafruit.com/adafruit-2-8-tft-touch-shield-v2/downloads
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Ch280qv10_Ct_Device())
+        self.gnd = self.Export(self.device.gnd, [Common])
+        self.pwr = self.Export(self.device.iovcc, [Power])
+        self.spi = self.Port(SpiPeripheral.empty())
+        self.cs = self.Export(self.device.cs)
+        self.dc = self.Export(self.device.wr_rs)
+
+        self.ctp_i2c = self.Export(self.device.ctp_i2c, optional=True)
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.pwr, self.device.vci)
+        self.connect(self.reset, self.device.reset, self.device.ctp_res)  # combined LCD and CTP reset
+        self.require(self.reset.is_connected())
+
+        self.lcd = self.Block(Ch280qv10_Ct_Outline())  # for device outline
+
+        gnd_digital = self.gnd.as_digital_source()
+        pwr_digital = self.pwr.as_digital_source()
+        self.connect(self.device.im0, gnd_digital)  # 4-wire 8-bit SPI with SDO
+        self.connect(self.device.im1, pwr_digital)
+        self.connect(self.device.im2, pwr_digital)
+        self.connect(self.device.im3, pwr_digital)
+
+        self.connect(self.spi.sck, self.device.rs_scl)
+        self.connect(self.spi.mosi, self.device.sdi)
+        self.connect(self.spi.miso, self.device.sdo)
+
+        self.connect(self.device.ledk, self.gnd)
+        self.led_res = ElementDict[Resistor]()
+        for i, leda in [
+            ("1", self.device.leda1),
+            ("2", self.device.leda2),
+            ("3", self.device.leda3),
+            ("4", self.device.leda4),
+        ]:
+            led_res = self.led_res[i] = self.Block(  # TODO dynamic LED resistance, this is sized for 5v
+                Resistor(47 * Ohm(tol=0.05), power=self.pwr.link().voltage * self.pwr.link().voltage / 47)
+            )
+            self.connect(led_res.a.adapt_to(VoltageSink(current_draw=(0, 80) * mAmp)), self.pwr)  # TODO better current
+            self.connect(led_res.b, leda)
