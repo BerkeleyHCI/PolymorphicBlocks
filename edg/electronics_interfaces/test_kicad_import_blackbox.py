@@ -2,7 +2,10 @@ import unittest
 
 from .. import edgir
 from ..core import Builder
-from . import *
+from ..electronics_model import *
+from .GroundPort import Ground
+from .VoltagePorts import VoltageSink
+from .AnalogPort import AnalogSource
 
 
 class KiCadBlackboxBlock(KiCadSchematicBlock):

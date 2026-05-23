@@ -1,6 +1,7 @@
 import unittest
 
-from . import *
+from ..electronics_model import *
+from .AnalogPort import AnalogSource, AnalogSink
 
 
 class AnalogSourceBlock(Block):

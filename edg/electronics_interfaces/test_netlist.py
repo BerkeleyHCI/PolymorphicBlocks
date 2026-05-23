@@ -6,22 +6,21 @@ from typing_extensions import override
 from .. import edgir
 
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
-from ..core import *
-from edg.electronics_interfaces.VoltagePorts import VoltageSource, VoltageSink
-from .CircuitBlock import FootprintBlock
-from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net, Netlist
-from .RefdesRefinementPass import RefdesRefinementPass
+from ..electronics_model import *
+from ..electronics_model.NetlistGenerator import NetPin, NetBlock as NetlistBlock, Netlist, Net, NetlistTransform
+from ..electronics_model.RefdesRefinementPass import RefdesRefinementPass
+from .VoltagePorts import VoltageSource, VoltageSink
 
 
 # wrapper / convenience constructors
-def NetPin(block_path: List[str], pin_name: str) -> RawNetPin:
-    return RawNetPin(TransformUtil.Path(tuple(block_path), (), (), ()), pin_name)
+def net_pin(block_path: List[str], pin_name: str) -> NetPin:
+    return NetPin(TransformUtil.Path(tuple(block_path), (), (), ()), pin_name)
 
 
-def NetBlock(
+def net_block(
     footprint: str, refdes: str, part: str, value: str, full_path: List[str], path_classes: List[str]
-) -> RawNetBlock:
-    return RawNetBlock(
+) -> NetlistBlock:
+    return NetlistBlock(
         footprint,
         refdes,
         part,
@@ -209,13 +208,13 @@ class NetlistTestCase(unittest.TestCase):
 
         # check that the top-level path element is never pruned, even when the design is one element
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
@@ -226,7 +225,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink"], "1")],
+                [net_pin(["source"], "1"), net_pin(["sink"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -237,7 +236,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
@@ -246,24 +245,24 @@ class NetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink"],
-                ["edg.electronics_model.test_netlist.TestFakeSink"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSink"],
             ),
             net.blocks,
         )
@@ -274,7 +273,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink1"], "1"), NetPin(["sink2"], "1")],
+                [net_pin(["source"], "1"), net_pin(["sink1"], "1"), net_pin(["sink2"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink1").append_port("pos", "net"),
@@ -286,7 +285,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink1"], "2"), NetPin(["sink2"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink1"], "2"), net_pin(["sink2"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink1").append_port("neg", "net"),
@@ -296,35 +295,35 @@ class NetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink1"],
-                ["edg.electronics_model.test_netlist.TestFakeSink"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSink"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R2",
                 "",
                 "1k",
                 ["sink2"],
-                ["edg.electronics_model.test_netlist.TestFakeSink"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSink"],
             ),
             net.blocks,
         )
@@ -335,7 +334,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vin",
-                [NetPin(["source"], "1"), NetPin(["adapter"], "3")],
+                [net_pin(["source"], "1"), net_pin(["adapter"], "3")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("adapter").append_port("pos_in", "net"),
@@ -346,7 +345,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vout",
-                [NetPin(["adapter"], "2"), NetPin(["sink"], "1")],
+                [net_pin(["adapter"], "2"), net_pin(["sink"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("adapter").append_port("pos_out", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -357,7 +356,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["adapter"], "1"), NetPin(["sink"], "2")],
+                [net_pin(["source"], "2"), net_pin(["adapter"], "1"), net_pin(["sink"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("adapter").append_port("neg", "net"),
@@ -367,35 +366,35 @@ class NetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
                 "U1",
                 "",
                 "LD1117V33",
                 ["adapter"],
-                ["edg.electronics_model.test_netlist.TestFakeAdapter"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeAdapter"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink"],
-                ["edg.electronics_model.test_netlist.TestFakeSink"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSink"],
             ),
             net.blocks,
         )
@@ -406,7 +405,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "block"], "1")],
+                [net_pin(["source"], "1"), net_pin(["sink", "block"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -418,7 +417,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "block"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "block"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
@@ -428,26 +427,26 @@ class NetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink", "block"],
                 [
-                    "edg.electronics_model.test_netlist.TestFakeSinkHierarchy",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSinkHierarchy",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             net.blocks,
@@ -459,7 +458,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "block1"], "1"), NetPin(["sink", "block2"], "1")],
+                [net_pin(["source"], "1"), net_pin(["sink", "block1"], "1"), net_pin(["sink", "block2"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -472,7 +471,7 @@ class NetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "block1"], "2"), NetPin(["sink", "block2"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "block1"], "2"), net_pin(["sink", "block2"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
@@ -483,40 +482,40 @@ class NetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink", "block1"],
                 [
-                    "edg.electronics_model.test_netlist.TestFakeDualSinkHierarchy",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_netlist.TestFakeDualSinkHierarchy",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R2",
                 "",
                 "1k",
                 ["sink", "block2"],
                 [
-                    "edg.electronics_model.test_netlist.TestFakeDualSinkHierarchy",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_netlist.TestFakeDualSinkHierarchy",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             net.blocks,

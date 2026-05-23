@@ -1,11 +1,13 @@
+# TODO this is in the electronics_interface package because it uses VoltageSink ports,
+# but there should be a Passive-typed test in the electronics_model package
+
 import unittest
 
 from typing_extensions import override
 
-from .. import FootprintBlock, DesignTop
-from ..core import TransformUtil
-from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
-from . import WrapperSubboardBlock, VoltageSink, Passive
+from ..electronics_model import *
+from .VoltagePorts import VoltageSink
+from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, net_block, Net, net_pin
 
 
 class SinkWrapperExterior(FootprintBlock):
@@ -123,15 +125,15 @@ class NetlistWrapperTestCase(unittest.TestCase):
         net = NetlistTestCase.generate_single_net(TestWrapperCircuit)
 
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Inductor_SMD:L_0603_1608Metric",
                 "L1",
                 "",
                 "100",
                 ["sink", "wrapper"],
                 [
-                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperBlock",
-                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperExterior",
+                    "edg.electronics_interfaces.test_netlist_subboard_wrapper.SinkWrapperBlock",
+                    "edg.electronics_interfaces.test_netlist_subboard_wrapper.SinkWrapperExterior",
                 ],
             ),
             net.blocks,
@@ -141,7 +143,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
+                [net_pin(["source"], "1"), net_pin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -154,7 +156,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "wrapper"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
@@ -170,15 +172,15 @@ class NetlistWrapperTestCase(unittest.TestCase):
         net = NetlistTestCase.generate_single_net(TestWrapperPassiveCircuit)
 
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Inductor_SMD:L_0603_1608Metric",
                 "L1",
                 "",
                 "100",
                 ["sink", "wrapper"],
                 [
-                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperPassiveBlock",
-                    "edg.electronics_model.test_netlist_subboard_wrapper.SinkWrapperPassiveExterior",
+                    "edg.electronics_interfaces.test_netlist_subboard_wrapper.SinkWrapperPassiveBlock",
+                    "edg.electronics_interfaces.test_netlist_subboard_wrapper.SinkWrapperPassiveExterior",
                 ],
             ),
             net.blocks,
@@ -188,7 +190,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
+                [net_pin(["source"], "1"), net_pin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -201,7 +203,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "wrapper"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),

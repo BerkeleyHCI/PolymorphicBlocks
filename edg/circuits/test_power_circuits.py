@@ -3,7 +3,6 @@ import unittest
 from typing_extensions import override
 
 from ..abstract_parts import *
-from ..electronics_interfaces.DummyDevices import DummyVoltageSource
 from ..vendor_parts.generic import *
 from .PowerCircuits import RampLimiter
 

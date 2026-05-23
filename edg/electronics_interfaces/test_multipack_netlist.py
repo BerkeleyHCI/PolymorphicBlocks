@@ -2,10 +2,10 @@ import unittest
 
 from typing_extensions import override
 
-from ..core import *
-from edg.electronics_interfaces.CircuitPackingBlock import PackedVoltageSource
-from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
-from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
+from ..electronics_model import *
+from ..electronics_model.NetlistGenerator import InvalidPackingException
+from .CircuitPackingBlock import PackedVoltageSource
+from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink, NetlistTestCase, Net, net_pin, net_block
 
 
 class TestFakeSinkElement(TestBaseFakeSink):
@@ -83,7 +83,7 @@ class MultipackNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "device"], "1")],
+                [net_pin(["source"], "1"), net_pin(["sink", "device"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink1").append_port("pos", "net"),
@@ -104,7 +104,7 @@ class MultipackNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "device"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "device"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink1").append_port("neg", "net"),
@@ -123,33 +123,31 @@ class MultipackNetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Capacitor_SMD:C_0603_1608Metric",
                 "C1",
                 "",
                 "1uF",
                 ["source"],
-                ["edg.electronics_model.test_netlist.TestFakeSource"],
+                ["edg.electronics_interfaces.test_netlist.TestFakeSource"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink", "device"],
                 [
-                    "edg.electronics_model.test_multipack_netlist.TestPackedSink",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_multipack_netlist.TestPackedSink",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             net.blocks,
         )
 
     def test_invalid_netlist(self) -> None:
-        from .NetlistGenerator import InvalidPackingException
-
         with self.assertRaises(InvalidPackingException):
             NetlistTestCase.generate_single_net(TestInvalidPackedDevices)

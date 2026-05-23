@@ -1,7 +1,9 @@
 import unittest
 
 from .. import edgir
-from . import *
+from ..electronics_model import *
+from .UartPort import UartPort
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
 
 class KiCadBundleBlock(KiCadSchematicBlock):

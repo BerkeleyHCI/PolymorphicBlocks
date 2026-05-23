@@ -8,6 +8,7 @@ from .CircuitBlock import (
     CircuitPortAdapter,
     NetBlock,
     CircuitPort,
+    KicadImportablePortAdapter,
 )
 from .SubboardBlock import SubboardBlock, WrapperSubboardBlock, SubboardConnectorPair
 

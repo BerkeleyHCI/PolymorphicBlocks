@@ -1,12 +1,14 @@
+# TODO this is in the electronics_interface package because it uses VoltageSink ports,
+# but there should be a Passive-typed test in the electronics_model package
+
 import unittest
 
 from typing_extensions import override
 
-from .NetlistGenerator import NetlistTransform
-from .. import FootprintBlock, DesignTop, ScalaCompiler, RefdesRefinementPass
-from ..core import TransformUtil
-from .test_netlist import TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
-from . import SubboardBlock, VoltageSink
+from ..electronics_model import *
+from ..electronics_model.NetlistGenerator import NetlistTransform
+from .VoltagePorts import VoltageSink
+from .test_netlist import TestFakeSource, TestFakeSink, net_block, Net, net_pin
 
 
 class SinkSubboardExterior(FootprintBlock):
@@ -74,15 +76,15 @@ class NetlistSubboardTestCase(unittest.TestCase):
         top_net = board_netlists[TransformUtil.Path.empty()]
 
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R3",
                 "",
                 "200",
                 ["sink", "wrapper"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardExterior",
+                    "edg.electronics_interfaces.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_interfaces.test_netlist_subboard.SinkSubboardExterior",
                 ],
             ),
             top_net.blocks,
@@ -92,7 +94,7 @@ class NetlistSubboardTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "vpos",
-                [NetPin(["source"], "1"), NetPin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
+                [net_pin(["source"], "1"), net_pin(["sink", "wrapper"], "1")],  # ensure extraneous nets not generated
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
@@ -104,7 +106,7 @@ class NetlistSubboardTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "gnd",
-                [NetPin(["source"], "2"), NetPin(["sink", "wrapper"], "2")],
+                [net_pin(["source"], "2"), net_pin(["sink", "wrapper"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
@@ -117,29 +119,29 @@ class NetlistSubboardTestCase(unittest.TestCase):
 
         inner_net = board_netlists[TransformUtil.Path.empty().append_block("sink")]
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["sink", "inner1"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             inner_net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R2",
                 "",
                 "1k",
                 ["sink", "inner2"],
                 [
-                    "edg.electronics_model.test_netlist_subboard.SinkSubboardBlock",
-                    "edg.electronics_model.test_netlist.TestFakeSink",
+                    "edg.electronics_interfaces.test_netlist_subboard.SinkSubboardBlock",
+                    "edg.electronics_interfaces.test_netlist.TestFakeSink",
                 ],
             ),
             inner_net.blocks,
@@ -149,7 +151,7 @@ class NetlistSubboardTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "sink.vpos",
-                [NetPin(["sink", "inner1"], "1"), NetPin(["sink", "inner2"], "1")],
+                [net_pin(["sink", "inner1"], "1"), net_pin(["sink", "inner2"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("pos", "net"),
@@ -162,7 +164,7 @@ class NetlistSubboardTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "sink.gnd",
-                [NetPin(["sink", "inner1"], "2"), NetPin(["sink", "inner2"], "2")],
+                [net_pin(["sink", "inner1"], "2"), net_pin(["sink", "inner2"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
                     TransformUtil.Path.empty().append_block("sink", "wrapper").append_port("neg", "net"),

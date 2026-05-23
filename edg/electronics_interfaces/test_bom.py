@@ -5,11 +5,10 @@ from typing import Type, List, Dict
 
 from typing_extensions import override
 
-from .BomBackend import GenerateBom
-from .RefdesRefinementPass import RefdesRefinementPass
+from ..electronics_model import *
+from ..electronics_model.BomBackend import GenerateBom
+from ..electronics_model.RefdesRefinementPass import RefdesRefinementPass
 from .test_netlist import TestBasicCircuit, TestMultisinkCircuit
-from .CircuitBlock import FootprintBlock
-from ..core import *
 
 
 class TestPnpRotOffset(FootprintBlock):

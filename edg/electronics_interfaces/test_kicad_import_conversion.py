@@ -1,7 +1,8 @@
 import unittest
 
 from .. import edgir
-from . import *
+from ..electronics_model import *
+from .VoltagePorts import VoltageSource
 
 
 class KiCadConversionBlock(KiCadSchematicBlock):

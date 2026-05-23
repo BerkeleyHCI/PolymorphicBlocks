@@ -5,11 +5,11 @@ from typing_extensions import override
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
 from ..electronics_model.CircuitBlock import FootprintBlock
-from ..electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 from .DigitalPorts import DigitalSource, DigitalSink
 from .SpiPort import SpiController, SpiPeripheral
 from .UartPort import UartPort
 from .CanPort import CanDiffPort
+from .test_netlist import NetlistTestCase, Net, net_pin, net_block
 
 
 class TestFakeSpiController(FootprintBlock):
@@ -129,8 +129,8 @@ class BundleNetlistTestCase(unittest.TestCase):
             Net(
                 "cs1_link",
                 [
-                    NetPin(["controller"], "0"),
-                    NetPin(["peripheral1"], "4"),
+                    net_pin(["controller"], "0"),
+                    net_pin(["peripheral1"], "4"),
                 ],
                 [
                     TransformUtil.Path.empty().append_block("controller").append_port("cs_out_1", "net"),
@@ -143,8 +143,8 @@ class BundleNetlistTestCase(unittest.TestCase):
             Net(
                 "cs2_link",
                 [
-                    NetPin(["controller"], "1"),
-                    NetPin(["peripheral2"], "4"),
+                    net_pin(["controller"], "1"),
+                    net_pin(["peripheral2"], "4"),
                 ],
                 [
                     TransformUtil.Path.empty().append_block("controller").append_port("cs_out_2", "net"),
@@ -157,9 +157,9 @@ class BundleNetlistTestCase(unittest.TestCase):
             Net(
                 "spi_link.sck",
                 [
-                    NetPin(["controller"], "2"),
-                    NetPin(["peripheral1"], "1"),
-                    NetPin(["peripheral2"], "1"),
+                    net_pin(["controller"], "2"),
+                    net_pin(["peripheral1"], "1"),
+                    net_pin(["peripheral2"], "1"),
                 ],
                 [
                     TransformUtil.Path.empty().append_block("controller").append_port("spi", "sck", "net"),
@@ -173,9 +173,9 @@ class BundleNetlistTestCase(unittest.TestCase):
             Net(
                 "spi_link.mosi",
                 [
-                    NetPin(["controller"], "4"),
-                    NetPin(["peripheral1"], "2"),
-                    NetPin(["peripheral2"], "2"),
+                    net_pin(["controller"], "4"),
+                    net_pin(["peripheral1"], "2"),
+                    net_pin(["peripheral2"], "2"),
                 ],
                 [
                     TransformUtil.Path.empty().append_block("controller").append_port("spi", "mosi", "net"),
@@ -189,9 +189,9 @@ class BundleNetlistTestCase(unittest.TestCase):
             Net(
                 "spi_link.miso",
                 [
-                    NetPin(["controller"], "3"),
-                    NetPin(["peripheral1"], "3"),
-                    NetPin(["peripheral2"], "3"),
+                    net_pin(["controller"], "3"),
+                    net_pin(["peripheral1"], "3"),
+                    net_pin(["peripheral2"], "3"),
                 ],
                 [
                     TransformUtil.Path.empty().append_block("controller").append_port("spi", "miso", "net"),
@@ -203,35 +203,35 @@ class BundleNetlistTestCase(unittest.TestCase):
         )
 
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_Array_Concave_2x0603",
                 "R1",
                 "",
                 "WeirdSpiController",
                 ["controller"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeSpiController"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiController"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_Array_Concave_2x0603",
                 "R2",
                 "",
                 "WeirdSpiPeripheral",
                 ["peripheral1"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeSpiPeripheral"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiPeripheral"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_Array_Concave_2x0603",
                 "R3",
                 "",
                 "WeirdSpiPeripheral",
                 ["peripheral2"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeSpiPeripheral"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiPeripheral"],
             ),
             net.blocks,
         )
@@ -242,7 +242,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "link.a_tx",
-                [NetPin(["a"], "1"), NetPin(["b"], "2")],
+                [net_pin(["a"], "1"), net_pin(["b"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("a").append_port("port", "tx", "net"),
                     TransformUtil.Path.empty().append_block("b").append_port("port", "rx", "net"),
@@ -253,7 +253,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "link.b_tx",
-                [NetPin(["a"], "2"), NetPin(["b"], "1")],
+                [net_pin(["a"], "2"), net_pin(["b"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("a").append_port("port", "rx", "net"),
                     TransformUtil.Path.empty().append_block("b").append_port("port", "tx", "net"),
@@ -262,24 +262,24 @@ class BundleNetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "1k",
                 ["a"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeUartBlock"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeUartBlock"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R2",
                 "",
                 "1k",
                 ["b"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeUartBlock"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeUartBlock"],
             ),
             net.blocks,
         )
@@ -290,7 +290,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "link.canh",
-                [NetPin(["node1"], "1"), NetPin(["node2"], "1"), NetPin(["node3"], "1")],
+                [net_pin(["node1"], "1"), net_pin(["node2"], "1"), net_pin(["node3"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("node1").append_port("port", "canh", "net"),
                     TransformUtil.Path.empty().append_block("node2").append_port("port", "canh", "net"),
@@ -302,7 +302,7 @@ class BundleNetlistTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "link.canl",
-                [NetPin(["node1"], "2"), NetPin(["node2"], "2"), NetPin(["node3"], "2")],
+                [net_pin(["node1"], "2"), net_pin(["node2"], "2"), net_pin(["node3"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("node1").append_port("port", "canl", "net"),
                     TransformUtil.Path.empty().append_block("node2").append_port("port", "canl", "net"),
@@ -312,35 +312,35 @@ class BundleNetlistTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "120",
                 ["node1"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeCanBlock"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R2",
                 "",
                 "120",
                 ["node2"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeCanBlock"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R3",
                 "",
                 "120",
                 ["node3"],
-                ["edg.electronics_model.test_bundle_netlist.TestFakeCanBlock"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
             ),
             net.blocks,
         )
