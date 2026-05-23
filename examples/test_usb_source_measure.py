@@ -3,8 +3,10 @@ from typing import Mapping, Dict
 
 from typing_extensions import override
 
-from edg.circuits.ResistiveDivider import DividerValues
 from edg import *
+from edg.circuits.ResistiveDivider import DividerValues
+from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
+from edg.electronics_model.GroundPort import GroundAdapterAnalogSource
 from .util import run_test_board
 
 
