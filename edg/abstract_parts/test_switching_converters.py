@@ -2,10 +2,10 @@ import unittest
 
 from typing_extensions import override
 
-from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
+from .PowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
 from ..electronics_model import *
-from .AbstractInductor import Inductor
-from .AbstractCapacitor import Capacitor
+from .Inductor import Inductor
+from .Capacitor import Capacitor
 from ..electronics_interfaces.DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyGround
 
 

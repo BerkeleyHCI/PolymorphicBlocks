@@ -1,7 +1,7 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
+from typing_extensions import override
 
 from ..electronics_model import *
-from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow, ExperimentalUserFnPartsTable
 from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint

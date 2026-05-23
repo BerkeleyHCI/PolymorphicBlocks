@@ -1,13 +1,10 @@
-from typing import cast, Any
-
+from typing import Any
 from typing_extensions import override
 
 from ..electronics_model import *
 from ..electronics_model.CanPort import CanLogicLink
 from ..electronics_model.I2cPort import I2cLink
-from .AbstractConnector import RfConnector, RfConnectorTestPoint
-from .AbstractResistor import Resistor
-from .Categories import *
+from .Connectors import RfConnector, RfConnectorTestPoint
 
 
 @abstract_block

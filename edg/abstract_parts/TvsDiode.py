@@ -1,8 +1,7 @@
 from typing_extensions import override
 
 from ..electronics_model import *
-from .Categories import *
-from .AbstractDiodes import BaseDiode
+from .Diode import BaseDiode
 
 
 @abstract_block

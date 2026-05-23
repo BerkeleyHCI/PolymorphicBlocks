@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from .IoController import IoController
-from .AbstractCrystal import OscillatorReference
+from .Crystal import OscillatorReference
 from ..electronics_model import *
 
 

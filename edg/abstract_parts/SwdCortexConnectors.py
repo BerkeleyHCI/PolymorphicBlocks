@@ -1,6 +1,5 @@
 from typing import Any
 
-from .Categories import ProgrammingConnector
 from ..electronics_model import *
 
 

@@ -1,8 +1,7 @@
 from typing import Any
 
 from ..electronics_model import *
-from .Categories import Connector
-from .AbstractAntenna import Antenna
+from .Antenna import Antenna
 
 
 @abstract_block

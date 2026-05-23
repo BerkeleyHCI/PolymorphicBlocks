@@ -1,9 +1,8 @@
-from typing import List, cast, Optional, Dict
+from typing import List, Optional, Dict
 
 from typing_extensions import override
 
 from ..electronics_model import *
-from .Categories import Interface
 
 
 @abstract_block

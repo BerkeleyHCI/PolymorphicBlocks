@@ -2,7 +2,6 @@ from typing import Mapping
 
 from typing_extensions import override
 
-from .Categories import Analog
 from ..electronics_model import *
 
 

@@ -1,7 +1,6 @@
 from typing_extensions import override
 
 from ..electronics_model import *
-from .Categories import Interface
 
 
 @abstract_block

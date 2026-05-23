@@ -4,7 +4,7 @@ import unittest
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
 from ..electronics_model import Passive, FootprintBlock
-from .AbstractResistor import Resistor
+from .Resistor import Resistor
 from ..electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 from ..electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
 

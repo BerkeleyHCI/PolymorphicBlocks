@@ -1,14 +1,14 @@
 import re
 import warnings
 from abc import abstractmethod
-from typing import Optional, Dict, Tuple, Mapping
+from typing import Any, Optional, Dict, Tuple, Mapping
+from typing_extensions import override
 import math
 
 from ..electronics_model import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableSelector
-from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 

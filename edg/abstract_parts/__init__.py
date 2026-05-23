@@ -1,30 +1,7 @@
-from ..electronics_interfaces import *
+# Contains abstract part definitions, simple wrapper blocks / application circuits,
+# and implementation helpers for abstract parts like part table utils.
 
-from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
-from .Categories import DiscreteApplication
-from .Categories import Analog, OpampApplication
-from .Categories import Filter, AnalogFilter, RfFilter, DigitalFilter
-from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
-from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriver, IoExpander, BitBangAdapter
-from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
-from .Categories import PowerSource, Connector, ProgrammingConnector
-from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import (
-    Sensor,
-    CurrentSensor,
-    Accelerometer,
-    Gyroscope,
-    MagneticSensor,
-    MagneticSwitch,
-    Magnetometer,
-    DistanceSensor,
-    Microphone,
-    Camera,
-    LightSensor,
-)
-from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, PressureSensor, GasSensor
-from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
-from .Categories import MultipackDevice
+from ..electronics_interfaces import *
 
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
@@ -42,8 +19,8 @@ from .PartsTable import PartsTable
 from .SelectorArea import PartsTableAreaSelector, SelectorArea
 from .StandardFootprint import StandardFootprint
 
-from .AbstractDevices import Battery
-from .AbstractConnector import (
+from .Battery import Battery
+from .Connectors import (
     BananaJack,
     BananaSafetyJack,
     RfConnector,
@@ -54,9 +31,9 @@ from .AbstractConnector import (
     SmaMConnector,
     SmaFConnector,
 )
-from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor, AnalogSeriesResistor
-from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
-from .AbstractResistor import (
+from .Resistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor, AnalogSeriesResistor
+from .Resistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
+from .Resistor import (
     SeriesPowerResistor,
     CurrentSenseResistor,
     AnalogClampResistor,
@@ -66,8 +43,8 @@ from .AbstractResistor import (
     AnalogSetpointResistor,
     UsbSeriesResistor,
 )
-from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
-from .AbstractCapacitor import (
+from .ResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
+from .Capacitor import (
     UnpolarizedCapacitor,
     Capacitor,
     CeramicCapacitor,
@@ -76,7 +53,7 @@ from .AbstractCapacitor import (
     TableCapacitor,
     TableDeratingCapacitor,
 )
-from .AbstractCapacitor import (
+from .Capacitor import (
     DummyCapacitorFootprint,
     DecouplingCapacitor,
     AnalogCapacitor,
@@ -84,52 +61,52 @@ from .AbstractCapacitor import (
     DigitalCapacitor,
     CombinedCapacitor,
 )
-from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
-from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
+from .Inductor import Inductor, TableInductor, SeriesPowerInductor
+from .FerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
 from .Resettable import Resettable
 
-from .AbstractDiodes import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
-from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
-from .AbstractTvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
-from .AbstractLed import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike
-from .AbstractLed import (
+from .Diode import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
+from .Diode import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
+from .TvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
+from .Led import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike
+from .Led import (
     IndicatorLed,
     IndicatorSinkLed,
     IndicatorSinkLedResistor,
     VoltageIndicatorLed,
     IndicatorSinkRgbLed,
 )
-from .AbstractLed import IndicatorSinkPackedRgbLed
-from .AbstractLed import IndicatorLedArray, IndicatorSinkLedArray
-from .AbstractBjt import Bjt, BjtStandardFootprint, TableBjt
-from .AbstractFets import Fet, FetStandardFootprint, BaseTableFet, TableFet
-from .AbstractFets import SwitchFet, TableSwitchFet
+from .Led import IndicatorSinkPackedRgbLed
+from .Led import IndicatorLedArray, IndicatorSinkLedArray
+from .Bjt import Bjt, BjtStandardFootprint, TableBjt
+from .Fet import Fet, FetStandardFootprint, BaseTableFet, TableFet
+from .Fet import SwitchFet, TableSwitchFet
 
-from .AbstractAntenna import Antenna, TableAntenna
-from .AbstractSolidStateRelay import SolidStateRelay, VoltageIsolatedSwitch, AnalogIsolatedSwitch
-from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
-from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
-from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
-from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
-from .AbstractComparator import Comparator
-from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
-from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
-from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
-from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
-from .AbstractPowerConverters import BootstrapCapacitor
-from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
-from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
-from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
-from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
-from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
-from .AbstractOscillator import Oscillator, TableOscillator
-from .AbstractDebugHeaders import (
+from .Antenna import Antenna, TableAntenna
+from .SolidStateRelay import SolidStateRelay, VoltageIsolatedSwitch, AnalogIsolatedSwitch
+from .AnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
+from .Switch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
+from .Switch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
+from .Switch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
+from .Comparator import Comparator
+from .Opamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
+from .SpiMemory import SpiMemory, SpiMemoryQspi
+from .PowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
+from .PowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
+from .PowerConverters import BootstrapCapacitor
+from .PowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
+from .PowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
+from .LedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
+from .Fuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
+from .Crystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
+from .Oscillator import Oscillator, TableOscillator
+from .SwdCortexConnectors import (
     SwdCortexTargetConnector,
     SwdCortexTargetConnectorReset,
     SwdCortexTargetConnectorSwo,
     SwdCortexTargetConnectorTdi,
 )
-from .AbstractTestPoint import (
+from .TestPoint import (
     TestPoint,
     GroundTestPoint,
     VoltageTestPoint,
@@ -141,8 +118,8 @@ from .AbstractTestPoint import (
     CanControllerTestPoint,
     CanDiffTestPoint,
 )
-from .AbstractTestPoint import AnalogCoaxTestPoint
-from .AbstractJumper import Jumper, DigitalJumper
+from .TestPoint import AnalogCoaxTestPoint
+from .Jumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 from .TouchPad import FootprintToucbPad
 

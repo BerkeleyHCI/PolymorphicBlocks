@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ..abstract_parts import *
-from edg.circuits.ResistiveDivider import FeedbackVoltageDivider, VoltageDivider
+from .ResistiveDivider import VoltageDivider, FeedbackVoltageDivider
 
 
 class VoltageComparator(GeneratorBlock):

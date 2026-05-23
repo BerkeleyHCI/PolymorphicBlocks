@@ -6,7 +6,6 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
-from .Categories import ProgrammableController
 
 
 @non_library

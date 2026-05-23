@@ -1,8 +1,8 @@
-from typing import Dict
+from typing import Any, Dict
+from typing_extensions import override
 from deprecated import deprecated
 
 from ..electronics_model import *
-from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint

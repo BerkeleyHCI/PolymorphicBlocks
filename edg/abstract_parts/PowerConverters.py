@@ -1,12 +1,12 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple, Callable
+from typing import Any, Optional, NamedTuple, Callable
+from typing_extensions import override
 
 from deprecated import deprecated
 
 from ..electronics_model import *
-from .AbstractCapacitor import DecouplingCapacitor, Capacitor
-from .AbstractInductor import Inductor, TableInductor
-from .Categories import *
+from .Capacitor import DecouplingCapacitor, Capacitor
+from .Inductor import Inductor, TableInductor
 from .PartsTable import PartsTableRow, ExperimentalUserFnPartsTable
 from .Resettable import Resettable
 

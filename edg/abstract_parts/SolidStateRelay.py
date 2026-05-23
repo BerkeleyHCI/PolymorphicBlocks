@@ -3,8 +3,7 @@ from typing import Dict
 from typing_extensions import override
 
 from ..electronics_model import *
-from .AbstractResistor import Resistor
-from .Categories import Interface
+from .Resistor import Resistor
 
 
 @abstract_block

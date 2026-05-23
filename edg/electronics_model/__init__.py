@@ -46,6 +46,35 @@ from .PartParserUtil import PartParserUtil
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
 from .KiCadSchematicBlock import KiCadSchematicBlock
 
+# categories
+from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
+from .Categories import DiscreteApplication
+from .Categories import Analog, OpampApplication
+from .Categories import Filter, AnalogFilter, RfFilter, DigitalFilter
+from .Categories import ProgrammableController, Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
+from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriver, IoExpander, BitBangAdapter
+from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
+from .Categories import PowerSource, Connector, ProgrammingConnector
+from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
+from .Categories import (
+    Sensor,
+    CurrentSensor,
+    Accelerometer,
+    Gyroscope,
+    MagneticSensor,
+    MagneticSwitch,
+    Magnetometer,
+    DistanceSensor,
+    Microphone,
+    Camera,
+    LightSensor,
+)
+from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, PressureSensor, GasSensor
+from .Categories import Protection
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
+from .Categories import MultipackDevice
+from .Categories import IdealModel
+
 # model-breaking constructs, including for unit testing
 from .DummyDevice import DummyDevice
 from .GroundDummyDevice import DummyGround
