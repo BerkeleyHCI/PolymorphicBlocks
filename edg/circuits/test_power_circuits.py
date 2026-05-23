@@ -2,8 +2,9 @@ import unittest
 
 from typing_extensions import override
 
-from . import *
-from .DummyDevices import DummyVoltageSource
+from ..abstract_parts import *
+from ..electronics_interfaces.DummyDevices import DummyVoltageSource
+from ..vendor_parts.generic import *
 from .PowerCircuits import RampLimiter
 
 

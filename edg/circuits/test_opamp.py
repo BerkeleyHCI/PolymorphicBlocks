@@ -2,9 +2,8 @@ import unittest
 
 from typing_extensions import override
 
-from . import *
-from .DummyDevices import DummyVoltageSource, DummyAnalogSink
-from .AbstractOpamp import Opamp
+from ..abstract_parts import *
+from ..electronics_interfaces.DummyDevices import DummyVoltageSource, DummyAnalogSink
 from .OpampCircuits import Amplifier
 
 

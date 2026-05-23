@@ -1,8 +1,7 @@
 import unittest
 
-from . import *
+from ..abstract_parts import *
 from .ResistiveDivider import DividerValues
-from .ESeriesUtil import ESeriesRatioUtil
 
 
 class ResistorDividerTest(unittest.TestCase):

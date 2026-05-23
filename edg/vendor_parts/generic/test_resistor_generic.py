@@ -1,6 +1,7 @@
 import unittest
 
-from . import *
+from ...abstract_parts import *
+from .GenericResistor import GenericChipResistor
 
 
 class ResistorTestTop(Block):

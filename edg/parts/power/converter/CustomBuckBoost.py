@@ -2,7 +2,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from ....abstract_parts import *
+from ....circuits import *
 
 
 # These adapters are needed to properly orient the boost-side switch, since it outputs on the high side

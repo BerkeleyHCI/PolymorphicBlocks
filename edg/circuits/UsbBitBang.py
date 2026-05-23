@@ -1,11 +1,7 @@
-from typing import cast
-
 from deprecated import deprecated
 from typing_extensions import override
 
-from ..electronics_model import *
-from .Categories import *
-from .AbstractResistor import DigitalSeriesResistor, DigitalBidirSeriesResistor
+from ..abstract_parts import *
 
 
 class UsbBitBang(BitBangAdapter, Block):

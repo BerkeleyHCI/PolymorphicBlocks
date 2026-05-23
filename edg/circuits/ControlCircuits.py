@@ -3,11 +3,7 @@ from typing import Dict
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractResistor import Resistor
-from .AbstractCapacitor import Capacitor
-from .AbstractOpamp import Opamp
-from .Categories import OpampApplication
+from ..abstract_parts import *
 
 
 class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):

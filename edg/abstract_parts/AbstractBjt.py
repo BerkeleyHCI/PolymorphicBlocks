@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict
 
 from ..electronics_model import *
 from .Categories import *

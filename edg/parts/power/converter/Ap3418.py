@@ -1,7 +1,7 @@
 from deprecated import deprecated
 from typing_extensions import override
 
-from ....abstract_parts import *
+from ....circuits import *
 from ....vendor_parts.jlc.JlcPart import JlcPart
 
 

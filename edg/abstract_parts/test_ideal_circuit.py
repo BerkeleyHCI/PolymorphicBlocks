@@ -1,10 +1,9 @@
 import unittest
 
-from . import *
+from ..electronics_interfaces import *
 from .IoController import IoController
 from .AbstractPowerConverters import LinearRegulator, BoostConverter
 from .Categories import IdealModel
-from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyDigitalSink
 
 
 class IdealCircuitTestTop(Block):

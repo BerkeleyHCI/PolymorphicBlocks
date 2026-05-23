@@ -2,7 +2,7 @@ from typing import Mapping
 
 from typing_extensions import override
 
-from .ResistiveDivider import FeedbackVoltageDivider, VoltageDivider
+from edg.circuits.ResistiveDivider import FeedbackVoltageDivider, VoltageDivider
 from ..abstract_parts import Analog
 from ..electronics_model import *
 

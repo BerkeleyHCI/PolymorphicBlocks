@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from ...abstract_parts import *
+from ...circuits import *
 from ..logic.SpiMemory_93Lc import E93Lc_B
 from ...vendor_parts.jlc.JlcPart import JlcPart
 

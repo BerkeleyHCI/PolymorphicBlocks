@@ -2,8 +2,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractDiodes import Diode
+from ...abstract_parts import *
 
 
 class CustomDiode(Diode, FootprintBlock, GeneratorBlock):

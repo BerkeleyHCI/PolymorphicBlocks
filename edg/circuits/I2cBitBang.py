@@ -1,9 +1,6 @@
-from typing import cast
-
 from typing_extensions import override
 
-from ..electronics_model import *
-from .Categories import *
+from ..abstract_parts import *
 
 
 class I2cControllerBitBang(BitBangAdapter, Block):

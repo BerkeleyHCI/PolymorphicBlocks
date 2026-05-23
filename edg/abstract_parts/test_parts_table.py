@@ -1,8 +1,6 @@
 import os
 import unittest
 
-from typing_extensions import override
-
 from .PartsTable import *
 
 

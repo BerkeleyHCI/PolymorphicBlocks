@@ -1,7 +1,7 @@
 from deprecated import deprecated
 from typing_extensions import override
 
-from ..abstract_parts import *
+from ..circuits import *
 
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")

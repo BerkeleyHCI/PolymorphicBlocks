@@ -1,7 +1,7 @@
 from typing import Dict
 
 from ..electronics_model import *
-from .Categories import *
+from edg.abstract_parts.Categories import *
 
 
 class DummyPassive(DummyDevice):

@@ -7,6 +7,7 @@ from .BoardCompiler import compile_board, compile_board_inplace
 # This may go away in the future.
 from .core import *
 from .electronics_model import *
+from .electronics_interfaces import *
 from .abstract_parts import *
 from .vendor_parts import *
 from .vendor_parts.jlc import *

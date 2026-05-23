@@ -1,9 +1,7 @@
-from typing import Any
-
-from typing_extensions import override
-
 from ..electronics_model import *
-from . import PartsTableSelector, PartsTableColumn, Capacitor, PartsTableRow
+from .PartsTable import PartsTableColumn, PartsTableRow
+from .PartsTablePart import PartsTableSelector
+from .AbstractCapacitor import Capacitor
 from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 

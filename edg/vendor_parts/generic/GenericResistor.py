@@ -2,10 +2,7 @@ from typing import List, Tuple, Any
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractResistor import Resistor
-from .ESeriesUtil import ESeriesUtil
-from .SelectorArea import SelectorArea
+from ...abstract_parts import *
 
 
 @non_library

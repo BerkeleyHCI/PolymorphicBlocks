@@ -1,13 +1,11 @@
 import re
-from typing import Optional, cast, Mapping, Dict, Any
-
-from typing_extensions import override
+from typing import Optional, Mapping, Dict
 
 from ..electronics_model import *
+from .Categories import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector
-from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 

@@ -2,10 +2,7 @@ from typing import Dict
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .Categories import CurrentSensor
-from .DummyDevices import ForcedAnalogSignal
-from .AbstractResistor import CurrentSenseResistor
+from ..abstract_parts import *
 from .OpampCircuits import DifferentialAmplifier
 
 

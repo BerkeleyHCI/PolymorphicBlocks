@@ -2,17 +2,8 @@ from typing import Any
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .Resettable import Resettable
-from .AbstractResistor import Resistor, SeriesPowerResistor
-from .AbstractFets import SwitchFet, Fet
-from .AbstractCapacitor import Capacitor
-from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
-from .DigitalAmplifiers import HighSideSwitch
-from .ResistiveDivider import VoltageDivider, ResistiveDivider
-from .Categories import PowerConditioner
-from .MergedBlocks import MergedVoltageSource
-from .DummyDevices import ForcedVoltageCurrentDraw
+from ..abstract_parts import *
+from .ResistiveDivider import ResistiveDivider
 
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)

@@ -1,15 +1,14 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple, Any, Callable, cast
+from typing import Optional, NamedTuple, Callable
 
 from deprecated import deprecated
-from typing_extensions import override
 
+from ..electronics_model import *
 from .AbstractCapacitor import DecouplingCapacitor, Capacitor
 from .AbstractInductor import Inductor, TableInductor
 from .Categories import *
 from .PartsTable import PartsTableRow, ExperimentalUserFnPartsTable
 from .Resettable import Resettable
-from ..electronics_model import *
 
 
 @abstract_block_default(lambda: IdealVoltageRegulator)

@@ -1,7 +1,7 @@
 import unittest
 
-from . import *
-from .ESeriesUtil import ESeriesRatioUtil
+from ..electronics_model import *
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
 
 
 class PreferredNumberTestCase(unittest.TestCase):

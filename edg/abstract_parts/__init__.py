@@ -1,15 +1,4 @@
-from ..core import *
-from ..electronics_model import *
-
-from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
-from .PartsTablePart import (
-    PartsTableBase,
-    PartsTablePart,
-    SelectorFootprint,
-    PartsTableSelector,
-    PartsTableFootprintFilter,
-    PartsTableSelectorFootprint,
-)
+from ..electronics_interfaces import *
 
 from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication
@@ -37,8 +26,21 @@ from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, 
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
 from .Categories import MultipackDevice
 
-from .ESeriesUtil import ESeriesUtil
-from .SelectorArea import SelectorArea, PartsTableAreaSelector
+from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
+
+from .PartsTablePart import (
+    PartsTableBase,
+    PartsTablePart,
+    PartsTableSelector,
+    SelectorFootprint,
+    PartsTableColumn,
+    PartsTableRow,
+    PartsTableFootprintFilter,
+    PartsTableSelectorFootprint,
+)
+from .PartsTable import PartsTable
+from .SelectorArea import PartsTableAreaSelector, SelectorArea
+from .StandardFootprint import StandardFootprint
 
 from .AbstractDevices import Battery
 from .AbstractConnector import (
@@ -84,20 +86,6 @@ from .AbstractCapacitor import (
 )
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
-from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
-from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import (
-    LowPassRc,
-    AnalogLowPassRc,
-    DigitalLowPassRc,
-    DigitalLowPassRcArray,
-    LowPassRcDac,
-    PullupDelayRc,
-    LowPassAnalogDifferentialRc,
-)
-from .RfNetworks import DiscreteRfWarning, LLowPassFilter, LHighPassFilter, LLowPassFilterWith2HNotch, PiLowPassFilter
-from .I2cPullup import I2cPullup
-from .LevelShifter import BidirectionaLevelShifter
 from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
@@ -125,25 +113,12 @@ from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEnc
 from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
 from .AbstractComparator import Comparator, VoltageComparator
 from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
-from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
-from .ControlCircuits import CompensatorType2
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
-from .OpampCurrentSensor import OpampCurrentSensor
-from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
 from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BootstrapCapacitor
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
-from .PowerCircuits import (
-    HalfBridge,
-    FetHalfBridge,
-    HalfBridgeIndependent,
-    HalfBridgePwm,
-    FetHalfBridgeIndependent,
-    FetHalfBridgePwmReset,
-    RampLimiter,
-)
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
@@ -175,9 +150,6 @@ from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, U
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode
 from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
 from .DigitalIsolator import DigitalIsolator
-from .I2cPullup import I2cPullup
-from .UsbBitBang import UsbBitBang
-from .I2cBitBang import I2cControllerBitBang
 
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
@@ -199,30 +171,5 @@ from .IoControllerMixins import WithCrystalGenerator
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
-
-from .CustomDiode import CustomDiode
-from .CustomFet import CustomFet
-from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
-from .GenericCapacitor import GenericMlcc
-
-from .DummyDevices import (
-    DummyPassive,
-    DummyGround,
-    DummyVoltageSource,
-    DummyVoltageSink,
-    DummyDigitalSource,
-    DummyDigitalSink,
-    DummyAnalogSource,
-    DummyAnalogSink,
-)
-from .DummyDevices import (
-    ForcedVoltageCurrentDraw,
-    ForcedVoltageCurrentLimit,
-    ForcedVoltage,
-    ForcedVoltageCurrent,
-    ForcedAnalogSignal,
-    ForcedDigitalSinkCurrentDraw,
-)
-from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController
 
 from .Nonstrict3v3Compatible import Nonstrict3v3Compatible

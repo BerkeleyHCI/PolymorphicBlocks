@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from ...abstract_parts import *
+from ...circuits import *
 from ..connector.Headers import PinHeader127DualShrouded
 from ..connector.TagConnect import TagConnect
 

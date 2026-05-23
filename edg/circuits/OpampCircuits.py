@@ -1,16 +1,11 @@
 from math import ceil, log10
-from typing import List, Tuple, Dict, Mapping, Union
+from typing import List, Tuple, Dict, Mapping
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractResistor import Resistor
-from .AbstractCapacitor import Capacitor
+from ..abstract_parts import *
+from ..electronics_interfaces.DummyDevices import ForcedAnalogSignal
 from .ResistiveDivider import ResistiveDivider
-from .AbstractOpamp import Opamp
-from .Categories import OpampApplication
-from .DummyDevices import ForcedAnalogSignal
-from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
 class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):

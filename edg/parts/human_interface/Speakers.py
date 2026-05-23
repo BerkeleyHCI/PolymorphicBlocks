@@ -1,4 +1,4 @@
-from ...abstract_parts import *
+from ...circuits import *
 
 
 @abstract_block

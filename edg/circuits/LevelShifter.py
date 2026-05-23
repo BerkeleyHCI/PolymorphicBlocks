@@ -1,10 +1,6 @@
 from typing_extensions import override
 
-from ..electronics_model import *
-from .Categories import *
-from .AbstractResistor import PullupResistor
-from .AbstractFets import Fet
-from .DummyDevices import DummyVoltageSink
+from ..abstract_parts import *
 
 
 class BidirectionaLevelShifter(Interface, GeneratorBlock):

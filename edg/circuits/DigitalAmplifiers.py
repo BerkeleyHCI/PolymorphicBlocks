@@ -1,12 +1,8 @@
-from typing import Dict, Union
+from typing import Dict
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractFets import SwitchFet
-from .AbstractResistor import Resistor
-from .AbstractDiodes import ZenerDiode
-from .Categories import PowerSwitch
+from ..abstract_parts import *
 
 
 class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):

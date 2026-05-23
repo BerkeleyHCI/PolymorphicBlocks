@@ -6,7 +6,7 @@ from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPower
 from ..electronics_model import *
 from .AbstractInductor import Inductor
 from .AbstractCapacitor import Capacitor
-from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyGround
+from ..electronics_interfaces.DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyGround
 
 
 class SwitchingConverterCalculationTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from ...connector.Fpc import Fpc050Bottom
-from ....abstract_parts import *
+from ....circuits import *
 
 
 class Er_Tft_128_3_Outline(InternalSubcircuit, FootprintBlock):

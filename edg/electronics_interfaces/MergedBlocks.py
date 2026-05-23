@@ -1,9 +1,9 @@
-from typing import List, cast, Dict
+from typing import Dict
 
 from typing_extensions import override
 
 from ..electronics_model import *
-from .Categories import *
+from edg.abstract_parts.Categories import *
 
 
 class MergedVoltageSource(DummyDevice, GeneratorBlock):

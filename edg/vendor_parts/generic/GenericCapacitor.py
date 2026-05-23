@@ -3,10 +3,7 @@ import math
 
 from typing_extensions import override
 
-from ..electronics_model import *
-from .AbstractCapacitor import Capacitor, DummyCapacitorFootprint
-from .SelectorArea import SelectorArea
-from .ESeriesUtil import ESeriesUtil
+from ...abstract_parts import *
 
 
 class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):

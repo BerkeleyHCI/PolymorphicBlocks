@@ -1,5 +1,3 @@
-from typing import Any
-
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
