@@ -1,6 +1,5 @@
 # Contains abstract part definitions, simple wrapper blocks / application circuits,
 # and implementation helpers for abstract parts like part table utils.
-
 from ..electronics_interfaces import *
 
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
@@ -121,7 +120,6 @@ from .TestPoint import (
 from .TestPoint import AnalogCoaxTestPoint
 from .Jumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
-from .TouchPad import FootprintToucbPad
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode
