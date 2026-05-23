@@ -1,3 +1,5 @@
+from ..circuits import *
+
 # A library of parts and application circuits around them,
 # distinct from circuits composed of abstract parts and vendor parts libraries.
 from .analog import *
