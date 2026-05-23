@@ -1,5 +1,6 @@
-# A library of common circuits, composed entirely of abstract parts (no specialized parts / chips)
 from ..abstract_parts import *
+
+# A library of common circuits, composed entirely of abstract parts (no specialized parts / chips)
 
 from .PowerConditioning import (
     SingleDiodePowerMerge,
@@ -27,6 +28,7 @@ from .LevelShifter import BidirectionaLevelShifter
 
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting, SummingAmplifier
 from .OpampCurrentSensor import OpampCurrentSensor
+from .VoltageComparator import VoltageComparator
 
 from .PassiveFilters import (
     LowPassRc,

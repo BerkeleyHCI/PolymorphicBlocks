@@ -111,7 +111,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
-from .AbstractComparator import Comparator, VoltageComparator
+from .AbstractComparator import Comparator
 from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
