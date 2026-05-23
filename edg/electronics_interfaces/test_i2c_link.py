@@ -1,6 +1,8 @@
 import unittest
 
-from . import *
+from ..electronics_model import *
+from .DigitalPorts import DigitalBidir
+from .I2cPort import I2cController, I2cPullupPort, I2cTarget
 
 
 class I2cControllerBlock(Block):

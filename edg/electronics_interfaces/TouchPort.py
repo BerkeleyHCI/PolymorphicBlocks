@@ -1,5 +1,4 @@
-from ..core import *
-from .PassivePort import HasPassivePort, Passive
+from ..electronics_model import *
 
 
 class TouchLink(Link):

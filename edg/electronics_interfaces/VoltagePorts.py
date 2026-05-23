@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 from typing import *
-
 from typing_extensions import override
 
-from .PassivePort import HasPassivePort, Passive
-from ..core import *
-from .CircuitBlock import KicadImportablePortAdapter
+from ..electronics_model import *
 from .GroundPort import GroundLink, GroundReference
-from .Units import Volt, Ohm, Amp
 
 if TYPE_CHECKING:
     from .DigitalPorts import DigitalSource

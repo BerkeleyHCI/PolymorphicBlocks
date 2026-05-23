@@ -4,12 +4,12 @@ from typing_extensions import override
 
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
-from .CircuitBlock import FootprintBlock
+from ..electronics_model.CircuitBlock import FootprintBlock
+from ..electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 from .DigitalPorts import DigitalSource, DigitalSink
 from .SpiPort import SpiController, SpiPeripheral
 from .UartPort import UartPort
 from .CanPort import CanDiffPort
-from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 
 class TestFakeSpiController(FootprintBlock):

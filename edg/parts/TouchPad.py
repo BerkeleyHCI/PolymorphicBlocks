@@ -1,3 +1,8 @@
+from typing_extensions import override
+
+from ..abstract_parts import *
+
+
 class FootprintToucbPad(FootprintBlock, HumanInterface):
     def __init__(self, touch_footprint: StringLike):
         super().__init__()

@@ -5,8 +5,8 @@ from typing_extensions import override
 
 from edg import *
 from edg.circuits.ResistiveDivider import DividerValues
-from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
-from edg.electronics_model.GroundPort import GroundAdapterAnalogSource
+from edg.electronics_interfaces.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
+from edg.electronics_interfaces.GroundPort import GroundAdapterAnalogSource
 from .util import run_test_board
 
 

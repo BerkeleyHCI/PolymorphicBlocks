@@ -8,10 +8,10 @@ from ..core import *
 from .CircuitBlock import KicadImportablePortAdapter
 
 if TYPE_CHECKING:
-    from .GroundPort import Ground
-    from .VoltagePorts import VoltageSource, VoltageSink
-    from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
-    from .AnalogPort import AnalogSource, AnalogSink
+    from ..electronics_interfaces.GroundPort import Ground
+    from ..electronics_interfaces.VoltagePorts import VoltageSource, VoltageSink
+    from ..electronics_interfaces.DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
+    from ..electronics_interfaces.AnalogPort import AnalogSource, AnalogSink
 
 
 class PassiveLink(Link):
@@ -25,7 +25,7 @@ class PassiveLink(Link):
 
 class PassiveAdapterGround(PortAdapter["Ground"]):
     def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
-        from .GroundPort import Ground
+        from ..electronics_interfaces.GroundPort import Ground
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -42,7 +42,7 @@ class PassiveAdapterVoltageSource(PortAdapter["VoltageSource"]):
         reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
         reverse_current_draw: RangeLike = RangeExpr.EMPTY,
     ):
-        from .VoltagePorts import VoltageSource
+        from ..electronics_interfaces.VoltagePorts import VoltageSource
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -66,7 +66,7 @@ class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
         reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
         reverse_current_limits: RangeLike = RangeExpr.EMPTY,
     ):
-        from .VoltagePorts import VoltageSink
+        from ..electronics_interfaces.VoltagePorts import VoltageSink
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -94,7 +94,7 @@ class PassiveAdapterDigitalSource(PortAdapter["DigitalSource"]):
         low_driver: BoolLike = True,
         _bridged_internal: BoolLike = False,
     ):
-        from .DigitalPorts import DigitalSource
+        from ..electronics_interfaces.DigitalPorts import DigitalSource
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -124,7 +124,7 @@ class PassiveAdapterDigitalSink(PortAdapter["DigitalSink"]):
         pulldown_capable: BoolLike = False,
         _bridged_internal: BoolLike = False,
     ):
-        from .DigitalPorts import DigitalSink
+        from ..electronics_interfaces.DigitalPorts import DigitalSink
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -156,7 +156,7 @@ class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
         pulldown_capable: BoolLike = False,
         _bridged_internal: BoolLike = False,
     ):
-        from .DigitalPorts import DigitalBidir
+        from ..electronics_interfaces.DigitalPorts import DigitalBidir
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -185,7 +185,7 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ):
-        from .AnalogPort import AnalogSource
+        from ..electronics_interfaces.AnalogPort import AnalogSource
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -206,7 +206,7 @@ class PassiveAdapterAnalogSink(KicadImportablePortAdapter["AnalogSink"]):
         current_draw: RangeLike = RangeExpr.ZERO,
         impedance: RangeLike = RangeExpr.INF,
     ):
-        from .AnalogPort import AnalogSink
+        from ..electronics_interfaces.AnalogPort import AnalogSink
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -247,10 +247,10 @@ class Passive(Port[PassiveLink]):
     AdaptTargetType = TypeVar("AdaptTargetType", bound=HasPassivePort)
 
     def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
-        from .GroundPort import Ground
-        from .VoltagePorts import VoltageSource, VoltageSink
-        from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
-        from .AnalogPort import AnalogSource, AnalogSink
+        from ..electronics_interfaces.GroundPort import Ground
+        from ..electronics_interfaces.VoltagePorts import VoltageSource, VoltageSink
+        from ..electronics_interfaces.DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
+        from ..electronics_interfaces.AnalogPort import AnalogSource, AnalogSink
 
         ADAPTER_TYPE_MAP: Dict[Type[Port], Type[PortAdapter]] = {
             Ground: PassiveAdapterGround,

@@ -1,6 +1,5 @@
-from .DummyDevice import DummyDevice
+from ..electronics_model import *
 from .GroundPort import Ground, Common
-from ..core import InOut
 
 
 class DummyGround(DummyDevice):

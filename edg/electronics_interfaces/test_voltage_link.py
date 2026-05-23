@@ -1,9 +1,7 @@
 import unittest
 
-from typing_extensions import override
-
-from .VoltagePorts import VoltageLink
-from . import *
+from ..electronics_model import *
+from .VoltageDummy import DummyVoltageSource, DummyVoltageSink
 
 
 class VoltageTestTop(DesignTop):

@@ -7,7 +7,7 @@ from .. import edgir
 
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
-from .VoltagePorts import VoltageSource, VoltageSink
+from edg.electronics_interfaces.VoltagePorts import VoltageSource, VoltageSink
 from .CircuitBlock import FootprintBlock
 from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net, Netlist
 from .RefdesRefinementPass import RefdesRefinementPass

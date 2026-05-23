@@ -2,7 +2,7 @@ from typing import Mapping, Tuple, List, NamedTuple
 
 from typing_extensions import override
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 
 
 @abstract_block

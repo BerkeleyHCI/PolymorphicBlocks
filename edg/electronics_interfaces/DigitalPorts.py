@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, cast
+from typing import Optional, Tuple
 
 from deprecated import deprecated
 from typing_extensions import override
 
-from .PassivePort import HasPassivePort, Passive
-from ..core import *
+from ..electronics_model import *
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
-from .Units import Volt
 
 
 class DigitalLink(Link):

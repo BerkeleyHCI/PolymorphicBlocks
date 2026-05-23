@@ -6,6 +6,13 @@ from ..core import BoolLike, Block, abstract_block, InternalBlock
 
 
 @abstract_block
+class DummyDevice(InternalBlock):
+    """Non-physical "device" used to affect parameters or for unit testing."""
+
+    pass
+
+
+@abstract_block
 class DiscreteApplication(Block):
     """Subcircuit around a single discrete (and usually passive) component."""
 

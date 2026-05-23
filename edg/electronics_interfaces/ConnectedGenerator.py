@@ -1,9 +1,9 @@
 from typing import Type, Generic
 from typing_extensions import TypeVar, override
 
-from ..core import *
-from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
-from .DigitalPorts import DigitalLink, DigitalSink, DigitalSource
+from ..electronics_model import *
+from .VoltagePorts import VoltageSource, VoltageSink, VoltageLink
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalLink
 
 
 @abstract_block  # really this is just a category

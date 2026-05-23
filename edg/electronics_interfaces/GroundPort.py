@@ -1,13 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-
 from typing_extensions import override
 
-from .PassivePort import HasPassivePort, Passive
-from ..core import *
-from .CircuitBlock import KicadImportablePortAdapter
-from .Units import Volt, Ohm
+from ..electronics_model import *
 
 if TYPE_CHECKING:
     from .VoltagePorts import VoltageSource

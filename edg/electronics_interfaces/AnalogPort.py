@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
-
 from typing_extensions import override
 
-from ..core import *
-from .PassivePort import HasPassivePort, Passive
-from .CircuitBlock import KicadImportablePortAdapter
+from ..electronics_model import *
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
 

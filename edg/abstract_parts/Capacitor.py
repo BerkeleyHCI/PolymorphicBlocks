@@ -5,7 +5,7 @@ from typing import Any, Optional, Dict, Tuple, Mapping
 from typing_extensions import override
 import math
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableSelector

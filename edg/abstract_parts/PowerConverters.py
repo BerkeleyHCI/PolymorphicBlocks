@@ -4,7 +4,7 @@ from typing_extensions import override
 
 from deprecated import deprecated
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 from .Capacitor import DecouplingCapacitor, Capacitor
 from .Inductor import Inductor, TableInductor
 from .PartsTable import PartsTableRow, ExperimentalUserFnPartsTable

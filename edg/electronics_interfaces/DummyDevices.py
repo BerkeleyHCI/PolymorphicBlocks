@@ -2,6 +2,9 @@ from typing import Dict
 from typing_extensions import override
 
 from ..electronics_model import *
+from .VoltagePorts import VoltageSink, VoltageSource
+from .DigitalPorts import DigitalSink, DigitalSource
+from .AnalogPort import AnalogSink, AnalogSource
 
 
 class DummyPassive(DummyDevice):

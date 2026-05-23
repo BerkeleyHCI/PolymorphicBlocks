@@ -2,7 +2,7 @@ from typing import *
 
 from typing_extensions import override
 
-from ..core import *
+from ..electronics_model import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
 

@@ -1,7 +1,7 @@
 from typing import Any
 from typing_extensions import override
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 from .Resistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector

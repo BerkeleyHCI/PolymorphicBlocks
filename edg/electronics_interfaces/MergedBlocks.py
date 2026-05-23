@@ -2,6 +2,10 @@ from typing import Dict
 from typing_extensions import override
 
 from ..electronics_model import *
+from .VoltagePorts import VoltageSource, VoltageSink, VoltageLink
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalLink
+from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
+from .SpiPort import SpiController, SpiPeripheral, SpiLink
 
 
 class MergedVoltageSource(DummyDevice, GeneratorBlock):

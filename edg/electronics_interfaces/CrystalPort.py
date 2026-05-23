@@ -1,7 +1,6 @@
 from typing_extensions import override
 
-from ..core import *
-from .PassivePort import Passive
+from ..electronics_model import *
 
 
 class CrystalLink(Link):

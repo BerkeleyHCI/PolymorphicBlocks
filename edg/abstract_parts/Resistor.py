@@ -2,7 +2,7 @@ import re
 from typing import Any, Optional, Mapping, Dict
 from typing_extensions import override
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector

@@ -3,8 +3,7 @@ from __future__ import annotations
 from deprecated import deprecated
 from typing_extensions import override
 
-from ..core import *
-from .PassivePort import Passive
+from ..electronics_model import *
 from .GroundPort import Ground, GroundReference
 from .VoltagePorts import VoltageSource, VoltageSink
 

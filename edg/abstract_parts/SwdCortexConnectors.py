@@ -1,6 +1,6 @@
 from typing import Any
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 
 
 @abstract_block
