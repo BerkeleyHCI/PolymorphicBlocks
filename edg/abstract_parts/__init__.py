@@ -129,6 +129,7 @@ from .DigitalIsolator import DigitalIsolator
 
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
+from .IoControllerWrapper import IoControllerWrapper
 from .IoControllerInterfaceMixins import (
     IoControllerSpiPeripheral,
     IoControllerI2cTarget,

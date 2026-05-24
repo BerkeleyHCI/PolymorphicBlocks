@@ -374,7 +374,7 @@ class Rp2040(
         return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapper, InternalSubcircuit, GeneratorBlock, FootprintBlock):
     """Footprint-only device model for the Xiao RP2040 microcontroller dev board"""
 
     _PIN_REMAPPING = {
@@ -410,53 +410,6 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
 
-    def _remap_pinning_assigns(
-        self, model_pin_assigns: List[str], remapping: Dict[str, str]
-    ) -> Tuple[Dict[str, HasPassivePort], Dict[str, str]]:
-        """Given the actual pin assignments and a remapping dict, returns the pinning dict for the footprint
-        and the updated actual pin assignments.
-        Generates concrete ports elements for IO Vectors"""
-        pinning: Dict[str, HasPassivePort] = {}
-        actual_pin_assigns: Dict[str, str] = {}
-        seen_names: Set[str] = set()
-
-        model_pin_assigns_dict: Dict[str, str] = {}
-        for assign in model_pin_assigns:
-            name, pindef = assign.split("=")
-            pins = pindef.split(",")
-            model_pin_assigns_dict[name.strip()] = pins[0].strip()  # use the GPIO name
-
-        def remap_port_recursive(port: Port, prefix: str = "") -> None:
-            """Remaps a port, recursively for bundles"""
-            if isinstance(port, HasPassivePort):
-                if prefix not in model_pin_assigns_dict:
-                    raise ValueError(f"pin {prefix} not assigned")
-                pin = model_pin_assigns_dict[prefix]
-                if pin not in remapping:
-                    raise ValueError(f"pin {pin} not in remapping")
-                remapped_pin = remapping[pin]
-                pinning[remapped_pin] = port
-                actual_pin_assigns[prefix] = f"{pin}, {remapped_pin}"
-
-            for subport_name, subport in port._ports.items():
-                remap_port_recursive(subport, f"{prefix}.{subport_name}")
-
-        for io_port in self._io_ports:
-            if isinstance(io_port, Vector):
-                io_port.defined()
-                for subport_name in self.get(io_port.requested()):
-                    assert subport_name not in seen_names, f"duplicate pin name {subport_name}"
-                    subport = io_port.append_elt(io_port._tpe.empty(), subport_name)
-                    remap_port_recursive(subport, subport_name)
-                    seen_names.add(subport_name)
-            elif isinstance(io_port, Port):
-                if self.get(io_port.is_connected()):
-                    raise NotImplementedError("TODO implement me")
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
-
-        return pinning, actual_pin_assigns
-
     @override
     def generate(self) -> None:
         super().generate()
@@ -470,7 +423,7 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
             self.get(self.model_pin_assigns), self._PIN_REMAPPING
         )
         pinning.update(remap_pinnings)
-        self.assign(self.actual_pin_assigns, [f"{k}={v}" for k, v in remap_pin_assigns.items()])
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
 
         self.footprint(
             "U",
@@ -505,7 +458,7 @@ class Xiao_Rp2040(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Rp2040_Device  # device model only
+        self.ic: Rp2040  # device model only
         self.generator_param(
             self.gnd.is_connected(),
             self.pwr.is_connected(),
