@@ -11,6 +11,10 @@ from .PowerConditioning import (
     PmosReverseProtection,
     PmosChargerReverseProtection,
 )
+from .BootstrapCapacitor import BootstrapCapacitor
+from .BuckConverterPowerPath import BuckConverterPowerPath
+from .BoostConverterPowerPath import BoostConverterPowerPath
+from .BuckBoostConverterPowerPath import BuckBoostConverterPowerPath
 
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 

@@ -87,11 +87,15 @@ from .Switch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwit
 from .Comparator import Comparator
 from .Opamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .SpiMemory import SpiMemory, SpiMemoryQspi
-from .PowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
-from .PowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
-from .PowerConverters import BootstrapCapacitor
-from .PowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
-from .PowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
+from .VoltageRegulator import VoltageRegulator, VoltageRegulatorEnableWrapper
+from .LinearRegulator import LinearRegulator, VoltageReference, LinearRegulatorDevice
+from .SwitchingVoltageRegulator import (
+    SwitchingVoltageRegulator,
+    BuckConverter,
+    DiscreteBuckConverter,
+    BoostConverter,
+    DiscreteBoostConverter,
+)
 from .LedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .Fuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .Crystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator

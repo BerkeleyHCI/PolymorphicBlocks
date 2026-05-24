@@ -2,7 +2,7 @@ import unittest
 
 from typing_extensions import override
 
-from .PowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
+from .VoltageRegulator import BuckConverterPowerPath, BoostConverterPowerPath
 from ..electronics_interfaces import *
 from .Inductor import Inductor
 from .Capacitor import Capacitor
