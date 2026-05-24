@@ -12,7 +12,7 @@ class KiCadConversionBlock(KiCadSchematicBlock):
         super().__init__()
         self.PORT_A = self.Port(VoltageSource.empty())
         self.import_kicad(
-            self.file_path("resources", "test_kicad_import.kicad_sch"),
+            self.file_path("..", "electronics_model", "resources", "test_kicad_import.kicad_sch"),
             conversions={"R1.1": VoltageSource()},  # ideal port
         )
 
@@ -24,7 +24,7 @@ class KiCadBoundaryConversionBlock(KiCadSchematicBlock):
         super().__init__()
         self.PORT_A = self.Port(VoltageSource.empty())
         self.import_kicad(
-            self.file_path("resources", "test_kicad_import.kicad_sch"),
+            self.file_path("..", "electronics_model", "resources", "test_kicad_import.kicad_sch"),
             conversions={"PORT_A": VoltageSource()},  # ideal port
         )
 
