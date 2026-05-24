@@ -12,27 +12,56 @@ class Rp2040_Interfaces(IoControllerI2cTarget, IoControllerUsb, BaseIoController
     """Defines base interfaces for ESP32C3 microcontrollers"""
 
 
-@non_library
-class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
-    """IOs definitions independent of infrastructural (e.g. power) pins."""
+class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-
-    @abstractmethod
-    def _vddio(self) -> Port[VoltageLink]:
-        """Returns VDDIO (can be VoltageSink or VoltageSource)."""
-        ...
-
-    def _iovdd_model(self) -> VoltageSink:
-        return VoltageSink(
-            voltage_limits=(1.62, 3.63) * Volt,  # Table 628
-            current_draw=(1.2, 4.3) * mAmp + self.io_current_draw.upper(),  # Table 629
+        self.gnd = self.Port(Ground(), [Common])
+        self.iovdd = self.Port(
+            VoltageSink(
+                voltage_limits=(1.62, 3.63) * Volt,  # Table 628
+                current_draw=(1.2, 4.3) * mAmp + self.io_current_draw.upper(),  # Table 629
+            ),
+            [Power],
         )
 
-    def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
-        return DigitalBidir.from_supply(  # table 4.4
+        self.dvdd = self.Port(
+            VoltageSink(  # Digital Core
+                voltage_limits=(0.99, 1.21) * Volt,  # Table 628
+                current_draw=(0.18, 40) * mAmp,  # Table 629 typ Dormant to Figure 171 approx max DVdd
+            )
+        )
+        self.vreg_vout = self.Port(
+            VoltageSource(  # actually adjustable, section 2.10.3
+                voltage_out=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
+                current_limits=(0, 100) * mAmp,  # Table 1, max current
+            )
+        )
+        self.vreg_vin = self.Port(
+            VoltageSink(
+                voltage_limits=(1.62, 3.63) * Volt,  # Table 628
+                current_draw=self.vreg_vout.is_connected().then_else(
+                    self.vreg_vout.link().current_drawn, 0 * Amp(tol=0)
+                ),
+            )
+        )
+        self.usb_vdd = self.Port(
+            VoltageSink(
+                voltage_limits=RangeExpr(),  # depends on if USB is needed
+                current_draw=(0.2, 2.0) * mAmp,  # Table 629 typ BOOTSEL Idle to max BOOTSEL Active
+            )
+        )
+        self.adc_avdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.97, 3.63) * Volt,  # Table 628, performance compromised at <2.97V, lowest 1.62V
+                # current draw not specified in datasheet
+            )
+        )
+
+        # Additional ports (on top of IoController)
+        self._dio_usb_model = self._dio_ft_model = self._dio_std_model = DigitalBidir.from_supply(  # table 4.4
             self.gnd,
-            pwr,
+            self.iovdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
             current_limits=(-12, 12) * mAmp,  # by IOH / IOL modes
             input_threshold_abs=(0.8, 2.0) * Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
@@ -40,14 +69,78 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
             pulldown_capable=True,
         )
 
+        self.qspi = self.Port(SpiController(self._dio_std_model))  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model)
+        self.qspi_sd2 = self.Port(self._dio_std_model)
+        self.qspi_sd3 = self.Port(self._dio_std_model)
+
+        self.xosc = self.Port(
+            CrystalDriver(
+                frequency_limits=(1, 15) * MHertz, voltage_out=self.iovdd.link().voltage  # datasheet 2.15.2.2
+            ),
+            optional=True,
+        )
+
+        self.swd = self.Port(SwdTargetPort.empty())
+        self.run = self.Port(DigitalSink.from_bidir(self._dio_ft_model), optional=True)  # internally pulled up
+        self._io_ports.insert(0, self.swd)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        if not self.get(self.usb.requested()):  # Table 628, VDD_USB can be lower if USB not used (section 2.9.4)
+            self.assign(self.usb_vdd.voltage_limits, (1.62, 3.63) * Volt)
+        else:
+            self.assign(self.usb_vdd.voltage_limits, (3.135, 3.63) * Volt)
+
+        self.footprint(
+            "U",
+            "Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm",
+            self._make_pinning(),
+            mfr="Raspberry Pi",
+            part="RP2040",
+            datasheet="https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf",
+        )
+        self.assign(self.lcsc_part, "C2040")
+        self.assign(self.actual_basic_part, False)
+
+    # Pin/peripheral resource definitions (table 3)
+    @override
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+        return {
+            "51": self.qspi_sd3,
+            "52": self.qspi.sck,
+            "53": self.qspi.mosi,  # IO0
+            "54": self.qspi_sd2,
+            "55": self.qspi.miso,  # IO1
+            "56": self.qspi_cs,  # IO1
+            "20": self.xosc.xtal_in,
+            "21": self.xosc.xtal_out,
+            "24": self.swd.swclk,
+            "25": self.swd.swdio,
+            "26": self.run,
+            "19": self.gnd,  # TESTEN, connect to gnd
+            "1": self.iovdd,
+            "10": self.iovdd,
+            "22": self.iovdd,
+            "33": self.iovdd,
+            "42": self.iovdd,
+            "49": self.iovdd,
+            "23": self.dvdd,
+            "50": self.dvdd,
+            "44": self.vreg_vin,
+            "45": self.vreg_vout,
+            "48": self.usb_vdd,
+            "43": self.adc_avdd,
+            "57": self.gnd,  # pad
+        }
+
     @override
     def _io_pinmap(self) -> PinMapUtil:
-        pwr = self._vddio()
-        dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(pwr)
-
         adc_model = AnalogSink.from_supply(  # Table 626
             self.gnd,
-            pwr,
+            self.iovdd,
             voltage_limit_tolerance=(0, 0),  # ADC input voltage range
             signal_limit_tolerance=(0, 0),  # ADC input voltage range
             impedance=(100, float("inf")) * kOhm,
@@ -60,38 +153,38 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
 
         return PinMapUtil(
             [
-                PinResource("GPIO0", {"GPIO0": dio_ft_model}),
-                PinResource("GPIO1", {"GPIO1": dio_ft_model}),
-                PinResource("GPIO2", {"GPIO2": dio_ft_model}),
-                PinResource("GPIO3", {"GPIO3": dio_ft_model}),
-                PinResource("GPIO4", {"GPIO4": dio_ft_model}),
-                PinResource("GPIO5", {"GPIO5": dio_ft_model}),
-                PinResource("GPIO6", {"GPIO6": dio_ft_model}),
-                PinResource("GPIO7", {"GPIO7": dio_ft_model}),
-                PinResource("GPIO8", {"GPIO8": dio_ft_model}),
-                PinResource("GPIO9", {"GPIO9": dio_ft_model}),
-                PinResource("GPIO10", {"GPIO10": dio_ft_model}),
-                PinResource("GPIO11", {"GPIO11": dio_ft_model}),
-                PinResource("GPIO12", {"GPIO12": dio_ft_model}),
-                PinResource("GPIO13", {"GPIO13": dio_ft_model}),
-                PinResource("GPIO14", {"GPIO14": dio_ft_model}),
-                PinResource("GPIO15", {"GPIO15": dio_ft_model}),
-                PinResource("GPIO16", {"GPIO16": dio_ft_model}),
-                PinResource("GPIO17", {"GPIO17": dio_ft_model}),
-                PinResource("GPIO18", {"GPIO18": dio_ft_model}),
-                PinResource("GPIO19", {"GPIO19": dio_ft_model}),
-                PinResource("GPIO20", {"GPIO20": dio_ft_model}),
-                PinResource("GPIO21", {"GPIO21": dio_ft_model}),
-                PinResource("GPIO22", {"GPIO22": dio_ft_model}),
-                PinResource("GPIO23", {"GPIO23": dio_ft_model}),
-                PinResource("GPIO24", {"GPIO24": dio_ft_model}),
-                PinResource("GPIO25", {"GPIO25": dio_ft_model}),
-                PinResource("GPIO26", {"GPIO26": dio_std_model, "ADC0": adc_model}),
-                PinResource("GPIO27", {"GPIO27": dio_std_model, "ADC1": adc_model}),
-                PinResource("GPIO28", {"GPIO28": dio_std_model, "ADC2": adc_model}),
-                PinResource("GPIO29", {"GPIO29": dio_std_model, "ADC3": adc_model}),
+                PinResource("GPIO0", {"GPIO0": self._dio_ft_model}),
+                PinResource("GPIO1", {"GPIO1": self._dio_ft_model}),
+                PinResource("GPIO2", {"GPIO2": self._dio_ft_model}),
+                PinResource("GPIO3", {"GPIO3": self._dio_ft_model}),
+                PinResource("GPIO4", {"GPIO4": self._dio_ft_model}),
+                PinResource("GPIO5", {"GPIO5": self._dio_ft_model}),
+                PinResource("GPIO6", {"GPIO6": self._dio_ft_model}),
+                PinResource("GPIO7", {"GPIO7": self._dio_ft_model}),
+                PinResource("GPIO8", {"GPIO8": self._dio_ft_model}),
+                PinResource("GPIO9", {"GPIO9": self._dio_ft_model}),
+                PinResource("GPIO10", {"GPIO10": self._dio_ft_model}),
+                PinResource("GPIO11", {"GPIO11": self._dio_ft_model}),
+                PinResource("GPIO12", {"GPIO12": self._dio_ft_model}),
+                PinResource("GPIO13", {"GPIO13": self._dio_ft_model}),
+                PinResource("GPIO14", {"GPIO14": self._dio_ft_model}),
+                PinResource("GPIO15", {"GPIO15": self._dio_ft_model}),
+                PinResource("GPIO16", {"GPIO16": self._dio_ft_model}),
+                PinResource("GPIO17", {"GPIO17": self._dio_ft_model}),
+                PinResource("GPIO18", {"GPIO18": self._dio_ft_model}),
+                PinResource("GPIO19", {"GPIO19": self._dio_ft_model}),
+                PinResource("GPIO20", {"GPIO20": self._dio_ft_model}),
+                PinResource("GPIO21", {"GPIO21": self._dio_ft_model}),
+                PinResource("GPIO22", {"GPIO22": self._dio_ft_model}),
+                PinResource("GPIO23", {"GPIO23": self._dio_ft_model}),
+                PinResource("GPIO24", {"GPIO24": self._dio_ft_model}),
+                PinResource("GPIO25", {"GPIO25": self._dio_ft_model}),
+                PinResource("GPIO26", {"GPIO26": self._dio_std_model, "ADC0": adc_model}),
+                PinResource("GPIO27", {"GPIO27": self._dio_std_model, "ADC1": adc_model}),
+                PinResource("GPIO28", {"GPIO28": self._dio_std_model, "ADC2": adc_model}),
+                PinResource("GPIO29", {"GPIO29": self._dio_std_model, "ADC3": adc_model}),
                 # fixed-pin peripherals
-                PeripheralFixedPin("USB", UsbDevicePort(dio_usb_model), {"dm": "USB_DM", "dp": "USB_DP"}),
+                PeripheralFixedPin("USB", UsbDevicePort(self._dio_usb_model), {"dm": "USB_DM", "dp": "USB_DP"}),
                 # reassignable peripherals
                 PeripheralFixedResource(
                     "UART0",
@@ -156,178 +249,51 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
                 ),
                 PeripheralFixedPin(
                     "SWD",
-                    SwdTargetPort(dio_std_model),
+                    SwdTargetPort(self._dio_std_model),
                     {
                         "swdio": "SWDIO",
                         "swclk": "SWCLK",
                     },
                 ),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
-
-
-class Rp2040_Device(
-    Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
-):
-    RESOURCE_PIN_REMAP = {
-        "GPIO0": "2",
-        "GPIO1": "3",
-        "GPIO2": "4",
-        "GPIO3": "5",
-        "GPIO4": "6",
-        "GPIO5": "7",
-        "GPIO6": "8",
-        "GPIO7": "9",
-        "GPIO8": "11",
-        "GPIO9": "12",
-        "GPIO10": "13",
-        "GPIO11": "14",
-        "GPIO12": "15",
-        "GPIO13": "16",
-        "GPIO14": "17",
-        "GPIO15": "18",
-        "GPIO16": "27",
-        "GPIO17": "28",
-        "GPIO18": "29",
-        "GPIO19": "30",
-        "GPIO20": "31",
-        "GPIO21": "32",
-        "GPIO22": "34",
-        "GPIO23": "35",
-        "GPIO24": "36",
-        "GPIO25": "37",
-        "GPIO26": "38",
-        "GPIO27": "39",
-        "GPIO28": "40",
-        "GPIO29": "41",
-        "USB_DM": "46",
-        "USB_DP": "47",
-        "SWDIO": "25",
-        "SWCLK": "24",
-    }
-
-    @override
-    def _vddio(self) -> Port[VoltageLink]:
-        return self.iovdd
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-
-        self.gnd = self.Port(Ground(), [Common])
-        self.iovdd = self.Port(self._iovdd_model(), [Power])
-
-        self.dvdd = self.Port(
-            VoltageSink(  # Digital Core
-                voltage_limits=(0.99, 1.21) * Volt,  # Table 628
-                current_draw=(0.18, 40) * mAmp,  # Table 629 typ Dormant to Figure 171 approx max DVdd
-            )
+        ).remap_pins(
+            {
+                "GPIO0": "2",
+                "GPIO1": "3",
+                "GPIO2": "4",
+                "GPIO3": "5",
+                "GPIO4": "6",
+                "GPIO5": "7",
+                "GPIO6": "8",
+                "GPIO7": "9",
+                "GPIO8": "11",
+                "GPIO9": "12",
+                "GPIO10": "13",
+                "GPIO11": "14",
+                "GPIO12": "15",
+                "GPIO13": "16",
+                "GPIO14": "17",
+                "GPIO15": "18",
+                "GPIO16": "27",
+                "GPIO17": "28",
+                "GPIO18": "29",
+                "GPIO19": "30",
+                "GPIO20": "31",
+                "GPIO21": "32",
+                "GPIO22": "34",
+                "GPIO23": "35",
+                "GPIO24": "36",
+                "GPIO25": "37",
+                "GPIO26": "38",
+                "GPIO27": "39",
+                "GPIO28": "40",
+                "GPIO29": "41",
+                "USB_DM": "46",
+                "USB_DP": "47",
+                "SWDIO": "25",
+                "SWCLK": "24",
+            }
         )
-        self.vreg_vout = self.Port(
-            VoltageSource(  # actually adjustable, section 2.10.3
-                voltage_out=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
-                current_limits=(0, 100) * mAmp,  # Table 1, max current
-            )
-        )
-        self.vreg_vin = self.Port(
-            VoltageSink(
-                voltage_limits=(1.62, 3.63) * Volt,  # Table 628
-                current_draw=self.vreg_vout.is_connected().then_else(
-                    self.vreg_vout.link().current_drawn, 0 * Amp(tol=0)
-                ),
-            )
-        )
-        self.usb_vdd = self.Port(
-            VoltageSink(
-                voltage_limits=RangeExpr(),  # depends on if USB is needed
-                current_draw=(0.2, 2.0) * mAmp,  # Table 629 typ BOOTSEL Idle to max BOOTSEL Active
-            )
-        )
-        self.adc_avdd = self.Port(
-            VoltageSink(
-                voltage_limits=(2.97, 3.63) * Volt,  # Table 628, performance compromised at <2.97V, lowest 1.62V
-                # current draw not specified in datasheet
-            )
-        )
-
-        # Additional ports (on top of IoController)
-        self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
-        self.qspi_cs = self.Port(DigitalBidir.empty())
-        self.qspi_sd2 = self.Port(DigitalBidir.empty())
-        self.qspi_sd3 = self.Port(DigitalBidir.empty())
-
-        self.xosc = self.Port(
-            CrystalDriver(
-                frequency_limits=(1, 15) * MHertz, voltage_out=self.iovdd.link().voltage  # datasheet 2.15.2.2
-            ),
-            optional=True,
-        )
-
-        self.swd = self.Port(SwdTargetPort.empty())
-        self.run = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
-        self._io_ports.insert(0, self.swd)
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        # Port models
-        dio_ft_model = dio_std_model = self._dio_model(self.iovdd)
-        self.qspi.init_from(SpiController(dio_std_model))
-        self.qspi_cs.init_from(dio_std_model)
-        self.qspi_sd2.init_from(dio_std_model)
-        self.qspi_sd3.init_from(dio_std_model)
-        self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
-
-    # Pin/peripheral resource definitions (table 3)
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return {
-            "51": self.qspi_sd3,
-            "52": self.qspi.sck,
-            "53": self.qspi.mosi,  # IO0
-            "54": self.qspi_sd2,
-            "55": self.qspi.miso,  # IO1
-            "56": self.qspi_cs,  # IO1
-            "20": self.xosc.xtal_in,
-            "21": self.xosc.xtal_out,
-            "24": self.swd.swclk,
-            "25": self.swd.swdio,
-            "26": self.run,
-            "19": self.gnd,  # TESTEN, connect to gnd
-            "1": self.iovdd,
-            "10": self.iovdd,
-            "22": self.iovdd,
-            "33": self.iovdd,
-            "42": self.iovdd,
-            "49": self.iovdd,
-            "23": self.dvdd,
-            "50": self.dvdd,
-            "44": self.vreg_vin,
-            "45": self.vreg_vout,
-            "48": self.usb_vdd,
-            "43": self.adc_avdd,
-            "57": self.gnd,  # pad
-        }
-
-    @override
-    def generate(self) -> None:
-        super().generate()
-
-        if not self.get(self.usb.requested()):  # Table 628, VDD_USB can be lower if USB not used (section 2.9.4)
-            self.assign(self.usb_vdd.voltage_limits, (1.62, 3.63) * Volt)
-        else:
-            self.assign(self.usb_vdd.voltage_limits, (3.135, 3.63) * Volt)
-
-        self.footprint(
-            "U",
-            "Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm",
-            self._make_pinning(),
-            mfr="Raspberry Pi",
-            part="RP2040",
-            datasheet="https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf",
-        )
-        self.assign(self.lcsc_part, "C2040")
-        self.assign(self.actual_basic_part, False)
 
 
 class Rp2040(
