@@ -35,12 +35,9 @@ from .Resistor import PulldownResistor, PullupResistor, PulldownResistorArray, P
 from .Resistor import (
     SeriesPowerResistor,
     CurrentSenseResistor,
-    AnalogClampResistor,
     DigitalSeriesResistor,
     DigitalBidirSeriesResistor,
-    DigitalClampResistor,
     AnalogSetpointResistor,
-    UsbSeriesResistor,
 )
 from .ResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .Capacitor import (

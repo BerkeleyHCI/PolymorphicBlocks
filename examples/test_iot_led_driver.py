@@ -85,15 +85,15 @@ class IotLedDriver(JlcBoardTop):
             self.connect(self.mcu.i2c.request("tof"), self.tof_pull.i2c, self.tof.i2c)
 
         # 12V DOMAIN
-        self.led_drv = ElementDict[LedDriver]()
+        self.led_drv = ElementDict[Tps92200]()
         self.led_sink = ElementDict[DummyPassive]()
         with self.implicit_connect(
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             for i in range(4):
-                led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=750 * mAmp(tol=0.1)))
-                self.connect(self.mcu.gpio.request(f"led_pwm_{i}"), led_drv.with_mixin(LedDriverPwm()).pwm)
+                led_drv = self.led_drv[i] = imp.Block(Tps92200(max_current=750 * mAmp(tol=0.1)))
+                self.connect(self.mcu.gpio.request(f"led_pwm_{i}"), led_drv.pwm)
 
                 # no connectors to save space, just solder to one of the SMD pads
                 leda_sink = self.led_sink[i * 2] = imp.Block(DummyPassive())
@@ -203,7 +203,6 @@ class IotLedDriver(JlcBoardTop):
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (PowerBarrelJack, Pj_036ah),
                 (Neopixel, Sk6805_Ec15),
-                (LedDriver, Tps92200),
                 (RfConnector, UflConnector),
                 (TestPoint, CompactKeystone5015),
                 (TagConnect, TagConnectNonLegged),

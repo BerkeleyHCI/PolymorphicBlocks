@@ -1,3 +1,4 @@
+from typing import Any
 from typing_extensions import override
 
 from ...circuits import *
@@ -66,8 +67,9 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
         *,
         input_ripple_limit: FloatLike = 0.2 * Volt,  # from 8.2 example application
         output_ripple_limit: FloatLike = 0.01 * Volt,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
         self.ic = self.Block(Tps92200_Device(FloatExpr()))
         self.connect(self.gnd, self.ic.gnd)
