@@ -399,6 +399,26 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
         self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
         self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.model_actual_pin_assigns)
 
+        # TODO MOVE TO INFRASTRUCTURE
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                self.generator_param(io_port.requested())
+            elif isinstance(io_port, Port):
+                self.generator_param(io_port.is_connected())
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
+
+    def _generate_empty_ios(self) -> None:
+        from ...core.Blocks import BlockElaborationState
+
+        assert self._elaboration_state == BlockElaborationState.generate, "can only run in generate()"
+
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                io_port.defined()
+                for subport_name in self.get(io_port.requested()):
+                    io_port.append_elt(io_port._tpe.empty(), subport_name)
+
     def _remap_pinning(self, actual_pin_assigns: List[str], remapping: Dict[str, str]) -> Dict[str, HasPassivePort]:
         """Given the actual pin assignments and a remapping dict, returns the pinning dict for the footprint."""
         print(self.get(self.model_actual_pin_assigns))
@@ -407,6 +427,8 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
     @override
     def generate(self) -> None:
         super().generate()
+
+        self._generate_empty_ios()
 
         pinning: Dict[str, HasPassivePort] = {
             "12": self.v3v3 if self.get(self.v3v3.is_connected()) else self.v3v3_out,
@@ -494,7 +516,7 @@ class Xiao_Rp2040(
         assert self._elaboration_state in (
             BlockElaborationState.contents,
             BlockElaborationState.generate,
-        ), "can only export in contents() or generate()"
+        ), "can only run in contents() or generate()"
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
 
         for self_io in self._io_ports:
