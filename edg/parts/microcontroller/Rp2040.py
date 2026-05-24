@@ -427,18 +427,21 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
     def __init__(self, device_actual_pin_assigns: ArrayStringLike):
         super().__init__()
         self.device_actual_pin_assigns = self.ArgParameter(device_actual_pin_assigns)
-        self.v3v3 = self.Port(VoltageSink.empty())
         self.gnd = self.Port(Ground.empty())
-        self.vcc = self.Port(VoltageSink.empty())  # VUsb
+        self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
+        self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
+        self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
+        self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
+        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected())
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        pinning = {
-            "12": self.v3v3,
+        pinning: Dict[str, HasPassivePort] = {
+            "12": self.v3v3 if self.get(self.v3v3.is_connected()) else self.v3v3_out,
             "13": self.gnd,
-            "14": self.vcc,
+            "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
         }
 
         self.footprint(
@@ -475,7 +478,7 @@ class Xiao_Rp2040(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Rp2040_Device  # device model only
-        self.generator_param(self.pwr.is_connected())
+        self.generator_param(self.pwr.is_connected(), self.pwr_vin.is_connected(), self.vusb_out.is_connected())
 
     @override
     def contents(self) -> None:
@@ -513,7 +516,7 @@ class Xiao_Rp2040(
         self.connect(self.gnd, self.ic.gnd)
 
         self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
-        self.export_tap(self.pwr, self.device.v3v3)
+
         self.export_tap(self.gnd, self.device.gnd)
 
     @override
@@ -522,28 +525,16 @@ class Xiao_Rp2040(
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.ic.pwr)
+            self.export_tap(self.pwr, self.device.v3v3)
         else:  # board sources power from USB
             self.connect(self.pwr_out, self.ic.pwr)
+            self.export_tap(self.pwr_out, self.device.v3v3_out)
 
-    # SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    #     "VDD": "12",
-    #     "GND": "13",
-    #     "VUSB": "14",
-    # }
-    # RESOURCE_PIN_REMAP = {
-    #     "GPIO26": "1",
-    #     "GPIO27": "2",
-    #     "GPIO28": "3",
-    #     "GPIO29": "4",
-    #     "GPIO6": "5",
-    #     "GPIO7": "6",
-    #     "GPIO0": "7",
-    #     "GPIO1": "8",
-    #     "GPIO2": "9",
-    #     "GPIO4": "10",
-    #     "GPIO3": "11",
-    # }
-    #
+        if self.get(self.pwr_vin.is_connected()):
+            self.export_tap(self.pwr_vin, self.device.vcc)
+        if self.get(self.vusb_out.is_connected()):
+            self.export_tap(self.vusb_out, self.device.vcc_out)
+
     # @override
     # def _vddio(self) -> Port[VoltageLink]:
     #     if self.get(self.pwr.is_connected()):  # board sinks power
