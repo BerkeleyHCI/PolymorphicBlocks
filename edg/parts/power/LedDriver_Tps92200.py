@@ -57,26 +57,30 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
+class Tps92200(PowerConditioner, GeneratorBlock):
     """TPS92200 buck 4-30V 1.5A 1 MHz LED driver and 150nS min on-time.
     This is the -D2 variant, with PWM input for 1-100% range as a 20-200kHz digital signal"""
 
     def __init__(
         self,
+        max_current: RangeLike,
         led_voltage: RangeLike = (1, 4) * Volt,
         *,
         input_ripple_limit: FloatLike = 0.2 * Volt,  # from 8.2 example application
         output_ripple_limit: FloatLike = 0.01 * Volt,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
 
         self.ic = self.Block(Tps92200_Device(FloatExpr()))
-        self.connect(self.gnd, self.ic.gnd)
-        self.connect(self.pwr, self.ic.vin)
-        self.connect(self.pwm, self.ic.dim)
+        self.gnd = self.Export(self.ic.gnd)
+        self.pwr = self.Export(self.ic.vin)
+        self.pwm = self.Export(self.ic.dim)
+        self.leda = self.Port(Passive())
+        self.ledk = self.Port(Passive())
+
         self.require(self.pwm.is_connected())  # DIM does not appear to have a internal pull
 
+        self.max_current = self.ArgParameter(max_current)
         self.led_voltage = self.ArgParameter(led_voltage)
         self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
