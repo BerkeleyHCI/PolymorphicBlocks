@@ -407,27 +407,10 @@ class Rp2040(
         return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040(
-    IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2040_Ios, IoController, GeneratorBlock, FootprintBlock
-):
-    """RP2040 development board, a tiny development (21x17.5mm) daughterboard.
-    Has an onboard USB connector, so this can also source power.
+class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+    """Footprint-only device model for the Xiao RP2040 microcontroller dev board"""
 
-    Limited pins (only 11 for IOs, of which 6 are usable as the other 5 have boot requirements).
-
-    Requires Seeed Studio's KiCad library for the footprint: https://github.com/Seeed-Studio/OPL_Kicad_Library
-    The 'Seeed Studio XIAO Series Library' must have been added as a footprint library of the same name.
-
-    Pinning data: https://www.seeedstudio.com/blog/wp-content/uploads/2022/08/Seeed-Studio-XIAO-Series-Package-and-PCB-Design.pdf
-    Internal data: https://files.seeedstudio.com/wiki/XIAO-RP2040/res/Seeed-Studio-XIAO-RP2040-v1.3.pdf
-    """
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "VDD": "12",
-        "GND": "13",
-        "VUSB": "14",
-    }
-    RESOURCE_PIN_REMAP = {
+    PIN_REMAP = {
         "GPIO26": "1",
         "GPIO27": "2",
         "GPIO28": "3",
@@ -441,47 +424,82 @@ class Xiao_Rp2040(
         "GPIO3": "11",
     }
 
-    @override
-    def _vddio(self) -> Port[VoltageLink]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr
-        else:
-            return self.pwr_out
+    def __init__(self, device_actual_pin_assigns: ArrayStringLike):
+        super().__init__()
+        self.device_actual_pin_assigns = self.ArgParameter(device_actual_pin_assigns)
+        self.v3v3 = self.Port(VoltageSink.empty())
+        self.gnd = self.Port(Ground.empty())
+        self.vcc = self.Port(VoltageSink.empty())  # VUsb
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr,
-                    "GND": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr_out,
-                    "GND": self.gnd,
-                    "VUSB": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
+    def generate(self) -> None:
+        super().generate()
+
+        pinning = {
+            "12": self.v3v3,
+            "13": self.gnd,
+            "14": self.vcc,
+        }
+
+        self.footprint(
+            "U",
+            "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
+            pinning,
+            mfr="",
+            part="XIAO RP2040",
+            datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",
+        )
+
+
+class Xiao_Rp2040(
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    IoControllerVin,
+    IoController,
+    BaseIoControllerExportable,  # TODO this breaks something
+    GeneratorBlock,
+    WrapperSubboardBlock,
+):
+    """RP2040 development board, a tiny development (21x17.5mm) daughterboard.
+    Has an onboard USB connector, so this can also source power.
+
+    Limited pins (only 11 for IOs, of which 6 are usable as the other 5 have boot requirements).
+
+    Requires Seeed Studio's KiCad library for the footprint: https://github.com/Seeed-Studio/OPL_Kicad_Library
+    The 'Seeed Studio XIAO Series Library' must have been added as a footprint library of the same name.
+
+    Pinning data: https://www.seeedstudio.com/blog/wp-content/uploads/2022/08/Seeed-Studio-XIAO-Series-Package-and-PCB-Design.pdf
+    Internal data: https://files.seeedstudio.com/wiki/XIAO-RP2040/res/Seeed-Studio-XIAO-RP2040-v1.3.pdf
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.ic: Rp2040_Device  # device model only
+        self.generator_param(self.pwr.is_connected())
 
     @override
     def contents(self) -> None:
         super().contents()
 
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._iovdd_model())
-
         self.pwr_vin.init_from(
             VoltageSink(  # based on RS3236-3.3
                 voltage_limits=(3.3 * 1.025 + 0.55, 7.5) * Volt,  # output * tolerance + dropout @ 300mA
-                current_draw=RangeExpr(),
+                current_draw=self.pwr_out.is_connected().then_else(  # prop output current draw
+                    self.pwr_out.link().current_drawn, (0, 0) * Amp
+                ),
             )
         )
         self.vusb_out.init_from(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
+        self.pwr_out_model = self.Block(
+            DummyVoltageSource(
+                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+            )
+        )
+        self.connect(self.pwr_out, self.pwr_out_model.pwr)
+
         self.require(
             ~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in"
         )
@@ -489,32 +507,117 @@ class Xiao_Rp2040(
             (self.pwr_vin.is_connected() | self.vusb_out.is_connected()).implies(~self.pwr.is_connected()),
             "cannot use 3.3v input if VUsb used",
         )
-
-        self.pwr_out.init_from(
-            VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
         self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
-        self.assign(
-            self.pwr_vin.current_draw,
-            self.pwr_out.is_connected().then_else(  # prop output current draw
-                self.pwr_out.link().current_drawn, (0, 0) * Amp
-            ),
-        )
 
-        self.generator_param(self.pwr.is_connected())
+        self.ic = self.Block(Rp2040())
+        self.connect(self.gnd, self.ic.gnd)
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        self.footprint(
-            "U",
-            "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
-            self._make_pinning(),
-            mfr="",
-            part="XIAO RP2040",
-            datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",
-        )
+        self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
+        self.export_tap(self.pwr, self.device.v3v3)
+        self.export_tap(self.gnd, self.device.gnd)
+
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            self.connect(self.pwr, self.ic.pwr)
+        else:  # board sources power from USB
+            self.connect(self.pwr_out, self.ic.pwr)
+
+    # SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    #     "VDD": "12",
+    #     "GND": "13",
+    #     "VUSB": "14",
+    # }
+    # RESOURCE_PIN_REMAP = {
+    #     "GPIO26": "1",
+    #     "GPIO27": "2",
+    #     "GPIO28": "3",
+    #     "GPIO29": "4",
+    #     "GPIO6": "5",
+    #     "GPIO7": "6",
+    #     "GPIO0": "7",
+    #     "GPIO1": "8",
+    #     "GPIO2": "9",
+    #     "GPIO4": "10",
+    #     "GPIO3": "11",
+    # }
+    #
+    # @override
+    # def _vddio(self) -> Port[VoltageLink]:
+    #     if self.get(self.pwr.is_connected()):  # board sinks power
+    #         return self.pwr
+    #     else:
+    #         return self.pwr_out
+    #
+    # @override
+    # def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    #     if self.get(self.pwr.is_connected()):  # board sinks power
+    #         return VariantPinRemapper(
+    #             {
+    #                 "VDD": self.pwr,
+    #                 "GND": self.gnd,
+    #             }
+    #         ).remap(self.SYSTEM_PIN_REMAP)
+    #     else:  # board sources power (default)
+    #         return VariantPinRemapper(
+    #             {
+    #                 "VDD": self.pwr_out,
+    #                 "GND": self.gnd,
+    #                 "VUSB": self.vusb_out,
+    #             }
+    #         ).remap(self.SYSTEM_PIN_REMAP)
+    #
+    # @override
+    # def contents(self) -> None:
+    #     super().contents()
+    #
+    #     self.gnd.init_from(Ground())
+    #     self.pwr.init_from(self._iovdd_model())
+    #
+    #     self.pwr_vin.init_from(
+    #         VoltageSink(  # based on RS3236-3.3
+    #             voltage_limits=(3.3 * 1.025 + 0.55, 7.5) * Volt,  # output * tolerance + dropout @ 300mA
+    #             current_draw=RangeExpr(),
+    #         )
+    #     )
+    #     self.vusb_out.init_from(
+    #         VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+    #     )
+    #     self.require(
+    #         ~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in"
+    #     )
+    #     self.require(
+    #         (self.pwr_vin.is_connected() | self.vusb_out.is_connected()).implies(~self.pwr.is_connected()),
+    #         "cannot use 3.3v input if VUsb used",
+    #     )
+    #
+    #     self.pwr_out.init_from(
+    #         VoltageSource(
+    #             voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+    #             current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+    #         )
+    #     )
+    #     self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
+    #     self.assign(
+    #         self.pwr_vin.current_draw,
+    #         self.pwr_out.is_connected().then_else(  # prop output current draw
+    #             self.pwr_out.link().current_drawn, (0, 0) * Amp
+    #         ),
+    #     )
+    #
+    #     self.generator_param(self.pwr.is_connected())
+    #
+    # @override
+    # def generate(self) -> None:
+    #     super().generate()
+    #
+    #     self.footprint(
+    #         "U",
+    #         "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
+    #         self._make_pinning(),
+    #         mfr="",
+    #         part="XIAO RP2040",
+    #         datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",
+    #     )
