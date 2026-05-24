@@ -115,11 +115,14 @@ class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
         self.reset.init_from(DigitalSink())
 
 
-@abstract_block_default(lambda: IdealVoltageRegulator)
+@abstract_block_default(lambda: BuckBoostConverter)
 class BuckBoostConverter(SwitchingVoltageRegulator):
     """Step-up or switch-down switching converter"""
 
 
-@abstract_block_default(lambda: IdealVoltageRegulator)
+class IdealBuckBoostConverter(IdealVoltageRegulator, BuckBoostConverter):
+    pass
+
+
 class DiscreteBuckBoostConverter(BuckBoostConverter):
     """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""

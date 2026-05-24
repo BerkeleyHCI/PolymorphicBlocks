@@ -65,8 +65,8 @@ class Al8861(PowerConditioner, GeneratorBlock):
         super().__init__()
 
         self.ic = self.Block(Al8861_Device(FloatExpr()))
-        self.gnd = self.Export(self.ic.gnd)
-        self.pwr = self.Export(self.ic.vin)
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vin, [Power])
         self.pwm = self.Port(DigitalSink.empty(), optional=True)
         self.leda = self.Port(Passive())
         self.ledk = self.Port(Passive())

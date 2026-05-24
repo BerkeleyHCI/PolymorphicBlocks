@@ -57,7 +57,7 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Tps92200(PowerConditioner, GeneratorBlock):
+class Tps92200(PowerConditioner):
     """TPS92200 buck 4-30V 1.5A 1 MHz LED driver and 150nS min on-time.
     This is the -D2 variant, with PWM input for 1-100% range as a 20-200kHz digital signal"""
 
@@ -72,8 +72,8 @@ class Tps92200(PowerConditioner, GeneratorBlock):
         super().__init__()
 
         self.ic = self.Block(Tps92200_Device(FloatExpr()))
-        self.gnd = self.Export(self.ic.gnd)
-        self.pwr = self.Export(self.ic.vin)
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vin, [Power])
         self.pwm = self.Export(self.ic.dim)
         self.leda = self.Port(Passive())
         self.ledk = self.Port(Passive())
@@ -86,8 +86,8 @@ class Tps92200(PowerConditioner, GeneratorBlock):
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
     @override
-    def generate(self) -> None:
-        super().generate()
+    def contents(self) -> None:
+        super().contents()
 
         with self.implicit_connect(
             ImplicitConnect(self.pwr, [Power]),
