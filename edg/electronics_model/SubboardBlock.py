@@ -46,10 +46,13 @@ class HasSubboardBlockApi(Block):
         self._export_taps.append((exterior_port, internal_port))
 
     @override
-    def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
-        # TODO THIS HAPPENS POST FINALIZE AND IS BROKEN
+    def _def_to_proto(self) -> edgir.HierarchyBlock:
+        # create this assign after the block definition has run
         self.assign(self.fp_external_blocks, [self._blocks.name_of(block) for block in self._external_blocks])
+        return super()._def_to_proto()
 
+    @override
+    def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
         super()._populate_def_proto_hierarchy(pb, ref_map)
 
         for exterior_port, internal_port in self._export_taps:
