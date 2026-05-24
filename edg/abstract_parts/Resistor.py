@@ -408,7 +408,7 @@ class AnalogSetpointResistor(DiscreteApplication, KiCadImportableBlock):
 
 class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     """Analog passthrough series resistor.
-    Generally an utility component in subcircuits and not used at the top level."""
+    Generally a utility component in subcircuits and not used at the top level."""
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
@@ -450,69 +450,9 @@ class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         return self
 
 
-class AnalogClampResistor(Protection, KiCadImportableBlock):
-    """Inline resistor that limits the current (to a parameterized amount) which works in concert
-    with ESD diodes in the downstream device to clamp the signal voltage to allowable levels.
-
-    The protection voltage can be extended beyond the modeled range from the input signal,
-    and can also be specified to allow zero output voltage (for when the downstream device
-    is powered down)
-
-    TODO: clamp_target should be inferred from the target voltage_limits,
-    but voltage_limits doesn't always get propagated"""
-
-    def __init__(
-        self,
-        clamp_target: RangeLike = (0, 3) * Volt,
-        clamp_current: RangeLike = (0.25, 2.5) * mAmp,
-        protection_voltage: RangeLike = (0, 0) * Volt,
-        zero_out: BoolLike = False,
-    ):
-        super().__init__()
-
-        self.clamp_target = self.ArgParameter(clamp_target)
-        self.clamp_current = self.ArgParameter(clamp_current)
-        self.protection_voltage = self.ArgParameter(protection_voltage)
-        self.zero_out = self.ArgParameter(zero_out)
-
-        self.signal_in = self.Port(AnalogSink(), [Input])
-        self.signal_out = self.Port(
-            AnalogSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                signal_out=self.signal_in.link().signal,
-                impedance=RangeExpr(),
-            ),
-            [Output],
-        )
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        # TODO bidirectional clamping calcs?
-        self.res = self.Block(
-            Resistor(
-                resistance=1
-                / self.clamp_current
-                * self.zero_out.then_else(
-                    self.signal_in.link().voltage.hull(self.protection_voltage).upper(),
-                    self.signal_in.link().voltage.hull(self.protection_voltage).upper() - self.clamp_target.upper(),
-                )
-            )
-        )
-        self.connect(self.res.a, self.signal_in.net)
-        self.connect(self.res.b, self.signal_out.net)
-        self.assign(self.signal_out.impedance, self.signal_in.link().source_impedance + self.res.actual_resistance)
-
-    @override
-    def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-        assert symbol_name == "Device:R"
-        return {"1": self.signal_in, "2": self.signal_out}
-
-
 class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     """Digital passthrough series resistor, with source / sink (directioned) ports.
-    Generally an utility component in subcircuits and not used at the top level."""
+    Generally a utility component in subcircuits and not used at the top level."""
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
@@ -626,78 +566,3 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         if exterior is not None:
             builder.block().connect(exterior, self.exterior)
         return self
-
-
-class DigitalClampResistor(Protection, KiCadImportableBlock):
-    """Inline resistor that limits the current (to a parameterized amount) which works in concert
-    with ESD diodes in the downstream device to clamp the signal voltage to allowable levels.
-
-    The protection voltage can be extended beyond the modeled range from the input signal,
-    and can also be specified to allow zero output voltage (for when the downstream device
-    is powered down)
-
-    TODO: clamp_target should be inferred from the target voltage_limits,
-    but voltage_limits doesn't always get propagated."""
-
-    def __init__(
-        self,
-        clamp_target: RangeLike = (0, 3) * Volt,
-        clamp_current: RangeLike = (1.0, 10) * mAmp,
-        protection_voltage: RangeLike = (0, 0) * Volt,
-        zero_out: BoolLike = False,
-    ):
-        super().__init__()
-
-        self.clamp_target = self.ArgParameter(clamp_target)
-        self.clamp_current = self.ArgParameter(clamp_current)
-        self.protection_voltage = self.ArgParameter(protection_voltage)
-        self.zero_out = self.ArgParameter(zero_out)
-
-        self.signal_in = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
-        self.signal_out = self.Port(
-            DigitalSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                output_thresholds=self.signal_in.link().output_thresholds,
-            ),
-            [Output],
-        )
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        # TODO bidirectional clamping calcs?
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
-        self.res = self.Block(
-            Resistor(
-                resistance=1
-                / self.clamp_current
-                * self.zero_out.then_else(
-                    self.signal_in.link().voltage.hull(self.protection_voltage).upper(),
-                    self.signal_in.link().voltage.hull(self.protection_voltage).upper() - self.clamp_target.upper(),
-                )
-            )
-        )
-        self.connect(self.res.a, self.signal_in.net)
-        self.connect(self.res.b, self.signal_out.net)
-
-    @override
-    def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-        assert symbol_name == "Device:R"
-        return {"1": self.signal_in, "2": self.signal_out}
-
-
-class UsbSeriesResistor(InternalSubcircuit, Block):
-    """Inline resistor on DM and DP lines, sometimes needed by microcontrollers."""
-
-    def __init__(self, resistance: RangeLike) -> None:
-        super().__init__()
-        self.resistance = self.ArgParameter(resistance)
-        self.interior = self.Port(UsbHostPort.empty(), [Input])
-        self.exterior = self.Port(UsbDevicePort.empty(), [Output])
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-        self.dp = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dp, self.exterior.dp)
-        self.dm = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dm, self.exterior.dm)

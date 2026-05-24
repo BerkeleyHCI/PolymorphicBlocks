@@ -2,7 +2,8 @@ import unittest
 
 from ..electronics_interfaces import *
 from .IoController import IoController
-from .PowerConverters import LinearRegulator, BoostConverter
+from .LinearRegulator import LinearRegulator
+from .SwitchingVoltageRegulator import BoostConverter
 
 
 class IdealCircuitTestTop(Block):

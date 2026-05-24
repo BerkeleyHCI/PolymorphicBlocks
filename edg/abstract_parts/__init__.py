@@ -35,12 +35,9 @@ from .Resistor import PulldownResistor, PullupResistor, PulldownResistorArray, P
 from .Resistor import (
     SeriesPowerResistor,
     CurrentSenseResistor,
-    AnalogClampResistor,
     DigitalSeriesResistor,
     DigitalBidirSeriesResistor,
-    DigitalClampResistor,
     AnalogSetpointResistor,
-    UsbSeriesResistor,
 )
 from .ResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .Capacitor import (
@@ -65,7 +62,7 @@ from .FerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerrite
 from .Resettable import Resettable
 
 from .Diode import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
-from .Diode import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
+from .ZenerDiode import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
 from .TvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
 from .Led import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike
 from .Led import (
@@ -90,11 +87,15 @@ from .Switch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwit
 from .Comparator import Comparator
 from .Opamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .SpiMemory import SpiMemory, SpiMemoryQspi
-from .PowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
-from .PowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
-from .PowerConverters import BootstrapCapacitor
-from .PowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
-from .PowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
+from .VoltageRegulator import VoltageRegulator, VoltageRegulatorEnableWrapper
+from .LinearRegulator import LinearRegulator, VoltageReference, LinearRegulatorDevice
+from .SwitchingVoltageRegulator import (
+    SwitchingVoltageRegulator,
+    BuckConverter,
+    DiscreteBuckConverter,
+    BoostConverter,
+    DiscreteBoostConverter,
+)
 from .LedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .Fuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .Crystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator

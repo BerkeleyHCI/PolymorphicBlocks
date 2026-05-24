@@ -52,20 +52,29 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBlock):
+class Al8861(PowerConditioner, GeneratorBlock):
     """AL8861 buck LED driver."""
 
-    def __init__(self, diode_voltage_drop: RangeLike = Range.all()):
+    def __init__(
+        self,
+        max_current: RangeLike,
+        *,
+        ripple_limit: FloatLike = float("inf"),
+        diode_voltage_drop: RangeLike = Range.all(),
+    ):
         super().__init__()
 
         self.ic = self.Block(Al8861_Device(FloatExpr()))
-        self.connect(self.pwr, self.ic.vin)
-        self.connect(self.gnd, self.ic.gnd)
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vin, [Power])
+        self.pwm = self.Port(DigitalSink.empty(), optional=True)
+        self.leda = self.Port(Passive())
+        self.ledk = self.Port(Passive())
 
-        self.generator_param(self.max_current)
+        self.max_current = self.ArgParameter(max_current)
+        self.ripple_limit = self.ArgParameter(ripple_limit)
         self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
-
-        self.generator_param(self.pwm.is_connected())
+        self.generator_param(self.max_current, self.pwm.is_connected())
 
         self.actual_ripple = self.Parameter(RangeExpr())
 

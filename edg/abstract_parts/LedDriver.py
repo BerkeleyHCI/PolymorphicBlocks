@@ -4,6 +4,7 @@ from ..abstract_parts import *
 from deprecated import deprecated
 
 
+@deprecated("LED API is not stabilized")
 @abstract_block
 class LedDriver(PowerConditioner, Interface):
     """Abstract current-regulated high-power LED driver.
@@ -30,6 +31,7 @@ class LedDriverSwitchingConverter(BlockInterfaceMixin[LedDriver]):
         self.ripple_limit = self.ArgParameter(ripple_limit)
 
 
+@deprecated("LED API is not stabilized")
 class LedDriverPwm(BlockInterfaceMixin[LedDriver]):
     """LED driver mixin with PWM input for dimming control."""
 

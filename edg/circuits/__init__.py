@@ -11,6 +11,10 @@ from .PowerConditioning import (
     PmosReverseProtection,
     PmosChargerReverseProtection,
 )
+from .BootstrapCapacitor import BootstrapCapacitor
+from .BuckConverterPowerPath import BuckConverterPowerPath
+from .BoostConverterPowerPath import BoostConverterPowerPath
+from .BuckBoostConverterPowerPath import BuckBoostConverterPowerPath
 
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
@@ -25,6 +29,8 @@ from .I2cBitBang import I2cControllerBitBang
 from .I2cPullup import I2cPullup
 
 from .LevelShifter import BidirectionalLevelShifter
+
+from .VoltageClamping import AnalogClampResistor, DigitalClampResistor
 
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting, SummingAmplifier
 from .OpampCurrentSensor import OpampCurrentSensor
@@ -58,3 +64,4 @@ from .ResistiveDivider import (
 
 from .RfNetworks import DiscreteRfWarning, LLowPassFilter, LLowPassFilterWith2HNotch, LHighPassFilter, PiLowPassFilter
 from .UsbBitBang import UsbBitBang
+from .UsbSeriesResistor import UsbSeriesResistor
