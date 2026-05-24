@@ -777,7 +777,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
             mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
             (self.touch_duck,), _ = self.chain(
-                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintToucbPad("edg:Symbol_DucklingSolid"))
+                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintTouchPad("edg:Symbol_DucklingSolid"))
             )
 
         # 5v domain

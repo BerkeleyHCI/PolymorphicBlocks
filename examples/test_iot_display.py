@@ -109,10 +109,10 @@ class IotDisplay(JlcBoardTop):
 
             mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
             (self.touch_duck,), _ = self.chain(
-                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintToucbPad("edg:Symbol_DucklingSolid"))
+                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintTouchPad("edg:Symbol_DucklingSolid"))
             )
             (self.touch_lemur,), _ = self.chain(
-                mcu_touch.touch.request("touch_lemur"), imp.Block(FootprintToucbPad("edg:Symbol_LemurSolid"))
+                mcu_touch.touch.request("touch_lemur"), imp.Block(FootprintTouchPad("edg:Symbol_LemurSolid"))
             )
 
             gate_model = PmosHighSideSwitch(max_rds=0.1 * Ohm)

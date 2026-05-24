@@ -24,7 +24,7 @@ from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
 from .I2cBitBang import I2cControllerBitBang
 from .I2cPullup import I2cPullup
 
-from .LevelShifter import BidirectionaLevelShifter
+from .LevelShifter import BidirectionalLevelShifter
 
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting, SummingAmplifier
 from .OpampCurrentSensor import OpampCurrentSensor

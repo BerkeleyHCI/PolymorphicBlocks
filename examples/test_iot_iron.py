@@ -156,7 +156,7 @@ class IotIron(JlcBoardTop):
 
             mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
             (self.touch_sink,), _ = self.chain(
-                mcu_touch.touch.request("touch"), imp.Block(FootprintToucbPad("edg:Symbol_DucklingSolid"))
+                mcu_touch.touch.request("touch"), imp.Block(FootprintTouchPad("edg:Symbol_DucklingSolid"))
             )
 
             self.iron = imp.Block(IronConnector())

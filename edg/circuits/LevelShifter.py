@@ -3,7 +3,7 @@ from typing_extensions import override
 from ..abstract_parts import *
 
 
-class BidirectionaLevelShifter(Interface, GeneratorBlock):
+class BidirectionalLevelShifter(Interface, GeneratorBlock):
     """Bidirectional level shifter for low(ish) frequency signals.
     Circuit design from Phillips AN97055, https://cdn-shop.adafruit.com/datasheets/an97055.pdf
     When both sides are floating or driving high, the FET is off and the pullups provide the high signal.
