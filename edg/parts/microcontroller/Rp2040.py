@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import *
 
 from typing_extensions import override
@@ -13,6 +12,43 @@ class Rp2040_Interfaces(IoControllerI2cTarget, IoControllerUsb, BaseIoController
 
 
 class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+    _PIN_MAPPING = {
+        "GPIO0": "2",
+        "GPIO1": "3",
+        "GPIO2": "4",
+        "GPIO3": "5",
+        "GPIO4": "6",
+        "GPIO5": "7",
+        "GPIO6": "8",
+        "GPIO7": "9",
+        "GPIO8": "11",
+        "GPIO9": "12",
+        "GPIO10": "13",
+        "GPIO11": "14",
+        "GPIO12": "15",
+        "GPIO13": "16",
+        "GPIO14": "17",
+        "GPIO15": "18",
+        "GPIO16": "27",
+        "GPIO17": "28",
+        "GPIO18": "29",
+        "GPIO19": "30",
+        "GPIO20": "31",
+        "GPIO21": "32",
+        "GPIO22": "34",
+        "GPIO23": "35",
+        "GPIO24": "36",
+        "GPIO25": "37",
+        "GPIO26": "38",
+        "GPIO27": "39",
+        "GPIO28": "40",
+        "GPIO29": "41",
+        "USB_DM": "46",
+        "USB_DP": "47",
+        "SWDIO": "25",
+        "SWCLK": "24",
+    }
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
@@ -256,44 +292,7 @@ class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generat
                     },
                 ),
             ]
-        ).remap_pins(
-            {
-                "GPIO0": "2",
-                "GPIO1": "3",
-                "GPIO2": "4",
-                "GPIO3": "5",
-                "GPIO4": "6",
-                "GPIO5": "7",
-                "GPIO6": "8",
-                "GPIO7": "9",
-                "GPIO8": "11",
-                "GPIO9": "12",
-                "GPIO10": "13",
-                "GPIO11": "14",
-                "GPIO12": "15",
-                "GPIO13": "16",
-                "GPIO14": "17",
-                "GPIO15": "18",
-                "GPIO16": "27",
-                "GPIO17": "28",
-                "GPIO18": "29",
-                "GPIO19": "30",
-                "GPIO20": "31",
-                "GPIO21": "32",
-                "GPIO22": "34",
-                "GPIO23": "35",
-                "GPIO24": "36",
-                "GPIO25": "37",
-                "GPIO26": "38",
-                "GPIO27": "39",
-                "GPIO28": "40",
-                "GPIO29": "41",
-                "USB_DM": "46",
-                "USB_DP": "47",
-                "SWDIO": "25",
-                "SWCLK": "24",
-            }
-        )
+        ).remap_pins(self._PIN_MAPPING)
 
 
 class Rp2040(
@@ -376,7 +375,7 @@ class Rp2040(
 class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, FootprintBlock):
     """Footprint-only device model for the Xiao RP2040 microcontroller dev board"""
 
-    PIN_REMAP = {
+    _PIN_REMAPPING = {
         "GPIO26": "1",
         "GPIO27": "2",
         "GPIO28": "3",
@@ -390,15 +389,20 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
         "GPIO3": "11",
     }
 
-    def __init__(self, device_actual_pin_assigns: ArrayStringLike):
+    def __init__(self, model_actual_pin_assigns: ArrayStringLike):
         super().__init__()
-        self.device_actual_pin_assigns = self.ArgParameter(device_actual_pin_assigns)
+        self.model_actual_pin_assigns = self.ArgParameter(model_actual_pin_assigns)
         self.gnd = self.Port(Ground.empty())
         self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
         self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
         self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
         self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
-        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected())
+        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.model_actual_pin_assigns)
+
+    def _remap_pinning(self, actual_pin_assigns: List[str], remapping: Dict[str, str]) -> Dict[str, HasPassivePort]:
+        """Given the actual pin assignments and a remapping dict, returns the pinning dict for the footprint."""
+        print(self.get(self.model_actual_pin_assigns))
+        return {}
 
     @override
     def generate(self) -> None:
@@ -409,6 +413,7 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
             "13": self.gnd,
             "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
         }
+        pinning.update(self._remap_pinning(self.get(self.model_actual_pin_assigns), self._PIN_REMAPPING))
 
         self.footprint(
             "U",
@@ -481,6 +486,22 @@ class Xiao_Rp2040(
 
         self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
         self.export_tap(self.gnd, self.device.gnd)
+        self.export_tap_iocontroller(self.device)
+
+    def export_tap_iocontroller(self, inner: BaseIoController) -> None:
+        from ...core.Blocks import BlockElaborationState
+
+        assert self._elaboration_state in (
+            BlockElaborationState.contents,
+            BlockElaborationState.generate,
+        ), "can only export in contents() or generate()"
+        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
+
+        for self_io in self._io_ports:
+            self_io_type = self._type_of_io(self_io)
+            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
+            inner_io = inner_ios_by_type[self_io_type]
+            self.export_tap(self_io, inner_io)
 
     @override
     def generate(self) -> None:
