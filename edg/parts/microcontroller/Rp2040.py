@@ -512,9 +512,9 @@ class Xiao_Rp2040(
         self.ic = self.Block(Rp2040())
         self.connect(self.gnd, self.ic.gnd)
 
-        # self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
-        # self.export_tap(self.pwr, self.device.v3v3)
-        # self.export_tap(self.gnd, self.device.gnd)
+        self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
+        self.export_tap(self.pwr, self.device.v3v3)
+        self.export_tap(self.gnd, self.device.gnd)
 
     @override
     def generate(self) -> None:
