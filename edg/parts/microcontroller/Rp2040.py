@@ -495,13 +495,6 @@ class Xiao_Rp2040(
         self.vusb_out.init_from(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
-        self.pwr_out_model = self.Block(
-            DummyVoltageSource(
-                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
-        self.connect(self.pwr_out, self.pwr_out_model.pwr)
 
         self.require(
             ~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in"
@@ -516,7 +509,6 @@ class Xiao_Rp2040(
         self.connect(self.gnd, self.ic.gnd)
 
         self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
-
         self.export_tap(self.gnd, self.device.gnd)
 
     @override
@@ -527,7 +519,13 @@ class Xiao_Rp2040(
             self.connect(self.pwr, self.ic.pwr)
             self.export_tap(self.pwr, self.device.v3v3)
         else:  # board sources power from USB
-            self.connect(self.pwr_out, self.ic.pwr)
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+                )
+            )
+            self.connect(self.pwr_out, self.pwr_out_model.pwr, self.ic.pwr)
             self.export_tap(self.pwr_out, self.device.v3v3_out)
 
         if self.get(self.pwr_vin.is_connected()):
