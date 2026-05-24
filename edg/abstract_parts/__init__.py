@@ -62,7 +62,7 @@ from .FerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerrite
 from .Resettable import Resettable
 
 from .Diode import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
-from .Diode import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
+from .ZenerDiode import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
 from .TvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
 from .Led import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike
 from .Led import (
