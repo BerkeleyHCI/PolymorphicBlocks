@@ -478,7 +478,12 @@ class Xiao_Rp2040(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Rp2040_Device  # device model only
-        self.generator_param(self.pwr.is_connected(), self.pwr_vin.is_connected(), self.vusb_out.is_connected())
+        self.generator_param(
+            self.pwr.is_connected(),
+            self.pwr_out.is_connected(),
+            self.pwr_vin.is_connected(),
+            self.vusb_out.is_connected(),
+        )
 
     @override
     def contents(self) -> None:
@@ -505,7 +510,7 @@ class Xiao_Rp2040(
         )
         self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
 
-        self.ic = self.Block(Rp2040())
+        self.ic = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
         self.connect(self.gnd, self.ic.gnd)
 
         self.device = self.Block(Xiao_Rp2040_Device(self.ic.actual_pin_assigns), external=True)
@@ -525,7 +530,9 @@ class Xiao_Rp2040(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out, self.pwr_out_model.pwr, self.ic.pwr)
+            self.connect(self.pwr_out_model.pwr, self.ic.pwr)
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.pwr)
             self.export_tap(self.pwr_out, self.device.v3v3_out)
 
         if self.get(self.pwr_vin.is_connected()):

@@ -1,5 +1,4 @@
-from typing import List
-
+from typing import List, Any
 from typing_extensions import override
 
 from ..electronics_model import *
@@ -23,9 +22,13 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     the subclass."""
 
     def __init__(
-        self, swd_swo_pin: StringLike = "NC", swd_tdi_pin: StringLike = "NC", swd_connect_reset: BoolLike = True
+        self,
+        swd_swo_pin: StringLike = "NC",
+        swd_tdi_pin: StringLike = "NC",
+        swd_connect_reset: BoolLike = True,
+        **kwargs: Any,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.swd_swo_pin = self.ArgParameter(swd_swo_pin)
         self.swd_tdi_pin = self.ArgParameter(swd_tdi_pin)
         self.swd_connect_reset = self.ArgParameter(swd_connect_reset)
