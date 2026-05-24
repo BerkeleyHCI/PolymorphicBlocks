@@ -21,7 +21,7 @@ from typing import (
 
 from typing_extensions import ParamSpec, TypeVar, override
 
-from ..core.Range import Range
+from ..core import *
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy

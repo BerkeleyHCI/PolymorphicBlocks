@@ -2,6 +2,7 @@ import unittest
 from typing_extensions import override
 
 from .PowerConditioning import DiodePowerMerge
+from ..vendor_parts.generic import *
 from ..abstract_parts import *
 
 

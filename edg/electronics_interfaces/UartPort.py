@@ -1,0 +1,33 @@
+from typing import *
+from typing_extensions import override
+
+from ..electronics_model import *
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
+
+
+class UartLink(Link):
+    def __init__(self) -> None:
+        super().__init__()
+        self.a = self.Port(UartPort(DigitalBidir.empty()))
+        self.b = self.Port(UartPort(DigitalBidir.empty()))
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.a_tx = self.connect(self.a.tx, self.b.rx)
+        self.b_tx = self.connect(self.b.tx, self.a.rx)
+
+
+class UartPort(Port[UartLink]):
+    link_type = UartLink
+
+    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+        super().__init__()
+        if model is None:
+            model = DigitalBidir()  # ideal by default
+        self.tx = self.Port(DigitalSource.from_bidir(model))
+        self.rx = self.Port(DigitalSink.from_bidir(model))
+
+        self.baud = self.Parameter(RangeExpr(RangeExpr.ZERO))
+        self.baud_limit = self.Parameter(RangeExpr(RangeExpr.INF))

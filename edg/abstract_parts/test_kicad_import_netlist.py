@@ -4,9 +4,9 @@ import unittest
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
 from ..electronics_model import Passive, FootprintBlock
-from .AbstractResistor import Resistor
-from ..electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
-from ..electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
+from ..electronics_interfaces.test_netlist import NetlistTestCase, Net, net_pin, net_block
+from ..electronics_interfaces.test_kicad_import_blackbox import KiCadBlackboxBlock
+from .Resistor import Resistor
 
 
 class PassiveDummy(Block):
@@ -51,7 +51,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "dut.pwr",
-                [NetPin(["dut", "U1"], "1")],
+                [net_pin(["dut", "U1"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("dut").append_port("pwr"),
                     TransformUtil.Path.empty().append_block("dut", "U1").append_port("ports", "1"),
@@ -63,7 +63,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "dut.gnd",
-                [NetPin(["dut", "U1"], "3")],
+                [net_pin(["dut", "U1"], "3")],
                 [
                     TransformUtil.Path.empty().append_block("dut").append_port("gnd"),
                     TransformUtil.Path.empty().append_block("dut", "U1").append_port("ports", "3"),
@@ -75,7 +75,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "dut.node",
-                [NetPin(["dut", "U1"], "2"), NetPin(["dut", "res"], "1")],
+                [net_pin(["dut", "U1"], "2"), net_pin(["dut", "res"], "1")],
                 [
                     TransformUtil.Path.empty().append_block("dut", "U1").append_port("ports", "2"),
                     TransformUtil.Path.empty().append_block("dut", "res").append_port("a"),
@@ -86,7 +86,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(
             Net(
                 "dut.out",
-                [NetPin(["dut", "res"], "2")],
+                [net_pin(["dut", "res"], "2")],
                 [
                     TransformUtil.Path.empty().append_block("dut").append_port("out"),
                     TransformUtil.Path.empty().append_block("dut", "res").append_port("b"),
@@ -96,7 +96,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
             net.nets,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Package_TO_SOT_SMD:SOT-23",
                 "U1",
                 # expected value is wonky because netlisting combines part and value
@@ -104,14 +104,14 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                 "MCP9700AT-ETT",
                 ["dut", "U1"],
                 [
-                    "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
+                    "edg.electronics_interfaces.test_kicad_import_blackbox.KiCadBlackboxBlock",
                     "edg.electronics_model.KiCadSchematicBlock.KiCadBlackbox",
                 ],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Symbol:Symbol_ESD-Logo_CopperTop",
                 "SYM1",
                 # expected value is wonky because netlisting combines part and value
@@ -119,21 +119,21 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                 "SYM_ESD_Small",
                 ["dut", "SYM1"],
                 [
-                    "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
+                    "edg.electronics_interfaces.test_kicad_import_blackbox.KiCadBlackboxBlock",
                     "edg.electronics_model.KiCadSchematicBlock.KiCadBlackbox",
                 ],
             ),
             net.blocks,
         )
         self.assertIn(
-            NetBlock(
+            net_block(
                 "Resistor_SMD:R_0603_1608Metric",
                 "R1",
                 "",
                 "",
                 ["dut", "res"],
                 [
-                    "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
+                    "edg.electronics_interfaces.test_kicad_import_blackbox.KiCadBlackboxBlock",
                     "edg.abstract_parts.test_kicad_import_netlist.DummyResistor",
                 ],
             ),

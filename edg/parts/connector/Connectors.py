@@ -3,7 +3,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from ...abstract_parts import *
+from ...circuits import *
 from .Headers import JstShSmHorizontal
 
 

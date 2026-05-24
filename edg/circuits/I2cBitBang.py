@@ -1,0 +1,24 @@
+from typing_extensions import override
+
+from ..abstract_parts import *
+
+
+class I2cControllerBitBang(BitBangAdapter, Block):
+    """Bit-bang adapter for I2C controller"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.i2c = self.Port(I2cController.empty(), [Output])
+        self.scl = self.Port(DigitalBidir.empty())
+        self.sda = self.Port(DigitalBidir.empty())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.i2c.scl, self.scl)
+        self.connect(self.i2c.sda, self.sda)
+
+    def connected_from(self, scl: Port[DigitalLink], sda: Port[DigitalLink]) -> "I2cControllerBitBang":
+        builder.block().connect(scl, self.scl)
+        builder.block().connect(sda, self.sda)
+        return self

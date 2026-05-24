@@ -3,7 +3,7 @@ import unittest
 from typing import Type, Tuple
 
 from . import *
-from . import test_netlist
+from ..electronics_interfaces import test_netlist
 from .RefdesRefinementPass import RefdesRefinementPass
 from .BomBackend import GenerateBom
 

@@ -3,11 +3,10 @@ from typing import Mapping, Dict
 
 from typing_extensions import override
 
-from edg.abstract_parts.ESeriesUtil import ESeriesRatioUtil
-from edg.abstract_parts.ResistiveDivider import DividerValues
-from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
-from edg.electronics_model.GroundPort import GroundAdapterAnalogSource  # needed by imported schematic
 from edg import *
+from edg.circuits.ResistiveDivider import DividerValues
+from edg.electronics_interfaces.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
+from edg.electronics_interfaces.GroundPort import GroundAdapterAnalogSource
 from .util import run_test_board
 
 
@@ -778,7 +777,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
             mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
             (self.touch_duck,), _ = self.chain(
-                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintToucbPad("edg:Symbol_DucklingSolid"))
+                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintTouchPad("edg:Symbol_DucklingSolid"))
             )
 
         # 5v domain

@@ -1,0 +1,346 @@
+import unittest
+
+from typing_extensions import override
+
+# to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
+from ..core import *
+from ..electronics_model.CircuitBlock import FootprintBlock
+from .DigitalPorts import DigitalSource, DigitalSink
+from .SpiPort import SpiController, SpiPeripheral
+from .UartPort import UartPort
+from .CanPort import CanDiffPort
+from .test_netlist import NetlistTestCase, Net, net_pin, net_block
+
+
+class TestFakeSpiController(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spi = self.Port(SpiController())
+        self.cs_out_1 = self.Port(DigitalSource())
+        self.cs_out_2 = self.Port(DigitalSource())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(  # it's anyone's guess why the resistor array is a SPI controller
+            "R",
+            "Resistor_SMD:R_Array_Concave_2x0603",
+            {
+                "0": self.cs_out_1,  # the mythical and elusive pin 0
+                "1": self.cs_out_2,
+                "2": self.spi.sck,
+                "3": self.spi.miso,
+                "4": self.spi.mosi,
+            },
+            value="WeirdSpiController",
+        )
+
+
+class TestFakeSpiPeripheral(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spi = self.Port(SpiPeripheral())
+        self.cs_in = self.Port(DigitalSink())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(  # it's anyone's guess why this resistor array has a different pinning in peripheral mode
+            "R",
+            "Resistor_SMD:R_Array_Concave_2x0603",
+            {
+                "1": self.spi.sck,
+                "2": self.spi.mosi,
+                "3": self.spi.miso,
+                "4": self.cs_in,
+            },
+            value="WeirdSpiPeripheral",
+        )
+
+
+class TestSpiCircuit(DesignTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.controller = self.Block(TestFakeSpiController())
+        self.peripheral1 = self.Block(TestFakeSpiPeripheral())
+        self.peripheral2 = self.Block(TestFakeSpiPeripheral())
+
+        self.spi_link = self.connect(self.controller.spi, self.peripheral1.spi, self.peripheral2.spi)
+        self.cs1_link = self.connect(self.controller.cs_out_1, self.peripheral1.cs_in)
+        self.cs2_link = self.connect(self.controller.cs_out_2, self.peripheral2.cs_in)
+
+
+class TestFakeUartBlock(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.port = self.Port(UartPort())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("R", "Resistor_SMD:R_0603_1608Metric", {"1": self.port.tx, "2": self.port.rx}, value="1k")
+
+
+class TestUartCircuit(DesignTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.a = self.Block(TestFakeUartBlock())
+        self.b = self.Block(TestFakeUartBlock())
+
+        self.link = self.connect(self.a.port, self.b.port)
+
+
+class TestFakeCanBlock(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.port = self.Port(CanDiffPort())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("R", "Resistor_SMD:R_0603_1608Metric", {"1": self.port.canh, "2": self.port.canl}, value="120")
+
+
+class TestCanCircuit(DesignTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.node1 = self.Block(TestFakeCanBlock())
+        self.node2 = self.Block(TestFakeCanBlock())
+        self.node3 = self.Block(TestFakeCanBlock())
+
+        self.link = self.connect(self.node1.port, self.node2.port, self.node3.port)
+
+
+class BundleNetlistTestCase(unittest.TestCase):
+    def test_spi_netlist(self) -> None:
+        net = NetlistTestCase.generate_single_net(TestSpiCircuit)
+
+        self.assertIn(
+            Net(
+                "cs1_link",
+                [
+                    net_pin(["controller"], "0"),
+                    net_pin(["peripheral1"], "4"),
+                ],
+                [
+                    TransformUtil.Path.empty().append_block("controller").append_port("cs_out_1", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral1").append_port("cs_in", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "cs2_link",
+                [
+                    net_pin(["controller"], "1"),
+                    net_pin(["peripheral2"], "4"),
+                ],
+                [
+                    TransformUtil.Path.empty().append_block("controller").append_port("cs_out_2", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral2").append_port("cs_in", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "spi_link.sck",
+                [
+                    net_pin(["controller"], "2"),
+                    net_pin(["peripheral1"], "1"),
+                    net_pin(["peripheral2"], "1"),
+                ],
+                [
+                    TransformUtil.Path.empty().append_block("controller").append_port("spi", "sck", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral1").append_port("spi", "sck", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral2").append_port("spi", "sck", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "spi_link.mosi",
+                [
+                    net_pin(["controller"], "4"),
+                    net_pin(["peripheral1"], "2"),
+                    net_pin(["peripheral2"], "2"),
+                ],
+                [
+                    TransformUtil.Path.empty().append_block("controller").append_port("spi", "mosi", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral1").append_port("spi", "mosi", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral2").append_port("spi", "mosi", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "spi_link.miso",
+                [
+                    net_pin(["controller"], "3"),
+                    net_pin(["peripheral1"], "3"),
+                    net_pin(["peripheral2"], "3"),
+                ],
+                [
+                    TransformUtil.Path.empty().append_block("controller").append_port("spi", "miso", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral1").append_port("spi", "miso", "net"),
+                    TransformUtil.Path.empty().append_block("peripheral2").append_port("spi", "miso", "net"),
+                ],
+            ),
+            net.nets,
+        )
+
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_Array_Concave_2x0603",
+                "R1",
+                "",
+                "WeirdSpiController",
+                ["controller"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiController"],
+            ),
+            net.blocks,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_Array_Concave_2x0603",
+                "R2",
+                "",
+                "WeirdSpiPeripheral",
+                ["peripheral1"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiPeripheral"],
+            ),
+            net.blocks,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_Array_Concave_2x0603",
+                "R3",
+                "",
+                "WeirdSpiPeripheral",
+                ["peripheral2"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeSpiPeripheral"],
+            ),
+            net.blocks,
+        )
+
+    def test_uart_netlist(self) -> None:
+        net = NetlistTestCase.generate_single_net(TestUartCircuit)
+
+        self.assertIn(
+            Net(
+                "link.a_tx",
+                [net_pin(["a"], "1"), net_pin(["b"], "2")],
+                [
+                    TransformUtil.Path.empty().append_block("a").append_port("port", "tx", "net"),
+                    TransformUtil.Path.empty().append_block("b").append_port("port", "rx", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "link.b_tx",
+                [net_pin(["a"], "2"), net_pin(["b"], "1")],
+                [
+                    TransformUtil.Path.empty().append_block("a").append_port("port", "rx", "net"),
+                    TransformUtil.Path.empty().append_block("b").append_port("port", "tx", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R1",
+                "",
+                "1k",
+                ["a"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeUartBlock"],
+            ),
+            net.blocks,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R2",
+                "",
+                "1k",
+                ["b"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeUartBlock"],
+            ),
+            net.blocks,
+        )
+
+    def test_can_netlist(self) -> None:
+        net = NetlistTestCase.generate_single_net(TestCanCircuit)
+
+        self.assertIn(
+            Net(
+                "link.canh",
+                [net_pin(["node1"], "1"), net_pin(["node2"], "1"), net_pin(["node3"], "1")],
+                [
+                    TransformUtil.Path.empty().append_block("node1").append_port("port", "canh", "net"),
+                    TransformUtil.Path.empty().append_block("node2").append_port("port", "canh", "net"),
+                    TransformUtil.Path.empty().append_block("node3").append_port("port", "canh", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            Net(
+                "link.canl",
+                [net_pin(["node1"], "2"), net_pin(["node2"], "2"), net_pin(["node3"], "2")],
+                [
+                    TransformUtil.Path.empty().append_block("node1").append_port("port", "canl", "net"),
+                    TransformUtil.Path.empty().append_block("node2").append_port("port", "canl", "net"),
+                    TransformUtil.Path.empty().append_block("node3").append_port("port", "canl", "net"),
+                ],
+            ),
+            net.nets,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R1",
+                "",
+                "120",
+                ["node1"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
+            ),
+            net.blocks,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R2",
+                "",
+                "120",
+                ["node2"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
+            ),
+            net.blocks,
+        )
+        self.assertIn(
+            net_block(
+                "Resistor_SMD:R_0603_1608Metric",
+                "R3",
+                "",
+                "120",
+                ["node3"],
+                ["edg.electronics_interfaces.test_bundle_netlist.TestFakeCanBlock"],
+            ),
+            net.blocks,
+        )

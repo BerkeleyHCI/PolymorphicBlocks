@@ -1,5 +1,4 @@
-from ..electronics_model import *
-from .Categories import Connector, PowerSource, Protection
+from ..electronics_interfaces import *
 
 
 @abstract_block

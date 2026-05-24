@@ -1,0 +1,162 @@
+from typing import Dict
+from typing_extensions import override
+
+from ..electronics_model import *
+from .VoltagePorts import VoltageSink, VoltageSource
+from .DigitalPorts import DigitalSink, DigitalSource
+from .AnalogPort import AnalogSink, AnalogSource
+
+
+class DummyPassive(DummyDevice):
+    def __init__(self) -> None:
+        super().__init__()
+        self.io = self.Port(Passive(), [InOut])
+
+
+class DummyDigitalSource(DummyDevice):
+    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
+        super().__init__()
+
+        self.io = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits), [InOut])
+
+
+class DummyDigitalSink(DummyDevice):
+    def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL, current_draw: RangeLike = RangeExpr.ZERO) -> None:
+        super().__init__()
+
+        self.io = self.Port(DigitalSink(voltage_limits=voltage_limit, current_draw=current_draw), [InOut])
+
+
+class DummyAnalogSource(DummyDevice):
+    def __init__(
+        self,
+        voltage_out: RangeLike = RangeExpr.ZERO,
+        signal_out: RangeLike = RangeExpr.EMPTY,
+        current_limits: RangeLike = RangeExpr.ALL,
+        impedance: RangeLike = RangeExpr.ZERO,
+    ) -> None:
+        super().__init__()
+
+        self.io = self.Port(
+            AnalogSource(
+                voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
+            ),
+            [InOut],
+        )
+
+
+class DummyAnalogSink(DummyDevice):
+    def __init__(
+        self,
+        voltage_limit: RangeLike = RangeExpr.ALL,
+        signal_limit: RangeLike = RangeExpr.ALL,
+        current_draw: RangeLike = RangeExpr.ZERO,
+        impedance: RangeLike = RangeExpr.INF,
+    ) -> None:
+        super().__init__()
+
+        self.io = self.Port(
+            AnalogSink(
+                voltage_limits=voltage_limit, signal_limits=signal_limit, current_draw=current_draw, impedance=impedance
+            ),
+            [InOut],
+        )
+
+
+class ForcedVoltageCurrentDraw(DummyDevice):
+    """Forces some input current draw regardless of the output's actual current draw value"""
+
+    def __init__(self, forced_current_draw: RangeLike) -> None:
+        super().__init__()
+
+        self.pwr_in = self.Port(VoltageSink(current_draw=forced_current_draw), [Input])
+        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage), [Output])
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)
+
+
+class ForcedVoltageCurrentLimit(DummyDevice):
+    """Forces some output current limit, which should be tighter than the input's actual current draw."""
+
+    def __init__(self, forced_current_limit: RangeLike) -> None:
+        super().__init__()
+
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
+        self.pwr_out = self.Port(
+            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=forced_current_limit), [Output]
+        )
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+
+class ForcedVoltage(DummyDevice):
+    """Forces some voltage on the output regardless of the input's actual voltage.
+    Current draw is passed through unchanged."""
+
+    def __init__(self, forced_voltage: RangeLike) -> None:
+        super().__init__()
+
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
+        self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+
+class ForcedVoltageCurrent(DummyDevice):
+    """Forces some voltage and current on the output regardless of the input's actual parameters."""
+
+    def __init__(self, forced_voltage: RangeLike, forced_current: RangeLike) -> None:
+        super().__init__()
+
+        self.pwr_in = self.Port(VoltageSink(current_draw=forced_current), [Input])
+        self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)
+
+
+class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
+    def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
+        super().__init__()
+
+        self.signal_in = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
+        self.signal_out = self.Port(
+            AnalogSource(
+                voltage_out=self.signal_in.link().voltage,
+                signal_out=forced_signal,
+                current_limits=self.signal_in.link().current_limits,
+            ),
+            [Output],
+        )
+
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.connect(self.signal_in.net, self.signal_out.net)
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name == "edg_importable:Adapter"
+        return {"1": self.signal_in, "2": self.signal_out}
+
+
+class ForcedDigitalSinkCurrentDraw(DummyDevice):
+    def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
+        super().__init__()
+
+        self.pwr_in = self.Port(
+            DigitalSink(
+                current_draw=forced_current_draw, voltage_limits=RangeExpr.ALL, input_thresholds=RangeExpr.EMPTY
+            ),
+            [Input],
+        )
+
+        self.pwr_out = self.Port(
+            DigitalSource(
+                voltage_out=self.pwr_in.link().voltage,
+                current_limits=RangeExpr.ALL,
+                output_thresholds=self.pwr_in.link().output_thresholds,
+            ),
+            [Output],
+        )
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)

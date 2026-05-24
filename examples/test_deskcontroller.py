@@ -44,8 +44,8 @@ class UartLevelShifter(Block):
         self.hv_pwr = self.Port(VoltageSink.empty())
         self.hv_uart = self.Port(UartPort.empty())
 
-        self.hv_tx_shift = self.Block(BidirectionaLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="hv"))
-        self.lv_tx_shift = self.Block(BidirectionaLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="lv"))
+        self.hv_tx_shift = self.Block(BidirectionalLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="hv"))
+        self.lv_tx_shift = self.Block(BidirectionalLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="lv"))
         self.connect(self.hv_pwr, self.hv_tx_shift.hv_pwr, self.lv_tx_shift.hv_pwr)
         self.connect(self.lv_pwr, self.hv_tx_shift.lv_pwr, self.lv_tx_shift.lv_pwr)
         self.connect(self.hv_tx_shift.hv_io, self.hv_uart.tx)
@@ -128,7 +128,7 @@ class DeskController(JlcBoardTop):
 
             # 1k pullup on the HV side is necessary for ~5v input, 4.7k does not provide a sufficient signal
             self.npx_shift = imp.Block(
-                BidirectionaLevelShifter(lv_res=RangeExpr.INF, hv_res=1 * kOhm(tol=0.05), src_hint="lv")
+                BidirectionalLevelShifter(lv_res=RangeExpr.INF, hv_res=1 * kOhm(tol=0.05), src_hint="lv")
             )
             self.connect(self.npx_shift.lv_pwr, self.v3v3)
             self.connect(self.npx_shift.hv_pwr, self.pwr)

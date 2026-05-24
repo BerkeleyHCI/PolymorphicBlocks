@@ -1,0 +1,256 @@
+from typing import Any, Dict
+from typing_extensions import override
+from deprecated import deprecated
+
+from ..electronics_interfaces import *
+from .PartsTable import PartsTableColumn, PartsTableRow
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+@non_library
+class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
+    """Base class for diodes, with anode and cathode pins, including a very wide range of devices."""
+
+    _STANDARD_FOOTPRINT = lambda: DiodeStandardFootprint
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.anode = self.Port(Passive.empty())
+        self.cathode = self.Port(Passive.empty())
+
+
+class DiodeStandardFootprint(StandardFootprint["BaseDiode"]):
+    REFDES_PREFIX = "D"
+
+    FOOTPRINT_PINNING_MAP = {
+        (
+            "Diode_SMD:D_MiniMELF",
+            "Diode_SMD:D_SOD-123",
+            "Diode_SMD:D_SOD-323",
+            "Diode_SMD:D_SMA",
+            "Diode_SMD:D_SMB",
+            "Diode_SMD:D_SMC",
+        ): lambda block: {
+            "1": block.cathode,
+            "2": block.anode,
+        },
+        (  # TODO are these standard?
+            "Package_TO_SOT_SMD:TO-252-2",
+            "Package_TO_SOT_SMD:TO-263-2",
+        ): lambda block: {
+            "1": block.anode,  # sometimes NC
+            "2": block.cathode,
+            "3": block.anode,
+        },
+    }
+
+
+@abstract_block
+class Diode(KiCadImportableBlock, BaseDiode):
+    """Base class for untyped diodes
+
+    TODO power? capacitance? leakage current?
+    """
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:D", "Device:D_Small")
+        return {"A": self.anode, "K": self.cathode}
+
+    def __init__(
+        self,
+        reverse_voltage: RangeLike,
+        current: RangeLike,
+        *,
+        reverse_voltage_margin: FloatLike = 1.25,
+        voltage_drop: RangeLike = Range.all(),
+        reverse_recovery_time: RangeLike = Range.all(),
+    ) -> None:
+        super().__init__()
+
+        self.reverse_voltage = self.ArgParameter(reverse_voltage, doc="operating Vr (reverse voltage across device)")
+        self.current = self.ArgParameter(current, doc="operating If (forward current through device)")
+        self.voltage_drop = self.ArgParameter(voltage_drop, doc="requirement for forward voltage drop")
+        self.reverse_recovery_time = self.ArgParameter(
+            reverse_recovery_time, doc="requirement for reverse recovery time"
+        )
+
+        self.reverse_voltage_margin = self.ArgParameter(
+            reverse_voltage_margin, doc="Vr rating margin, eg 1.25 means voltage rating >=1.25x operating voltage"
+        )
+
+        self.actual_voltage_rating = self.Parameter(RangeExpr())
+        self.actual_current_rating = self.Parameter(RangeExpr())
+        self.actual_voltage_drop = self.Parameter(RangeExpr())
+        self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.description = DescriptionString(
+            "<b>Vr:</b> ",
+            DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.reverse_voltage, "V"),
+            "\n",
+            "<b>If:</b> ",
+            DescriptionString.FormatUnits(self.actual_current_rating, "A"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.current, "A"),
+            "\n",
+            "<b>Vf:</b> ",
+            DescriptionString.FormatUnits(self.actual_voltage_drop, "V"),
+            " <b>of spec:</b> ",
+            DescriptionString.FormatUnits(self.voltage_drop, "V"),
+        )
+
+
+@non_library
+class TableDiode(PartsTableSelector, Diode):
+    VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
+    CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
+    FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
+    REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(
+            self.reverse_voltage,
+            self.current,
+            self.reverse_voltage_margin,
+            self.voltage_drop,
+            self.reverse_recovery_time,
+        )
+
+    @override
+    def _row_filter(self, row: PartsTableRow) -> bool:
+        return (
+            super()._row_filter(row)
+            and (self.get(self.reverse_voltage) * self.get(self.reverse_voltage_margin)).fuzzy_in(
+                row[self.VOLTAGE_RATING]
+            )
+            and self.get(self.current).fuzzy_in(row[self.CURRENT_RATING])
+            and row[self.FORWARD_VOLTAGE].fuzzy_in(self.get(self.voltage_drop))
+            and row[self.REVERSE_RECOVERY].fuzzy_in(self.get(self.reverse_recovery_time))
+        )
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+        self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
+        self.assign(self.actual_voltage_drop, row[self.FORWARD_VOLTAGE])
+        self.assign(self.actual_reverse_recovery_time, row[self.REVERSE_RECOVERY])
+
+
+@abstract_block
+class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
+    """Base class for untyped zeners
+
+    TODO power? capacitance? leakage current?
+    """
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:D_Zener", "Device:D_Zener_Small")
+        return {"A": self.anode, "K": self.cathode}
+
+    def __init__(self, zener_voltage: RangeLike) -> None:
+        super().__init__()
+
+        self.zener_voltage = self.ArgParameter(zener_voltage)
+
+        self.actual_zener_voltage = self.Parameter(RangeExpr())
+        self.actual_power_rating = self.Parameter(RangeExpr())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.description = DescriptionString(
+            "zener voltage=",
+            DescriptionString.FormatUnits(self.actual_zener_voltage, "V"),
+            " <b>of spec:</b>",
+            DescriptionString.FormatUnits(self.zener_voltage, "V"),
+            "\n",
+            "power=",
+            DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+        )
+
+
+@non_library
+class TableZenerDiode(PartsTableSelector, ZenerDiode):
+    ZENER_VOLTAGE = PartsTableColumn(Range)
+    POWER_RATING = PartsTableColumn(Range)  # tolerable power
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(self.zener_voltage)
+
+    @override
+    def _row_filter(self, row: PartsTableRow) -> bool:
+        return super()._row_filter(row) and row[self.ZENER_VOLTAGE].fuzzy_in(self.get(self.zener_voltage))
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.actual_zener_voltage, row[self.ZENER_VOLTAGE])
+        self.assign(self.actual_power_rating, row[self.POWER_RATING])
+
+
+class ProtectionZenerDiode(Protection):
+    """Zener diode reversed across a power rail to provide transient overvoltage protection (and become an incandescent
+    indicator on a reverse voltage)"""
+
+    def __init__(self, voltage: RangeLike):
+        super().__init__()
+
+        self.pwr = self.Port(
+            VoltageSink(voltage_limits=RangeExpr()),
+            [Power, InOut],
+        )
+        self.gnd = self.Port(Ground(), [Common])
+
+        self.voltage = self.ArgParameter(voltage)
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
+        self.connect(self.pwr.net, self.diode.cathode)
+        self.connect(self.gnd.net, self.diode.anode)
+        self.assign(self.pwr.voltage_limits, (0, self.diode.actual_zener_voltage.lower()))
+
+
+@deprecated("Use AnalogClampResistor, which should be cheaper and cause less signal distortion")
+class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
+    """Analog overvoltage protection diode to clamp the input voltage"""
+
+    def __init__(self, voltage: RangeLike):
+        super().__init__()
+
+        self.diode = self.Block(ZenerDiode(zener_voltage=voltage))
+
+        self.gnd = self.Port(Ground(), [Common])
+        self.signal_in = self.Port(AnalogSink(), [Input])
+        self.signal_out = self.Port(
+            AnalogSource(
+                voltage_out=self.signal_in.link().voltage.intersect(
+                    self.gnd.link().voltage + (0, self.diode.actual_zener_voltage.upper())
+                ),
+                signal_out=self.signal_in.link().signal,
+            ),
+            [Output],
+        )
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+
+        self.connect(self.signal_in.net, self.signal_out.net, self.diode.cathode)
+        self.connect(self.gnd.net, self.diode.anode)
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+        assert symbol_name == "edg_importable:AnalogClampZenerDiode"
+        return {"IN": self.signal_in, "OUT": self.signal_out, "GND": self.gnd}

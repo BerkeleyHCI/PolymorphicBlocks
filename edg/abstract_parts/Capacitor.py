@@ -1,0 +1,581 @@
+import re
+import warnings
+from abc import abstractmethod
+from typing import Any, Optional, Dict, Tuple, Mapping
+from typing_extensions import override
+import math
+
+from ..electronics_interfaces import *
+from .ESeriesUtil import ESeriesUtil
+from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+@abstract_block
+class UnpolarizedCapacitor(PassiveComponent):
+    """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
+
+    def __init__(
+        self,
+        capacitance: RangeLike,
+        voltage: RangeLike,
+        *,
+        voltage_rating_derating: FloatLike = float("nan"),
+        voltage_margin: FloatLike = 2.0,
+        exact_capacitance: BoolLike = False,
+    ) -> None:
+        super().__init__()
+
+        self.capacitance = self.ArgParameter(capacitance, doc="requirement for capacitance")
+        self.voltage = self.ArgParameter(voltage, doc="operating voltage range across the device")
+
+        # this old style is deprecated and emits a DeprecationWarning when used
+        # this specifies voltage as a derating factor, so 0.5 requires a voltage rating > 2x the operating voltage
+        self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
+
+        # 2x is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
+        # this does not apply to capacitance derating, which is handled separately
+        self.voltage_margin = self.ArgParameter(
+            voltage_margin, doc="voltage rating margin, eg 2.0 means voltage rating >=2x operating voltage"
+        )
+
+        # indicates whether the capacitance is exact (True) or nominal (False - typical case)
+        # in particular, nominal capacitance does not capacitance derate
+        self.exact_capacitance = self.ArgParameter(exact_capacitance)
+
+        self.actual_capacitance = self.Parameter(RangeExpr())
+        self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.description = DescriptionString(
+            "<b>capacitance:</b> ",
+            DescriptionString.FormatUnits(self.actual_capacitance, "F"),
+            " <b>of spec:</b> ",
+            DescriptionString.FormatUnits(self.capacitance, "F"),
+            "\n",
+            "<b>voltage rating:</b> ",
+            DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.voltage, "V"),
+        )
+
+
+@abstract_block
+class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootprint):
+    """Polarized capacitor, which we assume will be the default"""
+
+    _STANDARD_FOOTPRINT = lambda: CapacitorStandardFootprint
+
+    CAPACITOR_REGEX = re.compile(
+        r"^"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?"
+        + r"\s*"
+        + r"((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?"
+        + r"\s*"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)"
+        + r"$"
+    )
+    CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.pos, "2": self.neg}
+
+    @classmethod
+    def parse_capacitor(cls, value: str) -> Tuple[Range, Range]:
+        match = cls.CAPACITOR_REGEX.match(value)
+        assert match is not None, f"could not parse capacitor from value '{value}'"
+        center = PartParserUtil.parse_value(match.group(1), "")
+        voltage = PartParserUtil.parse_value(match.group(3), "V")
+        if match.group(2) is not None:
+            tol_str = match.group(2)
+            if not tol_str.startswith("±"):  # format conversion to more strict parser
+                tol_str = "±" + tol_str
+            capacitance = PartParserUtil.parse_abs_tolerance(tol_str, center, "F")
+        else:
+            capacitance = Range.from_tolerance(center, (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL))
+        return (capacitance, Range.zero_to_upper(voltage))
+
+    @classmethod
+    @override
+    def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> "Capacitor":
+        return Capacitor(*cls.parse_capacitor(properties["Value"]))
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.pos = self.Port(Passive.empty())
+        self.neg = self.Port(Passive.empty())
+
+
+class CapacitorStandardFootprint(StandardFootprint[Capacitor]):
+    REFDES_PREFIX = "C"
+
+    # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
+    FOOTPRINT_PINNING_MAP = {
+        (
+            "Capacitor_SMD:C_0201_0603Metric",
+            "Capacitor_SMD:C_0402_1005Metric",
+            "Capacitor_SMD:C_0603_1608Metric",
+            "Capacitor_SMD:C_0805_2012Metric",
+            "Capacitor_SMD:C_1206_3216Metric",
+            "Capacitor_SMD:C_1210_3225Metric",
+            "Capacitor_SMD:C_1812_4532Metric",
+            "Capacitor_SMD:C_2512_6332Metric",
+            "Capacitor_SMD:CP_Elec_3x5.3",
+            "Capacitor_SMD:CP_Elec_3x5.4",
+            "Capacitor_SMD:CP_Elec_4x3",
+            "Capacitor_SMD:CP_Elec_4x3.9",
+            "Capacitor_SMD:CP_Elec_4x4.5",
+            "Capacitor_SMD:CP_Elec_4x5.3",
+            "Capacitor_SMD:CP_Elec_4x5.4",
+            "Capacitor_SMD:CP_Elec_4x5.7",
+            "Capacitor_SMD:CP_Elec_4x5.8",
+            "Capacitor_SMD:CP_Elec_5x3",
+            "Capacitor_SMD:CP_Elec_5x3.9",
+            "Capacitor_SMD:CP_Elec_5x4.4",
+            "Capacitor_SMD:CP_Elec_5x4.5",
+            "Capacitor_SMD:CP_Elec_5x5.3",
+            "Capacitor_SMD:CP_Elec_5x5.4",
+            "Capacitor_SMD:CP_Elec_5x5.7",
+            "Capacitor_SMD:CP_Elec_5x5.8",
+            "Capacitor_SMD:CP_Elec_5x5.9",
+            "Capacitor_SMD:CP_Elec_6.3x3",
+            "Capacitor_SMD:CP_Elec_6.3x3.9",
+            "Capacitor_SMD:CP_Elec_6.3x4.5",
+            "Capacitor_SMD:CP_Elec_6.3x4.9",
+            "Capacitor_SMD:CP_Elec_6.3x5.2",
+            "Capacitor_SMD:CP_Elec_6.3x5.3",
+            "Capacitor_SMD:CP_Elec_6.3x5.4",
+            "Capacitor_SMD:CP_Elec_6.3x5.7",
+            "Capacitor_SMD:CP_Elec_6.3x5.8",
+            "Capacitor_SMD:CP_Elec_6.3x5.9",
+            "Capacitor_SMD:CP_Elec_6.3x7.7",
+            "Capacitor_SMD:CP_Elec_6.3x9.9",
+            "Capacitor_SMD:CP_Elec_8x5.4",
+            "Capacitor_SMD:CP_Elec_8x6.2",
+            "Capacitor_SMD:CP_Elec_8x6.5",
+            "Capacitor_SMD:CP_Elec_8x6.7",
+            "Capacitor_SMD:CP_Elec_8x6.9",
+            "Capacitor_SMD:CP_Elec_8x10",
+            "Capacitor_SMD:CP_Elec_8x10.5",
+            "Capacitor_SMD:CP_Elec_8x11.9",
+            "Capacitor_SMD:CP_Elec_10x7.7",
+            "Capacitor_SMD:CP_Elec_10x7.9",
+            "Capacitor_SMD:CP_Elec_10x10",
+            "Capacitor_SMD:CP_Elec_10x10.5",
+            "Capacitor_SMD:CP_Elec_10x12.5",
+            "Capacitor_SMD:CP_Elec_10x12.6",
+            "Capacitor_SMD:CP_Elec_10x14.3",
+            "Capacitor_SMD:CP_Elec_16x17.5",
+            "Capacitor_SMD:CP_Elec_16x22",
+            "Capacitor_SMD:CP_Elec_18x7.5",
+            "Capacitor_SMD:CP_Elec_18x22",
+        ): lambda block: {
+            "1": block.pos,
+            "2": block.neg,
+        },
+    }
+
+
+@abstract_block
+class CeramicCapacitor(Capacitor):
+    """Abstract base class for ceramic capacitors, which appear more ideal in terms of lower ESP"""
+
+    pass
+
+
+@abstract_block
+class AluminumCapacitor(Capacitor):
+    """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
+    but at the cost of ESR"""
+
+    pass
+
+
+@non_library
+class TableCapacitor(PartsTableSelector, Capacitor):
+    """Abstract table-based capacitor, providing some interface column definitions."""
+
+    CAPACITANCE = PartsTableColumn(Range)
+    NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
+    VOLTAGE_RATING = PartsTableColumn(Range)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(
+            self.capacitance, self.voltage, self.voltage_rating_derating, self.voltage_margin, self.exact_capacitance
+        )
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+        self.assign(self.actual_capacitance, row[self.CAPACITANCE])
+
+    @override
+    def _row_filter(self, row: PartsTableRow) -> bool:
+        if not math.isnan(self.get(self.voltage_rating_derating)):
+            derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+            warnings.warn(
+                f"voltage_rating_derating is deprecated and should be replaced with voltage_margin which has inverted semantics",
+                DeprecationWarning,
+            )
+            # 2.0 must be sync'd up with the default value
+            assert self.get(self.voltage_margin) == 2.0, "cannot use both voltage_rating_derating and voltage_margin"
+        else:
+            derated_voltage = self.get(self.voltage) * self.get(self.voltage_margin)
+
+        return (
+            super()._row_filter(row)
+            and derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING])
+            and self._row_filter_capacitance(row)
+        )
+
+    def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+        return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
+
+    @classmethod
+    @override
+    def _row_sort_by(cls, row: PartsTableRow) -> Any:
+        return (
+            ESeriesUtil.series_of(row[cls.NOMINAL_CAPACITANCE], default=ESeriesUtil.SERIES_MAX + 1),
+            super()._row_sort_by(row),
+        )
+
+
+@non_library
+class TableDeratingCapacitor(TableCapacitor):
+    """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
+
+    VOLTCO = PartsTableColumn(float)
+    DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+    PARALLEL_COUNT = PartsTableColumn(int)
+    PARALLEL_CAPACITANCE = PartsTableColumn(Range)
+    PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
+
+    MAX_PARALLEL_COUNT = 10  # maximum parallel capacitors that can be generated
+
+    # default derating parameters
+    DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
+    DERATE_MIN_CAPACITANCE = 1.0e-6
+    DERATE_LOWEST = 0.2  # floor for maximum derating factor
+    # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
+
+    def __init__(self, *args: Any, single_nominal_capacitance: RangeLike = (0, 22) * uFarad, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
+        self.generator_param(self.single_nominal_capacitance)
+
+        self.actual_derated_capacitance = self.Parameter(RangeExpr())
+
+    @override
+    def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+        # post-derating capacitance filtering is in _table_postprocess
+        return Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
+
+    @override
+    def _table_postprocess(self, table: PartsTable) -> PartsTable:
+        def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+            if not self.get(self.exact_capacitance):
+                derated = row[self.CAPACITANCE]
+            elif self.get(self.voltage).upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
+                derated = row[self.CAPACITANCE]
+            elif row[self.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
+                derated = row[self.CAPACITANCE]
+            else:  # actually derate
+                factor = 1 - row[self.VOLTCO] * (self.get(self.voltage).upper - 3.6)
+                if factor < self.DERATE_LOWEST:
+                    factor = self.DERATE_LOWEST
+                derated = row[self.CAPACITANCE] * Range(factor, 1)
+
+            if derated.lower == 0:  # in case where tolerance is the nominal value
+                return None
+            # ceil is needed so that it generates the maximum number of capacitors, especially for where the upper bound
+            # is infinite (like decoupling capacitors for power converters), but float issues can cause the rounding to be
+            # too aggressive even for an exact match, so this reduces the count before ceil-ing it
+            count = math.ceil(self.get(self.capacitance).lower / derated.lower * (1 - Range.DOUBLE_FLOAT_ROUND_FACTOR))
+            derated_parallel_capacitance = derated * count
+            if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
+                return None
+
+            if count > self.MAX_PARALLEL_COUNT:
+                return None
+
+            return {
+                self.DERATED_CAPACITANCE: derated,
+                self.PARALLEL_COUNT: count,
+                self.PARALLEL_DERATED_CAPACITANCE: derated_parallel_capacitance,
+                self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count,
+            }
+
+        return table.map_new_columns(add_derated_row).filter(
+            lambda row: (row[self.PARALLEL_DERATED_CAPACITANCE].fuzzy_in(self.get(self.capacitance)))
+        )
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        """This one is weird. Because this is the last in the class order, this is called last.
+        So the top subclass needs explicit logic to handle parallel capacitors."""
+        super()._row_generate(row)
+        if row[self.PARALLEL_COUNT] == 1:
+            self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
+        else:
+            self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
+            self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+            self.assign(self.actual_capacitance, row[self.PARALLEL_CAPACITANCE])
+            self.assign(self.actual_derated_capacitance, row[self.PARALLEL_DERATED_CAPACITANCE])
+
+    @abstractmethod
+    def _make_parallel_footprints(self, row: PartsTableRow) -> None:
+        """Given a selected part (row), creates the parallel internal capacitors. Implement me."""
+        ...
+
+
+class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
+    """Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
+    Used as the leaf block for generating parallel capacitors.
+
+    TODO: use footprint table?
+    """
+
+    def __init__(
+        self,
+        footprint: StringLike = "",
+        manufacturer: StringLike = "",
+        part_number: StringLike = "",
+        value: StringLike = "",
+        *args: Any,
+        **kwargs: Any,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.footprint(
+            "C",
+            footprint,
+            {
+                "1": self.pos,
+                "2": self.neg,
+            },
+            mfr=manufacturer,
+            part=part_number,
+            value=value,
+        )
+
+
+class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
+    Implemented as a shim block."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.pwr, "2": self.gnd}
+
+    def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.gnd = self.Port(Ground(), [Common])
+        self.pwr = self.Port(
+            VoltageSink.from_gnd(self.gnd, voltage_limits=self.cap.actual_voltage_rating, current_draw=0 * Amp(tol=0)),
+            [Power, InOut],
+        )
+
+        self.connect(self.gnd.net, self.cap.neg)
+        self.connect(self.pwr.net, self.cap.pos)
+        self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
+
+        # TODO there should be a way to forward the description string of the inner element
+
+    def connected(
+        self, gnd: Optional[Port[GroundLink]] = None, pwr: Optional[Port[VoltageLink]] = None
+    ) -> "DecouplingCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if gnd is not None:
+            builder.block().connect(gnd, self.gnd)
+        if pwr is not None:
+            builder.block().connect(pwr, self.pwr)
+        return self
+
+
+class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Capacitor attached to an analog line, that presents as an open model-wise."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.io, "2": self.gnd}
+
+    def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.gnd = self.Port(Ground(), [Common])
+        self.io = self.Port(AnalogSink(), [InOut])  # ideal open port
+
+        self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
+        self.connect(self.gnd.net, self.cap.neg)
+        self.connect(self.io.net, self.cap.pos)
+
+    def connected(
+        self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[AnalogLink]] = None
+    ) -> "AnalogCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if gnd is not None:
+            builder.block().connect(gnd, self.gnd)
+        if io is not None:
+            builder.block().connect(io, self.io)
+        return self
+
+
+class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Series DC-blocking capacitor for an analog signal."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.input, "2": self.output}
+
+    def __init__(self, capacitance: RangeLike, output_bias: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.output_bias = self.ArgParameter(output_bias)
+
+        self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
+        self.output = self.Port(
+            AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=self.input.link().source_impedance),
+            [Output],
+        )
+
+        self.cap = self.Block(
+            Capacitor(
+                capacitance,
+                voltage=self.input.link().voltage - self.output.link().voltage,
+                exact_capacitance=exact_capacitance,
+            )
+        )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.connect(self.input.net, self.cap.neg)
+        self.connect(self.output.net, self.cap.pos)
+
+        self.assign(self.input.impedance, self.output.link().sink_impedance)  # assumed high frequency
+        voltage_halfspan = (self.input.link().voltage.upper() - self.input.link().voltage.lower()) / 2
+        self.assign(
+            self.output.voltage_out,
+            (self.output_bias.lower() - voltage_halfspan, self.output_bias.upper() + voltage_halfspan),
+        )
+        signal_halfspan = (self.input.link().signal.upper() - self.input.link().signal.lower()) / 2
+        self.assign(
+            self.output.signal_out,
+            (self.output_bias.lower() - signal_halfspan, self.output_bias.upper() + signal_halfspan),
+        )
+
+    def connected(
+        self, input: Optional[Port[AnalogLink]] = None, output: Optional[Port[AnalogLink]] = None
+    ) -> "AnalogSeriesCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if input is not None:
+            builder.block().connect(input, self.input)
+        if output is not None:
+            builder.block().connect(output, self.output)
+        return self
+
+
+class DigitalCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Capacitor attached to a digital line, that presents as an open model-wise."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.io, "2": self.gnd}
+
+    def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.gnd = self.Port(Ground(), [Common])
+        self.io = self.Port(DigitalSink(), [InOut])  # ideal open port
+
+        self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
+        self.connect(self.gnd.net, self.cap.neg)
+        self.connect(self.io.net, self.cap.pos)
+
+    def connected(
+        self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None
+    ) -> "DigitalCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if gnd is not None:
+            builder.block().connect(gnd, self.gnd)
+        if io is not None:
+            builder.block().connect(io, self.io)
+        return self
+
+
+class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
+
+
+class CombinedCapacitor(MultipackDevice, MultipackBlock, GeneratorBlock):
+    """A packed capacitor that combines multiple individual capacitors into a single component,
+    with the sum of or taking the max of the constituent capacitances."""
+
+    def __init__(self, *, extend_upper: BoolLike = False) -> None:
+        super().__init__()
+
+        self.elements = self.PackedPart(
+            PackedBlockArray(CombinedCapacitorElement(capacitance=RangeExpr(), voltage=RangeExpr()))
+        )
+        self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
+        self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
+        self.capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.capacitance))
+        self.voltages = self.PackedParameter(self.elements.params_array(lambda x: x.voltage))
+        self.voltage_rating_deratings = self.PackedParameter(
+            self.elements.params_array(lambda x: x.voltage_rating_derating)
+        )
+        self.exact_capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.exact_capacitance))
+
+        self.actual_capacitance = self.Parameter(RangeExpr())
+        self.actual_voltage_rating = self.Parameter(RangeExpr())
+        self.unpacked_assign(self.elements.params(lambda x: x.actual_voltage_rating), self.actual_voltage_rating)
+
+        self.extend_upper = self.ArgParameter(extend_upper)
+        self.generator_param(self.pos.requested(), self.neg.requested(), self.extend_upper)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        capacitance = self.capacitances.sum()
+        if self.get(self.extend_upper):
+            capacitance = RangeExpr._to_expr_type((capacitance.lower(), float("inf")))
+        self.cap = self.Block(
+            Capacitor(
+                capacitance,
+                voltage=self.voltages.hull(),
+                exact_capacitance=self.exact_capacitances.all(),
+                voltage_rating_derating=self.voltage_rating_deratings.min(),
+            )
+        )
+        self.assign(self.actual_voltage_rating, self.cap.actual_voltage_rating)
+        self.assign(self.actual_capacitance, self.cap.actual_capacitance)
+        self.require(self.exact_capacitances.all_equal())
+
+        self.pos_merge = self.Block(PackedPassive())
+        self.neg_merge = self.Block(PackedPassive())
+        self.connect(self.cap.pos, self.pos_merge.merged)
+        self.connect(self.cap.neg, self.neg_merge.merged)
+        self.connect(self.pos, self.pos_merge.elts)
+        self.connect(self.neg, self.neg_merge.elts)

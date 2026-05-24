@@ -1,5 +1,4 @@
-from ..electronics_model import *
-from .Categories import *
+from ..electronics_interfaces import *
 
 
 @abstract_block

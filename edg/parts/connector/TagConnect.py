@@ -2,7 +2,7 @@ from typing import Tuple
 
 from typing_extensions import override
 
-from ...abstract_parts import *
+from ...circuits import *
 
 
 @abstract_block_default(lambda: TagConnectLegged)

@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from ....abstract_parts import *
+from ....circuits import *
 
 
 class Nhd_312_25664uc_Device(InternalSubcircuit, FootprintBlock):

@@ -1,15 +1,12 @@
 import unittest
 
-from .PinMappable import UartPort, Volt, mAmp
+from ..electronics_interfaces import *
 from .PinMappable import (
     PinMapUtil,
     PinResource,
     Passive,
     PeripheralFixedPin,
-    UsbDevicePort,
     PeripheralAnyResource,
-    DigitalBidir,
-    AnalogSink,
     AllocatedResource,
     AutomaticAllocationError,
     BadUserAssignError,

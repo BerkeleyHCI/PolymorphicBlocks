@@ -1,3 +1,5 @@
+# Contains the core netlist, netlister ports, and supporting utilities / interfaces.
+# Excludes electronics interfaces (the higher level port and links models) which is in a separate package.
 from ..core import *
 
 from .CircuitBlock import (
@@ -6,6 +8,7 @@ from .CircuitBlock import (
     CircuitPortAdapter,
     NetBlock,
     CircuitPort,
+    KicadImportablePortAdapter,
 )
 from .SubboardBlock import SubboardBlock, WrapperSubboardBlock, SubboardConnectorPair
 
@@ -18,38 +21,42 @@ from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
 from .PassivePort import Passive, PassiveLink, HasPassivePort
-from .GroundPort import Ground, GroundSource, GroundReference, GroundLink, Common
-from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
-from .DigitalPorts import DigitalBidirNotConnected
-from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
-from .TouchPort import TouchDriver, TouchPadPort
-from .UartPort import UartPort, UartLink
-from .SpiPort import SpiController, SpiPeripheral, SpiLink
-from .SpiPort import SpiMaster, SpiSlave  # legacy names
-from .I2cPort import I2cPullupPort, I2cController, I2cTarget, I2cLink
-from .I2cPort import I2cMaster, I2cSlave  # legacy names
-from .CanPort import CanControllerPort, CanTransceiverPort, CanLogicLink, CanPassivePort, CanDiffPort, CanDiffLink
-from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort, SwdLink
-from .SpeakerPort import SpeakerDriverPort, SpeakerPort, SpeakerLink
-from .CrystalPort import CrystalPort, CrystalDriver, CrystalLink
-from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbLink
-from .DvpPort import Dvp8Host, Dvp8Camera, Dvp8Link
-from .I2sPort import I2sController, I2sTargetReceiver, I2sLink
-
-from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
-
-from .CircuitPackingBlock import NetPackingBlock, PackedPassive, PackedGround, PackedVoltageSource
 
 from .PartParserUtil import PartParserUtil
 
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
 from .KiCadSchematicBlock import KiCadSchematicBlock
 
+# categories
+from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
+from .Categories import DummyDevice, DiscreteApplication
+from .Categories import Analog, OpampApplication
+from .Categories import Filter, AnalogFilter, RfFilter, DigitalFilter
+from .Categories import ProgrammableController, Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
+from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriver, IoExpander, BitBangAdapter
+from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
+from .Categories import PowerSource, Connector, ProgrammingConnector
+from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
+from .Categories import (
+    Sensor,
+    CurrentSensor,
+    Accelerometer,
+    Gyroscope,
+    MagneticSensor,
+    MagneticSwitch,
+    Magnetometer,
+    DistanceSensor,
+    Microphone,
+    Camera,
+    LightSensor,
+)
+from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, PressureSensor, GasSensor
+from .Categories import Protection
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
+from .Categories import MultipackDevice
+from .Categories import IdealModel
+
 # model-breaking constructs, including for unit testing
-from .DummyDevice import DummyDevice
-from .GroundDummyDevice import DummyGround
-from .VoltageDummyDevice import DummyVoltageSource, DummyVoltageSink
 
 # for power users to build custom blackbox handlers
 from .KiCadSchematicParser import KiCadSymbol, KiCadLibSymbol

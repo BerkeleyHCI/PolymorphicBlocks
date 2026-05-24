@@ -1,12 +1,10 @@
 from itertools import chain
 from typing import List, Dict, Tuple, Type, Optional, Any, Union
-
-from deprecated import deprecated
 from typing_extensions import override
+from deprecated import deprecated
 
-from ..electronics_model import *
+from ..electronics_interfaces import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
-from .Categories import ProgrammableController
 
 
 @non_library

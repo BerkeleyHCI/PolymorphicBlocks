@@ -2,7 +2,7 @@ from typing import Optional
 
 from typing_extensions import override
 
-from ....abstract_parts import *
+from ....circuits import *
 
 
 class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):

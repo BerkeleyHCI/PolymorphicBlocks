@@ -1,0 +1,155 @@
+from typing import Any, Dict
+from typing_extensions import override
+
+from ..electronics_model import *
+from .PartsTable import PartsTableColumn, PartsTableRow
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+@abstract_block
+class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
+    """Base class for untyped BJTs"""
+
+    _STANDARD_FOOTPRINT = lambda: BjtStandardFootprint
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        # TODO actually check that the device channel corresponds with the schematic?
+        assert symbol_name.startswith("Device:Q_NPN_") or symbol_name.startswith("Device:Q_PNP_")
+        assert symbol_name.removeprefix("Device:Q_NPN_").removeprefix("Device:Q_PNP_") in (
+            "BCE",
+            "BEC",
+            "CBE",
+            "CEB",
+            "EBC",
+            "ECB",
+        )
+        return {"B": self.base, "C": self.collector, "E": self.emitter}
+
+    @staticmethod
+    def Npn(*args: Any, **kwargs: Any) -> "Bjt":
+        return Bjt(*args, **kwargs, channel="NPN")
+
+    @staticmethod
+    def Pnp(*args: Any, **kwargs: Any) -> "Bjt":
+        return Bjt(*args, **kwargs, channel="PNP")
+
+    def __init__(
+        self,
+        collector_voltage: RangeLike,
+        collector_current: RangeLike,
+        *,
+        collector_voltage_margin: FloatLike = 1.25,
+        gain: RangeLike = Range.all(),
+        power: RangeLike = Range.exact(0),
+        channel: StringLike = StringExpr(),
+    ) -> None:
+        super().__init__()
+
+        self.base = self.Port(Passive.empty())
+        self.collector = self.Port(Passive.empty())
+        self.emitter = self.Port(Passive.empty())
+
+        self.collector_voltage = self.ArgParameter(
+            collector_voltage, doc="operating Vce (voltage from collector to emitter)"
+        )
+        self.collector_current = self.ArgParameter(collector_current, doc="operating Ic (current into collector)")
+        self.gain = self.ArgParameter(gain, doc="requirement for gain")
+        self.power = self.ArgParameter(power, doc="operating power dissipation")
+        self.channel = self.ArgParameter(channel, doc="BJT type, either 'PNP' or 'NPN'")
+
+        self.collector_voltage_margin = self.ArgParameter(
+            collector_voltage_margin, doc="Vce rating margin, eg 1.25 means voltage rating >=1.25x operating voltage"
+        )
+
+        self.actual_collector_voltage_rating = self.Parameter(RangeExpr())
+        self.actual_collector_current_rating = self.Parameter(RangeExpr())
+        self.actual_power_rating = self.Parameter(RangeExpr())
+        self.actual_gain = self.Parameter(RangeExpr())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.description = DescriptionString(
+            "<b>Vce:</b> ",
+            DescriptionString.FormatUnits(self.actual_collector_voltage_rating, "V"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.collector_voltage, "V"),
+            "\n",
+            "<b>Ice:</b> ",
+            DescriptionString.FormatUnits(self.actual_collector_current_rating, "A"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.collector_current, "A"),
+            "\n",
+            "<b>Gain:</b> ",
+            DescriptionString.FormatUnits(self.actual_gain, ""),
+            " <b>of spec:</b> ",
+            DescriptionString.FormatUnits(self.gain, ""),
+            "\n",
+            "<b>Pmax:</b> ",
+            DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+            " <b>of operating:</b> ",
+            DescriptionString.FormatUnits(self.power, "W"),
+        )
+
+
+class BjtStandardFootprint(StandardFootprint[Bjt]):
+    REFDES_PREFIX = "Q"
+
+    FOOTPRINT_PINNING_MAP = {
+        (
+            "Package_TO_SOT_SMD:SOT-23",
+            "Package_TO_SOT_SMD:SOT-323_SC-70",
+        ): lambda block: {
+            "1": block.base,
+            "2": block.emitter,
+            "3": block.collector,
+        },
+        "Package_TO_SOT_SMD:SOT-89-3": lambda block: {
+            "1": block.base,
+            "2": block.collector,
+            "3": block.emitter,
+        },
+    }
+
+
+class TableBjt(PartsTableSelector, Bjt):
+    VCE_RATING = PartsTableColumn(Range)
+    ICE_RATING = PartsTableColumn(Range)
+    GAIN = PartsTableColumn(Range)
+    POWER_RATING = PartsTableColumn(Range)
+    CHANNEL = PartsTableColumn(str)  # either 'PNP' or 'NPN'
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(
+            self.collector_voltage,
+            self.collector_current,
+            self.collector_voltage_margin,
+            self.gain,
+            self.power,
+            self.channel,
+        )
+
+    @override
+    def _row_filter(self, row: PartsTableRow) -> bool:
+        return (
+            super()._row_filter(row)
+            and row[self.CHANNEL] == self.get(self.channel)
+            and (self.get(self.collector_voltage) * self.get(self.collector_voltage_margin)).fuzzy_in(
+                row[self.VCE_RATING]
+            )
+            and self.get(self.collector_current).fuzzy_in(row[self.ICE_RATING])
+            and row[self.GAIN].fuzzy_in(self.get(self.gain))
+            and self.get(self.power).fuzzy_in(row[self.POWER_RATING])
+        )
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.actual_collector_voltage_rating, row[self.VCE_RATING])
+        self.assign(self.actual_collector_current_rating, row[self.ICE_RATING])
+        self.assign(self.actual_gain, row[self.GAIN])
+        self.assign(self.actual_power_rating, row[self.POWER_RATING])

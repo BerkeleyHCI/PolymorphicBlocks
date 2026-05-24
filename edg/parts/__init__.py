@@ -1,3 +1,5 @@
+from ..circuits import *
+
 # A library of parts and application circuits around them,
 # distinct from circuits composed of abstract parts and vendor parts libraries.
 from .analog import *
@@ -12,6 +14,7 @@ from .power import *
 from .sensor import *
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
+from .TouchPad import FootprintTouchPad
 from .Mechanicals import Outline_Pn1332
 from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4, MountingHole_NoPad_M2_5
 

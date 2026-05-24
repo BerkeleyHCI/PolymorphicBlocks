@@ -2,7 +2,7 @@ from typing import Optional, Union, Any
 
 from typing_extensions import override
 
-from ...abstract_parts import *
+from ...circuits import *
 
 
 class Cr2032(Battery, FootprintBlock):
