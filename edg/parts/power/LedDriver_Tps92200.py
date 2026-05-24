@@ -1,4 +1,3 @@
-from typing import Any
 from typing_extensions import override
 
 from ...circuits import *

@@ -117,7 +117,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
         self.assign(self.actual_boost_dutycycle, boost_values.effective_dutycycle)
 
         combined_ripple_scale = max(buck_values.ripple_scale, boost_values.ripple_scale)
-        combined_inductor_avg_current = boost_values.inductor_avg_current.hull(boost_values.inductor_avg_current)
+        combined_inductor_avg_current = buck_values.inductor_avg_current.hull(boost_values.inductor_avg_current)
         combined_min_ripple = max(buck_values.min_ripple, boost_values.min_ripple)
 
         self.inductor = self.Block(
