@@ -2,10 +2,9 @@ import unittest
 
 from typing_extensions import override
 
-from .VoltageRegulator import BuckConverterPowerPath, BoostConverterPowerPath
-from ..electronics_interfaces import *
-from .Inductor import Inductor
-from .Capacitor import Capacitor
+from ..abstract_parts import *
+from .BuckConverterPowerPath import BuckConverterPowerPath
+from .BoostConverterPowerPath import BoostConverterPowerPath
 
 
 class SwitchingConverterCalculationTest(unittest.TestCase):
