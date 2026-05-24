@@ -47,6 +47,7 @@ class HasSubboardBlockApi(Block):
 
     @override
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
+        # TODO THIS HAPPENS POST FINALIZE AND IS BROKEN
         self.assign(self.fp_external_blocks, [self._blocks.name_of(block) for block in self._external_blocks])
 
         super()._populate_def_proto_hierarchy(pb, ref_map)

@@ -432,8 +432,6 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        self._constraints.finalize()
-
         for name, constraint in self._constraints.items():
             constraint._populate_expr_proto(edgir.add_pair(pb.constraints, name), ref_map)
 
