@@ -11,7 +11,9 @@ class Rp2040_Interfaces(IoControllerI2cTarget, IoControllerUsb, BaseIoController
     """Defines base interfaces for ESP32C3 microcontrollers"""
 
 
-class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(
+    Rp2040_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
+):
     _PIN_MAPPING = {
         "GPIO0": "2",
         "GPIO1": "3",
@@ -392,7 +394,7 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, InternalSubcircuit, GeneratorBlock, 
     def __init__(self, model_pin_assigns: ArrayStringLike):
         super().__init__()
         self.model_pin_assigns = self.ArgParameter(model_pin_assigns)
-        self.gnd = self.Port(Ground.empty())
+        self.gnd = self.Port(Ground.empty(), optional=True)
         self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
         self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
         self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
@@ -485,7 +487,7 @@ class Xiao_Rp2040(
     IoControllerPowerOut,
     IoControllerVin,
     IoController,
-    BaseIoControllerExportable,  # TODO this breaks something
+    BaseIoControllerExportable,
     GeneratorBlock,
     WrapperSubboardBlock,
 ):
@@ -505,6 +507,7 @@ class Xiao_Rp2040(
         super().__init__(**kwargs)
         self.ic: Rp2040_Device  # device model only
         self.generator_param(
+            self.gnd.is_connected(),
             self.pwr.is_connected(),
             self.pwr_out.is_connected(),
             self.pwr_vin.is_connected(),
@@ -535,12 +538,20 @@ class Xiao_Rp2040(
             "cannot use 3.3v input if VUsb used",
         )
         self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
+        self.require(
+            (
+                self.pwr_vin.is_connected()
+                | self.vusb_out.is_connected()
+                | self.pwr.is_connected()
+                | self.pwr_out.is_connected()
+            ).implies(self.gnd.is_connected()),
+            "ground required if power used",
+        )
 
         self.ic = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
-        self.connect(self.gnd, self.ic.gnd)
 
         self.device = self.Block(Xiao_Rp2040_Device(model_pin_assigns=self.ic.actual_pin_assigns), external=True)
-        self.export_tap(self.gnd, self.device.gnd)
+
         self.export_tap_iocontroller(self.device)
         # TODO propgate actual_pin_assigns from device instead of model
 
@@ -582,3 +593,10 @@ class Xiao_Rp2040(
             self.export_tap(self.pwr_vin, self.device.vcc)
         if self.get(self.vusb_out.is_connected()):
             self.export_tap(self.vusb_out, self.device.vcc_out)
+
+        self.export_tap(self.gnd, self.device.gnd)
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.ic.gnd)
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.ic.gnd)

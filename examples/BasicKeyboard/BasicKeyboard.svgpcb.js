@@ -1,7 +1,7 @@
 const board = new PCB();
 
 const sw = SwitchMatrix_2_3_sw(pt(0.039, 0.039))
-// mcu
+// mcu.device
 const U1 = board.add(XIAO_RP2040_SMD, {
   translate: pt(1.466, 0.410), rotate: 0,
   id: 'U1'
@@ -15,7 +15,7 @@ board.setNetlist([
   {name: "mcu.gpio.1_2", pads: [["U1", "10"], ["D3", "2"], ["D6", "2"]]},
   {name: "mcu.gnd", pads: [["U1", "13"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
-  {name: "mcu.vusb_out", pads: [["U1", "14"]]},
+  {name: "mcu.device.vcc_out", pads: [["U1", "14"]]},
   {name: "sw.sw[0,0].sw", pads: [["SW1", "1"], ["D1", "1"]]},
   {name: "sw.sw[0,1].sw", pads: [["SW2", "1"], ["D2", "1"]]},
   {name: "sw.sw[0,2].sw", pads: [["SW3", "1"], ["D3", "1"]]},
@@ -25,7 +25,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(1.85748031496063, 2.1181102362204722);
+const limit1 = pt(1.936220472440945, 2.1181102362204722);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);
