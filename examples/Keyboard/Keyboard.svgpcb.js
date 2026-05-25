@@ -31,11 +31,6 @@ const C2 = board.add(C_0805_2012Metric, {
   translate: pt(1.722, 1.155), rotate: 0,
   id: 'C2'
 })
-// mcu.swd.conn
-const J2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
-  translate: pt(1.732, 0.146), rotate: 0,
-  id: 'J2'
-})
 // mcu.ic
 const U2 = board.add(LQFP_48_7x7mm_P0_5mm, {
   translate: pt(1.321, 0.203), rotate: 0,
@@ -91,15 +86,20 @@ const C10 = board.add(C_0603_1608Metric, {
   translate: pt(1.800, 0.647), rotate: 0,
   id: 'C10'
 })
+// mcu.swd.conn
+const J2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
+  translate: pt(1.732, 0.146), rotate: 0,
+  id: 'J2'
+})
 
 board.setNetlist([
   {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U1", "3"], ["C1", "1"]]},
-  {name: "usb.gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "1"], ["C1", "2"], ["C2", "2"], ["J2", "3"], ["J2", "5"], ["J2", "9"], ["U2", "23"], ["U2", "35"], ["U2", "44"], ["U2", "47"], ["U2", "8"], ["C3", "2"], ["C4", "2"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["C8", "2"], ["X1", "2"], ["X1", "4"], ["C9", "2"], ["C10", "2"]]},
+  {name: "usb.gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "1"], ["C1", "2"], ["C2", "2"], ["U2", "23"], ["U2", "35"], ["U2", "44"], ["U2", "47"], ["U2", "8"], ["C3", "2"], ["C4", "2"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["C8", "2"], ["X1", "2"], ["X1", "4"], ["C9", "2"], ["C10", "2"], ["J2", "3"], ["J2", "5"], ["J2", "9"]]},
   {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["U2", "33"], ["R3", "2"]]},
   {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "32"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
-  {name: "reg.pwr_out", pads: [["U1", "2"], ["C2", "1"], ["J2", "1"], ["U2", "1"], ["U2", "24"], ["U2", "36"], ["U2", "48"], ["U2", "9"], ["C3", "1"], ["C4", "1"], ["C5", "1"], ["C6", "1"], ["C7", "1"], ["C8", "1"], ["R3", "1"]]},
+  {name: "reg.pwr_out", pads: [["U1", "2"], ["C2", "1"], ["U2", "1"], ["U2", "24"], ["U2", "36"], ["U2", "48"], ["U2", "9"], ["C3", "1"], ["C4", "1"], ["C5", "1"], ["C6", "1"], ["C7", "1"], ["C8", "1"], ["R3", "1"], ["J2", "1"]]},
   {name: "mcu.gpio.0_0", pads: [["U2", "10"], ["SW1", "2"], ["SW2", "2"], ["SW3", "2"]]},
   {name: "mcu.gpio.0_1", pads: [["U2", "11"], ["SW4", "2"], ["SW5", "2"], ["SW6", "2"]]},
   {name: "mcu.gpio.1_0", pads: [["U2", "12"], ["D1", "2"], ["D4", "2"]]},
@@ -107,9 +107,9 @@ board.setNetlist([
   {name: "mcu.gpio.1_2", pads: [["U2", "14"], ["D3", "2"], ["D6", "2"]]},
   {name: "mcu.xtal_node.xi", pads: [["U2", "5"], ["X1", "1"], ["C9", "1"]]},
   {name: "mcu.xtal_node.xo", pads: [["U2", "6"], ["X1", "3"], ["C10", "1"]]},
-  {name: "mcu.swd_node.swdio", pads: [["J2", "2"], ["U2", "34"]]},
-  {name: "mcu.swd_node.swclk", pads: [["J2", "4"], ["U2", "37"]]},
-  {name: "mcu.reset_node", pads: [["J2", "10"], ["U2", "7"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "34"], ["J2", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "37"], ["J2", "4"]]},
+  {name: "mcu.reset_node", pads: [["U2", "7"], ["J2", "10"]]},
   {name: "mcu.swd.tdi", pads: [["J2", "8"]]},
   {name: "mcu.swd.swo", pads: [["J2", "6"]]},
   {name: "sw.sw[0,0].sw", pads: [["SW1", "1"], ["D1", "1"]]},

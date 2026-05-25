@@ -296,7 +296,8 @@ class Datalogger(BoardTop):
                         "sw2=23",
                         "v12sense=10",
                         "v5sense=9",
-                        "vscsense=8" "swd_swo=PIO0_8",
+                        "vscsense=8",
+                        "swd_swo=PIO0_8",
                     ],
                 ),
                 (["pwr_5v", "power_path", "inductor", "part"], "NR5040T220M"),  # peg to prior part selection

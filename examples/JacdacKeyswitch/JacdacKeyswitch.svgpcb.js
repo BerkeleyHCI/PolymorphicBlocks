@@ -115,11 +115,6 @@ const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
   translate: pt(0.659, 1.091), rotate: 0,
   id: 'TP3'
 })
-// mcu.swd.conn
-const J1 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(0.870, 0.325), rotate: 0,
-  id: 'J1'
-})
 // mcu.ic
 const U2 = board.add(QFN_28_4x4mm_P0_5mm, {
   translate: pt(0.836, 0.104), rotate: 0,
@@ -134,6 +129,11 @@ const C3 = board.add(C_0805_2012Metric, {
 const C4 = board.add(C_0603_1608Metric, {
   translate: pt(0.791, 0.472), rotate: 0,
   id: 'C4'
+})
+// mcu.swd.conn
+const J1 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(0.870, 0.325), rotate: 0,
+  id: 'J1'
 })
 // sw.package
 const SW1 = board.add(SW_Hotswap_Kailh_MX, {
@@ -189,17 +189,17 @@ const D9 = board.add(D_SOD_323, {
 board.setNetlist([
   {name: "jd_data.jd_data", pads: [["EC1", "1"], ["D3", "1"], ["MH1", "MH1"], ["EC2", "1"], ["D6", "1"], ["FB1", "1"]]},
   {name: "jd_pwr", pads: [["EC1", "3"], ["D2", "1"], ["MH3", "MH3"], ["EC2", "3"], ["D5", "1"], ["TP2", "1"], ["U1", "1"], ["U1", "3"], ["C1", "1"]]},
-  {name: "gnd", pads: [["EC1", "2"], ["R1", "2"], ["D2", "2"], ["D3", "2"], ["MH2", "MH2"], ["MH4", "MH4"], ["EC2", "2"], ["R2", "2"], ["D5", "2"], ["D6", "2"], ["TP1", "1"], ["U1", "2"], ["C1", "2"], ["C2", "2"], ["J1", "5"], ["U2", "4"], ["C3", "2"], ["C4", "2"], ["SW1", "2"], ["C5", "2"], ["D9", "2"]]},
+  {name: "gnd", pads: [["EC1", "2"], ["R1", "2"], ["D2", "2"], ["D3", "2"], ["MH2", "MH2"], ["MH4", "MH4"], ["EC2", "2"], ["R2", "2"], ["D5", "2"], ["D6", "2"], ["TP1", "1"], ["U1", "2"], ["C1", "2"], ["C2", "2"], ["U2", "4"], ["C3", "2"], ["C4", "2"], ["J1", "5"], ["SW1", "2"], ["C5", "2"], ["D9", "2"]]},
   {name: "jd_status", pads: [["D1", "2"], ["D4", "2"], ["U2", "1"]]},
-  {name: "v3v3", pads: [["U1", "5"], ["C2", "1"], ["TP3", "1"], ["J1", "1"], ["U2", "3"], ["C3", "1"], ["C4", "1"], ["D7", "2"], ["D8", "1"]]},
+  {name: "v3v3", pads: [["U1", "5"], ["C2", "1"], ["TP3", "1"], ["U2", "3"], ["C3", "1"], ["C4", "1"], ["J1", "1"], ["D7", "2"], ["D8", "1"]]},
   {name: "edge.status_led.package.k", pads: [["D1", "1"], ["R1", "1"]]},
   {name: "edge2.status_led.package.k", pads: [["D4", "1"], ["R2", "1"]]},
   {name: "mcu.gpio.rgb_red", pads: [["U2", "16"], ["R3", "2"]]},
   {name: "mcu.gpio.rgb_green", pads: [["U2", "17"], ["R4", "2"]]},
   {name: "mcu.gpio.rgb_blue", pads: [["U2", "15"], ["R5", "2"]]},
-  {name: "mcu.swd_node.swdio", pads: [["J1", "2"], ["U2", "20"]]},
-  {name: "mcu.swd_node.swclk", pads: [["J1", "4"], ["U2", "21"]]},
-  {name: "mcu.reset_node", pads: [["J1", "3"], ["U2", "5"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "20"], ["J1", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "21"], ["J1", "4"]]},
+  {name: "mcu.reset_node", pads: [["U2", "5"], ["J1", "3"]]},
   {name: "mcu.swd.swo", pads: [["J1", "6"]]},
   {name: "sw.out", pads: [["U2", "19"], ["SW1", "1"]]},
   {name: "rgb.package.k_red", pads: [["D7", "3"], ["R3", "1"]]},
