@@ -13,7 +13,7 @@ from .IoControllerExportable import BaseIoControllerExportable
 
 
 @non_library
-class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportable):
+class IoControllerWithSwdTargetConnector(IoController):
     """An IoController with a SWD programming header and optional SWO and TDI pins that
     can be assigned to any microcontroller pin.
 

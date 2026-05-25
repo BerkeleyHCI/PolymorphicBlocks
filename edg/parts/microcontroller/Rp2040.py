@@ -310,7 +310,7 @@ class Rp2040(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.usb.requested())
 
     @override
     def contents(self) -> None:
