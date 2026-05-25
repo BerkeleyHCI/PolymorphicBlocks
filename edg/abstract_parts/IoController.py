@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional, Any, Union
+from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable, cast
 from typing_extensions import override
 from deprecated import deprecated
 
@@ -77,7 +77,7 @@ class BaseIoController(PinMappable, Block):
         else:
             raise NotImplementedError(f"unknown port type {io_port}")
 
-    @deprecated("use BaseIoControllerExportable")
+    @deprecated("use _export_ios_inner")
     def _export_ios_from(self, inner: "BaseIoController", excludes: List[BasePort] = []) -> None:
         """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
         Optional exclude list, for example if a more complex connection is needed."""
@@ -91,6 +91,120 @@ class BaseIoController(PinMappable, Block):
             assert inner_io_type in self_ios_by_type, f"outer missing IO of type {inner_io_type}"
             self.connect(self_ios_by_type[inner_io_type], inner_io)
         self.assign(self.io_current_draw, inner.io_current_draw)
+
+    ExportPortTransform = Callable[[BasePort, Optional[str]], Optional[BasePort]]
+
+    def _export_ios_inner(
+        self, inner: "BaseIoController", transforms: Dict[Type[BasePort], ExportPortTransform] = {}
+    ) -> ArrayStringExpr:
+        """Exports all IOs from some inner BaseIoController.
+        This must be called in contents() or generate(), after IOs have been defined.
+
+        Optionally specify a transform function, by port type, on IOs.
+        This function takes the outer IO port and assignment name (if specified) and returns the transformed IO port.
+        For example, this can be used add resistors inline to USB ports.
+        If returned (transformed) port is None, the connection is discarded (though connections can be made
+        within the transform function as a side effect).
+        Otherwise, the returned port is connected to the inner port.
+        If this function is used, this must be a GeneratorBlock and the transformed port requested()s and
+        device pin_assigns must be generator params.
+
+        Returns the filtered pin assigns, to pass into the inner block's pin assign.
+
+        In most cases, use _wrap_inner which provides all the wrapping functionality, though
+        this may be useful where other logic needs to happen with parameters.
+        """
+        from ..core.Blocks import BlockElaborationState
+
+        assert self._elaboration_state in (
+            BlockElaborationState.contents,
+            BlockElaborationState.generate,
+        ), "can only run in contents() or generate()"
+
+        if transforms:
+            assert isinstance(self, GeneratorBlock), "transforms require a GeneratorBlock to work"
+            assert self._elaboration_state in (BlockElaborationState.generate,), "transforms can only run in generate()"
+
+            assigns_raw = self.get(self.pin_assigns)
+            # mutated in-place during _make_export_*
+            assigns = cast(List[Optional[str]], assigns_raw.copy())
+            assign_index_by_name = {assign.split("=")[0]: i for i, assign in enumerate(assigns_raw)}
+        else:
+            assigns = None
+            assign_index_by_name = {}
+
+        def connect_port_transformed(self_io: BasePort, inner_io: BasePort, name: str) -> None:
+            assert transform_fn is not None and assigns is not None
+            assign_index = assign_index_by_name.get(name)
+            assign = assigns[assign_index] if assign_index is not None else None
+            transform_result = transform_fn(self_io, assign)
+            if transform_result is not None:
+                self.connect(transform_result, inner_io)
+            else:
+                if assign_index is not None:
+                    assigns[assign_index] = None
+
+        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
+        for self_io in self._io_ports:
+            self_io_type = self._type_of_io(self_io)
+            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
+            inner_io = inner_ios_by_type[self_io_type]
+
+            transform_fn = transforms.get(self_io_type, None)
+
+            if isinstance(self_io, Vector):
+                assert isinstance(inner_io, Vector)
+                if transform_fn is None:
+                    # TODO: this eats up the entire inner_io, requiring a hack to add additional items to inner_io
+                    # using inner_io.request_vector is not yet supported
+                    self.connect(self_io, inner_io)
+                else:
+                    self_io.defined()
+                    for io_requested in self.get(self_io.requested()):
+                        self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
+                        connect_port_transformed(self_io_elt, inner_io.request(io_requested), io_requested)
+            elif isinstance(inner_io, Port):
+                if transform_fn is None:
+                    self.connect(self_io, inner_io)
+                else:
+                    connect_port_transformed(self_io, inner_io, self_io._name_from(self))
+            else:
+                raise NotImplementedError(f"unknown port type {self_io}")
+
+        if assigns is not None:
+            filtered_assigns = [assign for assign in assigns if assign is not None]
+            return ArrayStringExpr._to_expr_type(filtered_assigns)
+        else:
+            return self.pin_assigns
+
+    def _wrap_inner(
+        self, inner: "BaseIoController", transforms: Dict[Type[BasePort], ExportPortTransform] = {}
+    ) -> None:
+        """Wraps an inner BaseIoController, a wrapper around _export_ios_inner as well as any parameters
+        that needs to be assigned inward or outward."""
+        inner_pin_assigns = self._export_ios_inner(inner, transforms)
+        self.assign(inner.pin_assigns, inner_pin_assigns)
+        self.assign(self.actual_pin_assigns, inner.actual_pin_assigns)
+        self.assign(self.io_current_draw, inner.io_current_draw)
+
+    def _export_tap_ios_inner(self, inner: "BaseIoController") -> None:
+        """Export-taps all IO ports from some inner BaseIoController.
+        This must be a SubboardBlock to support the export_tap connection.
+        This must be called in contents() or generate(), after IOs have been defined."""
+        from ..core.Blocks import BlockElaborationState
+
+        assert isinstance(self, WrapperSubboardBlock)
+        assert self._elaboration_state in (
+            BlockElaborationState.contents,
+            BlockElaborationState.generate,
+        ), "can only run in contents() or generate()"
+
+        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
+        for self_io in self._io_ports:
+            self_io_type = self._type_of_io(self_io)
+            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
+            inner_io = inner_ios_by_type[self_io_type]
+            self.export_tap(self_io, inner_io)
 
     @staticmethod
     def _instantiate_from(

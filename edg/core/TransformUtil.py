@@ -236,6 +236,8 @@ class Transform:
         elif elt.HasField("array") and elt.array.HasField("ports"):
             for port_pair in elt.array.ports.ports:
                 self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
+        elif elt.HasField("array") and not elt.array.HasField("ports"):
+            pass  # array with no defined ports, effectively a no-op
         else:
             raise ValueError(f"_traverse_portlike encountered unknown type {elt} at {context}")
 

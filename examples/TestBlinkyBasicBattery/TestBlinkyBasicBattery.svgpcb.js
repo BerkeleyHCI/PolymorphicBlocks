@@ -20,36 +20,35 @@ const U4 = board.add(BatteryHolder_Keystone_2460_1xAA, {
   translate: pt(0.108, 2.516), rotate: 0,
   id: 'U4'
 })
-// mcu
+// mcu.device
 const U5 = board.add(XIAO_RP2040_SMD, {
   translate: pt(2.730, 0.410), rotate: 0,
   id: 'U5'
 })
 // led.package
 const D1 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.180, 0.029), rotate: 0,
+  translate: pt(3.258, 0.029), rotate: 0,
   id: 'D1'
 })
 // led.res
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(3.180, 0.126), rotate: 0,
+  translate: pt(3.258, 0.126), rotate: 0,
   id: 'R1'
 })
 
 board.setNetlist([
-  {name: "bat.pwr", pads: [["U4", "1"]]},
+  {name: "bat.pwr", pads: [["U4", "1"], ["U5", "14"]]},
   {name: "bat.gnd", pads: [["U1", "2"], ["U5", "13"], ["R1", "2"]]},
   {name: "bat.cell[0].pwr", pads: [["U1", "1"], ["U2", "2"]]},
   {name: "bat.cell[1].pwr", pads: [["U2", "1"], ["U3", "2"]]},
   {name: "bat.cell[2].pwr", pads: [["U3", "1"], ["U4", "2"]]},
   {name: "mcu.pwr_out", pads: [["U5", "12"]]},
-  {name: "mcu.vusb_out", pads: [["U5", "14"]]},
   {name: "led.signal", pads: [["U5", "7"], ["D1", "2"]]},
   {name: "led.package.k", pads: [["D1", "1"], ["R1", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(3.356102362204725, 2.9763779527559056);
+const limit1 = pt(3.4348425196850396, 2.9763779527559056);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

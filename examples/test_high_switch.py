@@ -324,6 +324,7 @@ class HighSwitch(BoardTop):
                 (["mcu"], Lpc1549_48),
             ],
             instance_values=[
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -348,9 +349,9 @@ class HighSwitch(BoardTop):
                         "light_41=47",
                         "light_50=46",
                         "light_51=45",
+                        "swd_swo=PIO0_8",
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "PIO0_8"),
                 # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
                 (["can", "can_fuse", "fuse", "actual_hold_current"], Range(0.1, 0.1)),
                 # JLC does not have frequency specs, must be checked TODO

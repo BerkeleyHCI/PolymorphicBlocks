@@ -214,6 +214,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                         "oled_reset=8",
                     ],
                 ),
+                (["mcu_servo", "swd_connect_swo"], True),
                 (
                     ["mcu_servo", "pin_assigns"],
                     [
@@ -240,9 +241,10 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                         "led=33",
                         "i2c.scl=21",
                         "i2c.sda=22",
+                        "swd_swo=PB6",  # USART1_TX
                     ],
                 ),
-                (["mcu_servo", "swd_swo_pin"], "PB6"),  # USART1_TX
+                (["mcu_test", "swd_connect_swo"], True),
                 (
                     ["mcu_test", "pin_assigns"],
                     [
@@ -252,9 +254,9 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                         "led_3=16",
                         "i2c.scl=37",
                         "i2c.sda=36",
+                        "swd_swo=GPIO16",  # UART0 TX
                     ],
                 ),
-                (["mcu_test", "swd_swo_pin"], "GPIO16"),  # UART0 TX
                 (["mcu", "programming"], "uart-auto"),
                 (["reg_14v", "inductor", "part"], "CBC3225T220KR"),
                 (["reg_14v", "inductor", "manual_frequency_rating"], Range(0, 17e6)),  # 17MHz self-resonant

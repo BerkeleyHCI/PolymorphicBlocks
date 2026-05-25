@@ -39,8 +39,6 @@ class SubElementDict(Generic[ElementType]):
 
     # TODO should this be automatically called?
     def finalize(self) -> None:
-        if self.closed:
-            return
         if self.anon_prefix is None:
             assert not self.anons, f"can't have unnamed objects: {self.anons}"
         else:
@@ -51,6 +49,7 @@ class SubElementDict(Generic[ElementType]):
                 self.names[elt] = name
                 self.keys_list.append(name)
             self.anons = IdentitySet[ElementType]()  # TODO needs clear operation
+        self.closed = True
 
     def all_values_temp(self) -> Iterable[ElementType]:  # TODO needs better API name, reconcile w/ values?
         return list(self.container.values()) + list(self.anons)

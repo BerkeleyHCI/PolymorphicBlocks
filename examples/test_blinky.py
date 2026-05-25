@@ -20,11 +20,12 @@ class TestLed(SimpleBoardTop):
 
 
 class TestBlinkyBasic(SimpleBoardTop):
-    """The simplest cirucit, a microcontroller dev board with a LED."""
+    """The simplest circuit, a microcontroller dev board with a LED.
+    This also tests the dev board wrapper concept."""
 
     @override
     def contents(self) -> None:
-        self.mcu = self.Block(Nucleo_F303k8())
+        self.mcu = self.Block(Xiao_Rp2040())
         self.led = self.Block(IndicatorLed())
 
         self.connect(self.led.signal, self.mcu.gpio.request())
@@ -36,7 +37,7 @@ class TestBlinkyEmpty(SimpleBoardTop):
 
 
 class TestBlinkyBasicBattery(SimpleBoardTop):
-    """The simplest cirucit, a microcontroller dev board with a LED, powered from a battery"""
+    """The simplest circuit, a microcontroller dev board with a LED, powered from a battery"""
 
     @override
     def contents(self) -> None:

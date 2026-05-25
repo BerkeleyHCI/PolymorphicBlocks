@@ -361,6 +361,7 @@ class Multimeter(JlcBoardTop):
                 (["driver", "diode"], CustomDiode),
             ],
             instance_values=[
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -390,9 +391,9 @@ class Multimeter(JlcBoardTop):
                         "rgb_blue=6",
                         "rgb_red=4",
                         "rgb_green=5",
+                        "swd_swo=P1.00",
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "P1.00"),
                 (
                     ["reg_5v", "power_path", "dutycycle_limit"],
                     Range(float("-inf"), float("inf")),

@@ -1,3 +1,4 @@
+from typing import Any
 from typing_extensions import override
 
 from .IoController import IoController
@@ -11,8 +12,8 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
 
     DEFAULT_CRYSTAL_FREQUENCY: RangeLike
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self.xtal_node = self.connect()  # connect this internal node to the microcontroller; this may be empty
 
     def _crystal_required(self) -> bool:

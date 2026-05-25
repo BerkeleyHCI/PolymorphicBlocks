@@ -30,15 +30,15 @@ const C1 = board.add(C_0402_1005Metric, {
   translate: pt(0.340, 0.678), rotate: 0,
   id: 'C1'
 })
-// mcu.swd.conn
-const J2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(0.138, 0.365), rotate: 0,
-  id: 'J2'
-})
 // mcu.ic
 const U2 = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_45x3_45mm, {
   translate: pt(0.123, 0.123), rotate: 0,
   id: 'U2'
+})
+// mcu.swd.conn
+const J2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(0.138, 0.365), rotate: 0,
+  id: 'J2'
 })
 // rgb.package
 const D1 = board.add(LED_Lumex_SML_LX0404SIUPGUSB, {
@@ -87,19 +87,19 @@ const C4 = board.add(C_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["J1", "4"], ["U1", "2"], ["U1", "5"], ["C1", "2"], ["J2", "5"], ["U2", "15"], ["U2", "16"], ["U2", "3"], ["U2", "32"], ["U2", "33"], ["C2", "2"], ["C3", "2"], ["C4", "2"]]},
-  {name: "v3v3", pads: [["U1", "1"], ["J2", "1"], ["U2", "1"], ["U2", "17"], ["U2", "5"], ["D1", "1"], ["C3", "1"], ["C4", "1"]]},
+  {name: "gnd", pads: [["J1", "4"], ["U1", "2"], ["U1", "5"], ["C1", "2"], ["U2", "15"], ["U2", "16"], ["U2", "3"], ["U2", "32"], ["U2", "33"], ["J2", "5"], ["C2", "2"], ["C3", "2"], ["C4", "2"]]},
+  {name: "v3v3", pads: [["U1", "1"], ["U2", "1"], ["U2", "17"], ["U2", "5"], ["J2", "1"], ["D1", "1"], ["C3", "1"], ["C4", "1"]]},
   {name: "usb.pwr", pads: [["J1", "1"], ["U1", "3"], ["U1", "4"], ["C1", "1"]]},
   {name: "usb.usb.dp", pads: [["J1", "3"], ["U2", "22"]]},
   {name: "usb.usb.dm", pads: [["J1", "2"], ["U2", "21"]]},
   {name: "mcu.gpio.rgb_red", pads: [["U2", "7"], ["R1", "2"]]},
   {name: "mcu.gpio.rgb_green", pads: [["U2", "8"], ["R2", "2"]]},
   {name: "mcu.gpio.rgb_blue", pads: [["U2", "9"], ["R3", "2"]]},
-  {name: "mcu.swd_node.swdio", pads: [["J2", "2"], ["U2", "23"]]},
-  {name: "mcu.swd_node.swclk", pads: [["J2", "4"], ["U2", "24"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "23"], ["J2", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "24"], ["J2", "4"]]},
+  {name: "mcu.ic.nrst", pads: [["U2", "4"]]},
   {name: "mcu.swd.swo", pads: [["J2", "6"]]},
   {name: "mcu.swd.reset", pads: [["J2", "3"]]},
-  {name: "mcu.ic.nrst", pads: [["U2", "4"]]},
   {name: "rgb.package.k_red", pads: [["D1", "2"], ["R1", "1"]]},
   {name: "rgb.package.k_green", pads: [["D1", "3"], ["R2", "1"]]},
   {name: "rgb.package.k_blue", pads: [["D1", "4"], ["R3", "1"]]},

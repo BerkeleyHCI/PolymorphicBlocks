@@ -529,6 +529,8 @@ class Fcml(JlcBoardTop):
                 (["reg_vgate"], Ap3012),
             ],
             instance_values=[
+                (["mcu", "swd_connect_swo"], True),
+                (["mcu", "swd_connect_tdi"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -543,10 +545,10 @@ class Fcml(JlcBoardTop):
                         "fpga1=13",
                         "fpga2=12",
                         "fpga3=11",
+                        "swd_swo=GPIO0",  # UART0 TX
+                        "swd_tdi=GPIO1",  # UART0 RX
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "GPIO0"),  # UART0 TX
-                (["mcu", "swd_tdi_pin"], "GPIO1"),  # UART0 RX
                 (
                     ["fpga", "pin_assigns"],
                     [

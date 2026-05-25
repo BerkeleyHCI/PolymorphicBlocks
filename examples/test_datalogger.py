@@ -257,6 +257,7 @@ class Datalogger(BoardTop):
                 (["buffer", "amp"], Tlv9061),
             ],
             instance_values=[
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -296,9 +297,9 @@ class Datalogger(BoardTop):
                         "v12sense=10",
                         "v5sense=9",
                         "vscsense=8",
+                        "swd_swo=PIO0_8",
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "PIO0_8"),
                 (["pwr_5v", "power_path", "inductor", "part"], "NR5040T220M"),  # peg to prior part selection
                 (
                     ["pwr_5v", "power_path", "inductor_current_ripple"],

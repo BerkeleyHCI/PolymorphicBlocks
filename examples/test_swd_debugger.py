@@ -170,6 +170,7 @@ class SwdDebugger(JlcBoardTop):
             ],
             instance_values=[
                 (["refdes_prefix"], "S"),  # unique refdes for panelization
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -183,12 +184,12 @@ class SwdDebugger(JlcBoardTop):
                         "led_target=PA9",
                         "led_usb=PB6",  # CONNECTED_LED in DAPLink, LED_DAP_BLUE in F103 mbed HDK
                         "target_reg_en=PB15",  # POWER_EN in DAPLink
+                        "swd_swo=PB3",
                     ],
                 ),
                 # 2.2uF generates a 1206, but 4.7uF allows a 0805
                 (["usb_reg", "out_cap", "cap", "capacitance"], Range.from_tolerance(4.7e-6, 0.2)),
                 (["target_reg", "out_cap", "cap", "capacitance"], Range.from_tolerance(4.7e-6, 0.2)),
-                (["mcu", "swd_swo_pin"], "PB3"),
             ],
             class_values=[
                 (SelectorArea, ["footprint_area"], Range.from_lower(1.5)),  # at least 0402
@@ -281,6 +282,7 @@ class PicoProbe(JlcBoardTop):
             ],
             instance_values=[
                 (["refdes_prefix"], "S"),  # unique refdes for panelization
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -295,12 +297,12 @@ class PicoProbe(JlcBoardTop):
                         # others
                         "target_vsense=GPIO28",
                         "target_reg_en=17",
+                        "swd_swo=GPIO12",  # arbitrary closest UART TX
                     ],
                 ),
                 # 2.2uF generates a 1206, but 4.7uF allows a 0805
                 (["usb_reg", "out_cap", "cap", "capacitance"], Range.from_tolerance(4.7e-6, 0.2)),
                 (["target_reg", "out_cap", "cap", "capacitance"], Range.from_tolerance(4.7e-6, 0.2)),
-                (["mcu", "swd_swo_pin"], "GPIO12"),  # arbitrary closest UART TX
             ],
             class_refinements=[
                 (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
