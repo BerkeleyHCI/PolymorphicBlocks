@@ -60,5 +60,5 @@ class IoControllerWrapped(BaseIoController):
 
     def _remap_assigns_to_value(self, assigns: Dict[str, str]) -> List[str]:
         """Given a dict of pin assigns from _remap_pinning_assigns, returns a list of assign strings
-        eefor use in self.actual_pin_assigns"""
+        for use in self.actual_pin_assigns"""
         return [f"{name}={assign}" for name, assign in assigns.items()]

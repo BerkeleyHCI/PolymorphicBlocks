@@ -20,7 +20,7 @@ class TestLed(SimpleBoardTop):
 
 
 class TestBlinkyBasic(SimpleBoardTop):
-    """The simplest cirucit, a microcontroller dev board with a LED.
+    """The simplest circuit, a microcontroller dev board with a LED.
     This also tests the dev board wrapper concept."""
 
     @override

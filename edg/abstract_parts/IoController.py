@@ -185,7 +185,7 @@ class BaseIoController(PinMappable, Block):
         inner_pin_assigns = self._export_ios_inner(inner, transforms)
         self.assign(inner.pin_assigns, inner_pin_assigns)
         self.assign(self.actual_pin_assigns, inner.actual_pin_assigns)
-        self.assign(self.io_current_draw, self.ic.io_current_draw)
+        self.assign(self.io_current_draw, inner.io_current_draw)
 
     def _export_tap_ios_inner(self, inner: "BaseIoController") -> None:
         """Export-taps all IO ports from some inner BaseIoController.
