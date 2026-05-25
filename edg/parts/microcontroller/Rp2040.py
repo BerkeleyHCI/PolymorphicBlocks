@@ -440,7 +440,6 @@ class Xiao_Rp2040(
     IoControllerPowerOut,
     IoControllerVin,
     IoController,
-    BaseIoControllerExportable,
     GeneratorBlock,
     WrapperSubboardBlock,
 ):
@@ -458,7 +457,6 @@ class Xiao_Rp2040(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Rp2040  # device model only
         self.generator_param(
             self.gnd.is_connected(),
             self.pwr.is_connected(),
@@ -501,34 +499,20 @@ class Xiao_Rp2040(
             "ground required if power used",
         )
 
-        self.ic = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
+        self.model = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
+        model_pin_assigns = self._export_ios_inner(self.model)
+        self.assign(self.model.pin_assigns, model_pin_assigns)
 
-        self.device = self.Block(Xiao_Rp2040_Device(model_pin_assigns=self.ic.actual_pin_assigns), external=True)
-
-        self.export_tap_iocontroller(self.device)
-        # TODO propgate actual_pin_assigns from device instead of model
-
-    def export_tap_iocontroller(self, inner: BaseIoController) -> None:
-        from ...core.Blocks import BlockElaborationState
-
-        assert self._elaboration_state in (
-            BlockElaborationState.contents,
-            BlockElaborationState.generate,
-        ), "can only run in contents() or generate()"
-        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
-
-        for self_io in self._io_ports:
-            self_io_type = self._type_of_io(self_io)
-            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
-            inner_io = inner_ios_by_type[self_io_type]
-            self.export_tap(self_io, inner_io)
+        self.device = self.Block(Xiao_Rp2040_Device(model_pin_assigns=self.model.actual_pin_assigns), external=True)
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 
     @override
     def generate(self) -> None:
         super().generate()
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.ic.pwr)
+            self.connect(self.pwr, self.model.pwr)
             self.export_tap(self.pwr, self.device.v3v3)
         else:  # board sources power from USB
             self.pwr_out_model = self.Block(
@@ -537,7 +521,7 @@ class Xiao_Rp2040(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, self.ic.pwr)
+            self.connect(self.pwr_out_model.pwr, self.model.pwr)
             if self.get(self.pwr_out.is_connected()):
                 self.connect(self.pwr_out, self.pwr_out_model.pwr)
             self.export_tap(self.pwr_out, self.device.v3v3_out)
@@ -549,7 +533,7 @@ class Xiao_Rp2040(
 
         self.export_tap(self.gnd, self.device.gnd)
         if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.ic.gnd)
+            self.connect(self.gnd, self.model.gnd)
         else:
             self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.ic.gnd)
+            self.connect(self.gnd_model.gnd, self.model.gnd)
