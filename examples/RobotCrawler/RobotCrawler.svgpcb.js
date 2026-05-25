@@ -669,7 +669,7 @@ board.setNetlist([
   {name: "Rmcu_test.swd_node.swdio", pads: [["RJ18", "2"], ["RU8", "25"]]},
   {name: "Rmcu_test.swd_node.swclk", pads: [["RJ18", "4"], ["RU8", "24"]]},
   {name: "Rmcu_test.reset_node", pads: [["RJ18", "3"], ["RU8", "26"]]},
-  {name: "Rmcu_test.swd.swo", pads: [["RJ18", "6"], ["RU8", "27"]]},
+  {name: "Rmcu_test.swd.swo", pads: [["RJ18", "6"], ["RU8", "2"]]},
   {name: "Rmcu_test.ic.dvdd", pads: [["RU8", "23"], ["RU8", "45"], ["RU8", "50"], ["RC30", "1"], ["RC31", "1"], ["RC32", "1"]]},
   {name: "Rmcu_test.ic.qspi.sck", pads: [["RU8", "52"], ["RU9", "6"]]},
   {name: "Rmcu_test.ic.qspi.mosi", pads: [["RU8", "53"], ["RU9", "5"]]},

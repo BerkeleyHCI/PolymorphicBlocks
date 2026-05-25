@@ -670,16 +670,6 @@ const C58 = board.add(C_0603_1608Metric, {
   translate: pt(2.491, 0.755), rotate: 0,
   id: 'C58'
 })
-// mcu.usb_res.dp.res
-const R24 = board.add(R_0603_1608Metric, {
-  translate: pt(2.646, 0.755), rotate: 0,
-  id: 'R24'
-})
-// mcu.usb_res.dm.res
-const R25 = board.add(R_0603_1608Metric, {
-  translate: pt(2.802, 0.755), rotate: 0,
-  id: 'R25'
-})
 // mcu.crystal.package
 const X2 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
   translate: pt(2.453, 0.431), rotate: 0,
@@ -687,13 +677,23 @@ const X2 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
 })
 // mcu.crystal.cap_a
 const C59 = board.add(C_0603_1608Metric, {
-  translate: pt(2.023, 0.852), rotate: 0,
+  translate: pt(2.646, 0.755), rotate: 0,
   id: 'C59'
 })
 // mcu.crystal.cap_b
 const C60 = board.add(C_0603_1608Metric, {
-  translate: pt(2.179, 0.852), rotate: 0,
+  translate: pt(2.802, 0.755), rotate: 0,
   id: 'C60'
+})
+// mcu.usb_res.dp.res
+const R24 = board.add(R_0603_1608Metric, {
+  translate: pt(2.023, 0.852), rotate: 0,
+  id: 'R24'
+})
+// mcu.usb_res.dm.res
+const R25 = board.add(R_0603_1608Metric, {
+  translate: pt(2.179, 0.852), rotate: 0,
+  id: 'R25'
 })
 // mcu_sw.package
 const SW2 = board.add(SW_SPST_SKQG_WithoutStem, {
@@ -960,13 +960,11 @@ board.setNetlist([
   {name: "mcu.gpio.led_1", pads: [["U14", "35"], ["D14", "2"]]},
   {name: "mcu.gpio.led_2", pads: [["U14", "36"], ["D15", "2"]]},
   {name: "mcu.gpio.led_3", pads: [["U14", "37"], ["D16", "2"]]},
-  {name: "mcu.xtal_node.xi", pads: [["U14", "20"], ["X2", "1"], ["C59", "1"]]},
-  {name: "mcu.xtal_node.xo", pads: [["U14", "21"], ["X2", "3"], ["C60", "1"]]},
   {name: "mcu.swd_node.swdio", pads: [["J6", "2"], ["U14", "25"]]},
   {name: "mcu.swd_node.swclk", pads: [["J6", "4"], ["U14", "24"]]},
   {name: "mcu.reset_node", pads: [["J6", "10"], ["U14", "26"]]},
-  {name: "mcu.usb_chain_0.d_P", pads: [["U14", "47"], ["R24", "2"]]},
-  {name: "mcu.usb_chain_0.d_N", pads: [["U14", "46"], ["R25", "2"]]},
+  {name: "mcu.xtal_node.xi", pads: [["U14", "20"], ["X2", "1"], ["C59", "1"]]},
+  {name: "mcu.xtal_node.xo", pads: [["U14", "21"], ["X2", "3"], ["C60", "1"]]},
   {name: "mcu.swd.tdi", pads: [["J6", "8"], ["U14", "3"]]},
   {name: "mcu.swd.swo", pads: [["J6", "6"], ["U14", "2"]]},
   {name: "mcu.ic.dvdd", pads: [["U14", "23"], ["U14", "45"], ["U14", "50"], ["C56", "1"], ["C57", "1"], ["C58", "1"]]},
@@ -976,6 +974,8 @@ board.setNetlist([
   {name: "mcu.ic.qspi_cs", pads: [["U14", "56"], ["U15", "1"]]},
   {name: "mcu.ic.qspi_sd2", pads: [["U14", "54"], ["U15", "3"]]},
   {name: "mcu.ic.qspi_sd3", pads: [["U14", "51"], ["U15", "7"]]},
+  {name: "mcu.usb_res.interior.dp", pads: [["U14", "47"], ["R24", "2"]]},
+  {name: "mcu.usb_res.interior.dm", pads: [["U14", "46"], ["R25", "2"]]},
   {name: "mcu_sw.out", pads: [["U14", "29"], ["SW2", "1"]]},
   {name: "mcu_leds.led[0].package.k", pads: [["D13", "1"], ["R26", "1"]]},
   {name: "mcu_leds.led[1].package.k", pads: [["D14", "1"], ["R27", "1"]]},

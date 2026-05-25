@@ -140,6 +140,11 @@ const SC16 = board.add(C_0402_1005Metric, {
   translate: pt(0.369, 0.655), rotate: 0,
   id: 'SC16'
 })
+// mcu.crystal
+const SU5 = board.add(Resonator_SMD_Murata_CSTxExxV_3Pin_3_0x1_1mm, {
+  translate: pt(0.394, 0.428), rotate: 0,
+  id: 'SU5'
+})
 // mcu.usb_res.dp.res
 const SR3 = board.add(R_0603_1608Metric, {
   translate: pt(0.562, 0.393), rotate: 0,
@@ -149,11 +154,6 @@ const SR3 = board.add(R_0603_1608Metric, {
 const SR4 = board.add(R_0603_1608Metric, {
   translate: pt(0.718, 0.393), rotate: 0,
   id: 'SR4'
-})
-// mcu.crystal
-const SU5 = board.add(Resonator_SMD_Murata_CSTxExxV_3Pin_3_0x1_1mm, {
-  translate: pt(0.394, 0.428), rotate: 0,
-  id: 'SU5'
 })
 // usb_esd
 const SU6 = board.add(SOT_23, {
@@ -221,14 +221,12 @@ board.setNetlist([
   {name: "Susb.conn.cc.cc1", pads: [["SJ1", "A5"], ["SR1", "2"]]},
   {name: "Susb.conn.cc.cc2", pads: [["SJ1", "B5"], ["SR2", "2"]]},
   {name: "Starget_reg.reset", pads: [["SU2", "3"], ["SU3", "17"], ["SR7", "2"]]},
-  {name: "Smcu.xtal_node.xi", pads: [["SU3", "20"], ["SU5", "1"]]},
-  {name: "Smcu.xtal_node.xo", pads: [["SU3", "21"], ["SU5", "3"]]},
   {name: "Smcu.swd_node.swdio", pads: [["SJ2", "2"], ["SU3", "25"]]},
   {name: "Smcu.swd_node.swclk", pads: [["SJ2", "4"], ["SU3", "24"]]},
   {name: "Smcu.reset_node", pads: [["SJ2", "3"], ["SU3", "26"]]},
-  {name: "Smcu.usb_chain_0.d_P", pads: [["SU3", "47"], ["SR3", "2"]]},
-  {name: "Smcu.usb_chain_0.d_N", pads: [["SU3", "46"], ["SR4", "2"]]},
-  {name: "Smcu.swd.swo", pads: [["SJ2", "6"], ["SU3", "15"]]},
+  {name: "Smcu.xtal_node.xi", pads: [["SU3", "20"], ["SU5", "1"]]},
+  {name: "Smcu.xtal_node.xo", pads: [["SU3", "21"], ["SU5", "3"]]},
+  {name: "Smcu.swd.swo", pads: [["SJ2", "6"], ["SU3", "2"]]},
   {name: "Smcu.ic.dvdd", pads: [["SU3", "23"], ["SU3", "45"], ["SU3", "50"], ["SC14", "1"], ["SC15", "1"], ["SC16", "1"]]},
   {name: "Smcu.ic.qspi.sck", pads: [["SU3", "52"], ["SU4", "6"]]},
   {name: "Smcu.ic.qspi.mosi", pads: [["SU3", "53"], ["SU4", "5"]]},
@@ -236,6 +234,8 @@ board.setNetlist([
   {name: "Smcu.ic.qspi_cs", pads: [["SU3", "56"], ["SU4", "1"]]},
   {name: "Smcu.ic.qspi_sd2", pads: [["SU3", "54"], ["SU4", "3"]]},
   {name: "Smcu.ic.qspi_sd3", pads: [["SU3", "51"], ["SU4", "7"]]},
+  {name: "Smcu.usb_res.interior.dp", pads: [["SU3", "47"], ["SR3", "2"]]},
+  {name: "Smcu.usb_res.interior.dm", pads: [["SU3", "46"], ["SR4", "2"]]},
   {name: "Sled_tgt.signal", pads: [["SU3", "27"], ["SD2", "2"]]},
   {name: "Sled_tgt.package.k", pads: [["SD2", "1"], ["SR5", "1"]]},
   {name: "Sled_usb.signal", pads: [["SU3", "37"], ["SD3", "2"]]},

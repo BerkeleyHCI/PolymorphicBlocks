@@ -1879,7 +1879,7 @@
   (node (ref RU8) (pin 26)))
 (net (code 58) (name "Rmcu_test.swd.swo")
   (node (ref RJ18) (pin 6))
-  (node (ref RU8) (pin 27)))
+  (node (ref RU8) (pin 2)))
 (net (code 59) (name "Rmcu_test.ic.dvdd")
   (node (ref RU8) (pin 23))
   (node (ref RU8) (pin 45))

@@ -310,7 +310,7 @@ class Rp2040(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.usb.requested())
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested(), self.usb.requested())
 
     @override
     def contents(self) -> None:
@@ -356,7 +356,9 @@ class Rp2040(
             self.connect(self_io, self.usb_res.exterior)
             return self.usb_res.interior
 
-        self._wrap_inner(self.ic, {UsbDevicePort: usb_export_transform})
+        self._wrap_inner(
+            self.ic, {UsbDevicePort: usb_export_transform, DigitalBidir: lambda port, assign: port}
+        )  # passthrough but keeps the vector open for SWD
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.run)
