@@ -240,7 +240,6 @@ class Stm32g031Base(
     Microcontroller,
     IoControllerWithSwdTargetConnector,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     GeneratorBlock,
 ):
     DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device
@@ -248,7 +247,7 @@ class Stm32g031Base(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Stm32g031Base_Device
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
     @override
     def contents(self) -> None:
@@ -266,6 +265,9 @@ class Stm32g031Base(
     @override
     def generate(self) -> None:
         super().generate()
+
+        # add a passthrough for gpio (DigitalBidir) to allow the SWD pins to be attached, if using
+        self._wrap_inner(self.ic, {DigitalBidir: lambda port, assign: port})
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up

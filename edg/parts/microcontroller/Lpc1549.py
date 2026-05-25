@@ -370,7 +370,6 @@ class Lpc1549Base(
     IoControllerWithSwdTargetConnector,
     WithCrystalGenerator,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     GeneratorBlock,
 ):
     DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device
@@ -378,8 +377,13 @@ class Lpc1549Base(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Lpc1549Base_Device
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(
+            self.reset.is_connected(),
+            self.pin_assigns,
+            self.gpio.requested(),
+            self.usb.requested(),
+            self.can.requested(),
+        )
 
     @override
     def contents(self) -> None:
@@ -411,6 +415,9 @@ class Lpc1549Base(
     @override
     def generate(self) -> None:
         super().generate()
+
+        # add a passthrough for gpio (DigitalBidir) to allow the SWD pins to be attached, if using
+        self._wrap_inner(self.ic, {DigitalBidir: lambda port, assign: port})
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.reset)
