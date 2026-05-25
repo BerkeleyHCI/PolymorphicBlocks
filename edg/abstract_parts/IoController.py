@@ -106,7 +106,8 @@ class BaseIoController(PinMappable, Block):
         If returned (transformed) port is None, the connection is discarded (though connections can be made
         within the transform function as a side effect).
         Otherwise, the returned port is connected to the inner port.
-        If this function is used, this must be a GeneratorBlock.
+        If this function is used, this must be a GeneratorBlock and the transformed port requested()s and
+        device pin_assigns must be generator params.
 
         Returns the filtered pin assigns, to pass into the inner block's pin assign.
 
