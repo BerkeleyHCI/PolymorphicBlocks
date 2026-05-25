@@ -137,6 +137,7 @@ class TofArray(JlcBoardTop):
             ],
             instance_values=[
                 (["mcu", "crystal", "frequency"], Range.from_tolerance(12000000, 0.005)),  # legacy default crystal
+                (["mcu", "swd_connect_swo"], True),
                 (
                     ["mcu", "pin_assigns"],
                     [
@@ -155,9 +156,9 @@ class TofArray(JlcBoardTop):
                         "tof_reset_2=4",
                         "tof_reset_3=3",
                         "tof_reset_4=2",
+                        "swd_swo=PB3",
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "PB3"),
             ],
             class_refinements=[
                 (SwdCortexTargetConnector, SwdCortexTargetTc2050),

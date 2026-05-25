@@ -545,8 +545,8 @@ class Fcml(JlcBoardTop):
                         "fpga3=11",
                     ],
                 ),
-                (["mcu", "swd_swo_pin"], "GPIO0"),  # UART0 TX
-                (["mcu", "swd_tdi_pin"], "GPIO1"),  # UART0 RX
+                (["mcu", "swd_connect_swo"], True),
+                (["mcu", "swd_connect_tdi"], True),
                 (
                     ["fpga", "pin_assigns"],
                     [
@@ -569,6 +569,8 @@ class Fcml(JlcBoardTop):
                         "mcu1=3",
                         "mcu2=4",
                         "mcu3=6",
+                        "swd_swo=GPIO0",  # UART0 TX
+                        "swd_tdi=GPIO1",  # UART0 RX
                     ],
                 ),
                 # flying caps need to be beefier for high current rating (which isn't modeled)
