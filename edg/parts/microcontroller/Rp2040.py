@@ -300,18 +300,16 @@ class Rp2040_Device(
 class Rp2040(
     Resettable,
     Rp2040_Interfaces,
-    Microcontroller,
-    IoControllerWithSwdTargetConnector,
     WithCrystalGenerator,
+    IoControllerWithSwdTargetConnector,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
+    Microcontroller,
     GeneratorBlock,
 ):
     DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Rp2040_Device
         self.generator_param(self.reset.is_connected())
 
     @override
@@ -321,6 +319,7 @@ class Rp2040(
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
             # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
             self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
+
             self.connect(self.xtal_node, self.ic.xosc)
             self.connect(self.swd_node, self.ic.swd)
             self.connect(self.reset_node, self.ic.run)
@@ -352,22 +351,15 @@ class Rp2040(
     def generate(self) -> None:
         super().generate()
 
+        def usb_export_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
+            self.usb_res = self.Block(UsbSeriesResistor(27 * Ohm(tol=0.05)))
+            self.connect(self_io, self.usb_res.exterior)
+            return self.usb_res.interior
+
+        self._wrap_inner(self.ic, {UsbDevicePort: usb_export_transform})
+
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.run)
-
-    ExportType = TypeVar("ExportType", bound=Port)
-
-    @override
-    def _make_export_vector(
-        self, self_io: ExportType, inner_vector: Vector[ExportType], name: str, assign: Optional[str]
-    ) -> Optional[str]:
-        if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
-            inner_io = inner_vector.request(name)
-            (self.usb_res,), self.usb_chain = self.chain(
-                inner_io, self.Block(UsbSeriesResistor(27 * Ohm(tol=0.05))), self_io
-            )
-            return assign
-        return super()._make_export_vector(self_io, inner_vector, name, assign)
 
     @override
     def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance

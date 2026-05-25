@@ -115,7 +115,6 @@ class BaseIoController(PinMappable, Block):
         """
         from ..core.Blocks import BlockElaborationState
 
-        assert isinstance(self, WrapperSubboardBlock)
         assert self._elaboration_state in (
             BlockElaborationState.contents,
             BlockElaborationState.generate,
@@ -123,6 +122,8 @@ class BaseIoController(PinMappable, Block):
 
         if transforms:
             assert isinstance(self, GeneratorBlock), "transforms require a GeneratorBlock to work"
+            assert self._elaboration_state in (BlockElaborationState.generate,), "transforms can only run in generate()"
+
             assigns_raw = self.get(self.pin_assigns)
             # mutated in-place during _make_export_*
             assigns = cast(List[Optional[str]], assigns_raw.copy())
@@ -133,7 +134,7 @@ class BaseIoController(PinMappable, Block):
 
         def connect_port_transformed(self_io: BasePort, inner_io: BasePort, name: str) -> None:
             assert transform_fn is not None and assigns is not None
-            assign_index = assign_index_by_name.get(self_io._name_from(self))
+            assign_index = assign_index_by_name.get(name)
             assign = assigns[assign_index] if assign_index is not None else None
             transform_result = transform_fn(self_io, assign)
             if transform_result is not None:
@@ -157,11 +158,8 @@ class BaseIoController(PinMappable, Block):
                 else:
                     self_io.defined()
                     for io_requested in self.get(self_io.requested()):
-                        connect_port_transformed(
-                            self_io.append_elt(self_io.elt_type().empty(), io_requested),
-                            inner_io.request(io_requested),
-                            io_requested,
-                        )
+                        self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
+                        connect_port_transformed(self_io_elt, inner_io.request(io_requested), io_requested)
             elif isinstance(inner_io, Port):
                 if transform_fn is None:
                     self.connect(self_io, inner_io)
