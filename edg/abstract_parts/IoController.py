@@ -154,6 +154,8 @@ class BaseIoController(PinMappable, Block):
             if isinstance(self_io, Vector):
                 assert isinstance(inner_io, Vector)
                 if transform_fn is None:
+                    # TODO: this eats up the entire inner_io, requiring a hack to add additional items to inner_io
+                    # using inner_io.request_vector is not yet supported
                     self.connect(self_io, inner_io)
                 else:
                     self_io.defined()

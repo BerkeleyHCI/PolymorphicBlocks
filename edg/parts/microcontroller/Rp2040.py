@@ -356,9 +356,8 @@ class Rp2040(
             self.connect(self_io, self.usb_res.exterior)
             return self.usb_res.interior
 
-        self._wrap_inner(
-            self.ic, {UsbDevicePort: usb_export_transform, DigitalBidir: lambda port, assign: port}
-        )  # passthrough but keeps the vector open for SWD
+        # add a passthrough for gpio (DigitalBidir) to allow the SWD pins to be attached, if using
+        self._wrap_inner(self.ic, {UsbDevicePort: usb_export_transform, DigitalBidir: lambda port, assign: port})
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.run)
