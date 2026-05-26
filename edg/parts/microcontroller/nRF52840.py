@@ -782,13 +782,6 @@ class Holyiot_18010_Device(
         "P0.10": "36",
     }
 
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "Vdd": "14",
-        "Vss": ["1", "25", "37"],
-        "Vbus": "22",
-        "nRESET": "21",
-    }
-
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty())
@@ -827,7 +820,7 @@ class Holyiot_18010_Device(
         self.footprint(
             "U",
             "edg:Holyiot-18010-NRF52840",
-            self._make_pinning(),
+            pinning,
             mfr="Holyiot",
             part="18010",
             datasheet="http://www.holyiot.com/tp/2019042516322180424.pdf",
@@ -845,9 +838,9 @@ class Holyiot_18010_Subcircuit(
     # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
     # that other modules should wrap
 
-    def __init__(self, **kwargs: Any) -> None :
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
+        self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
         self.pwr_usb = self.Export(self.ic.vbus, optional=True)
         self.reset = self.Export(self.ic.p0_18, optional=True)
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested(), self.usb.requested())
