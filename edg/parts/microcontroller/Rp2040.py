@@ -384,15 +384,14 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcirc
         "GPIO3": "11",
     }
 
-    def __init__(self, model_pin_assigns: ArrayStringLike):
-        super().__init__()
-        self.model_pin_assigns = self.ArgParameter(model_pin_assigns)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
         self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
         self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
         self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
         self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
-        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.model_pin_assigns)
+        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.pin_assigns)
 
         # TODO MOVE TO INFRASTRUCTURE
         for io_port in self._io_ports:
@@ -412,9 +411,7 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcirc
             "13": self.gnd,
             "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
         }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(
-            self.get(self.model_pin_assigns), self._PIN_REMAPPING
-        )
+        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
         pinning.update(remap_pinnings)
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
 
@@ -496,7 +493,7 @@ class Xiao_Rp2040(
         model_pin_assigns = self._export_ios_inner(self.model)
         self.assign(self.model.pin_assigns, model_pin_assigns)
 
-        self.device = self.Block(Xiao_Rp2040_Device(model_pin_assigns=self.model.actual_pin_assigns), external=True)
+        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 

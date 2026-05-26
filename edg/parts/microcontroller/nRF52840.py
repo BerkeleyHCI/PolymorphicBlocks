@@ -789,9 +789,8 @@ class Holyiot_18010_Device(
         "nRESET": "21",
     }
 
-    def __init__(self, model_pin_assigns: ArrayStringLike):
-        super().__init__()
-        self.model_pin_assigns = self.ArgParameter(model_pin_assigns)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty())
         self.vdd_nrf = self.Port(VoltageSink.empty(), optional=True)
         self.vbus = self.Port(VoltageSink.empty(), optional=True)
@@ -811,9 +810,7 @@ class Holyiot_18010_Device(
             "22": self.vbus,
             "21": self.p0_18,
         }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(
-            self.get(self.model_pin_assigns), self._PIN_REMAPPING
-        )
+        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
         pinning.update(remap_pinnings)
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
 
@@ -838,9 +835,9 @@ class Holyiot_18010_Subcircuit(
     # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
     # that other modules should wrap
 
-    def __init__(self, model_pin_assigns: ArrayStringLike, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.ic = self.Block(Holyiot_18010_Device(model_pin_assigns=model_pin_assigns))
+        self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
         self.pwr_usb = self.Export(self.ic.vbus, optional=True)
         self.reset = self.Export(self.ic.p0_18, optional=True)
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested(), self.usb.requested())
@@ -900,9 +897,7 @@ class Holyiot_18010(
         self.connect(self.pwr, self.model.pwr)
         self.connect(self.gnd, self.model.gnd)
 
-        self.device = self.Block(
-            Holyiot_18010_Subcircuit(model_pin_assigns=self.model.actual_pin_assigns), external=True
-        )
+        self.device = self.Block(Holyiot_18010_Subcircuit(pin_assigns=self.model.actual_pin_assigns), external=True)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
         self._export_tap_ios_inner(self.device)
         self.export_tap(self.gnd, self.device.gnd)

@@ -9,6 +9,8 @@ class IoControllerWrapped(BaseIoController):
     with an outer WrapperSubboardBlock to implement e.g. a dev board or module around a modeling subcircuit.
 
     Provides some utility functions to remap pin assignments from the model to the footprint.
+
+    In this class, pin_assigns is treated as the model's pin assigns and internally remapped.
     """
 
     def _remap_pinning_assigns(
