@@ -712,9 +712,7 @@ class Mdbt50q_1mv2(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic = self.Block(
-            Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr())
-        )  # defined in generator to mix in SWO/TDI
+        self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))
         self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested(), self.usb.requested())
 
@@ -747,14 +745,10 @@ class Mdbt50q_1mv2(
             self.connect(self.reset, self.ic.nreset)
 
 
-class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "Vdd": "14",
-        "Vss": ["1", "25", "37"],
-        "Vbus": "22",
-        "nRESET": "21",
-    }
-    RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+class Holyiot_18010_Device(
+    Nrf52840_Interfaces, IoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock
+):
+    _PIN_REMAPPING = {  # boundary pins only, inner pins ignored
         "P1.11": "2",
         "P1.10": "3",
         "P1.13": "4",
@@ -788,9 +782,40 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
         "P0.10": "36",
     }
 
+    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+        "Vdd": "14",
+        "Vss": ["1", "25", "37"],
+        "Vbus": "22",
+        "nRESET": "21",
+    }
+
+    def __init__(self, model_pin_assigns: ArrayStringLike):
+        super().__init__()
+        self.model_pin_assigns = self.ArgParameter(model_pin_assigns)
+        self.gnd = self.Port(Ground.empty())
+        self.vdd_nrf = self.Port(VoltageSink.empty(), optional=True)
+        self.vbus = self.Port(VoltageSink.empty(), optional=True)
+        self.p0_18 = self.Port(DigitalSink.empty(), optional=True)  # nRESET
+        self.swd = self.Port(SwdTargetPort.empty())
+        self._io_ports.insert(0, self.swd)
+
     @override
     def generate(self) -> None:
         super().generate()
+
+        pinning: Dict[str, HasPassivePort] = {
+            "14": self.vdd_nrf,
+            "1": self.gnd,
+            "25": self.gnd,
+            "37": self.gnd,
+            "22": self.vbus,
+            "21": self.p0_18,
+        }
+        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(
+            self.get(self.model_pin_assigns), self._PIN_REMAPPING
+        )
+        pinning.update(remap_pinnings)
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
 
         self.footprint(
             "U",
@@ -802,39 +827,95 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
         )
 
 
+class Holyiot_18010_Subcircuit(
+    Nrf52840_Interfaces,
+    IoControllerWithSwdTargetConnector,
+    InternalSubcircuit,
+    GeneratorBlock,
+):
+    """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic."""
+
+    # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
+    # that other modules should wrap
+
+    def __init__(self, model_pin_assigns: ArrayStringLike, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.ic = self.Block(Holyiot_18010_Device(model_pin_assigns=model_pin_assigns))
+        self.pwr_usb = self.Export(self.ic.vbus, optional=True)
+        self.reset = self.Export(self.ic.p0_18, optional=True)
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested(), self.usb.requested())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.connect(self.pwr, self.ic.vdd_nrf)
+        self.connect(self.gnd, self.ic.gnd)
+
+        self.connect(self.swd_node, self.ic.swd)
+
+        with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
+            self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        def usb_export_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
+            self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
+            self.usb_res = self.Block(UsbSeriesResistor(27 * Ohm(tol=0.05)))
+            self.connect(self_io, self.usb_res.exterior)
+            return self.usb_res.interior
+
+        # add a passthrough for gpio (DigitalBidir) to allow the SWD pins to be attached, if using
+        self._wrap_inner(self.ic, {UsbDevicePort: usb_export_transform, DigitalBidir: lambda port, assign: port})
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.ic.nreset)
+
+
 class Holyiot_18010(
     Microcontroller,
     Radiofrequency,
     Resettable,
     Nrf52840_Interfaces,
-    IoControllerWithSwdTargetConnector,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     GeneratorBlock,
+    WrapperSubboardBlock,
 ):
     """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Holyiot_18010_Device
-        self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
-        self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+        self.model = self.Block(Mdbt50q_1mv2(pin_assigns=ArrayStringExpr()))
+        self.pwr_usb = self.Export(self.model.pwr_usb, optional=True)
+
         self.generator_param(self.reset.is_connected())
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.connect(self.pwr, self.ic.pwr)
-        self.connect(self.gnd, self.ic.gnd)
 
-        self.connect(self.swd_node, self.ic.swd)
-        self.connect(self.reset_node, self.ic.nreset)
+        model_pin_assigns = self._export_ios_inner(self.model)
+        self.assign(self.model.pin_assigns, model_pin_assigns)
+        self.connect(self.pwr, self.model.pwr)
+        self.connect(self.gnd, self.model.gnd)
+
+        self.device = self.Block(
+            Holyiot_18010_Subcircuit(model_pin_assigns=self.model.actual_pin_assigns), external=True
+        )
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self._export_tap_ios_inner(self.device)
+        self.export_tap(self.gnd, self.device.gnd)
+        self.export_tap(self.pwr, self.device.pwr)
+        self.export_tap(self.pwr_usb, self.device.pwr_usb)
 
     @override
     def generate(self) -> None:
         super().generate()
+
         if self.get(self.reset.is_connected()):
-            self.connect(self.reset, self.ic.nreset)
+            self.connect(self.reset, self.model.nreset)
+            self.export_tap(self.reset, self.device.reset)
 
 
 class Feather_Nrf52840(
