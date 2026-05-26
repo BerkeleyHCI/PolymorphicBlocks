@@ -51,8 +51,10 @@ class Rp2040_Device(
         "SWCLK": "24",
     }
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *, _model: BoolLike = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self._model = self.ArgParameter(_model)
 
         self.gnd = self.Port(Ground(), [Common])
         self.iovdd = self.Port(
@@ -60,7 +62,6 @@ class Rp2040_Device(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
                 current_draw=(1.2, 4.3) * mAmp + self.io_current_draw.upper(),  # Table 629
             ),
-            [Power],
         )
 
         self.dvdd = self.Port(
@@ -75,6 +76,7 @@ class Rp2040_Device(
                 current_limits=(0, 100) * mAmp,  # Table 1, max current
             )
         )
+
         self.vreg_vin = self.Port(
             VoltageSink(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
@@ -107,10 +109,19 @@ class Rp2040_Device(
             pulldown_capable=True,
         )
 
-        self.qspi = self.Port(SpiController(self._dio_std_model))  # TODO actually QSPI
-        self.qspi_cs = self.Port(self._dio_std_model)
-        self.qspi_sd2 = self.Port(self._dio_std_model)
-        self.qspi_sd3 = self.Port(self._dio_std_model)
+        self.qspi = self.Port(SpiController(self._dio_std_model), optional=True)  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model, optional=True)
+        self.qspi_sd2 = self.Port(self._dio_std_model, optional=True)
+        self.qspi_sd3 = self.Port(self._dio_std_model, optional=True)
+        self.require(
+            (~self._model).implies(
+                self.qspi.is_connected()
+                & self.qspi_cs.is_connected()
+                & self.qspi_sd2.is_connected()
+                & self.qspi_sd3.is_connected()
+            ),
+            "SPI memory required",
+        )
 
         self.xosc = self.Port(
             CrystalDriver(
@@ -119,7 +130,7 @@ class Rp2040_Device(
             optional=True,
         )
 
-        self.swd = self.Port(SwdTargetPort.empty())
+        self.swd = self.Port(SwdTargetPort.empty(), optional=True)
         self.run = self.Port(DigitalSink.from_bidir(self._dio_ft_model), optional=True)  # internally pulled up
         self._io_ports.insert(0, self.swd)
 
@@ -338,7 +349,7 @@ class Rp2040(
             self.connect(self.ic.qspi_sd2, mem_qspi.io2)
             self.connect(self.ic.qspi_sd3, mem_qspi.io3)
 
-        self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
+        self.connect(self.pwr, self.ic.iovdd, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
         self.connect(self.ic.vreg_vout, self.ic.dvdd)
 
         self.dvdd_cap = ElementDict[DecouplingCapacitor]()
@@ -489,7 +500,7 @@ class Xiao_Rp2040(
             "ground required if power used",
         )
 
-        self.model = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
+        self.model = self.Block(Rp2040_Device(pin_assigns=ArrayStringExpr(), _model=True))
         model_pin_assigns = self._export_ios_inner(self.model)
         self.assign(self.model.pin_assigns, model_pin_assigns)
 
@@ -501,8 +512,10 @@ class Xiao_Rp2040(
     def generate(self) -> None:
         super().generate()
 
+        self.connect(self.model.vreg_vout, self.model.dvdd)
+        model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.pwr)
+            self.connect(self.pwr, model_pwr)
             self.export_tap(self.pwr, self.device.v3v3)
         else:  # board sources power from USB
             self.pwr_out_model = self.Block(
@@ -511,7 +524,7 @@ class Xiao_Rp2040(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            self.connect(self.pwr_out_model.pwr, model_pwr)
             if self.get(self.pwr_out.is_connected()):
                 self.connect(self.pwr_out, self.pwr_out_model.pwr)
             self.export_tap(self.pwr_out, self.device.v3v3_out)
