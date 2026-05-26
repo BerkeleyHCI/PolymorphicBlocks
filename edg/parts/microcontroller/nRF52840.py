@@ -907,20 +907,9 @@ class Holyiot_18010(
             self.connect(self.reset, self.ic.reset)
 
 
-class Feather_Nrf52840(
-    IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, IoController, GeneratorBlock, FootprintBlock
-):
-    """Feather nRF52840 socketed dev board as either power source or sink"""
+class Feather_Nrf52840_Device(Nrf52840_Interfaces, IoControllerWrapped, GeneratorBlock, FootprintBlock):
 
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "Vdd": "2",  # 3v3
-        "Vss": "4",
-        # 'reset': '1',
-        "Vbus": "26",
-        # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
-        # 'Vbat': '28',
-    }
-    RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    _PIN_REMAPPING = {  # boundary pins only, inner pins ignored
         "P0.31": "3",  # AREF
         "P0.04": "5",  # A0
         "P0.05": "6",  # A1
@@ -950,38 +939,21 @@ class Feather_Nrf52840(
     }
 
     @override
-    def _vddio(self) -> Port[VoltageLink]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr
-        else:
-            return self.pwr_out
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-            self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
-            return VariantPinRemapper(
-                {
-                    "Vdd": self.pwr,
-                    "Vss": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "Vdd": self.pwr_out,
-                    "Vss": self.gnd,
-                    "Vbus": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-
-    @override
     def contents(self) -> None:
         super().contents()
 
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._vdd_model())
+        self.gnd = self.Port(Ground.empty(), optional=True)
+        self.pwr = self.Port(VoltageSink.empty(), optional=True)
+        self.pwr_out = self.Port(VoltageSink.empty(), optional=True)
+
+        self.require(
+            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
+            "can't source USB power if power input connected",
+        )
+        self.require(
+            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
+            "can't source 3v3 power if power input connected",
+        )
 
         mbr120_drop = (0, 0.340) * Volt
         ap2112_3v3_out = 3.3 * Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
@@ -1001,11 +973,29 @@ class Feather_Nrf52840(
     def generate(self) -> None:
         super().generate()
 
+        pinning: Dict[str, HasPassivePort] = {
+            "2": self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out,
+            "4": self.gnd,
+            # "1": reset,
+            "26": self.vusb_out,
+            # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
+            # 'Vbat': '28',
+        }
+        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
+        pinning.update(remap_pinnings)
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
+
         self.footprint(
             "U",
             "bldc:FEATHERWING_NODIM",
-            self._make_pinning(),
+            pinning,
             mfr="Adafruit",
             part="Feather nRF52840 Express",
             datasheet="https://learn.adafruit.com/assets/68545",
         )
+
+
+class Feather_Nrf52840(
+    IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Interfaces, IoController, GeneratorBlock, FootprintBlock
+):
+    """Feather nRF52840 socketed dev board as either power source or sink"""
