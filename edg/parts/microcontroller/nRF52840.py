@@ -797,6 +797,16 @@ class Holyiot_18010_Device(
         self.p0_18 = self.Port(DigitalSink.empty(), optional=True)  # nRESET
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
+        self.generator_param(self.pin_assigns)
+
+        # TODO MOVE TO INFRASTRUCTURE
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                self.generator_param(io_port.requested())
+            elif isinstance(io_port, Port):
+                self.generator_param(io_port.is_connected())
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
 
     @override
     def generate(self) -> None:
@@ -881,9 +891,27 @@ class Holyiot_18010(
 ):
     """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        swd_connect_swo: BoolLike = False,  # TODO SwdTargetConnector should only define the interface
+        swd_connect_tdi: BoolLike = False,
+        swd_connect_reset: BoolLike = True,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
-        self.model = self.Block(Mdbt50q_1mv2(pin_assigns=ArrayStringExpr()))
+
+        self.swd_connect_swo = self.ArgParameter(swd_connect_swo)
+        self.swd_connect_tdi = self.ArgParameter(swd_connect_tdi)
+        self.swd_connect_reset = self.ArgParameter(swd_connect_reset)
+
+        self.model = self.Block(
+            Mdbt50q_1mv2(
+                pin_assigns=ArrayStringExpr(),
+                swd_connect_swo=self.swd_connect_swo,
+                swd_connect_tdi=self.swd_connect_tdi,
+                swd_connect_reset=self.swd_connect_reset,
+            )
+        )
         self.pwr_usb = self.Export(self.model.pwr_usb, optional=True)
 
         self.generator_param(self.reset.is_connected())
@@ -897,7 +925,15 @@ class Holyiot_18010(
         self.connect(self.pwr, self.model.pwr)
         self.connect(self.gnd, self.model.gnd)
 
-        self.device = self.Block(Holyiot_18010_Subcircuit(pin_assigns=self.model.actual_pin_assigns), external=True)
+        self.device = self.Block(
+            Holyiot_18010_Subcircuit(
+                pin_assigns=self.model.actual_pin_assigns,
+                swd_connect_swo=self.swd_connect_swo,
+                swd_connect_tdi=self.swd_connect_tdi,
+                swd_connect_reset=self.swd_connect_reset,
+            ),
+            external=True,
+        )
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
         self._export_tap_ios_inner(self.device)
         self.export_tap(self.gnd, self.device.gnd)
