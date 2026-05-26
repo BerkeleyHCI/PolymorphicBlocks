@@ -384,7 +384,7 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcirc
         "GPIO3": "11",
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
         self.v3v3 = self.Port(VoltageSink.empty(), optional=True)

@@ -789,7 +789,7 @@ class Holyiot_18010_Device(
         "nRESET": "21",
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty())
         self.vdd_nrf = self.Port(VoltageSink.empty(), optional=True)
@@ -845,7 +845,7 @@ class Holyiot_18010_Subcircuit(
     # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
     # that other modules should wrap
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None :
         super().__init__(**kwargs)
         self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
         self.pwr_usb = self.Export(self.ic.vbus, optional=True)

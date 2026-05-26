@@ -54,7 +54,10 @@ class IoControllerWrapped(BaseIoController):
                     seen_names.add(subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
-                    raise NotImplementedError("TODO implement me")
+                    port_name = io_port._name_from(self)
+                    assert port_name not in seen_names, f"duplicate pin name {port_name}"
+                    remap_port_recursive(io_port, port_name)
+                    seen_names.add(port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
 
