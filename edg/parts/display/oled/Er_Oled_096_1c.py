@@ -176,6 +176,8 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
             self.connect(self.device.bs1, gnd_digital)
             self.connect(self.spi.sck, self.device.d0)
             self.connect(self.spi.mosi, self.device.d1)
+            self.miso_nc = self.Block(DigitalBidirNotConnected())
+            self.connect(self.spi.miso, self.miso_nc.port)
             self.connect(self.cs, self.device.cs)
             self.connect(self.device.d2, gnd_digital)
             if self.get(self.dc.is_connected()):  # 4-line SPI
