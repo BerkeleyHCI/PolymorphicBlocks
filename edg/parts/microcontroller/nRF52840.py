@@ -479,9 +479,9 @@ class Holyiot_18010_Footprint(
             "22": self.vbus,
             "21": self.p0_18,
         }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
-        pinning.update(remap_pinnings)
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
+        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
+        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
 
         self.footprint(
             "U",
@@ -641,9 +641,9 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, Gene
             # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
             # 'Vbat': '28',
         }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
-        pinning.update(remap_pinnings)
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
+        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
+        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
 
         self.footprint(
             "U",

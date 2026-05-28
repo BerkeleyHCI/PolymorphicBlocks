@@ -416,9 +416,9 @@ class Xiao_Rp2040_Device(
             "13": self.gnd,
             "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
         }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(self.get(self.pin_assigns), self._PIN_REMAPPING)
-        pinning.update(remap_pinnings)
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
+        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
+        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
 
         self.footprint(
             "U",

@@ -19,12 +19,10 @@ class BaseIoControllerWrapped(BaseIoController):
         pin_assigns: List[str],
         *,
         invert_remapping: bool = False,
-        discard_unremappable: bool = False,
     ) -> Dict[str, str]:
         """Given a remapping dict and a list of pin assigns, returns the mapping as a dict with the remapping applied.
         If invert_remapping is True, the remapping dict is inverted before applying.
-        If discard_unremappable is True, assigns not present in the remapping dict are discarded.
-        Otherwise, they are passed unmodified.
+        Assigns not present in the remapping dict are passed unchanged, eg for non-pin-assigns like bundle containers.
         """
         if invert_remapping:
             remapping = {v: k for k, v in remapping.items()}
@@ -36,10 +34,8 @@ class BaseIoControllerWrapped(BaseIoController):
             remapped_pin = remapping.get(pin)
             if remapped_pin is not None:
                 remapped_assigns[name.strip()] = remapped_pin
-            elif not discard_unremappable:
-                remapped_assigns[name.strip()] = pindef  # pass unmodified if not remappable, eg bundle containers
             else:
-                pass  # discarded
+                remapped_assigns[name.strip()] = pindef  # pass unmodified if not remappable, eg bundle containers
         return remapped_assigns
 
     def _generator_param_all_ios(self) -> None:
@@ -52,33 +48,24 @@ class BaseIoControllerWrapped(BaseIoController):
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
 
-    def _remap_pinning_assigns(
-        self, model_pin_assigns: List[str], remapping: Dict[str, str]
-    ) -> Tuple[Dict[str, HasPassivePort], Dict[str, str]]:
-        """Given the actual pin assignments and a remapping dict, returns the pinning dict for the footprint
-        and the updated actual pin assignments.
-        Generates concrete ports elements for IO Vectors"""
-        pinning: Dict[str, HasPassivePort] = {}
-        actual_pin_assigns: Dict[str, str] = {}
-        seen_names: Set[str] = set()
+    def _remap_to_footprint_pinning(
+        self, pin_assigns: Dict[str, str], valid_pins: Iterable[str]
+    ) -> Dict[str, HasPassivePort]:
+        """Given the pin assigns in a dict form as port name -> footprint pin, eg from _remap_pin_assigns_list,
+        returns the footprint-compatible form as footprint pin -> port object.
 
-        model_pin_assigns_dict: Dict[str, str] = {}
-        for assign in model_pin_assigns:
-            name, pindef = assign.split("=")
-            pins = pindef.split(",")
-            model_pin_assigns_dict[name.strip()] = pins[0].strip()  # use the GPIO name
+        This simplified pin assignment tool requires all pins to be assigned.
+        It does not automatically assigns unassigned pins, that is assumed to have happened at a higher level."""
+        pinning: Dict[str, HasPassivePort] = {}
+        seen_names: Set[str] = set()
 
         def remap_port_recursive(port: Port, prefix: str = "") -> None:
             """Remaps a port, recursively for bundles"""
             if isinstance(port, HasPassivePort):
-                if prefix not in model_pin_assigns_dict:
-                    raise ValueError(f"pin {prefix} not assigned")
-                pin = model_pin_assigns_dict[prefix]
-                if pin not in remapping:
-                    raise ValueError(f"pin {pin} not in remapping")
-                remapped_pin = remapping[pin]
-                pinning[remapped_pin] = port
-                actual_pin_assigns[prefix] = f"{pin}, {remapped_pin}"
+                pin = pin_assigns.get(prefix)
+                assert pin is not None, f"pin {prefix} not assigned"
+                assert pin in valid_pins, f"pin {pin} not in valid pins {valid_pins}"
+                pinning[pin] = port
 
             for subport_name, subport in port._ports.items():
                 remap_port_recursive(subport, f"{prefix}.{subport_name}")
@@ -88,19 +75,19 @@ class BaseIoControllerWrapped(BaseIoController):
                 io_port.defined()
                 for subport_name in self.get(io_port.requested()):
                     assert subport_name not in seen_names, f"duplicate pin name {subport_name}"
+                    seen_names.add(subport_name)
                     subport = io_port.append_elt(io_port._tpe.empty(), subport_name)
                     remap_port_recursive(subport, subport_name)
-                    seen_names.add(subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
                     port_name = io_port._name_from(self)
                     assert port_name not in seen_names, f"duplicate pin name {port_name}"
-                    remap_port_recursive(io_port, port_name)
                     seen_names.add(port_name)
+                    remap_port_recursive(io_port, port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
 
-        return pinning, actual_pin_assigns
+        return pinning
 
     @staticmethod
     def _remap_assigns_to_value(assigns: Dict[str, str]) -> List[str]:
