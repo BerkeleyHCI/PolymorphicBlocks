@@ -106,7 +106,7 @@ class Mdbt50q_1mv2_Device(
             pulldown_capable=True,
         )
         self._dio_lf_model = self._dio_model  # "standard drive, low frequency IO only" (differences not modeled)
-        self.swd = self.Port(SwdTargetPort.empty())
+        self.swd = self.Port(SwdTargetPort.empty(), optional=True)
         self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model), optional=True)
         self._io_ports.insert(0, self.swd)
 
@@ -465,15 +465,7 @@ class Holyiot_18010_Footprint(
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
         self.generator_param(self.pin_assigns)
-
-        # TODO MOVE TO INFRASTRUCTURE
-        for io_port in self._io_ports:
-            if isinstance(io_port, Vector):
-                self.generator_param(io_port.requested())
-            elif isinstance(io_port, Port):
-                self.generator_param(io_port.is_connected())
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
@@ -631,6 +623,7 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, Gene
         self.vusb = self.Port(Passive.empty(), optional=True)
 
         self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
@@ -675,6 +668,7 @@ class Feather_Nrf52840(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.generator_param(
+            self.pin_assigns,
             self.gnd.is_connected(),
             self.pwr.is_connected(),
             self.pwr_out.is_connected(),
@@ -682,8 +676,8 @@ class Feather_Nrf52840(
         )
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         self.require(
             self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
@@ -694,17 +688,18 @@ class Feather_Nrf52840(
             "can't source 3v3 power if power input connected",
         )
 
-        self.model = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))
-        model_pin_assigns = self._export_ios_inner(self.model)
-        self.assign(self.model.pin_assigns, model_pin_assigns)
+        self.model = self.Block(
+            Mdbt50q_1mv2_Device(
+                pin_assigns=BaseIoControllerWrapped._remap_pin_assigns_list(
+                    {v: k for k, v in Feather_Nrf52840_Device._PIN_REMAPPING.items()}, self.get(self.pin_assigns)
+                )
+            )
+        )
+        self._export_ios_inner(self.model)
 
         self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-
-    @override
-    def generate(self) -> None:
-        super().generate()
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.model.pwr)

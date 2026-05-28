@@ -405,15 +405,7 @@ class Xiao_Rp2040_Device(
         self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
         self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
         self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.pin_assigns)
-
-        # TODO MOVE TO INFRASTRUCTURE
-        for io_port in self._io_ports:
-            if isinstance(io_port, Vector):
-                self.generator_param(io_port.requested())
-            elif isinstance(io_port, Port):
-                self.generator_param(io_port.is_connected())
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:

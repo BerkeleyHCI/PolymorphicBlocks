@@ -13,6 +13,30 @@ class BaseIoControllerWrapped(BaseIoController):
     In this class, pin_assigns is treated as the model's pin assigns and internally remapped.
     """
 
+    @staticmethod
+    def _remap_pin_assigns_list(remapping: Dict[str, str], pin_assigns: List[str]) -> List[str]:
+        """Given a remapping dict and a list of pin assigns, returns a new list of pin assigns with the remapping applied"""
+        remapped_assigns = []
+        for assign in pin_assigns:
+            name, pindef = assign.split("=")
+            pin = pindef.split(",")[0].strip()  # take the first (gpio name) if multiple
+            remapped_pin = remapping.get(pin)
+            if remapped_pin is not None:
+                remapped_assigns.append(f"{name.strip()}={remapped_pin}")
+            else:
+                remapped_assigns.append(assign)  # pass through unknown assigns, which may be IO names
+        return remapped_assigns
+
+    def _generator_param_all_ios(self) -> None:
+        # declare all IOs as generator params, required for _remap_pinning_assigns
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                self.generator_param(io_port.requested())
+            elif isinstance(io_port, Port):
+                self.generator_param(io_port.is_connected())
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
+
     def _remap_pinning_assigns(
         self, model_pin_assigns: List[str], remapping: Dict[str, str]
     ) -> Tuple[Dict[str, HasPassivePort], Dict[str, str]]:
