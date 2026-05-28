@@ -338,15 +338,16 @@ class PinMapUtil:
                 else:
                     return None
             elif isinstance(resource, PeripheralFixedPin):
-                # TODO need to simultaneously filter pins and resource names
-                filtered_pins = {
-                    elt_name: elt_pin
-                    for elt_name, elt_pin in resource.inner_allowed_pins.items()
-                    if elt_pin in allowed_pins or elt_name in allowed_pins
-                }
-                if filtered_pins:
+                filtered_keys = []
+                for key, pin in resource.inner_allowed_pins.items():
+                    if pin in allowed_pins or resource.inner_resources[key] in allowed_pins:
+                        filtered_keys.append(key)
+                if filtered_keys:
                     return PeripheralFixedPin(
-                        resource.name, resource.port_model, filtered_pins, resource.inner_resources
+                        resource.name,
+                        resource.port_model,
+                        {k: v for k, v in resource.inner_allowed_pins.items() if k in filtered_keys},
+                        {k: v for k, v in resource.inner_resources.items() if k in filtered_keys},
                     )
                 else:
                     return None

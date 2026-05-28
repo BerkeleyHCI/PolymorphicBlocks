@@ -98,6 +98,37 @@ class PinMapUtilTest(unittest.TestCase):
         self.assertIn(AllocatedResource(ain_model, "AIO4", "P4", "4"), allocated)
         self.assertIn(AllocatedResource(ain_model, "AIO5", "P5", "5"), allocated)
 
+    def test_assign_filtered(self) -> None:  # fully user-specified
+        dio_model = DigitalBidir()
+        ain_model = AnalogSink()
+        allocated = (
+            PinMapUtil(
+                [
+                    PinResource("P1", {"PIO1": dio_model}),
+                    PinResource("P2", {"PIO2": dio_model}),
+                    PinResource("P3", {"PIO3": dio_model, "AIn3": ain_model}),
+                    PinResource("P4", {"PIO4": dio_model, "AIn4": ain_model}),
+                    PinResource("P5", {"AIn5": ain_model}),
+                ]
+            )
+            .remap_pins(
+                {
+                    "P1": "1",
+                    "P2": "2",
+                    "P3": "3",
+                    "P4": "4",
+                    "P5": "5",
+                }
+            )
+            .filter_pins(["P2", "4"])
+            .allocate(
+                [(DigitalBidir, ["DIO2"]), (AnalogSink, ["AIO4"])],
+                [],
+            )
+        )
+        self.assertIn(AllocatedResource(dio_model, "DIO2", "P2", "2"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO4", "P4", "4"), allocated)
+
     def test_assign_mixed(self) -> None:  # mix of user-specified and automatic assignments, assuming greedy algo
         dio_model = DigitalBidir()
         ain_model = AnalogSink()
