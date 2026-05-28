@@ -74,8 +74,11 @@ class Mdbt50q_1mv2_Device(
         "P1.01": "61",
     }
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self.allowed_pins = self.ArgParameter(allowed_pins)  # TODO move to infrastructure
+        self.generator_param(self.allowed_pins)
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(
@@ -188,189 +191,193 @@ class Mdbt50q_1mv2_Device(
             "P1.00",
         ]
 
-        return PinMapUtil(
-            [  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
-                PinResource("P0.31", {"P0.31": self._dio_lf_model, "AIN7": adc_model}),
-                PinResource("P0.29", {"P0.29": self._dio_lf_model, "AIN5": adc_model}),
-                PinResource("P0.02", {"P0.02": self._dio_lf_model, "AIN0": adc_model}),
-                PinResource("P1.15", {"P1.15": self._dio_lf_model}),
-                PinResource("P1.13", {"P1.13": self._dio_lf_model}),
-                PinResource("P1.10", {"P1.10": self._dio_lf_model}),
-                PinResource("P0.30", {"P0.30": self._dio_lf_model, "AIN6": adc_model}),
-                PinResource("P0.28", {"P0.28": self._dio_lf_model, "AIN4": adc_model}),
-                PinResource("P0.03", {"P0.03": self._dio_lf_model, "AIN1": adc_model}),
-                PinResource("P1.14", {"P1.14": self._dio_lf_model}),
-                PinResource("P1.12", {"P1.12": self._dio_lf_model}),
-                PinResource("P1.11", {"P1.11": self._dio_lf_model}),
-                PinResource("P0.00", {"P0.00": self._dio_model}),  # TODO also 32.768 kHz crystal in
-                PinResource("P0.01", {"P0.01": self._dio_model}),  # TODO also 32.768 kHz crystal in
-                PinResource("P0.26", {"P0.26": self._dio_model}),
-                PinResource("P0.27", {"P0.27": self._dio_model}),
-                PinResource("P0.04", {"P0.04": self._dio_model, "AIN2": adc_model}),
-                PinResource("P0.10", {"P0.10": self._dio_lf_model}),  # TODO also NFC2
-                PinResource("P0.05", {"P0.05": self._dio_model, "AIN3": adc_model}),
-                PinResource("P0.06", {"P0.06": self._dio_model}),
-                PinResource("P0.09", {"P0.09": self._dio_lf_model}),  # TODO also NFC1
-                PinResource("P0.07", {"P0.07": self._dio_model}),
-                PinResource("P0.08", {"P0.08": self._dio_model}),
-                PinResource("P1.08", {"P1.08": self._dio_model}),
-                PinResource("P1.07", {"P1.07": self._dio_lf_model}),
-                PinResource("P1.09", {"P1.09": self._dio_model}),
-                PinResource("P1.06", {"P1.06": self._dio_lf_model}),
-                PinResource("P0.11", {"P0.11": self._dio_model}),
-                PinResource("P1.05", {"P1.05": self._dio_lf_model}),
-                PinResource("P0.12", {"P0.12": self._dio_model}),
-                PinResource("P1.04", {"P1.04": self._dio_lf_model}),
-                PinResource("P1.03", {"P1.03": self._dio_lf_model}),
-                PinResource("P1.02", {"P1.02": self._dio_lf_model}),
-                PinResource("P1.01", {"P1.01": self._dio_lf_model}),
-                PinResource("P0.14", {"P0.14": self._dio_model}),
-                PinResource("P0.16", {"P0.16": self._dio_model}),
-                # PinResource('P0.18', {'P0.18': dio_model}),  # configurable as RESET, mappable
-                PinResource("P0.19", {"P0.19": self._dio_model}),
-                PinResource("P0.21", {"P0.21": self._dio_model}),
-                PinResource("P0.23", {"P0.23": self._dio_model}),
-                PinResource("P0.25", {"P0.25": self._dio_model}),
-                PinResource("P0.13", {"P0.13": self._dio_model}),
-                PinResource("P0.15", {"P0.15": self._dio_model}),
-                PinResource("P0.17", {"P0.17": self._dio_model}),
-                PinResource("P0.20", {"P0.20": self._dio_model}),
-                PinResource("P0.22", {"P0.22": self._dio_model}),
-                PinResource("P0.24", {"P0.24": self._dio_model}),
-                PinResource(
-                    "P1.00", {"P1.00": self._dio_model}
-                ),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
-                PeripheralFixedPin(
-                    "SWD",
-                    SwdTargetPort(self._dio_model),
-                    {
-                        "swclk": "SWCLK",
-                        "swdio": "SWDIO",
-                    },
-                ),
-                PeripheralFixedPin("USBD", UsbDevicePort(), {"dp": "D+", "dm": "D-"}),
-                PeripheralFixedResource(
-                    "SPIM0",
-                    spi_model,
-                    {
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIM1",
-                    spi_model,
-                    {
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIM2",
-                    spi_model,
-                    {
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIM3",
-                    spi_model,
-                    {
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIS0",
-                    spi_peripheral_model,
-                    {  # TODO shared resource w/ SPI controller
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIS1",
-                    spi_peripheral_model,
-                    {  # TODO shared resource w/ SPI controller
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "SPIS2",
-                    spi_peripheral_model,
-                    {  # TODO shared resource w/ SPI controller
-                        "sck": hf_io_pins,
-                        "miso": hf_io_pins,
-                        "mosi": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "TWIM0",
-                    i2c_model,
-                    {
-                        "scl": hf_io_pins,
-                        "sda": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "TWIM1",
-                    i2c_model,
-                    {
-                        "scl": hf_io_pins,
-                        "sda": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "TWIS0",
-                    i2c_target_model,
-                    {  # TODO shared resource w/ I2C controller
-                        "scl": hf_io_pins,
-                        "sda": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "TWIS1",
-                    i2c_target_model,
-                    {  # TODO shared resource w/ I2C controller
-                        "scl": hf_io_pins,
-                        "sda": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "UARTE0",
-                    uart_model,
-                    {
-                        "tx": hf_io_pins,
-                        "rx": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "UARTE1",
-                    uart_model,
-                    {
-                        "tx": hf_io_pins,
-                        "rx": hf_io_pins,
-                    },
-                ),
-                PeripheralFixedResource(
-                    "I2S",
-                    i2s_model,
-                    {
-                        "sck": hf_io_pins,
-                        "ws": hf_io_pins,
-                        "sd": hf_io_pins,
-                    },
-                ),
-            ]
-        ).remap_pins(self._PIN_MAPPING)
+        return (
+            PinMapUtil(
+                [  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
+                    PinResource("P0.31", {"P0.31": self._dio_lf_model, "AIN7": adc_model}),
+                    PinResource("P0.29", {"P0.29": self._dio_lf_model, "AIN5": adc_model}),
+                    PinResource("P0.02", {"P0.02": self._dio_lf_model, "AIN0": adc_model}),
+                    PinResource("P1.15", {"P1.15": self._dio_lf_model}),
+                    PinResource("P1.13", {"P1.13": self._dio_lf_model}),
+                    PinResource("P1.10", {"P1.10": self._dio_lf_model}),
+                    PinResource("P0.30", {"P0.30": self._dio_lf_model, "AIN6": adc_model}),
+                    PinResource("P0.28", {"P0.28": self._dio_lf_model, "AIN4": adc_model}),
+                    PinResource("P0.03", {"P0.03": self._dio_lf_model, "AIN1": adc_model}),
+                    PinResource("P1.14", {"P1.14": self._dio_lf_model}),
+                    PinResource("P1.12", {"P1.12": self._dio_lf_model}),
+                    PinResource("P1.11", {"P1.11": self._dio_lf_model}),
+                    PinResource("P0.00", {"P0.00": self._dio_model}),  # TODO also 32.768 kHz crystal in
+                    PinResource("P0.01", {"P0.01": self._dio_model}),  # TODO also 32.768 kHz crystal in
+                    PinResource("P0.26", {"P0.26": self._dio_model}),
+                    PinResource("P0.27", {"P0.27": self._dio_model}),
+                    PinResource("P0.04", {"P0.04": self._dio_model, "AIN2": adc_model}),
+                    PinResource("P0.10", {"P0.10": self._dio_lf_model}),  # TODO also NFC2
+                    PinResource("P0.05", {"P0.05": self._dio_model, "AIN3": adc_model}),
+                    PinResource("P0.06", {"P0.06": self._dio_model}),
+                    PinResource("P0.09", {"P0.09": self._dio_lf_model}),  # TODO also NFC1
+                    PinResource("P0.07", {"P0.07": self._dio_model}),
+                    PinResource("P0.08", {"P0.08": self._dio_model}),
+                    PinResource("P1.08", {"P1.08": self._dio_model}),
+                    PinResource("P1.07", {"P1.07": self._dio_lf_model}),
+                    PinResource("P1.09", {"P1.09": self._dio_model}),
+                    PinResource("P1.06", {"P1.06": self._dio_lf_model}),
+                    PinResource("P0.11", {"P0.11": self._dio_model}),
+                    PinResource("P1.05", {"P1.05": self._dio_lf_model}),
+                    PinResource("P0.12", {"P0.12": self._dio_model}),
+                    PinResource("P1.04", {"P1.04": self._dio_lf_model}),
+                    PinResource("P1.03", {"P1.03": self._dio_lf_model}),
+                    PinResource("P1.02", {"P1.02": self._dio_lf_model}),
+                    PinResource("P1.01", {"P1.01": self._dio_lf_model}),
+                    PinResource("P0.14", {"P0.14": self._dio_model}),
+                    PinResource("P0.16", {"P0.16": self._dio_model}),
+                    # PinResource('P0.18', {'P0.18': dio_model}),  # configurable as RESET, mappable
+                    PinResource("P0.19", {"P0.19": self._dio_model}),
+                    PinResource("P0.21", {"P0.21": self._dio_model}),
+                    PinResource("P0.23", {"P0.23": self._dio_model}),
+                    PinResource("P0.25", {"P0.25": self._dio_model}),
+                    PinResource("P0.13", {"P0.13": self._dio_model}),
+                    PinResource("P0.15", {"P0.15": self._dio_model}),
+                    PinResource("P0.17", {"P0.17": self._dio_model}),
+                    PinResource("P0.20", {"P0.20": self._dio_model}),
+                    PinResource("P0.22", {"P0.22": self._dio_model}),
+                    PinResource("P0.24", {"P0.24": self._dio_model}),
+                    PinResource(
+                        "P1.00", {"P1.00": self._dio_model}
+                    ),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
+                    PeripheralFixedPin(
+                        "SWD",
+                        SwdTargetPort(self._dio_model),
+                        {
+                            "swclk": "SWCLK",
+                            "swdio": "SWDIO",
+                        },
+                    ),
+                    PeripheralFixedPin("USBD", UsbDevicePort(), {"dp": "D+", "dm": "D-"}),
+                    PeripheralFixedResource(
+                        "SPIM0",
+                        spi_model,
+                        {
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIM1",
+                        spi_model,
+                        {
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIM2",
+                        spi_model,
+                        {
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIM3",
+                        spi_model,
+                        {
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIS0",
+                        spi_peripheral_model,
+                        {  # TODO shared resource w/ SPI controller
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIS1",
+                        spi_peripheral_model,
+                        {  # TODO shared resource w/ SPI controller
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "SPIS2",
+                        spi_peripheral_model,
+                        {  # TODO shared resource w/ SPI controller
+                            "sck": hf_io_pins,
+                            "miso": hf_io_pins,
+                            "mosi": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "TWIM0",
+                        i2c_model,
+                        {
+                            "scl": hf_io_pins,
+                            "sda": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "TWIM1",
+                        i2c_model,
+                        {
+                            "scl": hf_io_pins,
+                            "sda": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "TWIS0",
+                        i2c_target_model,
+                        {  # TODO shared resource w/ I2C controller
+                            "scl": hf_io_pins,
+                            "sda": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "TWIS1",
+                        i2c_target_model,
+                        {  # TODO shared resource w/ I2C controller
+                            "scl": hf_io_pins,
+                            "sda": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "UARTE0",
+                        uart_model,
+                        {
+                            "tx": hf_io_pins,
+                            "rx": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "UARTE1",
+                        uart_model,
+                        {
+                            "tx": hf_io_pins,
+                            "rx": hf_io_pins,
+                        },
+                    ),
+                    PeripheralFixedResource(
+                        "I2S",
+                        i2s_model,
+                        {
+                            "sck": hf_io_pins,
+                            "ws": hf_io_pins,
+                            "sd": hf_io_pins,
+                        },
+                    ),
+                ]
+            )
+            .remap_pins(self._PIN_MAPPING)
+            .filter_pins(self.get(self.allowed_pins))
+        )
 
 
 class Mdbt50q_1mv2(
@@ -504,7 +511,11 @@ class Holyiot_18010_Device(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.model = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))
+        self.model = self.Block(
+            Mdbt50q_1mv2_Device(
+                pin_assigns=ArrayStringExpr(), allowed_pins=list(Holyiot_18010_Footprint._PIN_REMAPPING.keys())
+            )
+        )
         self.gnd = self.Export(self.model.gnd)
         self.pwr = self.Export(self.model.pwr)
         self.pwr_usb = self.Export(self.model.pwr_usb, optional=True)
@@ -698,7 +709,8 @@ class Feather_Nrf52840(
                     BaseIoControllerWrapped._remap_pin_assigns_list(
                         Feather_Nrf52840_Device._PIN_REMAPPING, self.get(self.pin_assigns), invert_remapping=True
                     )
-                )
+                ),
+                allowed_pins=list(Feather_Nrf52840_Device._PIN_REMAPPING.keys()),
             )
         )
         self._export_ios_inner(self.model)
