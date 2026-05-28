@@ -63,8 +63,10 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
         """Returns whether the candidate row satisfies the requirements (should be kept).
         Only called within generate(), so has access to GeneratorParam.get().
         Subclasses should chain this by and-ing with a super() call."""
-        return (not self.get(self.part) or (self.get(self.part) == row[self.PART_NUMBER_COL])) and (
-            not self.get(self.excluded_parts) or row[self.PART_NUMBER_COL] not in self.get(self.excluded_parts)
+        part = self.get(self.part)
+        excluded_parts = self.get(self.excluded_parts)
+        return ((not part) or (part == row[self.PART_NUMBER_COL])) and (
+            (not excluded_parts) or (row[self.PART_NUMBER_COL] not in excluded_parts)
         )
 
     def _table_postprocess(self, table: PartsTable) -> PartsTable:
