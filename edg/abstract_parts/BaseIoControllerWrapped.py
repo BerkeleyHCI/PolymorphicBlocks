@@ -14,17 +14,32 @@ class BaseIoControllerWrapped(BaseIoController):
     """
 
     @staticmethod
-    def _remap_pin_assigns_list(remapping: Dict[str, str], pin_assigns: List[str]) -> List[str]:
-        """Given a remapping dict and a list of pin assigns, returns a new list of pin assigns with the remapping applied"""
-        remapped_assigns = []
+    def _remap_pin_assigns_list(
+        remapping: Dict[str, str],
+        pin_assigns: List[str],
+        *,
+        invert_remapping: bool = False,
+        discard_unremappable: bool = False,
+    ) -> Dict[str, str]:
+        """Given a remapping dict and a list of pin assigns, returns the mapping as a dict with the remapping applied.
+        If invert_remapping is True, the remapping dict is inverted before applying.
+        If discard_unremappable is True, assigns not present in the remapping dict are discarded.
+        Otherwise, they are passed unmodified.
+        """
+        if invert_remapping:
+            remapping = {v: k for k, v in remapping.items()}
+
+        remapped_assigns = {}
         for assign in pin_assigns:
             name, pindef = assign.split("=")
             pin = pindef.split(",")[0].strip()  # take the first (gpio name) if multiple
             remapped_pin = remapping.get(pin)
             if remapped_pin is not None:
-                remapped_assigns.append(f"{name.strip()}={remapped_pin}")
+                remapped_assigns[name.strip()] = remapped_pin
+            elif not discard_unremappable:
+                remapped_assigns[name.strip()] = pindef  # pass unmodified if not remappable, eg bundle containers
             else:
-                remapped_assigns.append(assign)  # pass through unknown assigns, which may be IO names
+                pass  # discarded
         return remapped_assigns
 
     def _generator_param_all_ios(self) -> None:
@@ -87,7 +102,8 @@ class BaseIoControllerWrapped(BaseIoController):
 
         return pinning, actual_pin_assigns
 
-    def _remap_assigns_to_value(self, assigns: Dict[str, str]) -> List[str]:
+    @staticmethod
+    def _remap_assigns_to_value(assigns: Dict[str, str]) -> List[str]:
         """Given a dict of pin assigns from _remap_pinning_assigns, returns a list of assign strings
         for use in self.actual_pin_assigns"""
         return [f"{name}={assign}" for name, assign in assigns.items()]

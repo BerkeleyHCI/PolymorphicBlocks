@@ -499,8 +499,10 @@ class Xiao_Rp2040(
         self._export_ios_inner(self.model)
         self.assign(
             self.model.pin_assigns,
-            BaseIoControllerWrapped._remap_pin_assigns_list(
-                {v: k for k, v in Xiao_Rp2040_Device._PIN_REMAPPING.items()}, self.get(self.pin_assigns)
+            BaseIoControllerWrapped._remap_assigns_to_value(
+                BaseIoControllerWrapped._remap_pin_assigns_list(
+                    Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns), invert_remapping=True
+                )
             ),
         )
 
