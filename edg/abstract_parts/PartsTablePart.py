@@ -41,9 +41,10 @@ class PartsTablePart(Block):
     """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
     as well as matching parts."""
 
-    def __init__(self, *args: Any, part: StringLike = "", **kwargs: Any) -> None:
+    def __init__(self, *args: Any, part: StringLike = "", excluded_parts: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.part = self.ArgParameter(part)
+        self.excluded_parts = self.ArgParameter(excluded_parts)
         self.actual_part = self.Parameter(StringExpr())
         self.matching_parts = self.Parameter(ArrayStringExpr())
 
@@ -56,12 +57,17 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.generator_param(self.part)
+        self.generator_param(self.excluded_parts)
 
     def _row_filter(self, row: PartsTableRow) -> bool:
         """Returns whether the candidate row satisfies the requirements (should be kept).
         Only called within generate(), so has access to GeneratorParam.get().
         Subclasses should chain this by and-ing with a super() call."""
-        return not self.get(self.part) or (self.get(self.part) == row[self.PART_NUMBER_COL])
+        part = self.get(self.part)
+        excluded_parts = self.get(self.excluded_parts)
+        return ((not part) or (part == row[self.PART_NUMBER_COL])) and (
+            (not excluded_parts) or (row[self.PART_NUMBER_COL] not in excluded_parts)
+        )
 
     def _table_postprocess(self, table: PartsTable) -> PartsTable:
         """Optional postprocessing step that takes a table and returns a transformed table.
