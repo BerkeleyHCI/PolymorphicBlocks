@@ -510,13 +510,19 @@ class Holyiot_18010_Device(
         self.pwr_usb = self.Export(self.model.pwr_usb, optional=True)
         self.reset = self.Export(self.model.nreset, optional=True)
         self.swd = self.Export(self.model.swd, optional=True)
+        self.generator_param(self.pin_assigns)
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
-        model_pin_assigns = self._export_ios_inner(self.model)
-        self.assign(self.model.pin_assigns, model_pin_assigns)
+        self._export_ios_inner(self.model)
+        self.assign(
+            self.model.pin_assigns,
+            BaseIoControllerWrapped._remap_pin_assigns_list(
+                {v: k for k, v in Holyiot_18010_Footprint._PIN_REMAPPING.items()}, self.get(self.pin_assigns)
+            ),
+        )
 
         self.device = self.Block(Holyiot_18010_Footprint(pin_assigns=self.model.actual_pin_assigns))
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
@@ -526,10 +532,6 @@ class Holyiot_18010_Device(
         self.export_tap(self.pwr_usb, self.device.vbus)
         self.export_tap(self.reset, self.device.p0_18)
         self.export_tap(self.swd, self.device.swd)
-
-    @override
-    def generate(self) -> None:
-        super().generate()
 
 
 class Holyiot_18010(

@@ -453,6 +453,7 @@ class Xiao_Rp2040(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.generator_param(
+            self.pin_assigns,
             self.gnd.is_connected(),
             self.pwr.is_connected(),
             self.pwr_out.is_connected(),
@@ -461,8 +462,8 @@ class Xiao_Rp2040(
         )
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         self.pwr_vin.init_from(
             VoltageSink(  # based on RS3236-3.3
@@ -495,16 +496,17 @@ class Xiao_Rp2040(
         )
 
         self.model = self.Block(Rp2040_Device(pin_assigns=ArrayStringExpr(), _model=True))
-        model_pin_assigns = self._export_ios_inner(self.model)
-        self.assign(self.model.pin_assigns, model_pin_assigns)
+        self._export_ios_inner(self.model)
+        self.assign(
+            self.model.pin_assigns,
+            BaseIoControllerWrapped._remap_pin_assigns_list(
+                {v: k for k, v in Xiao_Rp2040_Device._PIN_REMAPPING.items()}, self.get(self.pin_assigns)
+            ),
+        )
 
         self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-
-    @override
-    def generate(self) -> None:
-        super().generate()
 
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
