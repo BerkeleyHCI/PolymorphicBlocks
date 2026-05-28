@@ -15,7 +15,7 @@ const H3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.485, 1.803), rotate: 0,
   id: 'H3'
 })
-// mcu
+// mcu.device
 const U1 = board.add(FEATHERWING_NODIM, {
   translate: pt(0.643, 1.763), rotate: 0,
   id: 'U1'
