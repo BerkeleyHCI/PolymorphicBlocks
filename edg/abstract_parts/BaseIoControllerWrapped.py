@@ -4,7 +4,7 @@ from ..electronics_interfaces import *
 from .IoController import BaseIoController
 
 
-class IoControllerWrapped(BaseIoController):
+class BaseIoControllerWrapped(BaseIoController):
     """Base class for IoController wrapped blocks, particularly footprints that are used
     with an outer WrapperSubboardBlock to implement e.g. a dev board or module around a modeling subcircuit.
 

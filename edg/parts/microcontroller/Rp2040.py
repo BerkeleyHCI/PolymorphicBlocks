@@ -378,7 +378,9 @@ class Rp2040(
         return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Xiao_Rp2040_Device(
+    Rp2040_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock
+):
     """Footprint-only device model for the Xiao RP2040 microcontroller dev board"""
 
     _PIN_REMAPPING = {

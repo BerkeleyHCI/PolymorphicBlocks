@@ -735,7 +735,7 @@ class Mdbt50q_1mv2(
 
 
 class Holyiot_18010_Footprint(
-    Nrf52840_Interfaces, IoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock
+    Nrf52840_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock
 ):
     _PIN_REMAPPING = {  # boundary pins only, inner pins ignored
         "P1.11": "2",
@@ -907,7 +907,7 @@ class Holyiot_18010(
             self.connect(self.reset, self.ic.reset)
 
 
-class Feather_Nrf52840_Device(Nrf52840_Interfaces, IoControllerWrapped, GeneratorBlock, FootprintBlock):
+class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, GeneratorBlock, FootprintBlock):
 
     _PIN_REMAPPING = {  # boundary pins only, inner pins ignored
         "P0.31": "3",  # AREF
@@ -938,46 +938,24 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, IoControllerWrapped, Generato
         # note onboard VBAT sense divider at P0.29
     }
 
-    @override
-    def contents(self) -> None:
-        super().contents()
-
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
-        self.pwr = self.Port(VoltageSink.empty(), optional=True)
-        self.pwr_out = self.Port(VoltageSink.empty(), optional=True)
+        # power ports are paassive so directionality and concrete types can be resolved at the higher modeling level
+        self.pwr = self.Port(Passive.empty(), optional=True)
+        self.vusb = self.Port(Passive.empty(), optional=True)
 
-        self.require(
-            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
-            "can't source USB power if power input connected",
-        )
-        self.require(
-            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
-            "can't source 3v3 power if power input connected",
-        )
-
-        mbr120_drop = (0, 0.340) * Volt
-        ap2112_3v3_out = 3.3 * Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
-        self.vusb_out.init_from(
-            VoltageSource(
-                voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - mbr120_drop,
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
-        self.pwr_out.init_from(
-            VoltageSource(voltage_out=ap2112_3v3_out, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
-        )
-
-        self.generator_param(self.pwr.is_connected())
+        self.generator_param(self.pin_assigns)
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, HasPassivePort] = {
-            "2": self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out,
+        pinning: Dict[str, Union[HasPassivePort, Passive]] = {
+            "2": self.pwr,
             "4": self.gnd,
             # "1": reset,
-            "26": self.vusb_out,
+            "26": self.vusb,
             # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
             # 'Vbat': '28',
         }
@@ -996,6 +974,77 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, IoControllerWrapped, Generato
 
 
 class Feather_Nrf52840(
-    IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Interfaces, IoController, GeneratorBlock, FootprintBlock
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    Nrf52840_Interfaces,
+    IoController,
+    WrapperSubboardBlock,
+    GeneratorBlock,
+    FootprintBlock,
 ):
     """Feather nRF52840 socketed dev board as either power source or sink"""
+
+    _MBR120_DROP = (0, 0.340) * Volt
+    _AP2112_3V3_OUT = 3.3 * Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.generator_param(
+            self.gnd.is_connected(),
+            self.pwr.is_connected(),
+            self.pwr_out.is_connected(),
+            self.vusb_out.is_connected(),
+        )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.require(
+            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
+            "can't source USB power if power input connected",
+        )
+        self.require(
+            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
+            "can't source 3v3 power if power input connected",
+        )
+
+        self.model = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))
+        model_pin_assigns = self._export_ios_inner(self.model)
+        self.assign(self.model.pin_assigns, model_pin_assigns)
+
+        self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            self.connect(self.pwr, self.model.pwr)
+            self.export_tap(self.pwr.net, self.device.pwr)
+        else:  # board sources power from USB
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+            )
+            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+            self.export_tap(self.pwr_out.net, self.device.pwr)
+
+        if self.get(self.vusb_out.is_connected()):
+            self.vusb_out.init_from(
+                VoltageSource(
+                    voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
+                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+                )
+            )
+            self.export_tap(self.vusb_out.net, self.device.vusb)
+
+        self.export_tap(self.gnd, self.device.gnd)
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.model.gnd)
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.model.gnd)
