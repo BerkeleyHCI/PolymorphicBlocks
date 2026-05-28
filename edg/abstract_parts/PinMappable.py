@@ -323,6 +323,43 @@ class PinMapUtil:
 
         return PinMapUtil(remapped_resources, self.transforms)
 
+    def filter_pins(self, allowed_pins: List[str]) -> "PinMapUtil":
+        """Returns a new PinMapUtil with only the specified pins kept.
+        If the allowed_pins list is empty, returns the input (all pins kept).
+        allowed_pins may be specified as a pin name or pin number."""
+
+        if not allowed_pins:
+            return self
+
+        def filter_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
+            if isinstance(resource, PinResource):
+                if resource.pin in allowed_pins or resource.name in allowed_pins:
+                    return resource
+                else:
+                    return None
+            elif isinstance(resource, PeripheralFixedPin):
+                # TODO need to simultaneously filter pins and resource names
+                filtered_pins = {
+                    elt_name: elt_pin
+                    for elt_name, elt_pin in resource.inner_allowed_pins.items()
+                    if elt_pin in allowed_pins or elt_name in allowed_pins
+                }
+                if filtered_pins:
+                    return PeripheralFixedPin(
+                        resource.name, resource.port_model, filtered_pins, resource.inner_resources
+                    )
+                else:
+                    return None
+            elif isinstance(resource, BaseDelegatingPinMapResource):
+                return resource
+            else:
+                raise NotImplementedError(f"unknown resource {resource}")
+
+        filtered_resources_raw = [filter_resource(resource) for resource in self.resources]
+        filtered_resources = [resource for resource in filtered_resources_raw if resource is not None]
+
+        return PinMapUtil(filtered_resources, self.transforms)
+
     @staticmethod
     def _resource_port_types(resource: BasePinMapResource) -> List[Type[Port]]:
         if isinstance(resource, PinResource):
