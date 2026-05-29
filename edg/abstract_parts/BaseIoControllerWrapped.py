@@ -55,7 +55,7 @@ class BaseIoControllerWrapped(BaseIoController):
         returns the footprint-compatible form as footprint pin -> port object.
 
         This simplified pin assignment tool requires all pins to be assigned.
-        It does not automatically assigns unassigned pins, that is assumed to have happened at a higher level."""
+        It does not automatically assign unassigned pins, that is assumed to have happened at a higher level."""
         pinning: Dict[str, HasPassivePort] = {}
         seen_names: Set[str] = set()
 

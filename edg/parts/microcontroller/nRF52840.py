@@ -633,7 +633,7 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, Gene
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
-        # power ports are paassive so directionality and concrete types can be resolved at the higher modeling level
+        # power ports are passive so directionality and concrete types can be resolved at the higher modeling level
         self.pwr = self.Port(Passive.empty(), optional=True)
         self.vusb = self.Port(Passive.empty(), optional=True)
 
@@ -740,9 +740,9 @@ class Feather_Nrf52840(
             )
             self.export_tap(self.vusb_out.net, self.device.vusb)
 
-        self.export_tap(self.gnd, self.device.gnd)
         if self.get(self.gnd.is_connected()):
             self.connect(self.gnd, self.model.gnd)
         else:
             self.gnd_model = self.Block(DummyGround())
             self.connect(self.gnd_model.gnd, self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
