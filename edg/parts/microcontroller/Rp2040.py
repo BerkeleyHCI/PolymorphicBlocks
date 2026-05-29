@@ -406,21 +406,19 @@ class Xiao_Rp2040_Device(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
-        self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
-        self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
-        self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
-        self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
-        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.pin_assigns)
+        self.v3v3 = self.Port(Passive.empty(), optional=True)
+        self.vcc = self.Port(Passive.empty(), optional=True)  # VUsb
+        self.generator_param(self.pin_assigns)
         self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, HasPassivePort] = {
-            "12": self.v3v3 if self.get(self.v3v3.is_connected()) else self.v3v3_out,
+        pinning: Dict[str, Union[Passive, HasPassivePort]] = {
+            "12": self.v3v3,
             "13": self.gnd,
-            "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
+            "14": self.vcc,  # VUsb
         }
         remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
         pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
@@ -522,7 +520,7 @@ class Xiao_Rp2040(
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, model_pwr)
-            self.export_tap(self.pwr, self.device.v3v3)
+            self.export_tap(self.pwr.net, self.device.v3v3)
         else:  # board sources power from USB
             self.pwr_out_model = self.Block(
                 DummyVoltageSource(
@@ -533,12 +531,12 @@ class Xiao_Rp2040(
             self.connect(self.pwr_out_model.pwr, model_pwr)
             if self.get(self.pwr_out.is_connected()):
                 self.connect(self.pwr_out, self.pwr_out_model.pwr)
-            self.export_tap(self.pwr_out, self.device.v3v3_out)
+            self.export_tap(self.pwr_out.net, self.device.v3v3)
 
         if self.get(self.pwr_vin.is_connected()):
-            self.export_tap(self.pwr_vin, self.device.vcc)
+            self.export_tap(self.pwr_vin.net, self.device.vcc)
         if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out, self.device.vcc_out)
+            self.export_tap(self.vusb_out.net, self.device.vcc)
 
         self.export_tap(self.gnd, self.device.gnd)
         if self.get(self.gnd.is_connected()):

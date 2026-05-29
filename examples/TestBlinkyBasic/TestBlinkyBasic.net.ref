@@ -42,7 +42,7 @@
   (node (ref R1) (pin 2)))
 (net (code 2) (name "mcu.pwr_out")
   (node (ref U1) (pin 12)))
-(net (code 3) (name "mcu.device.vcc_out")
+(net (code 3) (name "mcu.device.vcc")
   (node (ref U1) (pin 14)))
 (net (code 4) (name "led.signal")
   (node (ref U1) (pin 7))
