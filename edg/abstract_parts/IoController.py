@@ -206,6 +206,17 @@ class BaseIoController(PinMappable, Block):
             inner_io = inner_ios_by_type[self_io_type]
             self.export_tap(self_io, inner_io)
 
+    def _generator_param_all_ios(self) -> None:
+        """Declares all BaseIoController IOs as generator params. This must be a GeneratorBlock."""
+        assert isinstance(self, GeneratorBlock)
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                self.generator_param(io_port.requested())
+            elif isinstance(io_port, Port):
+                self.generator_param(io_port.is_connected())
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
+
     @staticmethod
     def _instantiate_from(
         ios: List[BasePort], allocations: List[AllocatedResource]

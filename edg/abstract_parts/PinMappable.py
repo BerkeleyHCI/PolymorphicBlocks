@@ -53,19 +53,24 @@ class BaseDelegatingPinMapResource(BasePinMapResource):
 
 
 class PinResource(BaseLeafPinMapResource):
-    """A resource for a single chip pin, which can be one of several port types (eg, an ADC and DIO sharing a pin)."""
+    """A resource for a single chip pin, which can be one of several port types (eg, an ADC and DIO sharing a pin).
 
-    def __init__(self, pin: str, name_models: Mapping[str, Union[Passive, HasPassivePort]], name: Optional[str] = None):
+    Generally, this is initially created with pin = pin name (like GPIO0), then remapped so the pin = pin number,
+    with the pinname inheriting the prior pin name."""
+
+    def __init__(
+        self, pin: str, name_models: Mapping[str, Union[Passive, HasPassivePort]], pinname: Optional[str] = None
+    ):
         self.pin = pin
         self.name_models = name_models
-        if name is not None:
-            self.name = name
+        if pinname is not None:
+            self.pinname = pinname
         else:
-            self.name = pin
+            self.pinname = pin
 
     @override
     def __repr__(self) -> str:
-        return f"PinResource({self.name}, {self.pin}, {self.name_models})"
+        return f"PinResource({self.pinname}, {self.pin}, {self.name_models})"
 
     @override
     def __eq__(self, other: Any) -> bool:
@@ -88,19 +93,19 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
         name: str,
         port_model: Port,
         inner_allowed_pins: Dict[str, str],
-        inner_resources: Optional[Dict[str, str]] = None,
+        inner_pinnames: Optional[Dict[str, str]] = None,
     ):
         self.name = name
         self.port_model = port_model
         self.inner_allowed_pins = inner_allowed_pins
-        if inner_resources is not None:
-            self.inner_resources = inner_resources
+        if inner_pinnames is not None:
+            self.inner_pinnames = inner_pinnames
         else:
-            self.inner_resources = inner_allowed_pins
+            self.inner_pinnames = inner_allowed_pins
 
     @override
     def __repr__(self) -> str:
-        return f"PeripheralFixedPin({self.name}, {self.port_model.__class__.__name__} {self.inner_allowed_pins} {self.inner_resources})"
+        return f"PeripheralFixedPin({self.name}, {self.port_model.__class__.__name__} {self.inner_allowed_pins} {self.inner_pinnames})"
 
     @override
     def __eq__(self, other: Any) -> bool:
@@ -110,7 +115,7 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
             and self.name == other.name
             and self.port_model is other.port_model
             and self.inner_allowed_pins == other.inner_allowed_pins
-            and self.inner_resources == other.inner_resources
+            and self.inner_pinnames == other.inner_pinnames
         )
 
 
@@ -289,7 +294,7 @@ class PinMapUtil:
         def remap_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
             if isinstance(resource, PinResource):
                 if resource.pin in pinmap:
-                    return PinResource(pinmap[resource.pin], resource.name_models, resource.name)
+                    return PinResource(pinmap[resource.pin], resource.name_models, resource.pinname)
                 else:
                     return None
             elif isinstance(resource, PeripheralFixedPin):
@@ -298,7 +303,7 @@ class PinMapUtil:
                     for elt_name, elt_pin in resource.inner_allowed_pins.items()
                     if elt_pin in pinmap
                 }
-                return PeripheralFixedPin(resource.name, resource.port_model, remapped_pins, resource.inner_resources)
+                return PeripheralFixedPin(resource.name, resource.port_model, remapped_pins, resource.inner_pinnames)
             elif isinstance(resource, BaseDelegatingPinMapResource):
                 return resource
             else:
@@ -333,21 +338,21 @@ class PinMapUtil:
 
         def filter_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
             if isinstance(resource, PinResource):
-                if resource.pin in allowed_pins or resource.name in allowed_pins:
+                if resource.pin in allowed_pins or resource.pinname in allowed_pins:
                     return resource
                 else:
                     return None
             elif isinstance(resource, PeripheralFixedPin):
                 filtered_keys = []
                 for key, pin in resource.inner_allowed_pins.items():
-                    if pin in allowed_pins or resource.inner_resources[key] in allowed_pins:
+                    if pin in allowed_pins or resource.inner_pinnames[key] in allowed_pins:
                         filtered_keys.append(key)
                 if filtered_keys:
                     return PeripheralFixedPin(
                         resource.name,
                         resource.port_model,
                         {k: v for k, v in resource.inner_allowed_pins.items() if k in filtered_keys},
-                        {k: v for k, v in resource.inner_resources.items() if k in filtered_keys},
+                        {k: v for k, v in resource.inner_pinnames.items() if k in filtered_keys},
                     )
                 else:
                     return None
@@ -416,7 +421,7 @@ class PinMapUtil:
             if isinstance(resource, PinResource):  # single pin: just assign it
                 sub_assignments.check_empty()
                 resource_name, resource_model = resource.get_name_model_for_type(port_type)
-                allocated_resource = AllocatedResource(resource_model, port_name, resource.name, resource.pin)
+                allocated_resource = AllocatedResource(resource_model, port_name, resource.pinname, resource.pin)
                 return allocated_resource
             elif isinstance(resource, PeripheralFixedPin):  # fixed pin: check user-assignment, or assign first
                 inner_pin_map: Dict[str, Tuple[str, Optional[str]]] = {}
@@ -425,7 +430,7 @@ class PinMapUtil:
                     if inner_assignment is not None and inner_assignment != inner_pin:
                         raise BadUserAssignError(f"invalid assignment to {port_name}.{inner_name}: {inner_assignment}")
 
-                    inner_pin_map[inner_name] = (inner_pin, resource.inner_resources[inner_name])
+                    inner_pin_map[inner_name] = (inner_pin, resource.inner_pinnames[inner_name])
                     inner_sub_assignments.check_empty()
 
                 sub_assignments.check_empty()

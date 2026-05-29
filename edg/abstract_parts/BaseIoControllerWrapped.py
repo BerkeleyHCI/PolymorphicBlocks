@@ -38,16 +38,6 @@ class BaseIoControllerWrapped(BaseIoController):
                 remapped_assigns[name.strip()] = pindef  # pass unmodified if not remappable, eg bundle containers
         return remapped_assigns
 
-    def _generator_param_all_ios(self) -> None:
-        # declare all IOs as generator params, required for _remap_pinning_assigns
-        for io_port in self._io_ports:
-            if isinstance(io_port, Vector):
-                self.generator_param(io_port.requested())
-            elif isinstance(io_port, Port):
-                self.generator_param(io_port.is_connected())
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
-
     def _remap_to_footprint_pinning(
         self, pin_assigns: Dict[str, str], valid_pins: Iterable[str]
     ) -> Dict[str, HasPassivePort]:
