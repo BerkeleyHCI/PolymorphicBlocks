@@ -14,7 +14,7 @@ class BaseIoControllerWrapped(BaseIoController):
     """
 
     @staticmethod
-    def _remap_pin_assigns_list(
+    def _remap_model_pin_assigns(
         remapping: Dict[str, str],
         pin_assigns: List[str],
         *,
@@ -23,29 +23,19 @@ class BaseIoControllerWrapped(BaseIoController):
         """Given a remapping dict and a list of pin assigns, returns the mapping as a dict with the remapping applied.
         The output is (pin name, pin number), with both being optional.
 
-        If invert_remapping is True, the remapping dict is inverted before applying.
         Assigns not present in the remapping dict are passed unchanged, eg for non-pin-assigns like bundle containers.
 
         Internal utility.
         """
-        if invert_remapping:
-            remapping = {v: k for k, v in remapping.items()}
-
         remapped_assigns: Dict[str, Tuple[Optional[str], Optional[str]]] = {}
         for assign in pin_assigns:
             name, pindef = assign.split("=")
             name = name.strip()
             split = pindef.split(",")
             split = [s.strip() for s in split]
-            if len(split) == 1:  # ambiguous, could either be pinname or pinnum
-                pindef = split[0].strip()
-                if pindef in remapping:
-                    if invert_remapping:  # remap pinnum -> pinname
-                        remapped_assigns[name] = (remapping[pindef], None)
-                    else:  # remap pinname -> pinnum
-                        remapped_assigns[name] = (pindef, remapping[pindef])
-                else:  # assume is a pinname or bundle container since it's not remappable
-                    remapped_assigns[name] = (pindef, None)
+            if len(split) == 1:  # should be a bundle name, since pins should have two parts
+                assert name not in remapping
+                remapped_assigns[name] = (pindef, None)
             elif len(split) == 2:
                 pinname, pinnum = split[0], split[1]
                 assert pinname in remapping
@@ -62,7 +52,7 @@ class BaseIoControllerWrapped(BaseIoController):
 
         For Vector-typed IO ports, this generates the subports and must be authoritative.
         This cannot be used with anything else that generates vector sub-ports.
-        This must be a GeneratorBlock.
+        This must be a GeneratorBlock with requested() declared as generator params.
 
         Internal utility.
         """
@@ -143,7 +133,7 @@ class BaseIoControllerWrapped(BaseIoController):
 
         This wraps the above helpers, this should be used in most cases.
         """
-        remapped_pin_assigns = self._remap_pin_assigns_list(remapping, self.get(self.pin_assigns))
+        remapped_pin_assigns = self._remap_model_pin_assigns(remapping, self.get(self.pin_assigns))
         pin_dict = self._generator_pin_dict()
         fixed_pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
@@ -176,13 +166,64 @@ class BaseIoControllerWrapper(BaseIoController):
             inner_io = inner_ios_by_type[self_io_type]
             self.export_tap(self_io, inner_io)
 
+    def _generator_pin_type_dict(self) -> Dict[str, Type[Port]]:
+        """Returns a dict of pin name to port type for all IO ports, recursing into bundles Ports.
+        This includes both the bundle container Port and their (recursive) contents.
+
+        This does not instantiate Vector subports.
+        This must be a GeneratorBlock with requested() declared as generator params.
+
+        Internal utility.
+        """
+        assert isinstance(self, GeneratorBlock)
+
+        pin_type_dict: Dict[str, Type[Port]] = {}
+
+        def recurse_port(port: Port, prefix: str = "") -> None:
+            assert prefix not in pin_type_dict, f"duplicate pin name {prefix}"
+            pin_type_dict[prefix] = type(port)
+
+            for subport_name, subport in port._ports.items():
+                recurse_port(subport, f"{prefix}.{subport_name}")
+
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                for subport_name in self.get(io_port.requested()):
+                    recurse_port(io_port._tpe.empty(), subport_name)
+            elif isinstance(io_port, Port):
+                if self.get(io_port.is_connected()):
+                    port_name = io_port._name_from(self)
+                    recurse_port(io_port, port_name)
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
+
+        return pin_type_dict
+
     def _make_model_pinning(self, remapping: Dict[str, str], device_assigns: List[str]) -> List[str]:
         """Remaps my own assigns (pinned in device-space) to model-space.
         remapping is specified as the forward remapping, from pinname to device pinnum.
 
         Requires _generator_param_all_ios, so all the IOs names are available.
         """
+        inverse_remapping = {v: k for k, v in remapping.items()}
 
-        return BaseIoControllerWrapped._remap_assigns_to_value(
-            BaseIoControllerWrapped._remap_pin_assigns_list(remapping, device_assigns, invert_remapping=True)
-        )
+        remapped_assigns: List[str] = []
+        pin_types = self._generator_pin_type_dict()
+
+        for assign in device_assigns:
+            name, pindef = assign.split("=")
+            name = name.strip()
+            pindef = pindef.strip()
+            assert name in pin_types, f"assign {name} not in IO ports"
+            pin_type = pin_types[name]
+            if issubclass(pin_type, HasPassivePort):
+                if pindef in inverse_remapping:
+                    remapped_assigns.append(f"{name}={inverse_remapping[pindef]}")
+                elif pindef in remapping:
+                    remapped_assigns.append(assign)
+                else:
+                    raise ValueError(f"assign {assign} has pindef {pindef} not in remapping")
+            else:
+                remapped_assigns.append(assign)
+
+        return remapped_assigns

@@ -510,6 +510,7 @@ class Holyiot_18010_Device(
         self.reset = self.Export(self.model.nreset, optional=True)
         self.swd = self.Export(self.model.swd, optional=True)
         self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
@@ -672,6 +673,7 @@ class Feather_Nrf52840(
             self.pwr_out.is_connected(),
             self.vusb_out.is_connected(),
         )
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:

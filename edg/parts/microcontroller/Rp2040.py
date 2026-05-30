@@ -456,6 +456,7 @@ class Xiao_Rp2040(
             self.pwr_vin.is_connected(),
             self.vusb_out.is_connected(),
         )
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
