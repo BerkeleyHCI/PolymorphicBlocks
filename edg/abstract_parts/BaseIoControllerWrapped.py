@@ -178,12 +178,11 @@ class BaseIoControllerWrapper(BaseIoController):
 
     def _make_model_pinning(self, remapping: Dict[str, str], device_assigns: List[str]) -> List[str]:
         """Remaps my own assigns (pinned in device-space) to model-space.
+        remapping is specified as the forward remapping, from pinname to device pinnum.
 
         Requires _generator_param_all_ios, so all the IOs names are available.
         """
 
-        BaseIoControllerWrapped._remap_assigns_to_value(
-            BaseIoControllerWrapped._remap_pin_assigns_list(
-                Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns), invert_remapping=True
-            )
-        ),
+        return BaseIoControllerWrapped._remap_assigns_to_value(
+            BaseIoControllerWrapped._remap_pin_assigns_list(remapping, device_assigns, invert_remapping=True)
+        )
