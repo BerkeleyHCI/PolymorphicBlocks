@@ -121,3 +121,19 @@ class BaseIoControllerWrapped(BaseIoController):
             else:
                 raise ValueError(f"invalid assign for {name}: {assign}")
         return pin_assigns
+
+    def _make_pinning(
+        self, fixed_pinning: Dict[str, Union[Passive, HasPassivePort]], remapping: Dict[str, str]
+    ) -> Dict[str, Union[Passive, HasPassivePort]]:
+        """Creates the footprint pinning dict for the wrapped footprint, given the fixed pinning and
+        remapping from pin name to this footprint's pin number.
+        This generates pinning for all BaseIoController IOs.
+        As a side effect, this assigns self.actual_pin_assigns.
+
+        This wraps the above helpers, this should be used in most cases.
+        """
+        remapped_pin_assigns = self._remap_pin_assigns_list(remapping, self.get(self.pin_assigns))
+        pin_dict = self._generator_pin_dict()
+        fixed_pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
+        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
+        return fixed_pinning

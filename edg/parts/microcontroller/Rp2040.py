@@ -415,20 +415,17 @@ class Xiao_Rp2040_Device(
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, Union[Passive, HasPassivePort]] = {
-            "12": self.v3v3,
-            "13": self.gnd,
-            "14": self.vcc,  # VUsb
-        }
-        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
-        pin_dict = self._generator_pin_dict()
-        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
-
         self.footprint(
             "U",
             "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
-            pinning,
+            self._make_pinning(
+                {
+                    "12": self.v3v3,
+                    "13": self.gnd,
+                    "14": self.vcc,  # VUsb
+                },
+                self._PIN_REMAPPING,
+            ),
             mfr="",
             part="XIAO RP2040",
             datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",

@@ -478,23 +478,20 @@ class Holyiot_18010_Footprint(
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, HasPassivePort] = {
-            "14": self.vdd_nrf,
-            "1": self.gnd,
-            "25": self.gnd,
-            "37": self.gnd,
-            "22": self.vbus,
-            "21": self.p0_18,
-        }
-        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
-        pin_dict = self._generator_pin_dict()
-        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
-
         self.footprint(
             "U",
             "edg:Holyiot-18010-NRF52840",
-            pinning,
+            self._make_pinning(
+                {
+                    "14": self.vdd_nrf,
+                    "1": self.gnd,
+                    "25": self.gnd,
+                    "37": self.gnd,
+                    "22": self.vbus,
+                    "21": self.p0_18,
+                },
+                self._PIN_REMAPPING,
+            ),
             mfr="Holyiot",
             part="18010",
             datasheet="http://www.holyiot.com/tp/2019042516322180424.pdf",
@@ -645,23 +642,20 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, Gene
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, Union[HasPassivePort, Passive]] = {
-            "2": self.pwr,
-            "4": self.gnd,
-            # "1": reset,
-            "26": self.vusb,
-            # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
-            # 'Vbat': '28',
-        }
-        remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
-        pin_dict = self._generator_pin_dict()
-        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
-
         self.footprint(
             "U",
             "bldc:FEATHERWING_NODIM",
-            pinning,
+            self._make_pinning(
+                {
+                    "2": self.pwr,
+                    "4": self.gnd,
+                    # "1": reset,
+                    "26": self.vusb,
+                    # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
+                    # 'Vbat': '28',
+                },
+                self._PIN_REMAPPING,
+            ),
             mfr="Adafruit",
             part="Feather nRF52840 Express",
             datasheet="https://learn.adafruit.com/assets/68545",
