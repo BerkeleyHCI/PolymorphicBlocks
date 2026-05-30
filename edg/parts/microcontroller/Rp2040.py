@@ -446,8 +446,6 @@ class Xiao_Rp2040(
     """RP2040 development board, a tiny development (21x17.5mm) daughterboard.
     Has an onboard USB connector, so this can also source power.
 
-    Limited pins (only 11 for IOs, of which 6 are usable as the other 5 have boot requirements).
-
     Requires Seeed Studio's KiCad library for the footprint: https://github.com/Seeed-Studio/OPL_Kicad_Library
     The 'Seeed Studio XIAO Series Library' must have been added as a footprint library of the same name.
 
