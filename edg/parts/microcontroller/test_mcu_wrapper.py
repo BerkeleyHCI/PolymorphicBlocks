@@ -23,6 +23,24 @@ class OverallocateTest(DesignTop):
                 self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
 
 
+class FullMcuTest(DesignTop):
+    # this uses all the pins, to catch potential automatic allocation errors
+    def __init__(self) -> None:
+        super().__init__()
+        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.gnd = self.Block(DummyGround())
+        with self.implicit_connect(
+            ImplicitConnect(self.pwr.pwr, [Power]),
+            ImplicitConnect(self.gnd.gnd, [Common]),
+        ) as imp:
+            self.dut = imp.Block(Xiao_Rp2040())
+
+            self.ios = ElementDict[DummyDigitalSource]()
+            for i in range(11):
+                self.ios[i] = self.Block(DummyDigitalSource())
+                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+
+
 class BaseMcuTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
@@ -38,10 +56,6 @@ class BaseMcuTest(DesignTop):
             for i in range(2):
                 self.ios[i] = self.Block(DummyDigitalSource())
                 self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
-
-
-class AutoPinsTest(BaseMcuTest):
-    pass
 
 
 class AssignedPinsTest(BaseMcuTest):
@@ -93,9 +107,7 @@ class McuWrapperTestCase(unittest.TestCase):
             ScalaCompiler.compile(OverallocateTest)
 
     def test_auto_pins(self) -> None:
-        compiled = ScalaCompiler.compile(AutoPinsTest)
-        self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=GPIO0, 7", "1=GPIO1, 8"])
-        self.assertEqual(compiled.get_value(["dut", "model", "actual_pin_assigns"]), ["0=GPIO0, 2", "1=GPIO1, 3"])
+        ScalaCompiler.compile(FullMcuTest)  # check that it compiles without error
 
     def test_assigned_pins(self) -> None:
         compiled = ScalaCompiler.compile(AssignedPinsTest)

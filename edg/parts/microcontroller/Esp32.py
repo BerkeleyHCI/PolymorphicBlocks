@@ -277,7 +277,7 @@ class Esp32_Wroom_32(
 
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
             self.ic = imp.Block(Esp32_Wroom_32_Device(pin_assigns=ArrayStringExpr()))
-            self._export_ios_inner(self.ic)
+            self._wrap_inner(self.ic)
             self.connect(self.program_uart_node, self.ic.uart0)
             self.connect(self.program_en_node, self.ic.chip_pu)
             self.connect(self.program_boot_node, self.ic.io0)
