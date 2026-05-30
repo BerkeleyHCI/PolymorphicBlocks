@@ -60,7 +60,7 @@ class BaseIoControllerWrapped(BaseIoController):
 
         pin_dict: Dict[str, Port] = {}
 
-        def recurse_port(port: Port, prefix: str = "") -> None:
+        def recurse_port(port: Port, prefix: str) -> None:
             assert prefix not in pin_dict, f"duplicate pin name {prefix}"
             pin_dict[prefix] = port
 
@@ -179,7 +179,7 @@ class BaseIoControllerWrapper(BaseIoController):
 
         pin_type_dict: Dict[str, Type[Port]] = {}
 
-        def recurse_port(port: Port, prefix: str = "") -> None:
+        def recurse_port(port: Port, prefix: str) -> None:
             assert prefix not in pin_type_dict, f"duplicate pin name {prefix}"
             pin_type_dict[prefix] = type(port)
 
