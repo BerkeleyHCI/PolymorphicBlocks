@@ -51,11 +51,9 @@ class Rp2040_Device(
         "SWCLK": "24",
     }
 
-    def __init__(self, *, allowed_pins: ArrayStringLike = [], _model: BoolLike = False, **kwargs: Any) -> None:
+    def __init__(self, *, _model: BoolLike = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.allowed_pins = self.ArgParameter(allowed_pins)  # TODO move to infrastructure
-        self.generator_param(self.allowed_pins)
         self._model = self.ArgParameter(_model)
 
         self.gnd = self.Port(Ground(), [Common])
@@ -202,116 +200,112 @@ class Rp2040_Device(
         i2c_model = I2cController(DigitalBidir.empty())
         i2c_target_model = I2cTarget(DigitalBidir.empty())
 
-        return (
-            PinMapUtil(
-                [
-                    PinResource("GPIO0", {"GPIO0": self._dio_ft_model}),
-                    PinResource("GPIO1", {"GPIO1": self._dio_ft_model}),
-                    PinResource("GPIO2", {"GPIO2": self._dio_ft_model}),
-                    PinResource("GPIO3", {"GPIO3": self._dio_ft_model}),
-                    PinResource("GPIO4", {"GPIO4": self._dio_ft_model}),
-                    PinResource("GPIO5", {"GPIO5": self._dio_ft_model}),
-                    PinResource("GPIO6", {"GPIO6": self._dio_ft_model}),
-                    PinResource("GPIO7", {"GPIO7": self._dio_ft_model}),
-                    PinResource("GPIO8", {"GPIO8": self._dio_ft_model}),
-                    PinResource("GPIO9", {"GPIO9": self._dio_ft_model}),
-                    PinResource("GPIO10", {"GPIO10": self._dio_ft_model}),
-                    PinResource("GPIO11", {"GPIO11": self._dio_ft_model}),
-                    PinResource("GPIO12", {"GPIO12": self._dio_ft_model}),
-                    PinResource("GPIO13", {"GPIO13": self._dio_ft_model}),
-                    PinResource("GPIO14", {"GPIO14": self._dio_ft_model}),
-                    PinResource("GPIO15", {"GPIO15": self._dio_ft_model}),
-                    PinResource("GPIO16", {"GPIO16": self._dio_ft_model}),
-                    PinResource("GPIO17", {"GPIO17": self._dio_ft_model}),
-                    PinResource("GPIO18", {"GPIO18": self._dio_ft_model}),
-                    PinResource("GPIO19", {"GPIO19": self._dio_ft_model}),
-                    PinResource("GPIO20", {"GPIO20": self._dio_ft_model}),
-                    PinResource("GPIO21", {"GPIO21": self._dio_ft_model}),
-                    PinResource("GPIO22", {"GPIO22": self._dio_ft_model}),
-                    PinResource("GPIO23", {"GPIO23": self._dio_ft_model}),
-                    PinResource("GPIO24", {"GPIO24": self._dio_ft_model}),
-                    PinResource("GPIO25", {"GPIO25": self._dio_ft_model}),
-                    PinResource("GPIO26", {"GPIO26": self._dio_std_model, "ADC0": adc_model}),
-                    PinResource("GPIO27", {"GPIO27": self._dio_std_model, "ADC1": adc_model}),
-                    PinResource("GPIO28", {"GPIO28": self._dio_std_model, "ADC2": adc_model}),
-                    PinResource("GPIO29", {"GPIO29": self._dio_std_model, "ADC3": adc_model}),
-                    # fixed-pin peripherals
-                    PeripheralFixedPin("USB", UsbDevicePort(self._dio_usb_model), {"dm": "USB_DM", "dp": "USB_DP"}),
-                    # reassignable peripherals
-                    PeripheralFixedResource(
-                        "UART0",
-                        uart_model,
-                        {"tx": ["GPIO0", "GPIO12", "GPIO16", "GPIO28"], "rx": ["GPIO1", "GPIO13", "GPIO17", "GPIO29"]},
-                    ),
-                    PeripheralFixedResource(
-                        "UART1",
-                        uart_model,
-                        {"tx": ["GPIO4", "GPIO8", "GPIO20", "GPIO24"], "rx": ["GPIO5", "GPIO9", "GPIO21", "GPIO25"]},
-                    ),
-                    PeripheralFixedResource(
-                        "SPI0",
-                        spi_model,
-                        {
-                            "miso": ["GPIO0", "GPIO4", "GPIO16", "GPIO20"],  # RX
-                            "sck": ["GPIO2", "GPIO6", "GPIO18", "GPIO22"],
-                            "mosi": ["GPIO3", "GPIO7", "GPIO19", "GPIO23"],  # TX
-                        },
-                    ),
-                    PeripheralFixedResource(
-                        "SPI1",
-                        spi_model,
-                        {
-                            "miso": ["GPIO8", "GPIO12", "GPIO24", "GPIO28"],  # RX
-                            "sck": ["GPIO10", "GPIO14", "GPIO26"],
-                            "mosi": ["GPIO11", "GPIO15", "GPIO27"],  # TX
-                        },
-                    ),
-                    # SPI peripheral omitted, since TX tri-state is not tied to CS and must be controlled in software
-                    PeripheralFixedResource(
-                        "I2C0",
-                        i2c_model,
-                        {
-                            "sda": ["GPIO0", "GPIO4", "GPIO8", "GPIO12", "GPIO16", "GPIO20", "GPIO24", "GPIO28"],
-                            "scl": ["GPIO1", "GPIO5", "GPIO9", "GPIO13", "GPIO17", "GPIO21", "GPIO25", "GPIO20"],
-                        },
-                    ),
-                    PeripheralFixedResource(
-                        "I2C1",
-                        i2c_model,
-                        {
-                            "sda": ["GPIO2", "GPIO6", "GPIO10", "GPIO14", "GPIO18", "GPIO22", "GPIO24", "GPIO26"],
-                            "scl": ["GPIO3", "GPIO7", "GPIO11", "GPIO15", "GPIO19", "GPIO23", "GPIO25", "GPIO27"],
-                        },
-                    ),
-                    PeripheralFixedResource(
-                        "I2C0_T",
-                        i2c_target_model,
-                        {  # TODO shared resource w/ I2C controller
-                            "sda": ["GPIO0", "GPIO4", "GPIO8", "GPIO12", "GPIO16", "GPIO20", "GPIO24", "GPIO28"],
-                            "scl": ["GPIO1", "GPIO5", "GPIO9", "GPIO13", "GPIO17", "GPIO21", "GPIO25", "GPIO20"],
-                        },
-                    ),
-                    PeripheralFixedResource(
-                        "I2C1_T",
-                        i2c_target_model,
-                        {  # TODO shared resource w/ I2C controller
-                            "sda": ["GPIO2", "GPIO6", "GPIO10", "GPIO14", "GPIO18", "GPIO22", "GPIO24", "GPIO26"],
-                            "scl": ["GPIO3", "GPIO7", "GPIO11", "GPIO15", "GPIO19", "GPIO23", "GPIO25", "GPIO27"],
-                        },
-                    ),
-                    PeripheralFixedPin(
-                        "SWD",
-                        SwdTargetPort(self._dio_std_model),
-                        {
-                            "swdio": "SWDIO",
-                            "swclk": "SWCLK",
-                        },
-                    ),
-                ]
-            )
-            .remap_pins(self._PIN_MAPPING)
-            .filter_pins(self.get(self.allowed_pins))
-        )
+        return PinMapUtil(
+            [
+                PinResource("GPIO0", {"GPIO0": self._dio_ft_model}),
+                PinResource("GPIO1", {"GPIO1": self._dio_ft_model}),
+                PinResource("GPIO2", {"GPIO2": self._dio_ft_model}),
+                PinResource("GPIO3", {"GPIO3": self._dio_ft_model}),
+                PinResource("GPIO4", {"GPIO4": self._dio_ft_model}),
+                PinResource("GPIO5", {"GPIO5": self._dio_ft_model}),
+                PinResource("GPIO6", {"GPIO6": self._dio_ft_model}),
+                PinResource("GPIO7", {"GPIO7": self._dio_ft_model}),
+                PinResource("GPIO8", {"GPIO8": self._dio_ft_model}),
+                PinResource("GPIO9", {"GPIO9": self._dio_ft_model}),
+                PinResource("GPIO10", {"GPIO10": self._dio_ft_model}),
+                PinResource("GPIO11", {"GPIO11": self._dio_ft_model}),
+                PinResource("GPIO12", {"GPIO12": self._dio_ft_model}),
+                PinResource("GPIO13", {"GPIO13": self._dio_ft_model}),
+                PinResource("GPIO14", {"GPIO14": self._dio_ft_model}),
+                PinResource("GPIO15", {"GPIO15": self._dio_ft_model}),
+                PinResource("GPIO16", {"GPIO16": self._dio_ft_model}),
+                PinResource("GPIO17", {"GPIO17": self._dio_ft_model}),
+                PinResource("GPIO18", {"GPIO18": self._dio_ft_model}),
+                PinResource("GPIO19", {"GPIO19": self._dio_ft_model}),
+                PinResource("GPIO20", {"GPIO20": self._dio_ft_model}),
+                PinResource("GPIO21", {"GPIO21": self._dio_ft_model}),
+                PinResource("GPIO22", {"GPIO22": self._dio_ft_model}),
+                PinResource("GPIO23", {"GPIO23": self._dio_ft_model}),
+                PinResource("GPIO24", {"GPIO24": self._dio_ft_model}),
+                PinResource("GPIO25", {"GPIO25": self._dio_ft_model}),
+                PinResource("GPIO26", {"GPIO26": self._dio_std_model, "ADC0": adc_model}),
+                PinResource("GPIO27", {"GPIO27": self._dio_std_model, "ADC1": adc_model}),
+                PinResource("GPIO28", {"GPIO28": self._dio_std_model, "ADC2": adc_model}),
+                PinResource("GPIO29", {"GPIO29": self._dio_std_model, "ADC3": adc_model}),
+                # fixed-pin peripherals
+                PeripheralFixedPin("USB", UsbDevicePort(self._dio_usb_model), {"dm": "USB_DM", "dp": "USB_DP"}),
+                # reassignable peripherals
+                PeripheralFixedResource(
+                    "UART0",
+                    uart_model,
+                    {"tx": ["GPIO0", "GPIO12", "GPIO16", "GPIO28"], "rx": ["GPIO1", "GPIO13", "GPIO17", "GPIO29"]},
+                ),
+                PeripheralFixedResource(
+                    "UART1",
+                    uart_model,
+                    {"tx": ["GPIO4", "GPIO8", "GPIO20", "GPIO24"], "rx": ["GPIO5", "GPIO9", "GPIO21", "GPIO25"]},
+                ),
+                PeripheralFixedResource(
+                    "SPI0",
+                    spi_model,
+                    {
+                        "miso": ["GPIO0", "GPIO4", "GPIO16", "GPIO20"],  # RX
+                        "sck": ["GPIO2", "GPIO6", "GPIO18", "GPIO22"],
+                        "mosi": ["GPIO3", "GPIO7", "GPIO19", "GPIO23"],  # TX
+                    },
+                ),
+                PeripheralFixedResource(
+                    "SPI1",
+                    spi_model,
+                    {
+                        "miso": ["GPIO8", "GPIO12", "GPIO24", "GPIO28"],  # RX
+                        "sck": ["GPIO10", "GPIO14", "GPIO26"],
+                        "mosi": ["GPIO11", "GPIO15", "GPIO27"],  # TX
+                    },
+                ),
+                # SPI peripheral omitted, since TX tri-state is not tied to CS and must be controlled in software
+                PeripheralFixedResource(
+                    "I2C0",
+                    i2c_model,
+                    {
+                        "sda": ["GPIO0", "GPIO4", "GPIO8", "GPIO12", "GPIO16", "GPIO20", "GPIO24", "GPIO28"],
+                        "scl": ["GPIO1", "GPIO5", "GPIO9", "GPIO13", "GPIO17", "GPIO21", "GPIO25", "GPIO20"],
+                    },
+                ),
+                PeripheralFixedResource(
+                    "I2C1",
+                    i2c_model,
+                    {
+                        "sda": ["GPIO2", "GPIO6", "GPIO10", "GPIO14", "GPIO18", "GPIO22", "GPIO24", "GPIO26"],
+                        "scl": ["GPIO3", "GPIO7", "GPIO11", "GPIO15", "GPIO19", "GPIO23", "GPIO25", "GPIO27"],
+                    },
+                ),
+                PeripheralFixedResource(
+                    "I2C0_T",
+                    i2c_target_model,
+                    {  # TODO shared resource w/ I2C controller
+                        "sda": ["GPIO0", "GPIO4", "GPIO8", "GPIO12", "GPIO16", "GPIO20", "GPIO24", "GPIO28"],
+                        "scl": ["GPIO1", "GPIO5", "GPIO9", "GPIO13", "GPIO17", "GPIO21", "GPIO25", "GPIO20"],
+                    },
+                ),
+                PeripheralFixedResource(
+                    "I2C1_T",
+                    i2c_target_model,
+                    {  # TODO shared resource w/ I2C controller
+                        "sda": ["GPIO2", "GPIO6", "GPIO10", "GPIO14", "GPIO18", "GPIO22", "GPIO24", "GPIO26"],
+                        "scl": ["GPIO3", "GPIO7", "GPIO11", "GPIO15", "GPIO19", "GPIO23", "GPIO25", "GPIO27"],
+                    },
+                ),
+                PeripheralFixedPin(
+                    "SWD",
+                    SwdTargetPort(self._dio_std_model),
+                    {
+                        "swdio": "SWDIO",
+                        "swclk": "SWCLK",
+                    },
+                ),
+            ]
+        ).remap_pins(self._PIN_MAPPING)
 
 
 class Rp2040(
@@ -437,6 +431,7 @@ class Xiao_Rp2040(
     IoControllerPowerOut,
     IoControllerVin,
     Rp2040_Interfaces,
+    BaseIoControllerWrapper,
     IoController,
     GeneratorBlock,
     WrapperSubboardBlock,
@@ -498,12 +493,7 @@ class Xiao_Rp2040(
 
         self.model = self.Block(
             Rp2040_Device(
-                pin_assigns=BaseIoControllerWrapped._remap_assigns_to_value(
-                    BaseIoControllerWrapped._remap_pin_assigns_list(
-                        Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns), invert_remapping=True
-                    )
-                ),
-                allowed_pins=list(Xiao_Rp2040_Device._PIN_REMAPPING.keys()),
+                pin_assigns=self._make_model_pinning(Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
                 _model=True,
             )
         )

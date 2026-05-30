@@ -25,6 +25,8 @@ class BaseIoControllerWrapped(BaseIoController):
 
         If invert_remapping is True, the remapping dict is inverted before applying.
         Assigns not present in the remapping dict are passed unchanged, eg for non-pin-assigns like bundle containers.
+
+        Internal utility.
         """
         if invert_remapping:
             remapping = {v: k for k, v in remapping.items()}
@@ -60,7 +62,10 @@ class BaseIoControllerWrapped(BaseIoController):
 
         For Vector-typed IO ports, this generates the subports and must be authoritative.
         This cannot be used with anything else that generates vector sub-ports.
-        This must be a GeneratorBlock."""
+        This must be a GeneratorBlock.
+
+        Internal utility.
+        """
         assert isinstance(self, GeneratorBlock)
 
         pin_dict: Dict[str, Port] = {}
@@ -93,7 +98,10 @@ class BaseIoControllerWrapped(BaseIoController):
         """Generates pinning that can be passed into a footprint, given the pin assign dict from _remap_pin_assigns_list
         and pin dict from _generator_pin_dict.
 
-        This requires all pins to be assigned."""
+        This requires all pins to be assigned.
+
+        Internal utility.
+        """
         pinning: Dict[str, HasPassivePort] = {}
 
         for name, assign in pin_assigns.items():
@@ -109,7 +117,10 @@ class BaseIoControllerWrapped(BaseIoController):
     @staticmethod
     def _remap_assigns_to_value(assigns: Dict[str, Tuple[Optional[str], Optional[str]]]) -> List[str]:
         """Given a dict of pin assigns from _remap_pinning_assigns, returns a list of assign strings
-        for use in self.actual_pin_assigns"""
+        for use in self.actual_pin_assigns.
+
+        Internal utility.
+        """
         pin_assigns: List[str] = []
         for name, assign in assigns.items():
             if assign[0] is not None and assign[1] is not None:
@@ -137,3 +148,42 @@ class BaseIoControllerWrapped(BaseIoController):
         fixed_pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
         return fixed_pinning
+
+
+class BaseIoControllerWrapper(BaseIoController):
+    """Base class for a block that contains a BaseIoControllerWrapped as the physical footprint
+    as well as a non-physical device model.
+
+    This provides utilities to remap pin assignments from the device specification to the model.
+    """
+
+    def _export_tap_ios_inner(self, inner: "BaseIoController") -> None:
+        """Export-taps all IO ports from some inner BaseIoController.
+        This must be a SubboardBlock to support the export_tap connection.
+        This must be called in contents() or generate(), after IOs have been defined."""
+        from ..core.Blocks import BlockElaborationState
+
+        assert isinstance(self, WrapperSubboardBlock)
+        assert self._elaboration_state in (
+            BlockElaborationState.contents,
+            BlockElaborationState.generate,
+        ), "can only run in contents() or generate()"
+
+        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
+        for self_io in self._io_ports:
+            self_io_type = self._type_of_io(self_io)
+            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
+            inner_io = inner_ios_by_type[self_io_type]
+            self.export_tap(self_io, inner_io)
+
+    def _make_model_pinning(self, remapping: Dict[str, str], device_assigns: List[str]) -> List[str]:
+        """Remaps my own assigns (pinned in device-space) to model-space.
+
+        Requires _generator_param_all_ios, so all the IOs names are available.
+        """
+
+        BaseIoControllerWrapped._remap_assigns_to_value(
+            BaseIoControllerWrapped._remap_pin_assigns_list(
+                Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns), invert_remapping=True
+            )
+        ),

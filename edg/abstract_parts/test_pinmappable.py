@@ -98,56 +98,6 @@ class PinMapUtilTest(unittest.TestCase):
         self.assertIn(AllocatedResource(ain_model, "AIO4", "P4", "4"), allocated)
         self.assertIn(AllocatedResource(ain_model, "AIO5", "P5", "5"), allocated)
 
-    def test_assign_filtered(self) -> None:  # fully user-specified
-        dio_model = DigitalBidir()
-        allocated = (
-            PinMapUtil(
-                [
-                    PinResource("P1", {"PIO1": dio_model}),
-                    PinResource("P2", {"PIO2": dio_model}),
-                    PinResource("P3", {"PIO3": dio_model}),
-                ]
-            )
-            .remap_pins(
-                {
-                    "P1": "1",
-                    "P2": "2",
-                    "P3": "3",
-                }
-            )
-            .filter_pins(["P1", "P3"])  # test both pin name and pin number
-            .allocate([(DigitalBidir, ["DIO1", "DIO3"])])
-        )
-        self.assertIn(AllocatedResource(dio_model, "DIO1", "P1", "1"), allocated)
-        self.assertIn(AllocatedResource(dio_model, "DIO3", "P3", "3"), allocated)
-
-    def test_assign_filtered_empty(self) -> None:
-        dio_model = DigitalBidir()
-        allocated = (
-            PinMapUtil(
-                [
-                    PinResource("P1", {"PIO1": dio_model}),
-                    PinResource("P2", {"PIO2": dio_model}),
-                ]
-            )
-            .filter_pins([])
-            .allocate([(DigitalBidir, ["DIO1", "DIO2"])])
-        )
-        self.assertIn(AllocatedResource(dio_model, "DIO1", "P1", "P1"), allocated)
-        self.assertIn(AllocatedResource(dio_model, "DIO2", "P2", "P2"), allocated)
-
-    def test_assign_filtered_overflow(self) -> None:
-        dio_model = DigitalBidir()
-        with self.assertRaises(AutomaticAllocationError):
-            PinMapUtil(
-                [
-                    PinResource("1", {"PIO1": dio_model}),
-                    PinResource("3", {"PIO3": dio_model}),
-                ]
-            ).filter_pins(
-                ["1"]
-            ).allocate([(DigitalBidir, ["DIO1", "DIO2"])])
-
     def test_assign_mixed(self) -> None:  # mix of user-specified and automatic assignments, assuming greedy algo
         dio_model = DigitalBidir()
         ain_model = AnalogSink()

@@ -328,44 +328,6 @@ class PinMapUtil:
 
         return PinMapUtil(remapped_resources, self.transforms)
 
-    def filter_pins(self, allowed_pins: List[str]) -> "PinMapUtil":
-        """Returns a new PinMapUtil with only the specified pins kept.
-        If the allowed_pins list is empty, returns the input (all pins kept).
-        allowed_pins may be specified as a pin name or pin number."""
-
-        if not allowed_pins:
-            return self
-
-        def filter_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
-            if isinstance(resource, PinResource):
-                if resource.pin in allowed_pins or resource.pinname in allowed_pins:
-                    return resource
-                else:
-                    return None
-            elif isinstance(resource, PeripheralFixedPin):
-                filtered_keys = []
-                for key, pin in resource.inner_allowed_pins.items():
-                    if pin in allowed_pins or resource.inner_pinnames[key] in allowed_pins:
-                        filtered_keys.append(key)
-                if filtered_keys:
-                    return PeripheralFixedPin(
-                        resource.name,
-                        resource.port_model,
-                        {k: v for k, v in resource.inner_allowed_pins.items() if k in filtered_keys},
-                        {k: v for k, v in resource.inner_pinnames.items() if k in filtered_keys},
-                    )
-                else:
-                    return None
-            elif isinstance(resource, BaseDelegatingPinMapResource):
-                return resource
-            else:
-                raise NotImplementedError(f"unknown resource {resource}")
-
-        filtered_resources_raw = [filter_resource(resource) for resource in self.resources]
-        filtered_resources = [resource for resource in filtered_resources_raw if resource is not None]
-
-        return PinMapUtil(filtered_resources, self.transforms)
-
     @staticmethod
     def _resource_port_types(resource: BasePinMapResource) -> List[Type[Port]]:
         if isinstance(resource, PinResource):

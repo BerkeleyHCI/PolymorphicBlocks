@@ -50,6 +50,18 @@ class AssignedPinsTest(BaseMcuTest):
         return Refinements(instance_values=[(["dut", "pin_assigns"], ["0=1", "1=3"])])
 
 
+class AssignedInvalidNameTest(BaseMcuTest):
+    @override
+    def refinements(self) -> Refinements:
+        return Refinements(instance_values=[(["dut", "pin_assigns"], ["0=GPIO10"])])
+
+
+class AssignedInvalidPinNumberTest(BaseMcuTest):
+    @override
+    def refinements(self) -> Refinements:
+        return Refinements(instance_values=[(["dut", "pin_assigns"], ["0=38"])])  # in the IC but not module
+
+
 class AssignedI2cTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
@@ -89,6 +101,14 @@ class McuWrapperTestCase(unittest.TestCase):
         compiled = ScalaCompiler.compile(AssignedPinsTest)
         self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=GPIO26, 1", "1=GPIO28, 3"])
         self.assertEqual(compiled.get_value(["dut", "model", "actual_pin_assigns"]), ["0=GPIO26, 38", "1=GPIO28, 40"])
+
+    def test_assigned_invalid_name(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(AssignedInvalidNameTest)
+
+    def test_assigned_invalid_pinnumber(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(AssignedInvalidPinNumberTest)
 
     def test_assigned_i2c(self) -> None:
         compiled = ScalaCompiler.compile(AssignedI2cTest)

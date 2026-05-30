@@ -187,25 +187,6 @@ class BaseIoController(PinMappable, Block):
         self.assign(self.actual_pin_assigns, inner.actual_pin_assigns)
         self.assign(self.io_current_draw, inner.io_current_draw)
 
-    def _export_tap_ios_inner(self, inner: "BaseIoController") -> None:
-        """Export-taps all IO ports from some inner BaseIoController.
-        This must be a SubboardBlock to support the export_tap connection.
-        This must be called in contents() or generate(), after IOs have been defined."""
-        from ..core.Blocks import BlockElaborationState
-
-        assert isinstance(self, WrapperSubboardBlock)
-        assert self._elaboration_state in (
-            BlockElaborationState.contents,
-            BlockElaborationState.generate,
-        ), "can only run in contents() or generate()"
-
-        inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
-        for self_io in self._io_ports:
-            self_io_type = self._type_of_io(self_io)
-            assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
-            inner_io = inner_ios_by_type[self_io_type]
-            self.export_tap(self_io, inner_io)
-
     def _generator_param_all_ios(self) -> None:
         """Declares all BaseIoController IOs as generator params.
         This must be a GeneratorBlock."""
