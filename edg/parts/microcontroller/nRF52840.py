@@ -698,6 +698,12 @@ class Feather_Nrf52840(
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 
+        if not self.get(self.gnd.is_connected()):
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.gnd)
+        self.connect(self.gnd, self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
+
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.model.pwr)
             self.export_tap(self.pwr.net, self.device.pwr)
@@ -718,10 +724,3 @@ class Feather_Nrf52840(
                 )
             )
             self.export_tap(self.vusb_out.net, self.device.vusb)
-
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.model.gnd)
-        self.export_tap(self.gnd, self.device.gnd)

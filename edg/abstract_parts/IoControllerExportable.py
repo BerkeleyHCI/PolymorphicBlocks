@@ -1,11 +1,13 @@
 from typing import List, Optional, TypeVar, cast, Any
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..electronics_model import *
 from .IoController import BaseIoController
 
 
+@deprecated("use explicit BaseIoController._export_ios_inner")
 @non_library
 class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     """BaseIoController wrapper (this is a BaseIoController, which wraps another BaseIoController)

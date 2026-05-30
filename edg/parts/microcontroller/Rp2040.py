@@ -504,6 +504,12 @@ class Xiao_Rp2040(
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 
+        if not self.get(self.gnd.is_connected()):
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.gnd)
+        self.connect(self.gnd, self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
+
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         if self.get(self.pwr.is_connected()):  # power supplied externally
@@ -525,10 +531,3 @@ class Xiao_Rp2040(
             self.export_tap(self.pwr_vin.net, self.device.vcc)
         if self.get(self.vusb_out.is_connected()):
             self.export_tap(self.vusb_out.net, self.device.vcc)
-
-        self.export_tap(self.gnd, self.device.gnd)
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.model.gnd)
