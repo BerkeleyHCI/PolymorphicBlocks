@@ -438,6 +438,7 @@ class Xiao_Rp2040(
     IoControllerUsbOut,
     IoControllerPowerOut,
     IoControllerVin,
+    Rp2040_Interfaces,
     IoController,
     GeneratorBlock,
     WrapperSubboardBlock,

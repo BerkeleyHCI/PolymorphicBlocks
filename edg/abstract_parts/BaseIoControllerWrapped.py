@@ -38,6 +38,40 @@ class BaseIoControllerWrapped(BaseIoController):
                 remapped_assigns[name.strip()] = pindef  # pass unmodified if not remappable, eg bundle containers
         return remapped_assigns
 
+    def _generator_pin_dict(self) -> Dict[str, Port]:
+        """Returns a dict of pin name to port for all IO ports, recursing into bundles Ports.
+        This includes both the bundle container Port and their (recursive) contents.
+        Users of this may want to filter by the port type.
+
+        For Vector-typed IO ports, this generates the subports and must be authoritative.
+        This cannot be used with anything else that generates vector sub-ports.
+        This must be a GeneratorBlock."""
+        assert isinstance(self, GeneratorBlock)
+
+        pin_dict: Dict[str, Port] = {}
+
+        def recurse_port(port: Port, prefix: str = "") -> None:
+            assert prefix not in pin_dict, f"duplicate pin name {prefix}"
+            pin_dict[prefix] = port
+
+            for subport_name, subport in port._ports.items():
+                recurse_port(subport, f"{prefix}.{subport_name}")
+
+        for io_port in self._io_ports:
+            if isinstance(io_port, Vector):
+                io_port.defined()
+                for subport_name in self.get(io_port.requested()):
+                    subport = io_port.append_elt(io_port._tpe.empty(), subport_name)
+                    recurse_port(subport, subport_name)
+            elif isinstance(io_port, Port):
+                if self.get(io_port.is_connected()):
+                    port_name = io_port._name_from(self)
+                    recurse_port(io_port, port_name)
+            else:
+                raise NotImplementedError(f"unknown port type {io_port}")
+
+        return pin_dict
+
     def _remap_to_footprint_pinning(
         self, pin_assigns: Dict[str, str], valid_pins: Iterable[str]
     ) -> Dict[str, HasPassivePort]:
