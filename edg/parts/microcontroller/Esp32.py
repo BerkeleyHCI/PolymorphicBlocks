@@ -60,10 +60,12 @@ class Esp32_Wroom_32_Device(
         "GPIO23": "37",
     }
 
-    def __init__(self, _model: BoolLike = False, **kwargs: Any) -> None:
+    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self._model = self.ArgParameter(_model)
+        self._allowed_pins = self.ArgParameter(_allowed_pins)
+        self.generator_param(self._allowed_pins)
 
         self.pwr = self.Port(
             VoltageSink(
@@ -160,85 +162,95 @@ class Esp32_Wroom_32_Device(
         i2s_model = I2sController(DigitalBidir.empty())
         dvp8_model = Dvp8Host(DigitalBidir.empty())
 
-        return PinMapUtil(
-            [  # section 2.2, table 1
-                # VDD3P3_RTC
-                PinResource("SENSOR_VP", {"ADC1_CH0": adc_model}),  # also input-only 'GPIO36': dio_model, RTC_GPIO
-                PinResource("SENSOR_CAPP", {"ADC1_CH1": adc_model}),  # also input-only 'GPIO37': dio_model, RTC_GPIO
-                PinResource("SENSOR_CAPN", {"ADC1_CH2": adc_model}),  # also input-only 'GPIO38': dio_model,  RTC_GPIO
-                PinResource("SENSOR_VN", {"ADC1_CH3": adc_model}),  # also input-only 'GPIO39': dio_model, RTC_GPIO
-                PinResource("VDET_1", {"ADC1_CH6": adc_model}),  # also input-only 'GPIO34': dio_model, RTC_GPIO
-                PinResource("VDET_2", {"ADC1_CH7": adc_model}),  # also input-only 'GPIO35': dio_model,  RTC_GPIO
-                PinResource(
-                    "32K_XP", {"GPIO32": self._dio_model, "ADC1_CH4": adc_model, "TOUCH9": touch_model}
-                ),  # also RTC_GPIO, 32K_XP
-                PinResource(
-                    "32K_XN", {"GPIO33": self._dio_model, "ADC1_CH5": adc_model, "TOUCH8": touch_model}
-                ),  # also RTC_GPIO, 32K_XN
-                PinResource(
-                    "GPIO25", {"GPIO25": self._dio_model, "ADC2_CH8": adc_model, "DAC_1": dac_model}
-                ),  # also RTC_GPIO
-                PinResource(
-                    "GPIO26", {"GPIO26": self._dio_model, "ADC2_CH9": adc_model, "DAC_2": dac_model}
-                ),  # also RTC_GPIO
-                PinResource(
-                    "GPIO27", {"GPIO27": self._dio_model, "ADC2_CH7": adc_model, "TOUCH7": touch_model}
-                ),  # also RTC_GPIO
-                PinResource(
-                    "MTMS", {"GPIO14": self._dio_model, "ADC2_CH6": adc_model, "TOUCH6": touch_model}
-                ),  # also RTC_GPIO
-                PinResource(
-                    "MTDI", {"GPIO12": self._dio_model, "ADC2_CH5": adc_model, "TOUCH5": touch_model}
-                ),  # also RTC_GPIO, noncritical strapping pin
-                PinResource(
-                    "MTCK", {"GPIO13": self._dio_model, "ADC2_CH4": adc_model, "TOUCH4": touch_model}
-                ),  # also RTC_GPIO
-                PinResource(
-                    "MTDO", {"GPIO15": self._dio_model, "ADC2_CH3": adc_model, "TOUCH3": touch_model}
-                ),  # also RTC_GPIO, noncritical strapping pin
-                # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC2_CH2': adc_model, 'TOUCH2': touch_model}),  # also RTC_GPIO, strapping pin
-                # PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC2_CH1': adc_model, 'TOUCH1': touch_model}),  # also RTC_GPIO, strapping pin
-                PinResource(
-                    "GPIO4", {"GPIO4": self._dio_model, "ADC2_CH0": adc_model, "TOUCH0": touch_model}
-                ),  # also RTC_GPIO
-                # VDD_SDIO
-                PinResource("GPIO16", {"GPIO16": sdio_model}),
-                PinResource("GPIO17", {"GPIO17": sdio_model}),
-                PinResource("SD_DATA_2", {"GPIO9": sdio_model}),
-                PinResource("SD_DATA_3", {"GPIO10": sdio_model}),
-                PinResource("SD_CMD", {"GPIO11": sdio_model}),
-                PinResource("SD_CLK", {"GPIO6": sdio_model}),
-                PinResource("SD_DATA_0", {"GPIO7": sdio_model}),
-                PinResource("SD_DATA_1", {"GPIO8": sdio_model}),
-                # VDD_3P3_CPU
-                PinResource("GPIO5", {"GPIO5": self._dio_model}),
-                PinResource("GPIO18", {"GPIO18": self._dio_model}),
-                PinResource("GPIO23", {"GPIO23": self._dio_model}),
-                PinResource("GPIO19", {"GPIO19": self._dio_model}),
-                PinResource("GPIO22", {"GPIO22": self._dio_model}),
-                # PinResource('U0RXD', {'GPIO3': dio_model}),  # for programming, technically reallocatable
-                # PinResource('U0TXD', {'GPIO1': dio_model}),  # for programming, technically reallocatable
-                PinResource("GPIO21", {"GPIO21": self._dio_model}),
-                # section 4.2, table 12: peripheral pin assignments
-                # note LED and motor PWMs can be assigned to any pin
-                # PeripheralAnyResource('U0', uart_model),  # for programming, technically reallocatable
-                PeripheralAnyResource("U1", uart_model),
-                PeripheralAnyResource("U2", uart_model),
-                PeripheralAnyResource("I2CEXT0", i2c_model),
-                PeripheralAnyResource("I2CEXT1", i2c_model),
-                PeripheralAnyResource("I2CEXT0_T", i2c_target_model),  # TODO shared resource w/ I2C controller
-                PeripheralAnyResource("I2CEXT1_T", i2c_target_model),  # TODO shared resource w/ I2C controller
-                # PeripheralAnyResource('SPI', spi_model),  # for flash, non-allocatable
-                PeripheralAnyResource("HSPI", spi_model),
-                PeripheralAnyResource("VSPI", spi_model),
-                PeripheralAnyResource("HSPI_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("VSPI_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("TWAI", can_model),
-                PeripheralAnyResource("I2S0", i2s_model),  # while CLK is restricted pinning, SCK = BCK here
-                PeripheralAnyResource("I2S1", i2s_model),
-                PeripheralAnyResource("DVP", dvp8_model),  # TODO this also eats an I2S port, also available as 16-bit
-            ]
-        ).remap_pins(self._PIN_MAPPING)
+        return (
+            PinMapUtil(
+                [  # section 2.2, table 1
+                    # VDD3P3_RTC
+                    PinResource("SENSOR_VP", {"ADC1_CH0": adc_model}),  # also input-only 'GPIO36': dio_model, RTC_GPIO
+                    PinResource(
+                        "SENSOR_CAPP", {"ADC1_CH1": adc_model}
+                    ),  # also input-only 'GPIO37': dio_model, RTC_GPIO
+                    PinResource(
+                        "SENSOR_CAPN", {"ADC1_CH2": adc_model}
+                    ),  # also input-only 'GPIO38': dio_model,  RTC_GPIO
+                    PinResource("SENSOR_VN", {"ADC1_CH3": adc_model}),  # also input-only 'GPIO39': dio_model, RTC_GPIO
+                    PinResource("VDET_1", {"ADC1_CH6": adc_model}),  # also input-only 'GPIO34': dio_model, RTC_GPIO
+                    PinResource("VDET_2", {"ADC1_CH7": adc_model}),  # also input-only 'GPIO35': dio_model,  RTC_GPIO
+                    PinResource(
+                        "32K_XP", {"GPIO32": self._dio_model, "ADC1_CH4": adc_model, "TOUCH9": touch_model}
+                    ),  # also RTC_GPIO, 32K_XP
+                    PinResource(
+                        "32K_XN", {"GPIO33": self._dio_model, "ADC1_CH5": adc_model, "TOUCH8": touch_model}
+                    ),  # also RTC_GPIO, 32K_XN
+                    PinResource(
+                        "GPIO25", {"GPIO25": self._dio_model, "ADC2_CH8": adc_model, "DAC_1": dac_model}
+                    ),  # also RTC_GPIO
+                    PinResource(
+                        "GPIO26", {"GPIO26": self._dio_model, "ADC2_CH9": adc_model, "DAC_2": dac_model}
+                    ),  # also RTC_GPIO
+                    PinResource(
+                        "GPIO27", {"GPIO27": self._dio_model, "ADC2_CH7": adc_model, "TOUCH7": touch_model}
+                    ),  # also RTC_GPIO
+                    PinResource(
+                        "MTMS", {"GPIO14": self._dio_model, "ADC2_CH6": adc_model, "TOUCH6": touch_model}
+                    ),  # also RTC_GPIO
+                    PinResource(
+                        "MTDI", {"GPIO12": self._dio_model, "ADC2_CH5": adc_model, "TOUCH5": touch_model}
+                    ),  # also RTC_GPIO, noncritical strapping pin
+                    PinResource(
+                        "MTCK", {"GPIO13": self._dio_model, "ADC2_CH4": adc_model, "TOUCH4": touch_model}
+                    ),  # also RTC_GPIO
+                    PinResource(
+                        "MTDO", {"GPIO15": self._dio_model, "ADC2_CH3": adc_model, "TOUCH3": touch_model}
+                    ),  # also RTC_GPIO, noncritical strapping pin
+                    # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC2_CH2': adc_model, 'TOUCH2': touch_model}),  # also RTC_GPIO, strapping pin
+                    # PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC2_CH1': adc_model, 'TOUCH1': touch_model}),  # also RTC_GPIO, strapping pin
+                    PinResource(
+                        "GPIO4", {"GPIO4": self._dio_model, "ADC2_CH0": adc_model, "TOUCH0": touch_model}
+                    ),  # also RTC_GPIO
+                    # VDD_SDIO
+                    PinResource("GPIO16", {"GPIO16": sdio_model}),
+                    PinResource("GPIO17", {"GPIO17": sdio_model}),
+                    PinResource("SD_DATA_2", {"GPIO9": sdio_model}),
+                    PinResource("SD_DATA_3", {"GPIO10": sdio_model}),
+                    PinResource("SD_CMD", {"GPIO11": sdio_model}),
+                    PinResource("SD_CLK", {"GPIO6": sdio_model}),
+                    PinResource("SD_DATA_0", {"GPIO7": sdio_model}),
+                    PinResource("SD_DATA_1", {"GPIO8": sdio_model}),
+                    # VDD_3P3_CPU
+                    PinResource("GPIO5", {"GPIO5": self._dio_model}),
+                    PinResource("GPIO18", {"GPIO18": self._dio_model}),
+                    PinResource("GPIO23", {"GPIO23": self._dio_model}),
+                    PinResource("GPIO19", {"GPIO19": self._dio_model}),
+                    PinResource("GPIO22", {"GPIO22": self._dio_model}),
+                    # PinResource('U0RXD', {'GPIO3': dio_model}),  # for programming, technically reallocatable
+                    # PinResource('U0TXD', {'GPIO1': dio_model}),  # for programming, technically reallocatable
+                    PinResource("GPIO21", {"GPIO21": self._dio_model}),
+                    # section 4.2, table 12: peripheral pin assignments
+                    # note LED and motor PWMs can be assigned to any pin
+                    # PeripheralAnyResource('U0', uart_model),  # for programming, technically reallocatable
+                    PeripheralAnyResource("U1", uart_model),
+                    PeripheralAnyResource("U2", uart_model),
+                    PeripheralAnyResource("I2CEXT0", i2c_model),
+                    PeripheralAnyResource("I2CEXT1", i2c_model),
+                    PeripheralAnyResource("I2CEXT0_T", i2c_target_model),  # TODO shared resource w/ I2C controller
+                    PeripheralAnyResource("I2CEXT1_T", i2c_target_model),  # TODO shared resource w/ I2C controller
+                    # PeripheralAnyResource('SPI', spi_model),  # for flash, non-allocatable
+                    PeripheralAnyResource("HSPI", spi_model),
+                    PeripheralAnyResource("VSPI", spi_model),
+                    PeripheralAnyResource("HSPI_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
+                    PeripheralAnyResource("VSPI_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
+                    PeripheralAnyResource("TWAI", can_model),
+                    PeripheralAnyResource("I2S0", i2s_model),  # while CLK is restricted pinning, SCK = BCK here
+                    PeripheralAnyResource("I2S1", i2s_model),
+                    PeripheralAnyResource(
+                        "DVP", dvp8_model
+                    ),  # TODO this also eats an I2S port, also available as 16-bit
+                ]
+            )
+            .remap_pins(self._PIN_MAPPING)
+            .filter_pins(self.get(self._allowed_pins))
+        )
 
 
 class Esp32_Wroom_32(
@@ -397,6 +409,7 @@ class Freenove_Esp32_Wrover(
                     Freenove_Esp32_Wrover_Device._PIN_REMAPPING, self.get(self.pin_assigns)
                 ),
                 _model=True,
+                _allowed_pins=list(Freenove_Esp32_Wrover_Device._PIN_REMAPPING.keys()),
             )
         )
         self._export_ios_inner(self.model)
@@ -405,11 +418,12 @@ class Freenove_Esp32_Wrover(
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 
-        if not self.get(self.gnd.is_connected()):
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.model.gnd)
+            self.export_tap(self.gnd, self.device.gnd)
+        else:
             self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.gnd)
-        self.connect(self.gnd, self.model.gnd)
-        self.export_tap(self.gnd, self.device.gnd)
+            self.connect(self.gnd_model.gnd, self.model.gnd)
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.model.pwr)
