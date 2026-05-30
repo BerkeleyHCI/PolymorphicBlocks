@@ -51,8 +51,10 @@ class Rp2040_Device(
         "SWCLK": "24",
     }
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *, _model: BoolLike = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self._model = self.ArgParameter(_model)
 
         self.gnd = self.Port(Ground(), [Common])
         self.iovdd = self.Port(
@@ -60,7 +62,6 @@ class Rp2040_Device(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
                 current_draw=(1.2, 4.3) * mAmp + self.io_current_draw.upper(),  # Table 629
             ),
-            [Power],
         )
 
         self.dvdd = self.Port(
@@ -75,6 +76,7 @@ class Rp2040_Device(
                 current_limits=(0, 100) * mAmp,  # Table 1, max current
             )
         )
+
         self.vreg_vin = self.Port(
             VoltageSink(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
@@ -107,10 +109,19 @@ class Rp2040_Device(
             pulldown_capable=True,
         )
 
-        self.qspi = self.Port(SpiController(self._dio_std_model))  # TODO actually QSPI
-        self.qspi_cs = self.Port(self._dio_std_model)
-        self.qspi_sd2 = self.Port(self._dio_std_model)
-        self.qspi_sd3 = self.Port(self._dio_std_model)
+        self.qspi = self.Port(SpiController(self._dio_std_model), optional=True)  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model, optional=True)
+        self.qspi_sd2 = self.Port(self._dio_std_model, optional=True)
+        self.qspi_sd3 = self.Port(self._dio_std_model, optional=True)
+        self.require(
+            (~self._model).implies(
+                self.qspi.is_connected()
+                & self.qspi_cs.is_connected()
+                & self.qspi_sd2.is_connected()
+                & self.qspi_sd3.is_connected()
+            ),
+            "SPI memory required",
+        )
 
         self.xosc = self.Port(
             CrystalDriver(
@@ -119,7 +130,7 @@ class Rp2040_Device(
             optional=True,
         )
 
-        self.swd = self.Port(SwdTargetPort.empty())
+        self.swd = self.Port(SwdTargetPort.empty(), optional=True)
         self.run = self.Port(DigitalSink.from_bidir(self._dio_ft_model), optional=True)  # internally pulled up
         self._io_ports.insert(0, self.swd)
 
@@ -338,7 +349,7 @@ class Rp2040(
             self.connect(self.ic.qspi_sd2, mem_qspi.io2)
             self.connect(self.ic.qspi_sd3, mem_qspi.io3)
 
-        self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
+        self.connect(self.pwr, self.ic.iovdd, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
         self.connect(self.ic.vreg_vout, self.ic.dvdd)
 
         self.dvdd_cap = ElementDict[DecouplingCapacitor]()
@@ -367,7 +378,9 @@ class Rp2040(
         return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Xiao_Rp2040_Device(
+    Rp2040_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock
+):
     """Footprint-only device model for the Xiao RP2040 microcontroller dev board"""
 
     _PIN_REMAPPING = {
@@ -384,44 +397,29 @@ class Xiao_Rp2040_Device(Rp2040_Interfaces, IoControllerWrapped, InternalSubcirc
         "GPIO3": "11",
     }
 
-    def __init__(self, model_pin_assigns: ArrayStringLike):
-        super().__init__()
-        self.model_pin_assigns = self.ArgParameter(model_pin_assigns)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self.gnd = self.Port(Ground.empty(), optional=True)
-        self.v3v3 = self.Port(VoltageSink.empty(), optional=True)
-        self.v3v3_out = self.Port(VoltageSource.empty(), optional=True)
-        self.vcc = self.Port(VoltageSink.empty(), optional=True)  # VUsb
-        self.vcc_out = self.Port(VoltageSource.empty(), optional=True)
-        self.generator_param(self.v3v3.is_connected(), self.vcc.is_connected(), self.model_pin_assigns)
-
-        # TODO MOVE TO INFRASTRUCTURE
-        for io_port in self._io_ports:
-            if isinstance(io_port, Vector):
-                self.generator_param(io_port.requested())
-            elif isinstance(io_port, Port):
-                self.generator_param(io_port.is_connected())
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
+        self.v3v3 = self.Port(Passive.empty(), optional=True)
+        self.vcc = self.Port(Passive.empty(), optional=True)  # VUsb
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        pinning: Dict[str, HasPassivePort] = {
-            "12": self.v3v3 if self.get(self.v3v3.is_connected()) else self.v3v3_out,
-            "13": self.gnd,
-            "14": self.vcc if self.get(self.vcc.is_connected()) else self.vcc_out,  # VUsb
-        }
-        remap_pinnings, remap_pin_assigns = self._remap_pinning_assigns(
-            self.get(self.model_pin_assigns), self._PIN_REMAPPING
-        )
-        pinning.update(remap_pinnings)
-        self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remap_pin_assigns))
-
         self.footprint(
             "U",
             "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
-            pinning,
+            self._make_pinning(
+                {
+                    "12": self.v3v3,
+                    "13": self.gnd,
+                    "14": self.vcc,  # VUsb
+                },
+                self._PIN_REMAPPING,
+            ),
             mfr="",
             part="XIAO RP2040",
             datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",
@@ -432,14 +430,14 @@ class Xiao_Rp2040(
     IoControllerUsbOut,
     IoControllerPowerOut,
     IoControllerVin,
+    Rp2040_Interfaces,
+    BaseIoControllerWrapper,
     IoController,
     GeneratorBlock,
     WrapperSubboardBlock,
 ):
     """RP2040 development board, a tiny development (21x17.5mm) daughterboard.
     Has an onboard USB connector, so this can also source power.
-
-    Limited pins (only 11 for IOs, of which 6 are usable as the other 5 have boot requirements).
 
     Requires Seeed Studio's KiCad library for the footprint: https://github.com/Seeed-Studio/OPL_Kicad_Library
     The 'Seeed Studio XIAO Series Library' must have been added as a footprint library of the same name.
@@ -451,16 +449,18 @@ class Xiao_Rp2040(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.generator_param(
+            self.pin_assigns,
             self.gnd.is_connected(),
             self.pwr.is_connected(),
             self.pwr_out.is_connected(),
             self.pwr_vin.is_connected(),
             self.vusb_out.is_connected(),
         )
+        self._generator_param_all_ios()
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         self.pwr_vin.init_from(
             VoltageSink(  # based on RS3236-3.3
@@ -492,21 +492,23 @@ class Xiao_Rp2040(
             "ground required if power used",
         )
 
-        self.model = self.Block(Rp2040(pin_assigns=ArrayStringExpr()))
-        model_pin_assigns = self._export_ios_inner(self.model)
-        self.assign(self.model.pin_assigns, model_pin_assigns)
+        self.model = self.Block(
+            Rp2040_Device(
+                pin_assigns=self._make_model_pinning(Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
+                _model=True,
+            )
+        )
+        self._export_ios_inner(self.model)
 
-        self.device = self.Block(Xiao_Rp2040_Device(model_pin_assigns=self.model.actual_pin_assigns), external=True)
+        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
 
-    @override
-    def generate(self) -> None:
-        super().generate()
-
+        self.connect(self.model.vreg_vout, self.model.dvdd)
+        model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.pwr)
-            self.export_tap(self.pwr, self.device.v3v3)
+            self.connect(self.pwr, model_pwr)
+            self.export_tap(self.pwr.net, self.device.v3v3)
         else:  # board sources power from USB
             self.pwr_out_model = self.Block(
                 DummyVoltageSource(
@@ -514,15 +516,15 @@ class Xiao_Rp2040(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            self.connect(self.pwr_out_model.pwr, model_pwr)
             if self.get(self.pwr_out.is_connected()):
                 self.connect(self.pwr_out, self.pwr_out_model.pwr)
-            self.export_tap(self.pwr_out, self.device.v3v3_out)
+            self.export_tap(self.pwr_out.net, self.device.v3v3)
 
         if self.get(self.pwr_vin.is_connected()):
-            self.export_tap(self.pwr_vin, self.device.vcc)
+            self.export_tap(self.pwr_vin.net, self.device.vcc)
         if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out, self.device.vcc_out)
+            self.export_tap(self.vusb_out.net, self.device.vcc)
 
         self.export_tap(self.gnd, self.device.gnd)
         if self.get(self.gnd.is_connected()):

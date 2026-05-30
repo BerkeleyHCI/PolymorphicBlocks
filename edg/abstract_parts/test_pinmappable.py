@@ -61,10 +61,42 @@ class PinMapUtilTest(unittest.TestCase):
         ).allocate(
             [(DigitalBidir, ["DIO3", "DIO2"]), (AnalogSink, ["AIO4", "AIO5"])], ["DIO3=3", "DIO2=2", "AIO4=4", "AIO5=5"]
         )
-        self.assertIn(AllocatedResource(dio_model, "DIO3", "PIO3", "3"), allocated)
-        self.assertIn(AllocatedResource(dio_model, "DIO2", "PIO2", "2"), allocated)
-        self.assertIn(AllocatedResource(ain_model, "AIO4", "AIn4", "4"), allocated)
-        self.assertIn(AllocatedResource(ain_model, "AIO5", "AIn5", "5"), allocated)
+        self.assertIn(AllocatedResource(dio_model, "DIO3", "3", "3"), allocated)
+        self.assertIn(AllocatedResource(dio_model, "DIO2", "2", "2"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO4", "4", "4"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO5", "5", "5"), allocated)
+
+    def test_assign_remapped(self) -> None:  # fully user-specified
+        dio_model = DigitalBidir()
+        ain_model = AnalogSink()
+        allocated = (
+            PinMapUtil(
+                [
+                    PinResource("P1", {"PIO1": dio_model}),
+                    PinResource("P2", {"PIO2": dio_model}),
+                    PinResource("P3", {"PIO3": dio_model, "AIn3": ain_model}),
+                    PinResource("P4", {"PIO4": dio_model, "AIn4": ain_model}),
+                    PinResource("P5", {"AIn5": ain_model}),
+                ]
+            )
+            .remap_pins(
+                {
+                    "P1": "1",
+                    "P2": "2",
+                    "P3": "3",
+                    "P4": "4",
+                    "P5": "5",
+                }
+            )
+            .allocate(
+                [(DigitalBidir, ["DIO3", "DIO2"]), (AnalogSink, ["AIO4", "AIO5"])],
+                ["DIO3=3", "DIO2=2", "AIO4=4", "AIO5=5"],
+            )
+        )
+        self.assertIn(AllocatedResource(dio_model, "DIO3", "P3", "3"), allocated)
+        self.assertIn(AllocatedResource(dio_model, "DIO2", "P2", "2"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO4", "P4", "4"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO5", "P5", "5"), allocated)
 
     def test_assign_mixed(self) -> None:  # mix of user-specified and automatic assignments, assuming greedy algo
         dio_model = DigitalBidir()
@@ -78,10 +110,10 @@ class PinMapUtilTest(unittest.TestCase):
                 PinResource("5", {"AIn5": ain_model}),
             ]
         ).allocate([(DigitalBidir, ["DIO3", "DIO1"]), (AnalogSink, ["AIO5", "AIO4"])], ["DIO3=3", "AIO4=4"])
-        self.assertIn(AllocatedResource(dio_model, "DIO3", "PIO3", "3"), allocated)
-        self.assertIn(AllocatedResource(dio_model, "DIO1", "PIO1", "1"), allocated)
-        self.assertIn(AllocatedResource(ain_model, "AIO4", "AIn4", "4"), allocated)
-        self.assertIn(AllocatedResource(ain_model, "AIO5", "AIn5", "5"), allocated)
+        self.assertIn(AllocatedResource(dio_model, "DIO3", "3", "3"), allocated)
+        self.assertIn(AllocatedResource(dio_model, "DIO1", "1", "1"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO4", "4", "4"), allocated)
+        self.assertIn(AllocatedResource(ain_model, "AIO5", "5", "5"), allocated)
 
     def test_assign_bad(self) -> None:  # bad user-specified assignments
         dio_model = DigitalBidir()
@@ -123,7 +155,7 @@ class PinMapUtilTest(unittest.TestCase):
                 PeripheralFixedPin("USB0", usb_model, {"dm": "2", "dp": "3"}),
             ]
         ).allocate([(UsbDevicePort, ["usb"])], ["usb.dm=2", "usb.dp=3"])
-        self.assertIn(AllocatedResource(usb_model, "usb", "USB0", {"dm": ("2", None), "dp": ("3", None)}), allocated)
+        self.assertIn(AllocatedResource(usb_model, "usb", "USB0", {"dm": ("2", "2"), "dp": ("3", "3")}), allocated)
 
     def test_assign_bundle_fixed_auto(self) -> None:
         usb_model = UsbDevicePort()
@@ -132,7 +164,7 @@ class PinMapUtilTest(unittest.TestCase):
                 PeripheralFixedPin("USB0", usb_model, {"dm": "2", "dp": "3"}),
             ]
         ).allocate([(UsbDevicePort, ["usb"])])
-        self.assertIn(AllocatedResource(usb_model, "usb", "USB0", {"dm": ("2", None), "dp": ("3", None)}), allocated)
+        self.assertIn(AllocatedResource(usb_model, "usb", "USB0", {"dm": ("2", "2"), "dp": ("3", "3")}), allocated)
 
     def test_assign_bundle_fixed_badspec(self) -> None:
         usb_model = UsbDevicePort()
@@ -163,7 +195,7 @@ class PinMapUtilTest(unittest.TestCase):
         ).allocate([(UartPort, ["uart"])], ["uart.tx=1", "uart.rx=3"])
         self.assertEqual(allocated[0].name, "uart")
         self.assertEqual(allocated[0].resource_name, "UART0")
-        self.assertEqual(allocated[0].pin, {"tx": ("1", "PIO1"), "rx": ("3", "PIO3")})
+        self.assertEqual(allocated[0].pin, {"tx": ("1", "1"), "rx": ("3", "3")})
 
     def test_assign_bundle_delegating_auto(self) -> None:
         dio_model = DigitalBidir()
@@ -179,7 +211,7 @@ class PinMapUtilTest(unittest.TestCase):
         ).allocate([(UartPort, ["uart"])])
         self.assertEqual(allocated[0].name, "uart")
         self.assertEqual(allocated[0].resource_name, "UART0")
-        self.assertEqual(allocated[0].pin, {"tx": ("1", "PIO1"), "rx": ("2", "PIO2")})
+        self.assertEqual(allocated[0].pin, {"tx": ("1", "1"), "rx": ("2", "2")})
 
     def test_assign_bundle_delegating_badspec(self) -> None:
         dio_model = DigitalBidir()
@@ -223,7 +255,7 @@ class PinMapUtilTest(unittest.TestCase):
         ).allocate([(UartPort, ["uart"])])
         self.assertEqual(allocated[0].name, "uart")
         self.assertEqual(allocated[0].resource_name, "UART0")
-        self.assertEqual(allocated[0].pin, {"tx": ("3", "PIO3"), "rx": ("1", "PIO1")})
+        self.assertEqual(allocated[0].pin, {"tx": ("3", "3"), "rx": ("1", "1")})
 
         assert isinstance(allocated[0].port_model, UartPort)
         self.assertTrue(allocated[0].port_model.tx.voltage_out.initializer is not None)
@@ -241,4 +273,4 @@ class PinMapUtilTest(unittest.TestCase):
         ).allocate([(UartPort, ["uart"])], ["uart.tx=NC"])
         self.assertEqual(allocated[0].name, "uart")
         self.assertEqual(allocated[0].resource_name, "UART0")
-        self.assertEqual(allocated[0].pin, {"rx": ("1", "PIO1")})
+        self.assertEqual(allocated[0].pin, {"rx": ("1", "1")})

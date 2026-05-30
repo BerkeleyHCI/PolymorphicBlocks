@@ -100,11 +100,6 @@ const SC10 = board.add(C_0402_1005Metric, {
   translate: pt(0.147, 0.613), rotate: 0,
   id: 'SC10'
 })
-// mcu.usb_pull.dp
-const SR3 = board.add(R_0402_1005Metric, {
-  translate: pt(0.399, 0.463), rotate: 0,
-  id: 'SR3'
-})
 // mcu.crystal
 const SU4 = board.add(Resonator_SMD_Murata_CSTxExxV_3Pin_3_0x1_1mm, {
   translate: pt(0.079, 0.508), rotate: 0,
@@ -114,6 +109,11 @@ const SU4 = board.add(Resonator_SMD_Murata_CSTxExxV_3Pin_3_0x1_1mm, {
 const SJ2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
   translate: pt(0.614, 0.146), rotate: 0,
   id: 'SJ2'
+})
+// mcu.usb_pull.dp
+const SR3 = board.add(R_0402_1005Metric, {
+  translate: pt(0.399, 0.463), rotate: 0,
+  id: 'SR3'
 })
 // usb_esd
 const SU5 = board.add(SOT_23, {
@@ -209,7 +209,7 @@ const SR15 = board.add(R_0402_1005Metric, {
 board.setNetlist([
   {name: "Svusb", pads: [["SJ1", "A4"], ["SJ1", "A9"], ["SJ1", "B4"], ["SJ1", "B9"], ["SD1", "1"], ["SU1", "1"], ["SU1", "3"], ["SC1", "1"], ["SU2", "1"], ["SC3", "1"]]},
   {name: "Sgnd", pads: [["SJ1", "A1"], ["SJ1", "A12"], ["SJ1", "B1"], ["SJ1", "B12"], ["SJ1", "S1"], ["SR1", "1"], ["SR2", "1"], ["SD1", "2"], ["SU1", "2"], ["SC1", "2"], ["SC2", "2"], ["SU2", "2"], ["SC3", "2"], ["SC4", "2"], ["SU3", "23"], ["SU3", "35"], ["SU3", "44"], ["SU3", "47"], ["SU3", "8"], ["SC5", "2"], ["SC6", "2"], ["SC7", "2"], ["SC8", "2"], ["SC9", "2"], ["SC10", "2"], ["SU4", "2"], ["SJ2", "3"], ["SJ2", "5"], ["SJ2", "9"], ["SU5", "3"], ["SR4", "2"], ["SR5", "2"], ["SSW1", "2"], ["SJ3", "3"], ["SJ3", "5"], ["SJ3", "9"], ["SR13", "2"], ["SR15", "2"]]},
-  {name: "Sv3v3", pads: [["SU1", "5"], ["SC2", "1"], ["SU3", "1"], ["SU3", "24"], ["SU3", "36"], ["SU3", "48"], ["SU3", "9"], ["SC5", "1"], ["SC6", "1"], ["SC7", "1"], ["SC8", "1"], ["SC9", "1"], ["SC10", "1"], ["SR3", "1"], ["SJ2", "1"], ["SR6", "1"], ["SR12", "1"]]},
+  {name: "Sv3v3", pads: [["SU1", "5"], ["SC2", "1"], ["SU3", "1"], ["SU3", "24"], ["SU3", "36"], ["SU3", "48"], ["SU3", "9"], ["SC5", "1"], ["SC6", "1"], ["SC7", "1"], ["SC8", "1"], ["SC9", "1"], ["SC10", "1"], ["SJ2", "1"], ["SR3", "1"], ["SR6", "1"], ["SR12", "1"]]},
   {name: "Svtarget", pads: [["SU2", "5"], ["SC4", "1"], ["SJ3", "1"], ["SD4", "2"], ["SR14", "1"]]},
   {name: "Susb_chain_0.d_P", pads: [["SJ1", "A6"], ["SJ1", "B6"], ["SU3", "33"], ["SR3", "2"], ["SU5", "2"]]},
   {name: "Susb_chain_0.d_N", pads: [["SJ1", "A7"], ["SJ1", "B7"], ["SU3", "32"], ["SU5", "1"]]},

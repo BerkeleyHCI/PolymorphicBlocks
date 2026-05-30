@@ -294,7 +294,6 @@ class Stm32f103Base(
     IoControllerWithSwdTargetConnector,
     WithCrystalGenerator,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     GeneratorBlock,
 ):
     DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device
@@ -302,8 +301,13 @@ class Stm32f103Base(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Stm32f103Base_Device
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(
+            self.reset.is_connected(),
+            self.pin_assigns,
+            self.gpio.requested(),
+            self.can.requested(),
+            self.usb.requested(),
+        )
 
     @override
     def contents(self) -> None:
@@ -329,24 +333,19 @@ class Stm32f103Base(
     def generate(self) -> None:
         super().generate()
 
-        if self.get(self.reset.is_connected()):
-            self.connect(self.reset, self.ic.nrst)
-
-    ExportType = TypeVar("ExportType", bound=Port)
-
-    @override
-    def _make_export_vector(
-        self, self_io: ExportType, inner_vector: Vector[ExportType], name: str, assign: Optional[str]
-    ) -> Optional[str]:
-        if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
-            inner_io = inner_vector.request(name)
+        def usb_export_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
             self.usb_pull = self.Block(
                 UsbDpPullUp(resistance=1.5 * kOhm(tol=0.01))
             )  # required by datasheet Table 44  # TODO proper tolerancing?
             self.connect(self.usb_pull.pwr, self.pwr)
-            self.connect(inner_io, self_io, self.usb_pull.usb)
-            return assign
-        return super()._make_export_vector(self_io, inner_vector, name, assign)
+            self.connect(self_io, self.usb_pull.usb)
+            return self_io
+
+        # add a passthrough for gpio (DigitalBidir) to allow the SWD pins to be attached, if using
+        self._wrap_inner(self.ic, {UsbDevicePort: usb_export_transform, DigitalBidir: lambda port, assign: port})
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.ic.nrst)
 
     @override
     def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance

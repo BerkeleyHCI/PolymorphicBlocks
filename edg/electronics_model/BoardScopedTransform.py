@@ -41,6 +41,8 @@ class BoardScopedTransform(TransformUtil.Transform):
 
         if "fp_subboard" in block.meta.members.node or "fp_subboard_connector_pair" in block.meta.members.node:
             fp_external_blocks = self._design.get_value(context.path.to_tuple() + ("fp_external_blocks",))
+            if fp_external_blocks is None:
+                fp_external_blocks = []
             assert isinstance(fp_external_blocks, list)
             external_blocks: Optional[List[str]] = cast(List[str], fp_external_blocks)
             if "fp_subblocks_ignored" in block.meta.members.node:

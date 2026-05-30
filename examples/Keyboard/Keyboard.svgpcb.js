@@ -66,11 +66,6 @@ const C8 = board.add(C_0603_1608Metric, {
   translate: pt(1.332, 0.647), rotate: 0,
   id: 'C8'
 })
-// mcu.usb_pull.dp
-const R3 = board.add(R_0603_1608Metric, {
-  translate: pt(1.488, 0.647), rotate: 0,
-  id: 'R3'
-})
 // mcu.crystal.package
 const X1 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
   translate: pt(1.201, 0.512), rotate: 0,
@@ -78,18 +73,23 @@ const X1 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
 })
 // mcu.crystal.cap_a
 const C9 = board.add(C_0603_1608Metric, {
-  translate: pt(1.644, 0.647), rotate: 0,
+  translate: pt(1.488, 0.647), rotate: 0,
   id: 'C9'
 })
 // mcu.crystal.cap_b
 const C10 = board.add(C_0603_1608Metric, {
-  translate: pt(1.800, 0.647), rotate: 0,
+  translate: pt(1.644, 0.647), rotate: 0,
   id: 'C10'
 })
 // mcu.swd.conn
 const J2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
   translate: pt(1.732, 0.146), rotate: 0,
   id: 'J2'
+})
+// mcu.usb_pull.dp
+const R3 = board.add(R_0603_1608Metric, {
+  translate: pt(1.800, 0.647), rotate: 0,
+  id: 'R3'
 })
 
 board.setNetlist([
@@ -99,7 +99,7 @@ board.setNetlist([
   {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "32"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
-  {name: "reg.pwr_out", pads: [["U1", "2"], ["C2", "1"], ["U2", "1"], ["U2", "24"], ["U2", "36"], ["U2", "48"], ["U2", "9"], ["C3", "1"], ["C4", "1"], ["C5", "1"], ["C6", "1"], ["C7", "1"], ["C8", "1"], ["R3", "1"], ["J2", "1"]]},
+  {name: "reg.pwr_out", pads: [["U1", "2"], ["C2", "1"], ["U2", "1"], ["U2", "24"], ["U2", "36"], ["U2", "48"], ["U2", "9"], ["C3", "1"], ["C4", "1"], ["C5", "1"], ["C6", "1"], ["C7", "1"], ["C8", "1"], ["J2", "1"], ["R3", "1"]]},
   {name: "mcu.gpio.0_0", pads: [["U2", "10"], ["SW1", "2"], ["SW2", "2"], ["SW3", "2"]]},
   {name: "mcu.gpio.0_1", pads: [["U2", "11"], ["SW4", "2"], ["SW5", "2"], ["SW6", "2"]]},
   {name: "mcu.gpio.1_0", pads: [["U2", "12"], ["D1", "2"], ["D4", "2"]]},

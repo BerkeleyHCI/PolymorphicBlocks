@@ -15,7 +15,7 @@ board.setNetlist([
   {name: "mcu.gpio.1_2", pads: [["U1", "10"], ["D3", "2"], ["D6", "2"]]},
   {name: "mcu.gnd", pads: [["U1", "13"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
-  {name: "mcu.device.vcc_out", pads: [["U1", "14"]]},
+  {name: "mcu.device.vcc", pads: [["U1", "14"]]},
   {name: "sw.sw[0,0].sw", pads: [["SW1", "1"], ["D1", "1"]]},
   {name: "sw.sw[0,1].sw", pads: [["SW2", "1"], ["D2", "1"]]},
   {name: "sw.sw[0,2].sw", pads: [["SW3", "1"], ["D3", "1"]]},
