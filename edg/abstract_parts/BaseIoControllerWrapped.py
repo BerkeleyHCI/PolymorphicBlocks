@@ -15,10 +15,7 @@ class BaseIoControllerWrapped(BaseIoController):
 
     @staticmethod
     def _remap_model_pin_assigns(
-        remapping: Dict[str, str],
-        pin_assigns: List[str],
-        *,
-        invert_remapping: bool = False,
+        remapping: Dict[str, str], pin_assigns: List[str]
     ) -> Dict[str, Tuple[Optional[str], Optional[str]]]:
         """Given a remapping dict and a list of pin assigns, returns the mapping as a dict with the remapping applied.
         The output is (pin name, pin number), with both being optional.
@@ -35,7 +32,7 @@ class BaseIoControllerWrapped(BaseIoController):
             split = [s.strip() for s in split]
             if len(split) == 1:  # should be a bundle name, since pins should have two parts
                 assert name not in remapping
-                remapped_assigns[name] = (pindef, None)
+                remapped_assigns[name] = (split[0], None)
             elif len(split) == 2:
                 pinname, pinnum = split[0], split[1]
                 assert pinname in remapping

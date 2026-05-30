@@ -494,7 +494,6 @@ class Holyiot_18010_Footprint(
 class Holyiot_18010_Device(
     Nrf52840_Interfaces,
     BaseIoControllerWrapper,
-    BaseIoController,
     InternalSubcircuit,
     GeneratorBlock,
     WrapperSubboardBlock,
