@@ -82,18 +82,19 @@ class McuWrapperTestCase(unittest.TestCase):
 
     def test_auto_pins(self) -> None:
         compiled = ScalaCompiler.compile(AutoPinsTest)
-        self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=7", "1=8"])
+        self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=GPIO0, 7", "1=GPIO1, 8"])
         self.assertEqual(compiled.get_value(["dut", "model", "actual_pin_assigns"]), ["0=GPIO0, 2", "1=GPIO1, 3"])
 
     def test_assigned_pins(self) -> None:
         compiled = ScalaCompiler.compile(AssignedPinsTest)
-        self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=1", "1=3"])
+        self.assertEqual(compiled.get_value(["dut", "actual_pin_assigns"]), ["0=GPIO26, 1", "1=GPIO28, 3"])
         self.assertEqual(compiled.get_value(["dut", "model", "actual_pin_assigns"]), ["0=GPIO26, 38", "1=GPIO28, 40"])
 
     def test_assigned_i2c(self) -> None:
         compiled = ScalaCompiler.compile(AssignedI2cTest)
         self.assertEqual(
-            compiled.get_value(["dut", "actual_pin_assigns"]), ["i2c=I2C1_T", "i2c.scl=6", "i2c.sda=5", "0=7", "1=8"]
+            compiled.get_value(["dut", "actual_pin_assigns"]),
+            ["i2c=I2C1_T", "i2c.scl=GPIO7, 6", "i2c.sda=GPIO6, 5", "0=GPIO0, 7", "1=GPIO1, 8"],
         )
         self.assertEqual(
             compiled.get_value(["dut", "model", "actual_pin_assigns"]),

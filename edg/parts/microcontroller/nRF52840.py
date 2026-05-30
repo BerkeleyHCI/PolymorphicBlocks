@@ -487,7 +487,8 @@ class Holyiot_18010_Footprint(
             "21": self.p0_18,
         }
         remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
-        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
+        pin_dict = self._generator_pin_dict()
+        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
 
         self.footprint(
@@ -653,7 +654,8 @@ class Feather_Nrf52840_Device(Nrf52840_Interfaces, BaseIoControllerWrapped, Gene
             # 'Vbat': '28',
         }
         remapped_pin_assigns = self._remap_pin_assigns_list(self._PIN_REMAPPING, self.get(self.pin_assigns))
-        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, self._PIN_REMAPPING.values()))
+        pin_dict = self._generator_pin_dict()
+        pinning.update(self._remap_to_footprint_pinning(remapped_pin_assigns, pin_dict))
         self.assign(self.actual_pin_assigns, self._remap_assigns_to_value(remapped_pin_assigns))
 
         self.footprint(
