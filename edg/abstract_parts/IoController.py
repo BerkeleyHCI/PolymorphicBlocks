@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable, cast
+from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable
 from typing_extensions import override
 from deprecated import deprecated
 
