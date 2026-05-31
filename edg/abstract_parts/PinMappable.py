@@ -343,19 +343,11 @@ class PinMapUtil:
                 else:
                     return None
             elif isinstance(resource, PeripheralFixedPin):
-                filtered_keys = []
+                # only keep if the entire peripheral can be pinned
                 for key, pin in resource.inner_allowed_pins.items():
-                    if pin in allowed_pins or resource.inner_pinnames[key] in allowed_pins:
-                        filtered_keys.append(key)
-                if filtered_keys:
-                    return PeripheralFixedPin(
-                        resource.name,
-                        resource.port_model,
-                        {k: v for k, v in resource.inner_allowed_pins.items() if k in filtered_keys},
-                        {k: v for k, v in resource.inner_pinnames.items() if k in filtered_keys},
-                    )
-                else:
-                    return None
+                    if pin not in allowed_pins and resource.inner_pinnames[key] not in allowed_pins:
+                        return None
+                return resource
             elif isinstance(resource, BaseDelegatingPinMapResource):
                 return resource
             else:

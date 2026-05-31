@@ -213,7 +213,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
                 # RGB2/1/0 skipped since they're open-drain only and constant-current analog drive
                 # hard macros I2C and SPI
                 PeripheralAnyResource("I2C1", i2c_model),
-                PeripheralAnyResource("I2C1", i2c_model),
+                PeripheralAnyResource("I2C2", i2c_model),
                 PeripheralAnyResource("SPI1", spi_model),
                 PeripheralAnyResource("SPI2", spi_model),
             ]
