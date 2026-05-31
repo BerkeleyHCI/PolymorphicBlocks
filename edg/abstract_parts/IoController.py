@@ -125,24 +125,23 @@ class BaseIoController(PinMappable, Block):
             assert isinstance(self, GeneratorBlock), "transforms require a GeneratorBlock to work"
             assert self._elaboration_state in (BlockElaborationState.generate,), "transforms can only run in generate()"
 
-            assigns_raw = self.get(self.pin_assigns)
-            # mutated in-place during _make_export_*
-            assigns = cast(List[Optional[str]], assigns_raw.copy())
-            assign_index_by_name = {assign.split("=")[0]: i for i, assign in enumerate(assigns_raw)}
+            assigns_dict: Optional[Dict[str, str]] = {}
+            assert assigns_dict is not None
+            for assign in self.get(self.pin_assigns):
+                key, value = assign.split("=")
+                assigns_dict[key] = value
         else:
-            assigns = None
-            assign_index_by_name = {}
+            assigns_dict = None
 
-        def connect_port_transformed(self_io: BasePort, inner_io: BasePort, name: str) -> None:
-            assert transform_fn is not None and assigns is not None
-            assign_index = assign_index_by_name.get(name)
-            assign = assigns[assign_index] if assign_index is not None else None
+        def connect_port_transformed(self_io: BasePort, inner_io: Callable[[], BasePort], name: str) -> None:
+            assert transform_fn is not None and assigns_dict is not None
+            assign = assigns_dict.get(name, None)
             transform_result = transform_fn(self_io, assign)
             if transform_result is not None:
-                self.connect(transform_result, inner_io)
+                self.connect(transform_result, inner_io())
             else:
-                if assign_index is not None:
-                    assigns[assign_index] = None
+                if assign is not None:
+                    del assigns_dict[name]
 
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in inner._io_ports}
         for self_io in self._io_ports:
@@ -162,17 +161,17 @@ class BaseIoController(PinMappable, Block):
                     self_io.defined()
                     for io_requested in self.get(self_io.requested()):
                         self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
-                        connect_port_transformed(self_io_elt, inner_io.request(io_requested), io_requested)
+                        connect_port_transformed(self_io_elt, lambda: inner_io.request(io_requested), io_requested)
             elif isinstance(inner_io, Port):
                 if transform_fn is None:
                     self.connect(self_io, inner_io)
                 else:
-                    connect_port_transformed(self_io, inner_io, self_io._name_from(self))
+                    connect_port_transformed(self_io, lambda: inner_io, self_io._name_from(self))
             else:
                 raise NotImplementedError(f"unknown port type {self_io}")
 
-        if assigns is not None:
-            filtered_assigns = [assign for assign in assigns if assign is not None]
+        if assigns_dict is not None:
+            filtered_assigns = [f"{key}={value}" for key, value in assigns_dict.items()]
             return ArrayStringExpr._to_expr_type(filtered_assigns)
         else:
             return self.pin_assigns
