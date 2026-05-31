@@ -266,20 +266,11 @@ class BaseIoController(PinMappable, Block):
 class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     """BaseIoController with generator code to set pin mappings"""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.generator_param(self.pin_assigns)
-
     @override
     def contents(self) -> None:
         super().contents()
-        for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
-            if isinstance(io_port, Vector):
-                self.generator_param(io_port.requested())
-            elif isinstance(io_port, Port):
-                self.generator_param(io_port.is_connected())
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()  # defined in contents() so subclass __init__ can define additional _io_ports
 
     def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Implement me. Defines the fixed pin mappings from pin number to port."""
