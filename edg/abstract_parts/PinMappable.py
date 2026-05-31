@@ -328,6 +328,36 @@ class PinMapUtil:
 
         return PinMapUtil(remapped_resources, self.transforms)
 
+    def filter_pins(self, allowed_pins: List[str]) -> "PinMapUtil":
+        """Returns a new PinMapUtil with only the specified pins kept.
+        If the allowed_pins list is empty, returns the input (all pins kept).
+        allowed_pins may be specified as a pin name or pin number."""
+
+        if not allowed_pins:
+            return self
+
+        def filter_resource(resource: BasePinMapResource) -> Optional[BasePinMapResource]:
+            if isinstance(resource, PinResource):
+                if resource.pin in allowed_pins or resource.pinname in allowed_pins:
+                    return resource
+                else:
+                    return None
+            elif isinstance(resource, PeripheralFixedPin):
+                # only keep if the entire peripheral can be pinned
+                for key, pin in resource.inner_allowed_pins.items():
+                    if pin not in allowed_pins and resource.inner_pinnames[key] not in allowed_pins:
+                        return None
+                return resource
+            elif isinstance(resource, BaseDelegatingPinMapResource):
+                return resource
+            else:
+                raise NotImplementedError(f"unknown resource {resource}")
+
+        filtered_resources_raw = [filter_resource(resource) for resource in self.resources]
+        filtered_resources = [resource for resource in filtered_resources_raw if resource is not None]
+
+        return PinMapUtil(filtered_resources, self.transforms)
+
     @staticmethod
     def _resource_port_types(resource: BasePinMapResource) -> List[Type[Port]]:
         if isinstance(resource, PinResource):
@@ -340,7 +370,9 @@ class PinMapUtil:
     @staticmethod
     def _resource_names(resource: BasePinMapResource) -> List[str]:
         if isinstance(resource, PinResource):
-            return [resource.pin] + [resource_name for resource_name, model in resource.name_models.items()]
+            return [resource.pin, resource.pinname] + [
+                resource_name for resource_name, model in resource.name_models.items()
+            ]
         elif isinstance(resource, (PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource)):
             return [resource.name]
         else:

@@ -145,6 +145,11 @@ const TC10 = board.add(C_0603_1608Metric, {
   translate: pt(2.376, 1.942), rotate: 0,
   id: 'TC10'
 })
+// mcu.prog.conn
+const TJ2 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(2.096, 0.167), rotate: 0,
+  id: 'TJ2'
+})
 // mcu.ic
 const TU5 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
@@ -159,11 +164,6 @@ const TC11 = board.add(C_1206_3216Metric, {
 const TC12 = board.add(C_0603_1608Metric, {
   translate: pt(2.208, 0.403), rotate: 0,
   id: 'TC12'
-})
-// mcu.prog.conn
-const TJ2 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
-  translate: pt(2.096, 0.167), rotate: 0,
-  id: 'TJ2'
 })
 // mcu.en_pull.rc.r
 const TR6 = board.add(R_0603_1608Metric, {
@@ -267,9 +267,9 @@ const TC20 = board.add(C_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "Tgnd", pads: [["TJ1", "A1"], ["TJ1", "A12"], ["TJ1", "B1"], ["TJ1", "B12"], ["TJ1", "S1"], ["TR1", "1"], ["TR2", "1"], ["TTP1", "1"], ["TU1", "1"], ["TR4", "2"], ["TC1", "2"], ["TC3", "2"], ["TC4", "2"], ["TD1", "2"], ["TU2", "2"], ["TC5", "2"], ["TC6", "2"], ["TU3", "2"], ["TC7", "2"], ["TC8", "2"], ["TU4", "2"], ["TC9", "2"], ["TC10", "2"], ["TU5", "1"], ["TU5", "40"], ["TU5", "41"], ["TC11", "2"], ["TC12", "2"], ["TJ2", "5"], ["TC13", "2"], ["TU6", "3"], ["TR9", "2"], ["TJ3", "15"], ["TJ3", "2"], ["TJ3", "8"], ["TC14", "2"], ["TC15", "2"], ["TC16", "2"], ["TU8", "1"], ["TU8", "10"], ["TU8", "15"], ["TU8", "18"], ["TU8", "20"], ["TU8", "25"], ["TU8", "27"], ["TU8", "30"], ["TU8", "33"], ["TU8", "6"], ["TU8", "8"], ["TU8", "9"], ["TC17", "2"], ["TC18", "2"], ["TC19", "2"], ["TX1", "2"], ["TC20", "2"]]},
+  {name: "Tgnd", pads: [["TJ1", "A1"], ["TJ1", "A12"], ["TJ1", "B1"], ["TJ1", "B12"], ["TJ1", "S1"], ["TR1", "1"], ["TR2", "1"], ["TTP1", "1"], ["TU1", "1"], ["TR4", "2"], ["TC1", "2"], ["TC3", "2"], ["TC4", "2"], ["TD1", "2"], ["TU2", "2"], ["TC5", "2"], ["TC6", "2"], ["TU3", "2"], ["TC7", "2"], ["TC8", "2"], ["TU4", "2"], ["TC9", "2"], ["TC10", "2"], ["TJ2", "5"], ["TU5", "1"], ["TU5", "40"], ["TU5", "41"], ["TC11", "2"], ["TC12", "2"], ["TC13", "2"], ["TU6", "3"], ["TR9", "2"], ["TJ3", "15"], ["TJ3", "2"], ["TJ3", "8"], ["TC14", "2"], ["TC15", "2"], ["TC16", "2"], ["TU8", "1"], ["TU8", "10"], ["TU8", "15"], ["TU8", "18"], ["TU8", "20"], ["TU8", "25"], ["TU8", "27"], ["TU8", "30"], ["TU8", "33"], ["TU8", "6"], ["TU8", "8"], ["TU8", "9"], ["TC17", "2"], ["TC18", "2"], ["TC19", "2"], ["TX1", "2"], ["TC20", "2"]]},
   {name: "Tpwr", pads: [["TFB1", "2"], ["TTP2", "1"], ["TU1", "3"], ["TC1", "1"], ["TC3", "1"], ["TR5", "1"]]},
-  {name: "Tv3v3", pads: [["TR3", "1"], ["TL1", "2"], ["TC4", "1"], ["TTP3", "1"], ["TD1", "1"], ["TU2", "1"], ["TU2", "3"], ["TC5", "1"], ["TU3", "1"], ["TU3", "3"], ["TC7", "1"], ["TU4", "1"], ["TU4", "3"], ["TC9", "1"], ["TU5", "2"], ["TC11", "1"], ["TC12", "1"], ["TJ2", "1"], ["TR6", "1"], ["TR7", "1"], ["TR8", "1"]]},
+  {name: "Tv3v3", pads: [["TR3", "1"], ["TL1", "2"], ["TC4", "1"], ["TTP3", "1"], ["TD1", "1"], ["TU2", "1"], ["TU2", "3"], ["TC5", "1"], ["TU3", "1"], ["TU3", "3"], ["TC7", "1"], ["TU4", "1"], ["TU4", "3"], ["TC9", "1"], ["TJ2", "1"], ["TU5", "2"], ["TC11", "1"], ["TC12", "1"], ["TR6", "1"], ["TR7", "1"], ["TR8", "1"]]},
   {name: "Tv3v0", pads: [["TU2", "5"], ["TC6", "1"], ["TJ3", "11"], ["TC14", "1"], ["TU8", "16"], ["TC18", "1"], ["TX1", "1"], ["TX1", "4"], ["TC20", "1"]]},
   {name: "Tv2v8", pads: [["TU3", "5"], ["TC8", "1"], ["TJ3", "4"], ["TU8", "19"], ["TC19", "1"]]},
   {name: "Tv1v2", pads: [["TU4", "5"], ["TC10", "1"], ["TJ3", "10"], ["TU8", "7"], ["TC17", "1"]]},
@@ -284,10 +284,10 @@ board.setNetlist([
   {name: "Treg_3v3.ic.fb", pads: [["TU1", "4"], ["TR3", "2"], ["TR4", "1"]]},
   {name: "Treg_3v3.ic.boot", pads: [["TU1", "6"], ["TC2", "1"]]},
   {name: "Treg_3v3.ic.en", pads: [["TU1", "5"], ["TR5", "2"]]},
-  {name: "Tmcu.program_uart_node.a_tx", pads: [["TU5", "37"], ["TJ2", "3"]]},
-  {name: "Tmcu.program_uart_node.b_tx", pads: [["TU5", "36"], ["TJ2", "4"]]},
-  {name: "Tmcu.program_en_node", pads: [["TU5", "3"], ["TJ2", "6"], ["TR6", "2"], ["TC13", "1"]]},
-  {name: "Tmcu.program_boot_node", pads: [["TU5", "27"], ["TJ2", "2"], ["TD2", "2"]]},
+  {name: "Tmcu.program_uart_node.a_tx", pads: [["TJ2", "4"], ["TU5", "36"]]},
+  {name: "Tmcu.program_uart_node.b_tx", pads: [["TJ2", "3"], ["TU5", "37"]]},
+  {name: "Tmcu.program_en_node", pads: [["TJ2", "6"], ["TU5", "3"], ["TR6", "2"], ["TC13", "1"]]},
+  {name: "Tmcu.program_boot_node", pads: [["TJ2", "2"], ["TU5", "27"], ["TD2", "2"]]},
   {name: "Ttouch_duck.pad", pads: [["TU5", "6"], ["TU7", "1"]]},
   {name: "Tledr.package.k", pads: [["TD2", "1"], ["TR9", "1"]]},
   {name: "Tcam.dvp8.xclk", pads: [["TU5", "21"], ["TJ3", "13"]]},

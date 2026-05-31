@@ -75,7 +75,12 @@ const OD1 = board.add(D_SOD_323, {
   translate: pt(0.063, 1.735), rotate: 0,
   id: 'OD1'
 })
-// mcu.ic
+// mcu.prog.conn
+const OJ1 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(1.299, 0.079), rotate: 0,
+  id: 'OJ1'
+})
+// mcu.ic.device
 const OU3 = board.add(ESP_WROOM_02, {
   translate: pt(0.561, 0.281), rotate: 0,
   id: 'OU3'
@@ -89,11 +94,6 @@ const OC5 = board.add(C_0805_2012Metric, {
 const OC6 = board.add(C_0603_1608Metric, {
   translate: pt(1.393, 0.226), rotate: 0,
   id: 'OC6'
-})
-// mcu.prog.conn
-const OJ1 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(1.299, 0.079), rotate: 0,
-  id: 'OJ1'
 })
 // mcu.en_pull.rc.r
 const OR4 = board.add(R_0603_1608Metric, {
@@ -157,9 +157,9 @@ const OR9 = board.add(R_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "Ognd", pads: [["OU1", "5"], ["OU2", "1"], ["OR2", "2"], ["OC1", "2"], ["OC3", "2"], ["OC4", "2"], ["OD1", "2"], ["OU3", "19"], ["OU3", "9"], ["OC5", "2"], ["OC6", "2"], ["OJ1", "5"], ["OC7", "2"], ["OU4", "2"], ["OU4", "8"], ["OC8", "2"], ["OR6", "2"], ["OR7", "2"], ["OR9", "2"]]},
+  {name: "Ognd", pads: [["OU1", "5"], ["OU2", "1"], ["OR2", "2"], ["OC1", "2"], ["OC3", "2"], ["OC4", "2"], ["OD1", "2"], ["OJ1", "5"], ["OU3", "19"], ["OU3", "9"], ["OC5", "2"], ["OC6", "2"], ["OC7", "2"], ["OU4", "2"], ["OU4", "8"], ["OC8", "2"], ["OR6", "2"], ["OR7", "2"], ["OR9", "2"]]},
   {name: "Ovobd", pads: [["OFB1", "2"], ["OU2", "3"], ["OC1", "1"], ["OC3", "1"], ["OR3", "1"], ["OR8", "1"]]},
-  {name: "Ov3v3", pads: [["OR1", "1"], ["OL1", "2"], ["OC4", "1"], ["OD1", "1"], ["OU3", "1"], ["OU3", "16"], ["OU3", "7"], ["OC5", "1"], ["OC6", "1"], ["OJ1", "1"], ["OR4", "1"], ["OU4", "3"], ["OC8", "1"], ["OD2", "2"]]},
+  {name: "Ov3v3", pads: [["OR1", "1"], ["OL1", "2"], ["OC4", "1"], ["OD1", "1"], ["OJ1", "1"], ["OU3", "1"], ["OU3", "16"], ["OU3", "7"], ["OC5", "1"], ["OC6", "1"], ["OR4", "1"], ["OU4", "3"], ["OC8", "1"], ["OD2", "2"]]},
   {name: "Oobd.pwr", pads: [["OU1", "16"], ["OFB1", "1"]]},
   {name: "Oobd.can.canh", pads: [["OU1", "6"], ["OU4", "7"]]},
   {name: "Oobd.can.canl", pads: [["OU1", "14"], ["OU4", "6"]]},
@@ -167,10 +167,10 @@ board.setNetlist([
   {name: "Oreg_3v3.ic.fb", pads: [["OU2", "4"], ["OR1", "2"], ["OR2", "1"]]},
   {name: "Oreg_3v3.ic.boot", pads: [["OU2", "6"], ["OC2", "1"]]},
   {name: "Oreg_3v3.ic.en", pads: [["OU2", "5"], ["OR3", "2"]]},
-  {name: "Omcu.program_uart_node.a_tx", pads: [["OU3", "12"], ["OJ1", "3"]]},
-  {name: "Omcu.program_uart_node.b_tx", pads: [["OU3", "11"], ["OJ1", "4"]]},
-  {name: "Omcu.program_en_node", pads: [["OU3", "2"], ["OJ1", "6"], ["OR4", "2"], ["OC7", "1"]]},
-  {name: "Omcu.program_boot_node", pads: [["OU3", "8"], ["OJ1", "2"], ["OR5", "2"]]},
+  {name: "Omcu.program_uart_node.a_tx", pads: [["OJ1", "4"], ["OU3", "11"]]},
+  {name: "Omcu.program_uart_node.b_tx", pads: [["OJ1", "3"], ["OU3", "12"]]},
+  {name: "Omcu.program_en_node", pads: [["OJ1", "6"], ["OU3", "2"], ["OR4", "2"], ["OC7", "1"]]},
+  {name: "Omcu.program_boot_node", pads: [["OJ1", "2"], ["OU3", "8"], ["OR5", "2"]]},
   {name: "Ocan.controller.txd", pads: [["OU3", "6"], ["OU4", "1"]]},
   {name: "Ocan.controller.rxd", pads: [["OU3", "5"], ["OU4", "4"]]},
   {name: "Oledr.package.k", pads: [["OD2", "1"], ["OR5", "1"]]},

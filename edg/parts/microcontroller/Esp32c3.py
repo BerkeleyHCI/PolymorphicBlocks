@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import *
 
 from typing_extensions import override
@@ -21,264 +20,7 @@ class Esp32c3_Interfaces(
     """Defines base interfaces for ESP32C3 microcontrollers"""
 
 
-@non_library
-class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
-    """IOs definitions independent of infrastructural (e.g. power) pins."""
-
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-
-    @abstractmethod
-    def _vddio(self) -> Port[VoltageLink]:
-        """Returns VDDIO (can be VoltageSink or VoltageSource)."""
-        ...
-
-    def _vdd_model(self) -> VoltageSink:
-        return VoltageSink(
-            voltage_limits=(3.0, 3.6) * Volt,  # section 4.2
-            current_draw=(0.001, 335) * mAmp + self.io_current_draw.upper(),  # section 4.6, from power off to RF active
-        )
-
-    def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
-        return DigitalBidir.from_supply(  # table 4.4
-            self.gnd,
-            pwr,
-            voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-            current_limits=(-28, 40) * mAmp,
-            input_threshold_factor=(0.25, 0.75),
-            pullup_capable=True,
-            pulldown_capable=True,
-        )
-
-    @override
-    def _io_pinmap(self) -> PinMapUtil:
-        pwr = self._vddio()
-        dio_model = self._dio_model(pwr)
-
-        adc_model = AnalogSink.from_supply(
-            self.gnd,
-            pwr,
-            signal_limit_abs=(0, 2.5) * Volt,  # table 15, effective ADC range
-            # TODO: impedance / leakage - not specified by datasheet
-        )
-
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(
-            DigitalBidir.empty(), (0, 60) * MHertz
-        )  # section 3.4.2, max block in GP controller mode
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
-        i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
-
-        return PinMapUtil(
-            [  # section 2.2
-                PinResource("GPIO0", {"GPIO0": dio_model, "ADC1_CH0": adc_model}),  # also XTAL_32K_P
-                PinResource("GPIO1", {"GPIO1": dio_model, "ADC1_CH1": adc_model}),  # also XTAL_32K_N
-                # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
-                PinResource("GPIO3", {"GPIO3": dio_model, "ADC1_CH3": adc_model}),
-                PinResource("MTMS", {"GPIO4": dio_model, "ADC1_CH4": adc_model}),
-                PinResource("MTDI", {"GPIO5": dio_model}),  # also ADC2_CH0, but unusable with WiFi
-                PinResource("MTCK", {"GPIO6": dio_model}),
-                PinResource("MTDO", {"GPIO7": dio_model}),
-                # PinResource('GPIO8', {'GPIO8': dio_model}),  # boot pin, non-allocatable
-                # PinResource('GPIO9', {'GPIO9': dio_model}),  # boot pin, non-allocatable
-                PinResource("GPIO10", {"GPIO10": dio_model}),
-                PinResource("VDD_SPI", {"GPIO11": dio_model}),
-                # SPI pins skipped - internal to the modules supported so far
-                PinResource("GPIO18", {"GPIO18": dio_model}),
-                PinResource("GPIO19", {"GPIO19": dio_model}),
-                # PinResource('GPIO20', {'GPIO20': dio_model}),  # boot pin, non-allocatable
-                # PinResource('GPIO21', {'GPIO21': dio_model}),  # boot pin, non-allocatable
-                # peripherals in section 3.11
-                # PeripheralFixedResource('U0', uart_model, {  # programming pin, non-allocatable
-                #   'txd': ['GPIO21'], 'rxd': ['GPIO20']
-                # }),
-                PeripheralAnyResource("U1", uart_model),
-                PeripheralAnyResource("I2C", i2c_model),
-                PeripheralAnyResource("I2C_T", i2c_target_model),  # TODO shared resource w/ I2C controller
-                PeripheralAnyResource("SPI2", spi_model),
-                PeripheralAnyResource("SPI2_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("I2S", I2sController.empty()),
-                PeripheralAnyResource("TWAI", CanControllerPort.empty()),
-            ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
-
-
-@abstract_block
-class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
-    """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
-    PlatformIO: use board ID esp32-c3-devkitm-1
-
-    Chip datasheet: https://espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
-    """
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-
-    @override
-    def _vddio(self) -> Port[VoltageLink]:
-        return self.pwr
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return {
-            "Vdd": self.pwr,
-            "Vss": self.gnd,
-            "EN": self.en,
-            "GPIO2": self.io2,
-            "GPIO8": self.io8,
-            "GPIO9": self.io9,
-            "TXD": self.uart0.tx,
-            "RXD": self.uart0.rx,
-        }
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-
-        self.pwr = self.Port(self._vdd_model(), [Power])
-        self.gnd = self.Port(Ground(), [Common])
-
-        # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
-        dio_model = self._dio_model(self.pwr)
-        self.en = self.Port(dio_model)  # needs external pullup
-        self.io2 = self.Port(dio_model)  # needs external pullup; affects IO glitching on boot
-        self.io8 = self.Port(dio_model)  # needs external pullup, required for download boot
-        self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
-
-        # similarly, the programming UART is fixed and allocated separately
-        self.uart0 = self.Port(UartPort(dio_model), optional=True)
-
-
-class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
-    """ESP32C module
-
-    Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
-    """
-
-    RESOURCE_PIN_REMAP = {
-        "MTMS": "3",  # GPIO4
-        "MTDI": "4",  # GPIO5
-        "MTCK": "5",  # GPIO6
-        "MTDO": "6",  # GPIO7
-        "GPIO10": "10",
-        "GPIO18": "13",
-        "GPIO19": "14",
-        "GPIO3": "15",
-        "GPIO1": "17",
-        "GPIO0": "18",
-    }
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(super()._system_pinmap()).remap(
-            {
-                "Vdd": "1",
-                "Vss": ["9", "19"],  # 19 is EP
-                "EN": "2",
-                "GPIO2": "16",
-                "GPIO8": "7",
-                "GPIO9": "8",
-                "RXD": "11",  # RXD, GPIO20
-                "TXD": "12",  # TXD, GPIO21
-            }
-        )
-
-    @override
-    def generate(self) -> None:
-        super().generate()
-
-        self.footprint(
-            "U",
-            "RF_Module:ESP-WROOM-02",
-            self._make_pinning(),
-            mfr="Espressif Systems",
-            part="ESP32-C3-WROOM-02",
-            datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf",
-        )
-        self.assign(self.lcsc_part, "C2934560")
-        self.assign(self.actual_basic_part, False)
-
-
-class Esp32c3_Wroom02(
-    Microcontroller,
-    Radiofrequency,
-    HasEspProgramming,
-    Resettable,
-    Esp32c3_Interfaces,
-    IoControllerPowerRequired,
-    BaseIoControllerExportable,
-    GeneratorBlock,
-):
-    """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.ic: Esp32c3_Wroom02_Device
-        self.generator_param(self.reset.is_connected())
-
-        self.io2_ext_connected: bool = False
-        self.io8_ext_connected: bool = False
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(Esp32c3_Wroom02_Device(pin_assigns=ArrayStringExpr()))
-            self.connect(self.program_uart_node, self.ic.uart0)
-            self.connect(self.program_en_node, self.ic.en)
-            self.connect(self.program_boot_node, self.ic.io9)
-
-            self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
-            self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
-
-    @override
-    def generate(self) -> None:
-        super().generate()
-
-        if self.get(self.reset.is_connected()):
-            self.connect(self.reset, self.ic.en)
-        else:
-            self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10 * mSecond(tol=0.2))).connected(
-                gnd=self.gnd, pwr=self.pwr, io=self.ic.en
-            )
-
-        # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
-        # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
-        # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-        if not self.io8_ext_connected:
-            self.connect(self.ic.io8, self.pwr.as_digital_source())
-            self.io8_ext_connected = True  # set to ensure this runs after external connections
-        if not self.io2_ext_connected:
-            self.connect(self.ic.io2, self.pwr.as_digital_source())
-            self.io2_ext_connected = True  # set to ensure this runs after external connections
-
-    ExportType = TypeVar("ExportType", bound=Port)
-
-    @override
-    def _make_export_vector(
-        self, self_io: ExportType, inner_vector: Vector[ExportType], name: str, assign: Optional[str]
-    ) -> Optional[str]:
-        """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
-        if isinstance(self_io, DigitalBidir):
-            if assign == f"{name}=_GPIO2_STRAP_EXT_PU":  # assume external pullup
-                self.connect(self_io, self.ic.io2)
-                assert not self.io2_ext_connected  # assert not yet hard tied
-                self.io2_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO8_STRAP_EXT_PU":  # assume external pullup
-                self.connect(self_io, self.ic.io8)
-                assert not self.io8_ext_connected  # assert not yet hard tied
-                self.io8_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO9_STRAP":
-                self.connect(self_io, self.ic.io9)
-                return None
-        return super()._make_export_vector(self_io, inner_vector, name, assign)
-
-
-class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
-    """ESP32C3 with 4MB integrated flash
-    TODO: support other part numbers, including without integrated flash
-    """
+class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, FootprintBlock, JlcPart):
 
     RESOURCE_PIN_REMAP = {
         "GPIO0": "4",
@@ -295,24 +37,41 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
 
     @override
     def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(super()._system_pinmap()).remap(
-            {
-                "Vdd": ["31", "32"],  # VDDA
-                "Vss": ["33"],  # 33 is EP
-                "GPIO2": "6",
-                "EN": "7",
-                "GPIO8": "14",
-                "GPIO9": "15",
-                "RXD": "27",  # U0RXD, GPIO20
-                "TXD": "28",  # U0TXD, GPIO21
-            }
+        return {
+            "31": self.vdda,
+            "32": self.vdda,
+            "33": self.gnd,
+            "6": self.io2,
+            "7": self.en,
+            "14": self.io8,
+            "15": self.io9,
+            "27": self.uart0.rx,
+            "28": self.uart0.tx,
+            "1": self.lna_in,
+            "11": self.vdd3p3_rtc,
+            "17": self.vdd3p3_cpu,
+            "18": self.vdd_spi,
+            "2": self.vdd3p3,
+            "3": self.vdd3p3,
+            "30": self.xtal.xtal_in,
+            "29": self.xtal.xtal_out,
+        }
+
+    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self._model = self.ArgParameter(_model)
+        self._allowed_pins = self.ArgParameter(_allowed_pins)
+        self.generator_param(self._allowed_pins)
+
+        self.gnd = self.Port(Ground(), [Common])
+        self.vdda = self.Port(  # models total current draw
+            VoltageSink(
+                voltage_limits=(3.0, 3.6) * Volt,  # section 4.2
+                current_draw=(0.001, 335) * mAmp
+                + self.io_current_draw.upper(),  # section 4.6, from power off to RF active
+            )
         )
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.lna_in = self.Port(Passive())
-
-        # chip power draw is modeled in self.pwr
         self.vdd3p3 = self.Port(
             VoltageSink(  # needs to be downstream of a filter
                 voltage_limits=(3.0, 3.6) * Volt,  # section 4.2
@@ -335,32 +94,46 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
         )
 
         # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
-        self.xtal = self.Port(
-            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.pwr.link().voltage)
+        self.xtal = self.Port(  # vdda domain assumed
+            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.vdda.link().voltage), optional=True
         )
+        self.require((~self._model).implies(self.xtal.is_connected()))
+
+        # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
+        # TODO model from different 3.3v domains
+        self._dio_model = DigitalBidir.from_supply(  # table 4.4
+            self.gnd,
+            self.vdd3p3_cpu,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+            current_limits=(-28, 40) * mAmp,
+            input_threshold_factor=(0.25, 0.75),
+            pullup_capable=True,
+            pulldown_capable=True,
+        )
+        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=True)  # needs external pullup
+        self.io2 = self.Port(self._dio_model, optional=True)  # needs external pullup; affects IO glitching on boot
+        self.io8 = self.Port(self._dio_model, optional=True)  # needs external pullup, required for download boot
+        self.io9 = self.Port(
+            self._dio_model, optional=True
+        )  # internally pulled up for SPI boot, connect to GND for download
+        self.require((~self._model).implies(self.en.is_connected() & self.io2.is_connected() & self.io8.is_connected()))
+
+        # similarly, the programming UART is fixed and allocated separately
+        self.uart0 = self.Port(UartPort(self._dio_model), optional=True)
+
+        self.lna_in = self.Port(Passive(), optional=True)
+        self.require((~self._model).implies(self.lna_in.is_connected()))
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        pinning = self._make_pinning()
-        pinning.update(
-            {
-                "1": self.lna_in,
-                "11": self.vdd3p3_rtc,
-                "17": self.vdd3p3_cpu,
-                "18": self.vdd_spi,
-                "2": self.vdd3p3,
-                "3": self.vdd3p3,
-                "30": self.xtal.xtal_in,
-                "29": self.xtal.xtal_out,
-            }
-        )
-
+        # this is the part with 4MB integrated flash
+        # TODO: support other part numbers, including without integrated flash
         self.footprint(
             "U",
             "Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.65x3.65mm",
-            pinning,
+            self._make_pinning(),
             mfr="Espressif Systems",
             part="ESP32-C3FH4",
             datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf",
@@ -368,6 +141,61 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.assign(self.lcsc_part, "C2858491")
         self.assign(self.actual_basic_part, False)
+
+    @override
+    def _io_pinmap(self) -> PinMapUtil:
+        adc_model = AnalogSink.from_supply(
+            self.gnd,
+            self.vdda,  # assumed
+            signal_limit_abs=(0, 2.5) * Volt,  # table 15, effective ADC range
+            # TODO: impedance / leakage - not specified by datasheet
+        )
+
+        uart_model = UartPort(DigitalBidir.empty())
+        spi_model = SpiController(
+            DigitalBidir.empty(), (0, 60) * MHertz
+        )  # section 3.4.2, max block in GP controller mode
+        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
+        i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
+        i2c_target_model = I2cTarget(DigitalBidir.empty())
+
+        return (
+            PinMapUtil(
+                [  # section 2.2
+                    PinResource("GPIO0", {"GPIO0": self._dio_model, "ADC1_CH0": adc_model}),  # also XTAL_32K_P
+                    PinResource("GPIO1", {"GPIO1": self._dio_model, "ADC1_CH1": adc_model}),  # also XTAL_32K_N
+                    # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
+                    PinResource("GPIO3", {"GPIO3": self._dio_model, "ADC1_CH3": adc_model}),
+                    PinResource("MTMS", {"GPIO4": self._dio_model, "ADC1_CH4": adc_model}),
+                    PinResource("MTDI", {"GPIO5": self._dio_model}),  # also ADC2_CH0, but unusable with WiFi
+                    PinResource("MTCK", {"GPIO6": self._dio_model}),
+                    PinResource("MTDO", {"GPIO7": self._dio_model}),
+                    # PinResource('GPIO8', {'GPIO8': self._dio_model}),  # boot pin, non-allocatable
+                    # PinResource('GPIO9', {'GPIO9': self._dio_model}),  # boot pin, non-allocatable
+                    PinResource("GPIO10", {"GPIO10": self._dio_model}),
+                    # not allowed for in-package flash
+                    # PinResource("VDD_SPI", {"GPIO11": self._dio_model}),
+                    # SPI pins skipped - internal to the modules supported so far
+                    PinResource("GPIO18", {"GPIO18": self._dio_model}),
+                    PinResource("GPIO19", {"GPIO19": self._dio_model}),
+                    # PinResource('GPIO20', {'GPIO20': self._dio_model}),  # boot pin, non-allocatable
+                    # PinResource('GPIO21', {'GPIO21': self._dio_model}),  # boot pin, non-allocatable
+                    # peripherals in section 3.11
+                    # PeripheralFixedResource('U0', uart_model, {  # programming pin, non-allocatable
+                    #   'txd': ['GPIO21'], 'rxd': ['GPIO20']
+                    # }),
+                    PeripheralAnyResource("U1", uart_model),
+                    PeripheralAnyResource("I2C", i2c_model),
+                    PeripheralAnyResource("I2C_T", i2c_target_model),  # TODO shared resource w/ I2C controller
+                    PeripheralAnyResource("SPI2", spi_model),
+                    PeripheralAnyResource("SPI2_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
+                    PeripheralAnyResource("I2S", I2sController.empty()),
+                    PeripheralAnyResource("TWAI", CanControllerPort.empty()),
+                ]
+            )
+            .remap_pins(self.RESOURCE_PIN_REMAP)
+            .filter_pins(self.get(self._allowed_pins))
+        )
 
 
 class Esp32c3(
@@ -378,7 +206,6 @@ class Esp32c3(
     Esp32c3_Interfaces,
     WithCrystalGenerator,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     DiscreteRfWarning,
     GeneratorBlock,
 ):
@@ -390,17 +217,34 @@ class Esp32c3(
     def __init__(self) -> None:
         super().__init__()
         self.ic: Esp32c3_Device
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
-        self.io2_ext_connected: bool = False
-        self.io8_ext_connected: bool = False
+        self._io2_ext_connected: bool = False
+        self._io8_ext_connected: bool = False
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
+
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
             self.ic = imp.Block(Esp32c3_Device(pin_assigns=ArrayStringExpr()))
-            self.connect(self.pwr, self.ic.vdd3p3_rtc, self.ic.vdd3p3_cpu, self.ic.vdd_spi)
+            self.connect(self.pwr, self.ic.vdda, self.ic.vdd3p3_rtc, self.ic.vdd3p3_cpu, self.ic.vdd_spi)
+
+            def gpio_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
+                if assign == "_GPIO2_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io2)
+                    self._io2_ext_connected = True
+                    return None
+                elif assign == "_GPIO8_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io8)
+                    self._io8_ext_connected = True
+                    return None
+                elif assign == "_GPIO9_STRAP":
+                    self.connect(self_io, self.ic.io9)
+                    return None
+                return self_io
+
+            self._wrap_inner(self.ic, transforms={DigitalBidir: gpio_transform})
 
             self.connect(self.xtal_node, self.ic.xtal)
             self.connect(self.program_uart_node, self.ic.uart0)
@@ -447,9 +291,186 @@ class Esp32c3(
                 )
             ).connected(self.pwr, self.ic.vdd3p3)
 
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.ic.en)
+        else:
+            self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10 * mSecond(tol=0.2))).connected(
+                gnd=self.gnd, pwr=self.pwr, io=self.ic.en
+            )
+
+        # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
+        # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
+        # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
+        if not self._io8_ext_connected:
+            self.connect(self.ic.io8, self.pwr.as_digital_source())
+        if not self._io2_ext_connected:
+            self.connect(self.ic.io2, self.pwr.as_digital_source())
+
+    @override
+    def _crystal_required(self) -> bool:
+        return True  # crystal oscillator always required
+
+
+class Esp32c3_Wroom02_Footprint(
+    Esp32c3_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock, JlcPart
+):
+
+    _PIN_REMAPPING = {
+        "MTMS": "3",  # GPIO4
+        "MTDI": "4",  # GPIO5
+        "MTCK": "5",  # GPIO6
+        "MTDO": "6",  # GPIO7
+        "GPIO10": "10",
+        "GPIO18": "13",
+        "GPIO19": "14",
+        "GPIO3": "15",
+        "GPIO1": "17",
+        "GPIO0": "18",
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.v3v3 = self.Port(VoltageSink.empty(), [Power])
+
+        self.en = self.Port(DigitalSink.empty())
+        self.io2 = self.Port(DigitalBidir.empty())
+        self.io8 = self.Port(DigitalBidir.empty())
+        self.io9 = self.Port(DigitalBidir.empty())
+        self.uart0 = self.Port(UartPort(DigitalBidir.empty()), optional=True)
+
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
+
     @override
     def generate(self) -> None:
         super().generate()
+
+        self.footprint(
+            "U",
+            "RF_Module:ESP-WROOM-02",
+            self._make_pinning(
+                {
+                    "1": self.v3v3,
+                    "9": self.gnd,
+                    "19": self.gnd,  # EP
+                    "2": self.en,
+                    "16": self.io2,
+                    "7": self.io8,
+                    "8": self.io9,
+                    "11": self.uart0.rx,
+                    "12": self.uart0.tx,
+                },
+                self._PIN_REMAPPING,
+            ),
+            mfr="Espressif Systems",
+            part="ESP32-C3-WROOM-02",
+            datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf",
+        )
+        self.assign(self.lcsc_part, "C2934560")
+        self.assign(self.actual_basic_part, False)
+
+
+class Esp32c3_Wroom02_Device(
+    Esp32c3_Interfaces,
+    BaseIoControllerWrapper,
+    InternalSubcircuit,
+    GeneratorBlock,
+    WrapperSubboardBlock,
+):
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.model = self.Block(
+            Esp32c3_Device(
+                pin_assigns=ArrayStringExpr(),
+                _model=True,
+                _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys()),
+            )
+        )
+        self.gnd = self.Export(self.model.gnd, [Common])
+        self.v3v3 = self.Export(self.model.vdd3p3, [Power])
+        self.connect(self.v3v3, self.model.vdda, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi)
+        self.en = self.Export(self.model.en)
+        self.io2 = self.Export(self.model.io2)
+        self.io8 = self.Export(self.model.io8)
+        self.io9 = self.Export(self.model.io9, optional=True)
+        self.uart0 = self.Export(self.model.uart0, optional=True)
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self._export_ios_inner(self.model)
+        self.assign(
+            self.model.pin_assigns,
+            self._make_model_pinning(Esp32c3_Wroom02_Footprint._PIN_REMAPPING, self.get(self.pin_assigns)),
+        )
+
+        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns), external=True)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self._export_tap_ios_inner(self.device)
+        self.export_tap(self.gnd, self.device.gnd)
+        self.export_tap(self.v3v3, self.device.v3v3)
+        self.export_tap(self.en, self.device.en)
+        self.export_tap(self.io2, self.device.io2)
+        self.export_tap(self.io8, self.device.io8)
+        self.export_tap(self.io9, self.device.io9)
+        self.export_tap(self.uart0, self.device.uart0)
+
+
+class Esp32c3_Wroom02(
+    Microcontroller,
+    Radiofrequency,
+    HasEspProgramming,
+    Resettable,
+    Esp32c3_Interfaces,
+    IoControllerPowerRequired,
+    GeneratorBlock,
+):
+    """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.ic: Esp32c3_Wroom02_Device
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
+
+        self._io2_ext_connected: bool = False
+        self._io8_ext_connected: bool = False
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
+            self.ic = imp.Block(Esp32c3_Wroom02_Device(pin_assigns=ArrayStringExpr()))
+
+            def gpio_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
+                if assign == "_GPIO2_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io2)
+                    self._io2_ext_connected = True
+                    return None
+                elif assign == "_GPIO8_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io8)
+                    self._io8_ext_connected = True
+                    return None
+                elif assign == "_GPIO9_STRAP":
+                    self.connect(self_io, self.ic.io9)
+                    return None
+                return self_io
+
+            self._wrap_inner(self.ic, transforms={DigitalBidir: gpio_transform})
+
+            self.connect(self.program_uart_node, self.ic.uart0)
+            self.connect(self.program_en_node, self.ic.en)
+            self.connect(self.program_boot_node, self.ic.io9)
+
+            self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
+            self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.en)
@@ -461,42 +482,63 @@ class Esp32c3(
         # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
         # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
         # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-        if not self.io8_ext_connected:
+        if not self._io8_ext_connected:
             self.connect(self.ic.io8, self.pwr.as_digital_source())
-            self.io8_ext_connected = True  # set to ensure this runs after external connections
-        if not self.io2_ext_connected:
+        if not self._io2_ext_connected:
             self.connect(self.ic.io2, self.pwr.as_digital_source())
-            self.io2_ext_connected = True  # set to ensure this runs after external connections
 
-    ExportType = TypeVar("ExportType", bound=Port)
+
+class Xiao_Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerWrapped, GeneratorBlock, FootprintBlock):
+
+    _PIN_REMAPPING = {
+        # 'GPIO2': '1',  # boot pin, non-allocatable
+        "GPIO3": "2",
+        "MTMS": "3",
+        "MTDI": "4",
+        "MTCK": "5",
+        "MTDO": "6",
+        # 'GPIO21': '7',  # boot pin, non-allocatable
+        # 'GPIO20': '8',  # boot pin, non-allocatable
+        # 'GPIO8': '9',  # boot pin, non-allocatable
+        # 'GPIO9': '10',  # boot pin, non-allocatable
+        "GPIO10": "11",
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.gnd = self.Port(Ground.empty(), optional=True)
+        self.v3v3 = self.Port(Passive.empty(), optional=True)
+        self.vusb = self.Port(Passive.empty(), optional=True)  # VUsb
+        self.cam_sccb = self.Port(I2cController.empty(), optional=True)  # internally connected to camera
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
-    def _make_export_vector(
-        self, self_io: ExportType, inner_vector: Vector[ExportType], name: str, assign: Optional[str]
-    ) -> Optional[str]:
-        """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
-        if isinstance(self_io, DigitalBidir):
-            if assign == f"{name}=_GPIO2_STRAP_EXT_PU":
-                self.connect(self_io, self.ic.io2)
-                assert not self.io2_ext_connected  # assert not yet hard tied
-                self.io2_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO8_STRAP_EXT_PU":
-                self.connect(self_io, self.ic.io8)
-                assert not self.io8_ext_connected  # assert not yet hard tied
-                self.io8_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO9_STRAP":
-                self.connect(self_io, self.ic.io9)
-                return None
-        return super()._make_export_vector(self_io, inner_vector, name, assign)
+    def generate(self) -> None:
+        super().generate()
 
-    @override
-    def _crystal_required(self) -> bool:
-        return True  # crystal oscillator always required
+        self.footprint(
+            "U",
+            "Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD",
+            self._make_pinning(
+                {"13": self.gnd, "12": self.v3v3, "14": self.vusb},
+                self._PIN_REMAPPING,
+            ),
+            mfr="",
+            part="XIAO ESP32C3",
+            datasheet="https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+        )
 
 
-class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoController, GeneratorBlock, FootprintBlock):
+class Xiao_Esp32c3(
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    Esp32c3_Interfaces,
+    IoController,
+    BaseIoControllerWrapper,
+    GeneratorBlock,
+    WrapperSubboardBlock,
+):
     """ESP32-C3 development board, a tiny development (21x17.5mm) daughterboard with a RISC-V microcontroller
     supporting WiFi and BLE. Has an onboard USB connector, so this can also source power.
 
@@ -508,80 +550,64 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
     Pinning data: https://www.seeedstudio.com/blog/wp-content/uploads/2022/08/Seeed-Studio-XIAO-Series-Package-and-PCB-Design.pdf
     """
 
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "VDD": "12",
-        "GND": "13",
-        "VUSB": "14",
-    }
-    RESOURCE_PIN_REMAP = {
-        # 'GPIO2': '1',  # boot pin, non-allocatable
-        "GPIO3": "2",
-        "MTMS": "3",
-        "MTDI": "4",
-        "MTCK": "5",
-        "MTDO": "6",
-        # 'GPIO21': '7',  # boot pin, non-allocatable
-        # 'GPIO20': '8',  # boot pin, non-allocatable
-        # 'GPIO8': '9',  # boot pin, non-allocatable
-        # 'GPIO9': '10',  # boot pin, non-allocatable
-        "VDD_SPI": "11",
-    }
-
     @override
-    def _vddio(self) -> Port[VoltageLink]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr
-        else:
-            return self.pwr_out
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-            self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr,
-                    "GND": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr_out,
-                    "GND": self.gnd,
-                    "VUSB": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._vdd_model())
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.vusb_out.init_from(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
-        self.pwr_out.init_from(
-            VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
 
-        self.generator_param(self.pwr.is_connected())
+        self.generator_param(
+            self.gnd.is_connected(),
+            self.pwr.is_connected(),
+            self.pwr_out.is_connected(),
+            self.vusb_out.is_connected(),
+            self.pin_assigns,
+        )
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        self.footprint(
-            "U",
-            "Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD",
-            self._make_pinning(),
-            mfr="",
-            part="XIAO ESP32C3",
-            datasheet="https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+        self.model = self.Block(
+            Esp32c3_Device(
+                pin_assigns=self._make_model_pinning(Xiao_Esp32c3_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
+                _model=True,
+                _allowed_pins=list(Xiao_Esp32c3_Device._PIN_REMAPPING.keys()),
+            )
         )
+        self._export_ios_inner(self.model)
+
+        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.model.gnd)
+            self.export_tap(self.gnd, self.device.gnd)
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.model.gnd)
+
+        self.connect(
+            self.model.vdda, self.model.vdd3p3, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi
+        )
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            self.connect(self.pwr, self.model.vdd3p3)
+            self.export_tap(self.pwr.net, self.device.v3v3)
+        else:  # board sources power from USB
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+                )
+            )
+            self.connect(self.pwr_out_model.pwr, self.model.vdd3p3)
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+            self.export_tap(self.pwr_out.net, self.device.v3v3)
+
+        if self.get(self.vusb_out.is_connected()):
+            self.export_tap(self.vusb_out.net, self.device.vusb)

@@ -110,40 +110,60 @@ const FD2 = board.add(D_SOD_323, {
   translate: pt(0.809, 1.980), rotate: 0,
   id: 'FD2'
 })
+// mcu.crystal.package
+const FX1 = board.add(Crystal_SMD_2520_4Pin_2_5x2_0mm, {
+  translate: pt(2.311, 0.059), rotate: 0,
+  id: 'FX1'
+})
+// mcu.crystal.cap_a
+const FC7 = board.add(C_0603_1608Metric, {
+  translate: pt(2.096, 0.312), rotate: 0,
+  id: 'FC7'
+})
+// mcu.crystal.cap_b
+const FC8 = board.add(C_0603_1608Metric, {
+  translate: pt(2.252, 0.312), rotate: 0,
+  id: 'FC8'
+})
+// mcu.prog.conn
+const FJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(2.067, 0.079), rotate: 0,
+  id: 'FJ2'
+})
 // mcu.ic
 const FU3 = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_65x3_65mm, {
   translate: pt(1.768, 0.122), rotate: 0,
   id: 'FU3'
 })
 // mcu.vdd_bulk_cap.cap
-const FC7 = board.add(C_0805_2012Metric, {
+const FC9 = board.add(C_0805_2012Metric, {
   translate: pt(1.932, 0.322), rotate: 0,
-  id: 'FC7'
-})
-// mcu.vdda_cap0.cap
-const FC8 = board.add(C_0603_1608Metric, {
-  translate: pt(2.096, 0.312), rotate: 0,
-  id: 'FC8'
-})
-// mcu.vdda_cap1.cap
-const FC9 = board.add(C_0603_1608Metric, {
-  translate: pt(2.252, 0.312), rotate: 0,
   id: 'FC9'
 })
-// mcu.vddrtc_cap.cap
+// mcu.vdda_cap0.cap
 const FC10 = board.add(C_0603_1608Metric, {
   translate: pt(2.408, 0.312), rotate: 0,
   id: 'FC10'
 })
-// mcu.vddcpu_cap.cap
+// mcu.vdda_cap1.cap
 const FC11 = board.add(C_0603_1608Metric, {
   translate: pt(1.704, 0.441), rotate: 0,
   id: 'FC11'
 })
-// mcu.vddspi_cap.cap
+// mcu.vddrtc_cap.cap
 const FC12 = board.add(C_0603_1608Metric, {
   translate: pt(1.860, 0.441), rotate: 0,
   id: 'FC12'
+})
+// mcu.vddcpu_cap.cap
+const FC13 = board.add(C_0603_1608Metric, {
+  translate: pt(2.016, 0.441), rotate: 0,
+  id: 'FC13'
+})
+// mcu.vddspi_cap.cap
+const FC14 = board.add(C_0603_1608Metric, {
+  translate: pt(2.172, 0.441), rotate: 0,
+  id: 'FC14'
 })
 // mcu.ant
 const FANT1 = board.add(D_1206_3216Metric, {
@@ -151,54 +171,34 @@ const FANT1 = board.add(D_1206_3216Metric, {
   id: 'FANT1'
 })
 // mcu.pi.c1
-const FC13 = board.add(C_0603_1608Metric, {
-  translate: pt(2.016, 0.441), rotate: 0,
-  id: 'FC13'
+const FC15 = board.add(C_0603_1608Metric, {
+  translate: pt(2.328, 0.441), rotate: 0,
+  id: 'FC15'
 })
 // mcu.pi.c2
-const FC14 = board.add(C_0603_1608Metric, {
-  translate: pt(2.172, 0.441), rotate: 0,
-  id: 'FC14'
+const FC16 = board.add(C_0603_1608Metric, {
+  translate: pt(1.704, 0.538), rotate: 0,
+  id: 'FC16'
 })
 // mcu.pi.l
 const FL2 = board.add(L_0603_1608Metric, {
-  translate: pt(2.328, 0.441), rotate: 0,
+  translate: pt(1.860, 0.538), rotate: 0,
   id: 'FL2'
 })
 // mcu.vdd3p3_l_cap.cap
-const FC15 = board.add(C_0603_1608Metric, {
-  translate: pt(1.704, 0.538), rotate: 0,
-  id: 'FC15'
+const FC17 = board.add(C_0603_1608Metric, {
+  translate: pt(2.016, 0.538), rotate: 0,
+  id: 'FC17'
 })
 // mcu.vdd3p3_cap.cap
-const FC16 = board.add(C_0603_1608Metric, {
-  translate: pt(1.860, 0.538), rotate: 0,
-  id: 'FC16'
+const FC18 = board.add(C_0603_1608Metric, {
+  translate: pt(2.172, 0.538), rotate: 0,
+  id: 'FC18'
 })
 // mcu.vdd3p3_l.ind
 const FL3 = board.add(L_0603_1608Metric, {
-  translate: pt(2.016, 0.538), rotate: 0,
-  id: 'FL3'
-})
-// mcu.crystal.package
-const FX1 = board.add(Crystal_SMD_2520_4Pin_2_5x2_0mm, {
-  translate: pt(2.311, 0.059), rotate: 0,
-  id: 'FX1'
-})
-// mcu.crystal.cap_a
-const FC17 = board.add(C_0603_1608Metric, {
-  translate: pt(2.172, 0.538), rotate: 0,
-  id: 'FC17'
-})
-// mcu.crystal.cap_b
-const FC18 = board.add(C_0603_1608Metric, {
   translate: pt(2.328, 0.538), rotate: 0,
-  id: 'FC18'
-})
-// mcu.prog.conn
-const FJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(2.067, 0.079), rotate: 0,
-  id: 'FJ2'
+  id: 'FL3'
 })
 // mcu.en_pull.rc.r
 const FR4 = board.add(R_0603_1608Metric, {
@@ -468,22 +468,22 @@ const FQ6 = board.add(SOT_23, {
 
 board.setNetlist([
   {name: "Fv12", pads: [["FJ1", "1"], ["FTP1", "1"], ["FU1", "3"], ["FC1", "1"], ["FC3", "1"], ["FR3", "1"], ["FR6", "1"], ["FR8", "1"], ["FQ2", "1"], ["FQ2", "2"], ["FQ2", "3"], ["FR9", "1"], ["FQ5", "1"], ["FQ5", "2"], ["FQ5", "3"]]},
-  {name: "Fgnd", pads: [["FJ1", "2"], ["FTP2", "1"], ["FU1", "1"], ["FR2", "2"], ["FC1", "2"], ["FC3", "2"], ["FC4", "2"], ["FD1", "2"], ["FU2", "1"], ["FC5", "2"], ["FC6", "2"], ["FD2", "2"], ["FU3", "33"], ["FC7", "2"], ["FC8", "2"], ["FC9", "2"], ["FC10", "2"], ["FC11", "2"], ["FC12", "2"], ["FC13", "2"], ["FC14", "2"], ["FC15", "2"], ["FC16", "2"], ["FX1", "2"], ["FX1", "4"], ["FC17", "2"], ["FC18", "2"], ["FJ2", "5"], ["FC19", "2"], ["FSW1", "C"], ["FSW1", "S2"], ["FR7", "2"], ["FD4", "4"], ["FC20", "2"], ["FD5", "4"], ["FC21", "2"], ["FD6", "4"], ["FC22", "2"], ["FD7", "4"], ["FC23", "2"], ["FD8", "4"], ["FC24", "2"], ["FD9", "4"], ["FC25", "2"], ["FD10", "4"], ["FC26", "2"], ["FD11", "4"], ["FC27", "2"], ["FD12", "4"], ["FC28", "2"], ["FD13", "4"], ["FC29", "2"], ["FD14", "4"], ["FC30", "2"], ["FD15", "4"], ["FC31", "2"], ["FD16", "4"], ["FC32", "2"], ["FD17", "4"], ["FC33", "2"], ["FD18", "4"], ["FC34", "2"], ["FD19", "4"], ["FC35", "2"], ["FD20", "4"], ["FC36", "2"], ["FD21", "4"], ["FC37", "2"], ["FJ3", "1"], ["FQ1", "2"], ["FQ3", "2"], ["FJ4", "1"], ["FQ4", "2"], ["FQ6", "2"]]},
+  {name: "Fgnd", pads: [["FJ1", "2"], ["FTP2", "1"], ["FU1", "1"], ["FR2", "2"], ["FC1", "2"], ["FC3", "2"], ["FC4", "2"], ["FD1", "2"], ["FU2", "1"], ["FC5", "2"], ["FC6", "2"], ["FD2", "2"], ["FX1", "2"], ["FX1", "4"], ["FC7", "2"], ["FC8", "2"], ["FJ2", "5"], ["FU3", "33"], ["FC9", "2"], ["FC10", "2"], ["FC11", "2"], ["FC12", "2"], ["FC13", "2"], ["FC14", "2"], ["FC15", "2"], ["FC16", "2"], ["FC17", "2"], ["FC18", "2"], ["FC19", "2"], ["FSW1", "C"], ["FSW1", "S2"], ["FR7", "2"], ["FD4", "4"], ["FC20", "2"], ["FD5", "4"], ["FC21", "2"], ["FD6", "4"], ["FC22", "2"], ["FD7", "4"], ["FC23", "2"], ["FD8", "4"], ["FC24", "2"], ["FD9", "4"], ["FC25", "2"], ["FD10", "4"], ["FC26", "2"], ["FD11", "4"], ["FC27", "2"], ["FD12", "4"], ["FC28", "2"], ["FD13", "4"], ["FC29", "2"], ["FD14", "4"], ["FC30", "2"], ["FD15", "4"], ["FC31", "2"], ["FD16", "4"], ["FC32", "2"], ["FD17", "4"], ["FC33", "2"], ["FD18", "4"], ["FC34", "2"], ["FD19", "4"], ["FC35", "2"], ["FD20", "4"], ["FC36", "2"], ["FD21", "4"], ["FC37", "2"], ["FJ3", "1"], ["FQ1", "2"], ["FQ3", "2"], ["FJ4", "1"], ["FQ4", "2"], ["FQ6", "2"]]},
   {name: "Fv5", pads: [["FR1", "1"], ["FL1", "2"], ["FC4", "1"], ["FTP3", "1"], ["FD1", "1"], ["FU2", "2"], ["FC5", "1"], ["FD4", "2"], ["FC20", "1"], ["FD5", "2"], ["FC21", "1"], ["FD6", "2"], ["FC22", "1"], ["FD7", "2"], ["FC23", "1"], ["FD8", "2"], ["FC24", "1"], ["FD9", "2"], ["FC25", "1"], ["FD10", "2"], ["FC26", "1"], ["FD11", "2"], ["FC27", "1"], ["FD12", "2"], ["FC28", "1"], ["FD13", "2"], ["FC29", "1"], ["FD14", "2"], ["FC30", "1"], ["FD15", "2"], ["FC31", "1"], ["FD16", "2"], ["FC32", "1"], ["FD17", "2"], ["FC33", "1"], ["FD18", "2"], ["FC34", "1"], ["FD19", "2"], ["FC35", "1"], ["FD20", "2"], ["FC36", "1"], ["FD21", "2"], ["FC37", "1"]]},
-  {name: "Fv3v3", pads: [["FU2", "3"], ["FC6", "1"], ["FTP4", "1"], ["FD2", "1"], ["FU3", "11"], ["FU3", "14"], ["FU3", "17"], ["FU3", "18"], ["FU3", "31"], ["FU3", "32"], ["FC7", "1"], ["FC8", "1"], ["FC9", "1"], ["FC10", "1"], ["FC11", "1"], ["FC12", "1"], ["FC15", "1"], ["FL3", "1"], ["FJ2", "1"], ["FR4", "1"], ["FD3", "2"]]},
+  {name: "Fv3v3", pads: [["FU2", "3"], ["FC6", "1"], ["FTP4", "1"], ["FD2", "1"], ["FJ2", "1"], ["FU3", "11"], ["FU3", "14"], ["FU3", "17"], ["FU3", "18"], ["FU3", "31"], ["FU3", "32"], ["FC9", "1"], ["FC10", "1"], ["FC11", "1"], ["FC12", "1"], ["FC13", "1"], ["FC14", "1"], ["FC17", "1"], ["FL3", "1"], ["FR4", "1"], ["FD3", "2"]]},
   {name: "Freg_5v.ic.sw", pads: [["FU1", "2"], ["FC2", "2"], ["FL1", "1"]]},
   {name: "Freg_5v.ic.fb", pads: [["FU1", "4"], ["FR1", "2"], ["FR2", "1"]]},
   {name: "Freg_5v.ic.boot", pads: [["FU1", "6"], ["FC2", "1"]]},
   {name: "Freg_5v.ic.en", pads: [["FU1", "5"], ["FR3", "2"]]},
-  {name: "Fmcu.xtal_node.xi", pads: [["FU3", "30"], ["FX1", "1"], ["FC17", "1"]]},
-  {name: "Fmcu.xtal_node.xo", pads: [["FU3", "29"], ["FX1", "3"], ["FC18", "1"]]},
-  {name: "Fmcu.program_uart_node.a_tx", pads: [["FU3", "28"], ["FJ2", "3"]]},
-  {name: "Fmcu.program_uart_node.b_tx", pads: [["FU3", "27"], ["FJ2", "4"]]},
-  {name: "Fmcu.program_en_node", pads: [["FU3", "7"], ["FJ2", "6"], ["FR4", "2"], ["FC19", "1"]]},
-  {name: "Fmcu.program_boot_node", pads: [["FU3", "15"], ["FJ2", "2"], ["FR5", "2"]]},
-  {name: "Fmcu.ic.lna_in", pads: [["FU3", "1"], ["FC13", "1"], ["FL2", "1"]]},
-  {name: "Fmcu.ic.vdd3p3", pads: [["FU3", "2"], ["FU3", "3"], ["FC16", "1"], ["FL3", "2"]]},
-  {name: "Fmcu.ant.a", pads: [["FANT1", "1"], ["FC14", "1"], ["FL2", "2"]]},
+  {name: "Fmcu.xtal_node.xi", pads: [["FX1", "1"], ["FC7", "1"], ["FU3", "30"]]},
+  {name: "Fmcu.xtal_node.xo", pads: [["FX1", "3"], ["FC8", "1"], ["FU3", "29"]]},
+  {name: "Fmcu.program_uart_node.a_tx", pads: [["FJ2", "4"], ["FU3", "27"]]},
+  {name: "Fmcu.program_uart_node.b_tx", pads: [["FJ2", "3"], ["FU3", "28"]]},
+  {name: "Fmcu.program_en_node", pads: [["FJ2", "6"], ["FU3", "7"], ["FR4", "2"], ["FC19", "1"]]},
+  {name: "Fmcu.program_boot_node", pads: [["FJ2", "2"], ["FU3", "15"], ["FR5", "2"]]},
+  {name: "Fmcu.ic.vdd3p3", pads: [["FU3", "2"], ["FU3", "3"], ["FC18", "1"], ["FL3", "2"]]},
+  {name: "Fmcu.ic.lna_in", pads: [["FU3", "1"], ["FC15", "1"], ["FL2", "1"]]},
+  {name: "Fmcu.ant.a", pads: [["FANT1", "1"], ["FC16", "1"], ["FL2", "2"]]},
   {name: "Fledr.package.k", pads: [["FD3", "1"], ["FR5", "1"]]},
   {name: "Fenc.a", pads: [["FU3", "26"], ["FSW1", "A"]]},
   {name: "Fenc.b", pads: [["FU3", "16"], ["FSW1", "B"]]},
