@@ -85,40 +85,60 @@ const LD1 = board.add(D_SOD_323, {
   translate: pt(0.314, 1.600), rotate: 0,
   id: 'LD1'
 })
+// mcu.crystal.package
+const LX1 = board.add(Crystal_SMD_2520_4Pin_2_5x2_0mm, {
+  translate: pt(0.665, 0.059), rotate: 0,
+  id: 'LX1'
+})
+// mcu.crystal.cap_a
+const LC5 = board.add(C_0402_1005Metric, {
+  translate: pt(0.417, 0.430), rotate: 0,
+  id: 'LC5'
+})
+// mcu.crystal.cap_b
+const LC6 = board.add(C_0402_1005Metric, {
+  translate: pt(0.528, 0.430), rotate: 0,
+  id: 'LC6'
+})
+// mcu.prog.conn
+const LJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(0.421, 0.079), rotate: 0,
+  id: 'LJ2'
+})
 // mcu.ic
 const LU2 = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_65x3_65mm, {
   translate: pt(0.122, 0.122), rotate: 0,
   id: 'LU2'
 })
 // mcu.vdd_bulk_cap.cap
-const LC5 = board.add(C_0805_2012Metric, {
+const LC7 = board.add(C_0805_2012Metric, {
   translate: pt(0.286, 0.322), rotate: 0,
-  id: 'LC5'
-})
-// mcu.vdda_cap0.cap
-const LC6 = board.add(C_0402_1005Metric, {
-  translate: pt(0.417, 0.430), rotate: 0,
-  id: 'LC6'
-})
-// mcu.vdda_cap1.cap
-const LC7 = board.add(C_0402_1005Metric, {
-  translate: pt(0.528, 0.430), rotate: 0,
   id: 'LC7'
 })
-// mcu.vddrtc_cap.cap
+// mcu.vdda_cap0.cap
 const LC8 = board.add(C_0402_1005Metric, {
   translate: pt(0.639, 0.430), rotate: 0,
   id: 'LC8'
 })
-// mcu.vddcpu_cap.cap
+// mcu.vdda_cap1.cap
 const LC9 = board.add(C_0402_1005Metric, {
   translate: pt(0.036, 0.527), rotate: 0,
   id: 'LC9'
 })
-// mcu.vddspi_cap.cap
+// mcu.vddrtc_cap.cap
 const LC10 = board.add(C_0402_1005Metric, {
   translate: pt(0.147, 0.527), rotate: 0,
   id: 'LC10'
+})
+// mcu.vddcpu_cap.cap
+const LC11 = board.add(C_0402_1005Metric, {
+  translate: pt(0.258, 0.527), rotate: 0,
+  id: 'LC11'
+})
+// mcu.vddspi_cap.cap
+const LC12 = board.add(C_0402_1005Metric, {
+  translate: pt(0.369, 0.527), rotate: 0,
+  id: 'LC12'
 })
 // mcu.ant
 const LANT1 = board.add(D_1206_3216Metric, {
@@ -126,14 +146,14 @@ const LANT1 = board.add(D_1206_3216Metric, {
   id: 'LANT1'
 })
 // mcu.pi.c1
-const LC11 = board.add(C_0603_1608Metric, {
+const LC13 = board.add(C_0603_1608Metric, {
   translate: pt(0.451, 0.312), rotate: 0,
-  id: 'LC11'
+  id: 'LC13'
 })
 // mcu.pi.c2
-const LC12 = board.add(C_0603_1608Metric, {
+const LC14 = board.add(C_0603_1608Metric, {
   translate: pt(0.606, 0.312), rotate: 0,
-  id: 'LC12'
+  id: 'LC14'
 })
 // mcu.pi.l
 const LL2 = board.add(L_0603_1608Metric, {
@@ -141,39 +161,19 @@ const LL2 = board.add(L_0603_1608Metric, {
   id: 'LL2'
 })
 // mcu.vdd3p3_l_cap.cap
-const LC13 = board.add(C_0402_1005Metric, {
-  translate: pt(0.258, 0.527), rotate: 0,
-  id: 'LC13'
+const LC15 = board.add(C_0402_1005Metric, {
+  translate: pt(0.480, 0.527), rotate: 0,
+  id: 'LC15'
 })
 // mcu.vdd3p3_cap.cap
-const LC14 = board.add(C_0402_1005Metric, {
-  translate: pt(0.369, 0.527), rotate: 0,
-  id: 'LC14'
+const LC16 = board.add(C_0402_1005Metric, {
+  translate: pt(0.591, 0.527), rotate: 0,
+  id: 'LC16'
 })
 // mcu.vdd3p3_l.ind
 const LL3 = board.add(L_0402_1005Metric, {
   translate: pt(0.193, 0.431), rotate: 0,
   id: 'LL3'
-})
-// mcu.crystal.package
-const LX1 = board.add(Crystal_SMD_2520_4Pin_2_5x2_0mm, {
-  translate: pt(0.665, 0.059), rotate: 0,
-  id: 'LX1'
-})
-// mcu.crystal.cap_a
-const LC15 = board.add(C_0402_1005Metric, {
-  translate: pt(0.480, 0.527), rotate: 0,
-  id: 'LC15'
-})
-// mcu.crystal.cap_b
-const LC16 = board.add(C_0402_1005Metric, {
-  translate: pt(0.591, 0.527), rotate: 0,
-  id: 'LC16'
-})
-// mcu.prog.conn
-const LJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(0.421, 0.079), rotate: 0,
-  id: 'LJ2'
 })
 // mcu.en_pull.rc.r
 const LR4 = board.add(R_0402_1005Metric, {
@@ -392,22 +392,22 @@ const LC35 = board.add(C_1206_3216Metric, {
 })
 
 board.setNetlist([
-  {name: "Lgnd", pads: [["LJ1", "1"], ["LTP2", "1"], ["LU1", "1"], ["LR2", "2"], ["LC1", "2"], ["LC3", "2"], ["LC4", "2"], ["LD1", "2"], ["LU2", "33"], ["LC5", "2"], ["LC6", "2"], ["LC7", "2"], ["LC8", "2"], ["LC9", "2"], ["LC10", "2"], ["LC11", "2"], ["LC12", "2"], ["LC13", "2"], ["LC14", "2"], ["LX1", "2"], ["LX1", "4"], ["LC15", "2"], ["LC16", "2"], ["LJ2", "5"], ["LC17", "2"], ["LR5", "2"], ["LR7", "2"], ["LJ3", "1"], ["LU3", "12"], ["LU3", "2"], ["LU3", "3"], ["LU3", "4"], ["LU3", "6"], ["LC18", "2"], ["LC19", "2"], ["LU4", "3"], ["LC20", "2"], ["LR13", "1"], ["LC22", "2"], ["LC23", "2"], ["LU5", "3"], ["LC24", "2"], ["LR14", "1"], ["LC26", "2"], ["LC27", "2"], ["LU6", "3"], ["LC28", "2"], ["LR15", "1"], ["LC30", "2"], ["LC31", "2"], ["LU7", "3"], ["LC32", "2"], ["LR16", "1"], ["LC34", "2"], ["LC35", "2"]]},
+  {name: "Lgnd", pads: [["LJ1", "1"], ["LTP2", "1"], ["LU1", "1"], ["LR2", "2"], ["LC1", "2"], ["LC3", "2"], ["LC4", "2"], ["LD1", "2"], ["LX1", "2"], ["LX1", "4"], ["LC5", "2"], ["LC6", "2"], ["LJ2", "5"], ["LU2", "33"], ["LC7", "2"], ["LC8", "2"], ["LC9", "2"], ["LC10", "2"], ["LC11", "2"], ["LC12", "2"], ["LC13", "2"], ["LC14", "2"], ["LC15", "2"], ["LC16", "2"], ["LC17", "2"], ["LR5", "2"], ["LR7", "2"], ["LJ3", "1"], ["LU3", "12"], ["LU3", "2"], ["LU3", "3"], ["LU3", "4"], ["LU3", "6"], ["LC18", "2"], ["LC19", "2"], ["LU4", "3"], ["LC20", "2"], ["LR13", "1"], ["LC22", "2"], ["LC23", "2"], ["LU5", "3"], ["LC24", "2"], ["LR14", "1"], ["LC26", "2"], ["LC27", "2"], ["LU6", "3"], ["LC28", "2"], ["LR15", "1"], ["LC30", "2"], ["LC31", "2"], ["LU7", "3"], ["LC32", "2"], ["LR16", "1"], ["LC34", "2"], ["LC35", "2"]]},
   {name: "Lv12", pads: [["LJ1", "2"], ["LTP1", "1"], ["LU1", "3"], ["LC1", "1"], ["LC3", "1"], ["LR3", "1"], ["LR6", "1"], ["LU4", "4"], ["LC20", "1"], ["LC22", "1"], ["LU5", "4"], ["LC24", "1"], ["LC26", "1"], ["LU6", "4"], ["LC28", "1"], ["LC30", "1"], ["LU7", "4"], ["LC32", "1"], ["LC34", "1"]]},
-  {name: "Lv3v3", pads: [["LR1", "1"], ["LL1", "2"], ["LC4", "1"], ["LTP3", "1"], ["LD1", "1"], ["LU2", "11"], ["LU2", "14"], ["LU2", "17"], ["LU2", "18"], ["LU2", "31"], ["LU2", "32"], ["LU2", "6"], ["LC5", "1"], ["LC6", "1"], ["LC7", "1"], ["LC8", "1"], ["LC9", "1"], ["LC10", "1"], ["LC13", "1"], ["LL3", "1"], ["LJ2", "1"], ["LR4", "1"], ["LR8", "1"], ["LR9", "1"], ["LR10", "1"], ["LU3", "1"], ["LU3", "11"], ["LU3", "5"], ["LC18", "1"], ["LC19", "1"], ["LR11", "1"], ["LR12", "1"]]},
+  {name: "Lv3v3", pads: [["LR1", "1"], ["LL1", "2"], ["LC4", "1"], ["LTP3", "1"], ["LD1", "1"], ["LJ2", "1"], ["LU2", "11"], ["LU2", "14"], ["LU2", "17"], ["LU2", "18"], ["LU2", "31"], ["LU2", "32"], ["LU2", "6"], ["LC7", "1"], ["LC8", "1"], ["LC9", "1"], ["LC10", "1"], ["LC11", "1"], ["LC12", "1"], ["LC15", "1"], ["LL3", "1"], ["LR4", "1"], ["LR8", "1"], ["LR9", "1"], ["LR10", "1"], ["LU3", "1"], ["LU3", "11"], ["LU3", "5"], ["LC18", "1"], ["LC19", "1"], ["LR11", "1"], ["LR12", "1"]]},
   {name: "Lreg_3v3.ic.sw", pads: [["LU1", "2"], ["LC2", "2"], ["LL1", "1"]]},
   {name: "Lreg_3v3.ic.fb", pads: [["LU1", "4"], ["LR1", "2"], ["LR2", "1"]]},
   {name: "Lreg_3v3.ic.boot", pads: [["LU1", "6"], ["LC2", "1"]]},
   {name: "Lreg_3v3.ic.en", pads: [["LU1", "5"], ["LR3", "2"]]},
-  {name: "Lmcu.xtal_node.xi", pads: [["LU2", "30"], ["LX1", "1"], ["LC15", "1"]]},
-  {name: "Lmcu.xtal_node.xo", pads: [["LU2", "29"], ["LX1", "3"], ["LC16", "1"]]},
-  {name: "Lmcu.program_uart_node.a_tx", pads: [["LU2", "28"], ["LJ2", "3"]]},
-  {name: "Lmcu.program_uart_node.b_tx", pads: [["LU2", "27"], ["LJ2", "4"]]},
-  {name: "Lmcu.program_en_node", pads: [["LU2", "7"], ["LJ2", "6"], ["LR4", "2"], ["LC17", "1"]]},
-  {name: "Lmcu.program_boot_node", pads: [["LU2", "15"], ["LJ2", "2"], ["LD2", "2"]]},
-  {name: "Lmcu.ic.lna_in", pads: [["LU2", "1"], ["LC11", "1"], ["LL2", "1"]]},
-  {name: "Lmcu.ic.vdd3p3", pads: [["LU2", "2"], ["LU2", "3"], ["LC14", "1"], ["LL3", "2"]]},
-  {name: "Lmcu.ant.a", pads: [["LANT1", "1"], ["LC12", "1"], ["LL2", "2"]]},
+  {name: "Lmcu.xtal_node.xi", pads: [["LX1", "1"], ["LC5", "1"], ["LU2", "30"]]},
+  {name: "Lmcu.xtal_node.xo", pads: [["LX1", "3"], ["LC6", "1"], ["LU2", "29"]]},
+  {name: "Lmcu.program_uart_node.a_tx", pads: [["LJ2", "4"], ["LU2", "27"]]},
+  {name: "Lmcu.program_uart_node.b_tx", pads: [["LJ2", "3"], ["LU2", "28"]]},
+  {name: "Lmcu.program_en_node", pads: [["LJ2", "6"], ["LU2", "7"], ["LR4", "2"], ["LC17", "1"]]},
+  {name: "Lmcu.program_boot_node", pads: [["LJ2", "2"], ["LU2", "15"], ["LD2", "2"]]},
+  {name: "Lmcu.ic.vdd3p3", pads: [["LU2", "2"], ["LU2", "3"], ["LC16", "1"], ["LL3", "2"]]},
+  {name: "Lmcu.ic.lna_in", pads: [["LU2", "1"], ["LC13", "1"], ["LL2", "1"]]},
+  {name: "Lmcu.ant.a", pads: [["LANT1", "1"], ["LC14", "1"], ["LL2", "2"]]},
   {name: "Lledr.package.k", pads: [["LD2", "1"], ["LR5", "1"]]},
   {name: "Lv12_sense.output", pads: [["LU2", "4"], ["LR6", "2"], ["LR7", "1"]]},
   {name: "Lqwiic.pwr", pads: [["LU2", "16"], ["LJ3", "2"], ["LR8", "2"]]},

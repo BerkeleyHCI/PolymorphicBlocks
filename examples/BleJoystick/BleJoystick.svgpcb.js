@@ -115,7 +115,17 @@ const JR2 = board.add(R_0603_1608Metric, {
   translate: pt(1.819, 1.248), rotate: 0,
   id: 'JR2'
 })
-// mcu.ic
+// mcu.prog.conn
+const JJ3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(1.329, 0.167), rotate: 0,
+  id: 'JJ3'
+})
+// mcu.boot.package
+const JSW1 = board.add(MembraneSwitch_4mm, {
+  translate: pt(1.473, 0.491), rotate: 0,
+  id: 'JSW1'
+})
+// mcu.ic.device
 const JU3 = board.add(ESP_WROOM_02, {
   translate: pt(0.561, 0.281), rotate: 0,
   id: 'JU3'
@@ -129,16 +139,6 @@ const JC9 = board.add(C_0805_2012Metric, {
 const JC10 = board.add(C_0603_1608Metric, {
   translate: pt(1.393, 0.403), rotate: 0,
   id: 'JC10'
-})
-// mcu.prog.conn
-const JJ3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
-  translate: pt(1.329, 0.167), rotate: 0,
-  id: 'JJ3'
-})
-// mcu.boot.package
-const JSW1 = board.add(MembraneSwitch_4mm, {
-  translate: pt(1.473, 0.491), rotate: 0,
-  id: 'JSW1'
 })
 // mcu.en_pull.rc.r
 const JR3 = board.add(R_0603_1608Metric, {
@@ -244,8 +244,8 @@ const JR14 = board.add(R_0603_1608Metric, {
 board.setNetlist([
   {name: "Jvbat", pads: [["JJ1", "2"], ["JTP1", "1"], ["JU1", "12"], ["JU1", "14"], ["JC3", "1"], ["JR11", "1"]]},
   {name: "Jvusb", pads: [["JJ2", "A4"], ["JJ2", "A9"], ["JJ2", "B4"], ["JJ2", "B9"], ["JTP2", "1"], ["JU1", "2"], ["JC5", "1"]]},
-  {name: "Jgnd", pads: [["JJ1", "1"], ["JJ2", "A1"], ["JJ2", "A12"], ["JJ2", "B1"], ["JJ2", "B12"], ["JJ2", "S1"], ["JTP3", "1"], ["JU1", "18"], ["JU1", "5"], ["JC2", "2"], ["JC3", "2"], ["JC4", "2"], ["JC5", "2"], ["JC6", "2"], ["JU2", "1"], ["JC7", "2"], ["JC8", "2"], ["JD1", "2"], ["JR2", "2"], ["JU3", "19"], ["JU3", "9"], ["JC9", "2"], ["JC10", "2"], ["JJ3", "5"], ["JSW1", "2"], ["JC11", "2"], ["JJ4", "1"], ["JR5", "2"], ["JR7", "2"], ["JU5", "3"], ["JC12", "2"], ["JR9", "2"], ["JSW2", "2"], ["JSW3", "2"], ["JSW4", "2"], ["JR12", "2"]]},
-  {name: "Jv3v3", pads: [["JU2", "3"], ["JC8", "1"], ["JTP4", "1"], ["JD1", "1"], ["JU3", "1"], ["JU3", "16"], ["JU3", "7"], ["JC9", "1"], ["JC10", "1"], ["JJ3", "1"], ["JR3", "1"], ["JJ4", "2"], ["JU5", "1"], ["JC12", "1"], ["JD2", "2"], ["JR13", "1"], ["JR14", "1"]]},
+  {name: "Jgnd", pads: [["JJ1", "1"], ["JJ2", "A1"], ["JJ2", "A12"], ["JJ2", "B1"], ["JJ2", "B12"], ["JJ2", "S1"], ["JTP3", "1"], ["JU1", "18"], ["JU1", "5"], ["JC2", "2"], ["JC3", "2"], ["JC4", "2"], ["JC5", "2"], ["JC6", "2"], ["JU2", "1"], ["JC7", "2"], ["JC8", "2"], ["JD1", "2"], ["JR2", "2"], ["JJ3", "5"], ["JSW1", "2"], ["JU3", "19"], ["JU3", "9"], ["JC9", "2"], ["JC10", "2"], ["JC11", "2"], ["JJ4", "1"], ["JR5", "2"], ["JR7", "2"], ["JU5", "3"], ["JC12", "2"], ["JR9", "2"], ["JSW2", "2"], ["JSW3", "2"], ["JSW4", "2"], ["JR12", "2"]]},
+  {name: "Jv3v3", pads: [["JU2", "3"], ["JC8", "1"], ["JTP4", "1"], ["JD1", "1"], ["JJ3", "1"], ["JU3", "1"], ["JU3", "16"], ["JU3", "7"], ["JC9", "1"], ["JC10", "1"], ["JR3", "1"], ["JJ4", "2"], ["JU5", "1"], ["JC12", "1"], ["JD2", "2"], ["JR13", "1"], ["JR14", "1"]]},
   {name: "Jusb.usb.dp", pads: [["JJ2", "A6"], ["JJ2", "B6"]]},
   {name: "Jusb.usb.dm", pads: [["JJ2", "A7"], ["JJ2", "B7"]]},
   {name: "Jusb.cc.cc1", pads: [["JJ2", "A5"], ["JU1", "1"]]},
@@ -265,10 +265,10 @@ board.setNetlist([
   {name: "Jmp2722.ic.pmid", pads: [["JU1", "3"], ["JC2", "1"]]},
   {name: "Jmp2722.ic.bst", pads: [["JU1", "6"], ["JC1", "1"]]},
   {name: "Jmp2722.ic.vcc", pads: [["JU1", "19"], ["JC4", "1"]]},
-  {name: "Jmcu.program_uart_node.a_tx", pads: [["JU3", "12"], ["JJ3", "3"]]},
-  {name: "Jmcu.program_uart_node.b_tx", pads: [["JU3", "11"], ["JJ3", "4"]]},
-  {name: "Jmcu.program_en_node", pads: [["JU3", "2"], ["JJ3", "6"], ["JR3", "2"], ["JC11", "1"]]},
-  {name: "Jmcu.program_boot_node", pads: [["JU3", "8"], ["JJ3", "2"], ["JSW1", "1"], ["JR10", "2"]]},
+  {name: "Jmcu.program_uart_node.a_tx", pads: [["JJ3", "4"], ["JU3", "11"]]},
+  {name: "Jmcu.program_uart_node.b_tx", pads: [["JJ3", "3"], ["JU3", "12"]]},
+  {name: "Jmcu.program_en_node", pads: [["JJ3", "6"], ["JU3", "2"], ["JR3", "2"], ["JC11", "1"]]},
+  {name: "Jmcu.program_boot_node", pads: [["JJ3", "2"], ["JSW1", "1"], ["JU3", "8"], ["JR10", "2"]]},
   {name: "Jstick.ax1", pads: [["JJ4", "5"], ["JR4", "1"]]},
   {name: "Jstick.ax2", pads: [["JJ4", "6"], ["JR6", "1"]]},
   {name: "Jax1_div.output", pads: [["JU3", "3"], ["JR4", "2"], ["JR5", "1"]]},

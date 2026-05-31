@@ -110,7 +110,12 @@ const BD1 = board.add(D_SOD_323, {
   translate: pt(2.298, 1.682), rotate: 0,
   id: 'BD1'
 })
-// mcu.ic
+// mcu.prog.conn
+const BJ4 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(1.329, 0.167), rotate: 0,
+  id: 'BJ4'
+})
+// mcu.ic.device
 const BU2 = board.add(ESP_WROOM_02, {
   translate: pt(0.561, 0.281), rotate: 0,
   id: 'BU2'
@@ -124,11 +129,6 @@ const BC6 = board.add(C_0805_2012Metric, {
 const BC7 = board.add(C_0603_1608Metric, {
   translate: pt(1.393, 0.403), rotate: 0,
   id: 'BC7'
-})
-// mcu.prog.conn
-const BJ4 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
-  translate: pt(1.329, 0.167), rotate: 0,
-  id: 'BJ4'
 })
 // mcu.en_pull.rc.r
 const BR4 = board.add(R_0603_1608Metric, {
@@ -198,9 +198,9 @@ const BR10 = board.add(R_1206_3216Metric, {
 
 board.setNetlist([
   {name: "Bvin_raw", pads: [["BJ1", "2"], ["BJ2", "2"], ["BF1", "1"]]},
-  {name: "Bgnd", pads: [["BJ1", "1"], ["BJ2", "1"], ["BJ3", "4"], ["BTP1", "1"], ["BU1", "1"], ["BR2", "2"], ["BC1", "2"], ["BC3", "2"], ["BC4", "2"], ["BC5", "2"], ["BD1", "2"], ["BU2", "19"], ["BU2", "9"], ["BC6", "2"], ["BC7", "2"], ["BJ4", "5"], ["BC8", "2"], ["BR7", "2"], ["BJ5", "1"], ["BU3", "1"], ["BU3", "9"], ["BC9", "2"], ["BC10", "2"], ["BR10", "1"]]},
+  {name: "Bgnd", pads: [["BJ1", "1"], ["BJ2", "1"], ["BJ3", "4"], ["BTP1", "1"], ["BU1", "1"], ["BR2", "2"], ["BC1", "2"], ["BC3", "2"], ["BC4", "2"], ["BC5", "2"], ["BD1", "2"], ["BJ4", "5"], ["BU2", "19"], ["BU2", "9"], ["BC6", "2"], ["BC7", "2"], ["BC8", "2"], ["BR7", "2"], ["BJ5", "1"], ["BU3", "1"], ["BU3", "9"], ["BC9", "2"], ["BC10", "2"], ["BR10", "1"]]},
   {name: "Bvin", pads: [["BJ3", "1"], ["BFB1", "2"], ["BTP2", "1"], ["BU1", "3"], ["BC1", "1"], ["BC3", "1"], ["BC4", "1"], ["BR3", "1"], ["BR6", "1"], ["BU3", "5"], ["BC9", "1"], ["BC10", "1"]]},
-  {name: "Bv3v3", pads: [["BR1", "1"], ["BL1", "2"], ["BC5", "1"], ["BTP3", "1"], ["BD1", "1"], ["BU2", "1"], ["BU2", "16"], ["BU2", "7"], ["BC6", "1"], ["BC7", "1"], ["BJ4", "1"], ["BR4", "1"], ["BD2", "2"], ["BR8", "1"], ["BR9", "1"], ["BJ5", "2"], ["BU3", "4"]]},
+  {name: "Bv3v3", pads: [["BR1", "1"], ["BL1", "2"], ["BC5", "1"], ["BTP3", "1"], ["BD1", "1"], ["BJ4", "1"], ["BU2", "1"], ["BU2", "16"], ["BU2", "7"], ["BC6", "1"], ["BC7", "1"], ["BR4", "1"], ["BD2", "2"], ["BR8", "1"], ["BR9", "1"], ["BJ5", "2"], ["BU3", "4"]]},
   {name: "Bconn.enca", pads: [["BJ3", "2"], ["BU2", "13"]]},
   {name: "Bconn.encb", pads: [["BJ3", "3"], ["BU2", "10"]]},
   {name: "Bconn.motor2", pads: [["BJ3", "5"], ["BU3", "6"]]},
@@ -210,10 +210,10 @@ board.setNetlist([
   {name: "Breg_3v3.ic.fb", pads: [["BU1", "4"], ["BR1", "2"], ["BR2", "1"]]},
   {name: "Breg_3v3.ic.boot", pads: [["BU1", "6"], ["BC2", "1"]]},
   {name: "Breg_3v3.ic.en", pads: [["BU1", "5"], ["BR3", "2"]]},
-  {name: "Bmcu.program_uart_node.a_tx", pads: [["BU2", "12"], ["BJ4", "3"]]},
-  {name: "Bmcu.program_uart_node.b_tx", pads: [["BU2", "11"], ["BJ4", "4"]]},
-  {name: "Bmcu.program_en_node", pads: [["BU2", "2"], ["BJ4", "6"], ["BR4", "2"], ["BC8", "1"]]},
-  {name: "Bmcu.program_boot_node", pads: [["BU2", "8"], ["BJ4", "2"], ["BR5", "2"]]},
+  {name: "Bmcu.program_uart_node.a_tx", pads: [["BJ4", "4"], ["BU2", "11"]]},
+  {name: "Bmcu.program_uart_node.b_tx", pads: [["BJ4", "3"], ["BU2", "12"]]},
+  {name: "Bmcu.program_en_node", pads: [["BJ4", "6"], ["BU2", "2"], ["BR4", "2"], ["BC8", "1"]]},
+  {name: "Bmcu.program_boot_node", pads: [["BJ4", "2"], ["BU2", "8"], ["BR5", "2"]]},
   {name: "Bledr.package.k", pads: [["BD2", "1"], ["BR5", "1"]]},
   {name: "Bvin_sense.output", pads: [["BU2", "3"], ["BR6", "2"], ["BR7", "1"]]},
   {name: "Bqwiic_pull.i2c.scl", pads: [["BU2", "5"], ["BR8", "2"], ["BJ5", "4"]]},

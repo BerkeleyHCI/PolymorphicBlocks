@@ -105,7 +105,12 @@ const RD1 = board.add(D_SOD_323, {
   translate: pt(0.815, 2.019), rotate: 0,
   id: 'RD1'
 })
-// mcu.ic
+// mcu.prog.conn
+const RJ3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(1.329, 0.167), rotate: 0,
+  id: 'RJ3'
+})
+// mcu.ic.device
 const RU2 = board.add(ESP_WROOM_02, {
   translate: pt(0.561, 0.281), rotate: 0,
   id: 'RU2'
@@ -119,11 +124,6 @@ const RC6 = board.add(C_0805_2012Metric, {
 const RC7 = board.add(C_0603_1608Metric, {
   translate: pt(1.393, 0.403), rotate: 0,
   id: 'RC7'
-})
-// mcu.prog.conn
-const RJ3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
-  translate: pt(1.329, 0.167), rotate: 0,
-  id: 'RJ3'
 })
 // mcu.en_pull.rc.r
 const RR4 = board.add(R_0603_1608Metric, {
@@ -253,9 +253,9 @@ const RR11 = board.add(R_1206_3216Metric, {
 
 board.setNetlist([
   {name: "Rvin_raw", pads: [["RJ1", "2"], ["RJ2", "2"], ["RF1", "1"]]},
-  {name: "Rgnd", pads: [["RJ1", "1"], ["RJ2", "1"], ["RTP1", "1"], ["RU1", "1"], ["RR2", "2"], ["RC1", "2"], ["RC3", "2"], ["RC4", "2"], ["RC5", "2"], ["RD1", "2"], ["RU2", "19"], ["RU2", "9"], ["RC6", "2"], ["RC7", "2"], ["RJ3", "5"], ["RC8", "2"], ["RR7", "2"], ["RU3", "3"], ["RC9", "2"], ["RU4", "3"], ["RC10", "2"], ["RU5", "2"], ["RU5", "3"], ["RC11", "2"], ["RC12", "2"], ["RSW1", "2"], ["RJ4", "1"], ["RU6", "1"], ["RU6", "9"], ["RC13", "2"], ["RC14", "2"], ["RR11", "1"]]},
+  {name: "Rgnd", pads: [["RJ1", "1"], ["RJ2", "1"], ["RTP1", "1"], ["RU1", "1"], ["RR2", "2"], ["RC1", "2"], ["RC3", "2"], ["RC4", "2"], ["RC5", "2"], ["RD1", "2"], ["RJ3", "5"], ["RU2", "19"], ["RU2", "9"], ["RC6", "2"], ["RC7", "2"], ["RC8", "2"], ["RR7", "2"], ["RU3", "3"], ["RC9", "2"], ["RU4", "3"], ["RC10", "2"], ["RU5", "2"], ["RU5", "3"], ["RC11", "2"], ["RC12", "2"], ["RSW1", "2"], ["RJ4", "1"], ["RU6", "1"], ["RU6", "9"], ["RC13", "2"], ["RC14", "2"], ["RR11", "1"]]},
   {name: "Rvin", pads: [["RFB1", "2"], ["RTP2", "1"], ["RU1", "3"], ["RC1", "1"], ["RC3", "1"], ["RC4", "1"], ["RR3", "1"], ["RR6", "1"], ["RU6", "5"], ["RC13", "1"], ["RC14", "1"]]},
-  {name: "Rv3v3", pads: [["RR1", "1"], ["RL1", "2"], ["RC5", "1"], ["RTP3", "1"], ["RD1", "1"], ["RU2", "1"], ["RU2", "16"], ["RU2", "7"], ["RC6", "1"], ["RC7", "1"], ["RJ3", "1"], ["RR4", "1"], ["RD2", "2"], ["RU3", "1"], ["RC9", "1"], ["RU4", "1"], ["RC10", "1"], ["RR8", "1"], ["RR9", "1"], ["RU5", "1"], ["RC11", "1"], ["RR10", "1"], ["RJ4", "2"], ["RU6", "4"]]},
+  {name: "Rv3v3", pads: [["RR1", "1"], ["RL1", "2"], ["RC5", "1"], ["RTP3", "1"], ["RD1", "1"], ["RJ3", "1"], ["RU2", "1"], ["RU2", "16"], ["RU2", "7"], ["RC6", "1"], ["RC7", "1"], ["RR4", "1"], ["RD2", "2"], ["RU3", "1"], ["RC9", "1"], ["RU4", "1"], ["RC10", "1"], ["RR8", "1"], ["RR9", "1"], ["RU5", "1"], ["RC11", "1"], ["RR10", "1"], ["RJ4", "2"], ["RU6", "4"]]},
   {name: "Ri2c_chain_0.scl", pads: [["RU2", "6"], ["RR8", "2"], ["RTP4", "1"], ["RU5", "6"], ["RJ4", "4"]]},
   {name: "Ri2c_chain_0.sda", pads: [["RU2", "5"], ["RR9", "2"], ["RTP5", "1"], ["RU5", "4"], ["RJ4", "3"]]},
   {name: "Rfuse.pwr_out", pads: [["RF1", "2"], ["RFB1", "1"]]},
@@ -263,10 +263,10 @@ board.setNetlist([
   {name: "Rreg_3v3.ic.fb", pads: [["RU1", "4"], ["RR1", "2"], ["RR2", "1"]]},
   {name: "Rreg_3v3.ic.boot", pads: [["RU1", "6"], ["RC2", "1"]]},
   {name: "Rreg_3v3.ic.en", pads: [["RU1", "5"], ["RR3", "2"]]},
-  {name: "Rmcu.program_uart_node.a_tx", pads: [["RU2", "12"], ["RJ3", "3"]]},
-  {name: "Rmcu.program_uart_node.b_tx", pads: [["RU2", "11"], ["RJ3", "4"]]},
-  {name: "Rmcu.program_en_node", pads: [["RU2", "2"], ["RJ3", "6"], ["RR4", "2"], ["RC8", "1"]]},
-  {name: "Rmcu.program_boot_node", pads: [["RU2", "8"], ["RJ3", "2"], ["RR5", "2"]]},
+  {name: "Rmcu.program_uart_node.a_tx", pads: [["RJ3", "4"], ["RU2", "11"]]},
+  {name: "Rmcu.program_uart_node.b_tx", pads: [["RJ3", "3"], ["RU2", "12"]]},
+  {name: "Rmcu.program_en_node", pads: [["RJ3", "6"], ["RU2", "2"], ["RR4", "2"], ["RC8", "1"]]},
+  {name: "Rmcu.program_boot_node", pads: [["RJ3", "2"], ["RU2", "8"], ["RR5", "2"]]},
   {name: "Rledr.package.k", pads: [["RD2", "1"], ["RR5", "1"]]},
   {name: "Rvin_sense.output", pads: [["RU2", "17"], ["RR6", "2"], ["RR7", "1"]]},
   {name: "Renca.out", pads: [["RU2", "13"], ["RU3", "2"]]},

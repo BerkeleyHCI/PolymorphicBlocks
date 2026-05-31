@@ -411,7 +411,7 @@ class Esp32c3_Wroom02_Device(
             self._make_model_pinning(Esp32c3_Wroom02_Footprint._PIN_REMAPPING, self.get(self.pin_assigns)),
         )
 
-        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns))
+        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns), external=True)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
         self._export_tap_ios_inner(self.device)
         self.export_tap(self.gnd, self.device.gnd)

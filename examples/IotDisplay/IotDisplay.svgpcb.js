@@ -105,6 +105,16 @@ const Q3 = board.add(SOT_23, {
   translate: pt(1.487, 1.980), rotate: 0,
   id: 'Q3'
 })
+// mcu.prog.conn
+const J3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(2.096, 0.167), rotate: 0,
+  id: 'J3'
+})
+// mcu.boot.package
+const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
+  translate: pt(2.096, 0.486), rotate: 0,
+  id: 'SW1'
+})
 // mcu.ic
 const U2 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
@@ -119,16 +129,6 @@ const C5 = board.add(C_1206_3216Metric, {
 const C6 = board.add(C_0603_1608Metric, {
   translate: pt(2.208, 0.667), rotate: 0,
   id: 'C6'
-})
-// mcu.prog.conn
-const J3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
-  translate: pt(2.096, 0.167), rotate: 0,
-  id: 'J3'
-})
-// mcu.boot.package
-const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(2.096, 0.486), rotate: 0,
-  id: 'SW1'
 })
 // mcu.en_pull.rc.r
 const R5 = board.add(R_0603_1608Metric, {
@@ -377,9 +377,9 @@ const TP14 = board.add(TestPoint_TE_RCT_0805, {
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["J2", "1"], ["TP2", "1"], ["Q1", "1"], ["U1", "1"], ["R2", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["Q2", "2"], ["U2", "1"], ["U2", "40"], ["U2", "41"], ["C5", "2"], ["C6", "2"], ["J3", "5"], ["SW1", "2"], ["C7", "2"], ["U3", "3"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["SW2", "2"], ["R10", "2"], ["J4", "17"], ["J4", "8"], ["C8", "2"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["R11", "2"], ["C15", "2"], ["D6", "1"], ["C17", "2"], ["C18", "2"], ["R12", "1"], ["J5", "11"], ["J5", "6"], ["U6", "4"], ["C19", "2"]]},
+  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["J2", "1"], ["TP2", "1"], ["Q1", "1"], ["U1", "1"], ["R2", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["Q2", "2"], ["J3", "5"], ["SW1", "2"], ["U2", "1"], ["U2", "40"], ["U2", "41"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["U3", "3"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["SW2", "2"], ["R10", "2"], ["J4", "17"], ["J4", "8"], ["C8", "2"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["R11", "2"], ["C15", "2"], ["D6", "1"], ["C17", "2"], ["C18", "2"], ["R12", "1"], ["J5", "11"], ["J5", "6"], ["U6", "4"], ["C19", "2"]]},
   {name: "vbat", pads: [["Q1", "2"], ["U1", "3"], ["C1", "1"], ["C3", "1"], ["R3", "1"], ["R4", "1"], ["Q3", "2"]]},
-  {name: "v3v3", pads: [["R1", "1"], ["L1", "2"], ["C4", "1"], ["TP3", "1"], ["U2", "2"], ["C5", "1"], ["C6", "1"], ["J3", "1"], ["R5", "1"], ["Q4", "2"], ["Q5", "2"]]},
+  {name: "v3v3", pads: [["R1", "1"], ["L1", "2"], ["C4", "1"], ["TP3", "1"], ["J3", "1"], ["U2", "2"], ["C5", "1"], ["C6", "1"], ["R5", "1"], ["Q4", "2"], ["Q5", "2"]]},
   {name: "usb_chain_0.d_P", pads: [["J1", "A6"], ["J1", "B6"], ["U2", "14"], ["U3", "2"]]},
   {name: "usb_chain_0.d_N", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "13"], ["U3", "1"]]},
   {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"]]},
@@ -393,10 +393,10 @@ board.setNetlist([
   {name: "vbat_sense_gate.control", pads: [["Q2", "1"], ["U2", "6"]]},
   {name: "vbat_sense_gate.output", pads: [["Q3", "3"], ["R9", "1"]]},
   {name: "vbat_sense_gate.pre.drain", pads: [["Q2", "3"], ["R4", "2"], ["Q3", "1"]]},
-  {name: "mcu.program_uart_node.a_tx", pads: [["U2", "37"], ["J3", "3"]]},
-  {name: "mcu.program_uart_node.b_tx", pads: [["U2", "36"], ["J3", "4"]]},
-  {name: "mcu.program_en_node", pads: [["U2", "3"], ["J3", "6"], ["R5", "2"], ["C7", "1"]]},
-  {name: "mcu.program_boot_node", pads: [["U2", "27"], ["J3", "2"], ["SW1", "1"]]},
+  {name: "mcu.program_uart_node.a_tx", pads: [["J3", "4"], ["U2", "36"]]},
+  {name: "mcu.program_uart_node.b_tx", pads: [["J3", "3"], ["U2", "37"]]},
+  {name: "mcu.program_en_node", pads: [["J3", "6"], ["U2", "3"], ["R5", "2"], ["C7", "1"]]},
+  {name: "mcu.program_boot_node", pads: [["J3", "2"], ["SW1", "1"], ["U2", "27"]]},
   {name: "ledr.signal", pads: [["U2", "39"], ["D1", "2"]]},
   {name: "ledr.package.k", pads: [["D1", "1"], ["R6", "1"]]},
   {name: "ledg.signal", pads: [["U2", "38"], ["D2", "2"]]},
