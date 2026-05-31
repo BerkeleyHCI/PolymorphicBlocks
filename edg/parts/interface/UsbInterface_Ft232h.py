@@ -94,22 +94,11 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "37": self.vcca,
                 "38": self.vcccore,
                 "39": self.vccd,
-                "12": self.vccio,
-                "24": self.vccio,
-                "46": self.vccio,
+                ("12", "24", "46"): self.vccio,
                 "8": self.vpll,
                 "3": self.vphy,
-                "4": self.gnd,  # AGND
-                "9": self.gnd,  # AGND
-                "41": self.gnd,  # AGND
-                "10": self.gnd,
-                "11": self.gnd,
-                "22": self.gnd,
-                "23": self.gnd,
-                "35": self.gnd,
-                "36": self.gnd,
-                "47": self.gnd,
-                "48": self.gnd,
+                ("4", "9", "41"): self.gnd,  # AGND
+                ("10", "11", "22", "23", "35", "36", "47", "48"): self.gnd,
                 "1": self.osc.xtal_in,
                 "2": self.osc.xtal_out,
                 "5": self.ref,

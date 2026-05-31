@@ -48,17 +48,7 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             "U",
             "edg:Molex_1050281001",
             {
-                "1": self.gnd,
-                "6": self.gnd,
-                "8": self.gnd,
-                "9": self.gnd,
-                "10": self.gnd,
-                "15": self.gnd,
-                "18": self.gnd,
-                "20": self.gnd,
-                "25": self.gnd,
-                "27": self.gnd,
-                "30": self.gnd,
+                ("1", "6", "8", "9", "10", "15", "18", "20", "25", "27", "30"): self.gnd,
                 "33": self.gnd,  # socket shield
                 "2": self.vsync,  # aka GPIO3
                 # '3': GPIO2, reserved, "should not be connected"

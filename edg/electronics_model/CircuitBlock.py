@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, List, Mapping, Dict, Union, TYPE_CHECKING
+from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable
 
 from deprecated import deprecated
 from typing_extensions import TypeVar, override
@@ -36,12 +36,11 @@ class FootprintBlock(Block):
         self.fp_pnp_offset_x = self.Parameter(FloatExpr())
         self.fp_pnp_offset_y = self.Parameter(FloatExpr())
 
-    # TODO: allow value to be taken from parameters, ideally w/ string concat from params
     def footprint(
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, Union["Passive", "HasPassivePort"]],
+        pinning: Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
@@ -80,7 +79,13 @@ class FootprintBlock(Block):
                 pin_port = pin_port.net
             if not isinstance(pin_port, (CircuitPort, Passive)):
                 raise EdgTypeError(f"Footprint(...) pin", pin_port, Passive)
-            pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
+
+            if isinstance(pin_name, str):
+                pin_tuples: Tuple[str, ...] = (pin_name,)
+            else:
+                pin_tuples = tuple(iter(pin_name))
+            for pin in pin_tuples:
+                pinning_array.append(f"{pin}={pin_port._name_from(self)}")
         self.assign(self.fp_pinning, pinning_array)
 
         self.assign(self.fp_footprint, footprint)

@@ -86,12 +86,11 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
     @override
     def generate(self) -> None:
         super().generate()
-        mapping = {pin_name: self.ports.append_elt(Passive(), pin_name) for pin_name in self.get(self.kicad_pins)}
         self.ports.defined()
         self.footprint(
             self.kicad_refdes_prefix,
             self.kicad_footprint,
-            mapping,
+            {pin_name: self.ports.append_elt(Passive(), pin_name) for pin_name in self.get(self.kicad_pins)},
             part=self.kicad_part,
             value=self.kicad_value,
             datasheet=self.kicad_datasheet,

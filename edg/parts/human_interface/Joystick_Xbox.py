@@ -30,12 +30,9 @@ class XboxElite2Joystick(FootprintBlock, HumanInterface):
             "edg:Joystick_XboxElite2",
             {
                 "1": self.sw,
-                "2": self.gnd,
-                "3": self.gnd,
+                ("2", "3", "8"): self.gnd,
+                ("5", "6"): self.pwr,
                 "4": self.ax1,
-                "5": self.pwr,
-                "6": self.pwr,
                 "7": self.ax2,
-                "8": self.gnd,
             },
         )
