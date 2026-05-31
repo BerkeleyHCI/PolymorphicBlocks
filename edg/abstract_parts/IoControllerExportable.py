@@ -7,8 +7,8 @@ from ..electronics_model import *
 from .IoController import BaseIoController
 
 
-@deprecated("use explicit BaseIoController._export_ios_inner")
 @non_library
+@deprecated("use explicit BaseIoController._export_ios_inner")
 class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     """BaseIoController wrapper (this is a BaseIoController, which wraps another BaseIoController)
     which automatically exports my IOs from the internal IOs in an extensible way (additional connects
