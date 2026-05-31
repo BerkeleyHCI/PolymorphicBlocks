@@ -34,7 +34,6 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
         )
 
 
-@abstract_block
 class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
 
@@ -154,10 +153,10 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
             "49": self.gnd,  # "Paddle"
             "8": self.creset_b,
             "7": self.cdone,
-            "IOB_32a_SPI_SO": self.spi_config.mosi,
-            "IOB_33b_SPI_SI": self.spi_config.miso,
-            "IOB_34a_SPI_SCK": self.spi_config.sck,
-            "IOB_35b_SPI_SS": self.spi_config_cs,
+            "14": self.spi_config.mosi,
+            "17": self.spi_config.miso,
+            "15": self.spi_config.sck,
+            "16": self.spi_config_cs,
         }
 
     @override
@@ -236,7 +235,6 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
         self.assign(self.actual_basic_part, False)
 
 
-@abstract_block
 class Ice40up(Fpga, IoController):
     """Application circuit for the iCE40UP series FPGAs, pre-baked for 'common' applications
     (3.3v supply with 1.2v core not shared, external FLASH programming, no NVCM programming).
@@ -257,7 +255,7 @@ class Ice40up(Fpga, IoController):
         # in theory, there are supply sequencing requirements, but designs like UPduino
         # seem to work fine without sequencing circuitry
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(Ice40up_Device(pin_assigns=self.pin_assigns))
+            self.ic = imp.Block(Ice40up_Device(pin_assigns=ArrayStringExpr()))
             self.connect(self.pwr, self.ic.vccio_1, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
             self._wrap_inner(self.ic)
             self.connect(self.ic.cdone, self.cdone)
