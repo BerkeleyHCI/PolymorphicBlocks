@@ -110,12 +110,13 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.en = self.Port(DigitalSink.from_bidir(self._dio_model))  # needs external pullup
-        self.io2 = self.Port(self._dio_model)  # needs external pullup; affects IO glitching on boot
-        self.io8 = self.Port(self._dio_model)  # needs external pullup, required for download boot
+        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=True)  # needs external pullup
+        self.io2 = self.Port(self._dio_model, optional=True)  # needs external pullup; affects IO glitching on boot
+        self.io8 = self.Port(self._dio_model, optional=True)  # needs external pullup, required for download boot
         self.io9 = self.Port(
             self._dio_model, optional=True
         )  # internally pulled up for SPI boot, connect to GND for download
+        self.require((~self._model).implies(self.en.is_connected() & self.io2.is_connected() & self.io8.is_connected()))
 
         # similarly, the programming UART is fixed and allocated separately
         self.uart0 = self.Port(UartPort(self._dio_model), optional=True)
@@ -172,7 +173,8 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
                     # PinResource('GPIO8', {'GPIO8': self._dio_model}),  # boot pin, non-allocatable
                     # PinResource('GPIO9', {'GPIO9': self._dio_model}),  # boot pin, non-allocatable
                     PinResource("GPIO10", {"GPIO10": self._dio_model}),
-                    PinResource("VDD_SPI", {"GPIO11": self._dio_model}),
+                    # not allowed for in-package flash
+                    # PinResource("VDD_SPI", {"GPIO11": self._dio_model}),
                     # SPI pins skipped - internal to the modules supported so far
                     PinResource("GPIO18", {"GPIO18": self._dio_model}),
                     PinResource("GPIO19", {"GPIO19": self._dio_model}),
@@ -488,8 +490,56 @@ class Esp32c3_Wroom02(
             self.io2_ext_connected = True  # set to ensure this runs after external connections
 
 
+class Xiao_Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerWrapped, GeneratorBlock, FootprintBlock):
+
+    _PIN_REMAPPING = {
+        # 'GPIO2': '1',  # boot pin, non-allocatable
+        "GPIO3": "2",
+        "MTMS": "3",
+        "MTDI": "4",
+        "MTCK": "5",
+        "MTDO": "6",
+        # 'GPIO21': '7',  # boot pin, non-allocatable
+        # 'GPIO20': '8',  # boot pin, non-allocatable
+        # 'GPIO8': '9',  # boot pin, non-allocatable
+        # 'GPIO9': '10',  # boot pin, non-allocatable
+        "GPIO10": "11",
+    }
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.gnd = self.Port(Ground.empty(), optional=True)
+        self.v3v3 = self.Port(Passive.empty(), optional=True)
+        self.vusb = self.Port(Passive.empty(), optional=True)  # VUsb
+        self.cam_sccb = self.Port(I2cController.empty(), optional=True)  # internally connected to camera
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self.footprint(
+            "U",
+            "Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD",
+            self._make_pinning(
+                {"13": self.gnd, "12": self.v3v3, "14": self.vusb},
+                self._PIN_REMAPPING,
+            ),
+            mfr="",
+            part="XIAO ESP32C3",
+            datasheet="https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+        )
+
+
 class Xiao_Esp32c3(
-    IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Interfaces, IoController, GeneratorBlock, FootprintBlock
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    Esp32c3_Interfaces,
+    IoController,
+    BaseIoControllerWrapper,
+    GeneratorBlock,
+    WrapperSubboardBlock,
 ):
     """ESP32-C3 development board, a tiny development (21x17.5mm) daughterboard with a RISC-V microcontroller
     supporting WiFi and BLE. Has an onboard USB connector, so this can also source power.
@@ -502,80 +552,64 @@ class Xiao_Esp32c3(
     Pinning data: https://www.seeedstudio.com/blog/wp-content/uploads/2022/08/Seeed-Studio-XIAO-Series-Package-and-PCB-Design.pdf
     """
 
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "VDD": "12",
-        "GND": "13",
-        "VUSB": "14",
-    }
-    RESOURCE_PIN_REMAP = {
-        # 'GPIO2': '1',  # boot pin, non-allocatable
-        "GPIO3": "2",
-        "MTMS": "3",
-        "MTDI": "4",
-        "MTCK": "5",
-        "MTDO": "6",
-        # 'GPIO21': '7',  # boot pin, non-allocatable
-        # 'GPIO20': '8',  # boot pin, non-allocatable
-        # 'GPIO8': '9',  # boot pin, non-allocatable
-        # 'GPIO9': '10',  # boot pin, non-allocatable
-        "VDD_SPI": "11",
-    }
-
     @override
-    def _vddio(self) -> Port[VoltageLink]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr
-        else:
-            return self.pwr_out
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-            self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr,
-                    "GND": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr_out,
-                    "GND": self.gnd,
-                    "VUSB": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._vdd_model())
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.vusb_out.init_from(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
-        self.pwr_out.init_from(
-            VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
 
-        self.generator_param(self.pwr.is_connected())
+        self.generator_param(
+            self.gnd.is_connected(),
+            self.pwr.is_connected(),
+            self.pwr_out.is_connected(),
+            self.vusb_out.is_connected(),
+            self.pin_assigns,
+        )
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        self.footprint(
-            "U",
-            "Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD",
-            self._make_pinning(),
-            mfr="",
-            part="XIAO ESP32C3",
-            datasheet="https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+        self.model = self.Block(
+            Esp32c3_Device(
+                pin_assigns=self._make_model_pinning(Xiao_Esp32c3_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
+                _model=True,
+                _allowed_pins=list(Xiao_Esp32c3_Device._PIN_REMAPPING.keys()),
+            )
         )
+        self._export_ios_inner(self.model)
+
+        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.model.gnd)
+            self.export_tap(self.gnd, self.device.gnd)
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.model.gnd)
+
+        self.connect(
+            self.model.vdda, self.model.vdd3p3, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi
+        )
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            self.connect(self.pwr, self.model.vdd3p3)
+            self.export_tap(self.pwr.net, self.device.v3v3)
+        else:  # board sources power from USB
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+                )
+            )
+            self.connect(self.pwr_out_model.pwr, self.model.vdd3p3)
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+            self.export_tap(self.pwr_out.net, self.device.v3v3)
+
+        if self.get(self.vusb_out.is_connected()):
+            self.export_tap(self.vusb_out.net, self.device.vusb)
