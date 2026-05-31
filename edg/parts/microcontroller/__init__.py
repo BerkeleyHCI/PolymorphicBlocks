@@ -18,4 +18,4 @@ from .Esp32s3 import Esp32s3_Wroom_1, Freenove_Esp32s3_Wroom
 from .Esp32c3 import Esp32c3_Wroom02, Esp32c3, Xiao_Esp32c3
 from .Rp2040 import Rp2040, Xiao_Rp2040
 
-from .Ice40up import Ice40up5k_Sg48
+from .Ice40up import Ice40up

@@ -463,7 +463,7 @@ class Fcml(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             # FPGA BLOCK
-            self.fpga = imp.Block(Ice40up5k_Sg48())
+            self.fpga = imp.Block(Ice40up())
             (self.cdone,), _ = self.chain(self.fpga.cdone, imp.Block(IndicatorLed()))
             (self.fpga_osc,), _ = self.chain(
                 imp.Block(Oscillator(48 * MHertz(tol=0.005))), self.fpga.gpio.request("osc")

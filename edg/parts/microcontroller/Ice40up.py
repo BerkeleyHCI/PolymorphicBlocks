@@ -38,13 +38,42 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
 class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
 
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-    PACKAGE: str  # package name for footprint(...)
-    PART: str  # part name for footprint(...)
-    JLC_PART: str  # part number for lcsc_part
+    _PIN_MAPPING = {
+        "IOB_0a": "46",
+        "IOB_2a": "47",
+        "IOB_3b_G6": "44",
+        "IOB_4a": "48",
+        "IOB_5b": "45",
+        "IOB_6a": "2",
+        "IOB_8a": "4",
+        "IOB_9b": "3",
+        "IOB_13b": "6",
+        "IOB_16a": "9",
+        "IOB_18a": "10",
+        "IOB_20a": "11",
+        "IOB_22a": "12",
+        "IOB_23b": "21",
+        "IOB_24a": "13",
+        "IOB_25b_G3": "20",
+        "IOB_29b": "19",
+        "IOB_31b": "18",
+        "IOB_36b": "25",
+        "IOB_37a": "23",
+        "IOB_38b": "27",
+        "IOB_39a": "26",
+        "IOB_41a": "28",
+        "IOB_42b": "31",
+        "IOB_43a": "32",
+        "IOB_44b": "34",
+        "IOB_45a_G1": "37",
+        "IOB_46b_G0": "35",
+        "IOB_48b": "36",
+        "IOB_49a": "43",
+        "IOB_50b": "38",
+        "IOB_51a": "42",
+    }
 
-    BITSTREAM_BITS: int = 0
+    BITSTREAM_BITS: int = 833288
 
     @staticmethod
     def make_dio_model(gnd: Ground, vccio: VoltageSink) -> DigitalBidir:
@@ -114,23 +143,22 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     def _system_pinmap(
         self,
     ) -> Dict[str, Union[Passive, HasPassivePort]]:  # names consistent with pinout spreadsheet
-        return VariantPinRemapper(
-            {
-                "VCCPLL": self.vcc_pll,
-                "VCC": self.vcc,
-                "SPI_Vccio1": self.vccio_1,
-                "VCCIO_0": self.vccio_0,
-                "VCCIO_2": self.vccio_2,
-                "VPP_2V5": self.vpp_2v5,
-                "GND": self.gnd,
-                "CRESET_B": self.creset_b,
-                "CDONE": self.cdone,
-                "IOB_32a_SPI_SO": self.spi_config.mosi,
-                "IOB_33b_SPI_SI": self.spi_config.miso,
-                "IOB_34a_SPI_SCK": self.spi_config.sck,
-                "IOB_35b_SPI_SS": self.spi_config_cs,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
+        return {
+            "29": self.vcc_pll,
+            "5": self.vcc,
+            "30": self.vcc,
+            "22": self.vccio_1,
+            "33": self.vccio_0,
+            "1": self.vccio_2,
+            "24": self.vpp_2v5,
+            "49": self.gnd,  # "Paddle"
+            "8": self.creset_b,
+            "7": self.cdone,
+            "IOB_32a_SPI_SO": self.spi_config.mosi,
+            "IOB_33b_SPI_SI": self.spi_config.miso,
+            "IOB_34a_SPI_SCK": self.spi_config.sck,
+            "IOB_35b_SPI_SS": self.spi_config_cs,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
@@ -190,7 +218,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
                 PeripheralAnyResource("SPI1", spi_model),
                 PeripheralAnyResource("SPI2", spi_model),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
@@ -198,73 +226,14 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
 
         self.footprint(
             "U",
-            self.PACKAGE,
+            "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.3x5.3mm",
             self._make_pinning(),
             mfr="Lattice Semiconductor Corporation",
-            part=self.PART,
+            part="ICE40UP5K-SG48",
             datasheet="https://www.latticesemi.com/-/media/LatticeSemi/Documents/DataSheets/iCE/iCE40-UltraPlus-Family-Data-Sheet.ashx",
         )
-        self.assign(self.lcsc_part, self.JLC_PART)
+        self.assign(self.lcsc_part, "C2678152")
         self.assign(self.actual_basic_part, False)
-
-
-class Ice40up5k_Sg48_Device(Ice40up_Device):
-    SYSTEM_PIN_REMAP = {
-        "VCCPLL": "29",
-        "VCC": ["5", "30"],
-        "SPI_Vccio1": "22",
-        "VCCIO_0": "33",
-        "VCCIO_2": "1",
-        "VPP_2V5": "24",
-        "GND": "49",  # "Paddle"
-        "CRESET_B": "8",
-        "CDONE": "7",
-        "IOB_32a_SPI_SO": "14",
-        "IOB_33b_SPI_SI": "17",
-        "IOB_34a_SPI_SCK": "15",
-        "IOB_35b_SPI_SS": "16",
-    }
-
-    RESOURCE_PIN_REMAP = {
-        "IOB_0a": "46",
-        "IOB_2a": "47",
-        "IOB_3b_G6": "44",
-        "IOB_4a": "48",
-        "IOB_5b": "45",
-        "IOB_6a": "2",
-        "IOB_8a": "4",
-        "IOB_9b": "3",
-        "IOB_13b": "6",
-        "IOB_16a": "9",
-        "IOB_18a": "10",
-        "IOB_20a": "11",
-        "IOB_22a": "12",
-        "IOB_23b": "21",
-        "IOB_24a": "13",
-        "IOB_25b_G3": "20",
-        "IOB_29b": "19",
-        "IOB_31b": "18",
-        "IOB_36b": "25",
-        "IOB_37a": "23",
-        "IOB_38b": "27",
-        "IOB_39a": "26",
-        "IOB_41a": "28",
-        "IOB_42b": "31",
-        "IOB_43a": "32",
-        "IOB_44b": "34",
-        "IOB_45a_G1": "37",
-        "IOB_46b_G0": "35",
-        "IOB_48b": "36",
-        "IOB_49a": "43",
-        "IOB_50b": "38",
-        "IOB_51a": "42",
-    }
-
-    PACKAGE = "Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.3x5.3mm"
-    PART = "ICE40UP5K-SG48"
-    JLC_PART = "C2678152"
-
-    BITSTREAM_BITS = 833288
 
 
 @abstract_block
@@ -274,8 +243,6 @@ class Ice40up(Fpga, IoController):
 
     TODO: generator support for CRAM (volatile) programming mode, diode 2v5 NVCM supply.
     """
-
-    DEVICE: Type[Ice40up_Device] = Ice40up_Device
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -290,10 +257,9 @@ class Ice40up(Fpga, IoController):
         # in theory, there are supply sequencing requirements, but designs like UPduino
         # seem to work fine without sequencing circuitry
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(self.DEVICE(pin_assigns=self.pin_assigns))
+            self.ic = imp.Block(Ice40up_Device(pin_assigns=self.pin_assigns))
             self.connect(self.pwr, self.ic.vccio_1, self.ic.vccio_0, self.ic.vccio_2, self.ic.vpp_2v5)
-            self._export_ios_from(self.ic)
-            self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+            self._wrap_inner(self.ic)
             self.connect(self.ic.cdone, self.cdone)
 
             self.vcc_reg = imp.Block(LinearRegulator((1.14, 1.26) * Volt))
@@ -333,7 +299,3 @@ class Ice40up(Fpga, IoController):
 
             self.pll_lf = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
             self.pll_hf = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
-
-
-class Ice40up5k_Sg48(Ice40up):
-    DEVICE = Ice40up5k_Sg48_Device
