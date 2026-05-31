@@ -32,8 +32,8 @@ class Esp32s3_Wroom_1_Device(
         "GPIO5": "5",
         "GPIO6": "6",
         "GPIO7": "7",
-        "GPIO15": "8",
-        "GPIO16": "9",
+        "XTAL_32K_P": "8",  # GPIO15
+        "XTAL_32K_N": "9",  # GPIO16
         "GPIO17": "10",
         "GPIO18": "11",
         "GPIO8": "12",
@@ -48,17 +48,17 @@ class Esp32s3_Wroom_1_Device(
         "GPIO13": "21",
         "GPIO14": "22",
         "GPIO21": "23",
-        "GPIO47": "24",
-        "GPIO48": "25",
+        "SPICLK_P": "24",  # GPIO47
+        "SPICLK_N": "25",  # GPIO48
         # 'GPIO45': '26',  # strapping pin
         # 'GPIO35': '28',  # not available on PSRAM variants
         # 'GPIO36': '29',  # not available on PSRAM variants
         # 'GPIO37': '30',  # not available on PSRAM variants
         "GPIO38": "31",
-        "GPIO39": "32",
-        "GPIO40": "33",
-        "GPIO41": "34",
-        "GPIO42": "35",
+        "MTCK": "32",  # GPIO39
+        "MTDO": "33",  # GPIO40
+        "MTDI": "34",  # GPIO41
+        "MTMS": "35",  # GPIO42
         "GPIO2": "38",
         "GPIO1": "39",
     }
@@ -167,8 +167,8 @@ class Esp32s3_Wroom_1_Device(
                     PinResource("GPIO12", {"GPIO12": self._dio_model, "TOUCH12": touch_model}),  # also ADC2_CH1
                     PinResource("GPIO13", {"GPIO13": self._dio_model, "TOUCH13": touch_model}),  # also ADC2_CH2
                     PinResource("GPIO14", {"GPIO14": self._dio_model, "TOUCH14": touch_model}),  # also ADC2_CH3
-                    PinResource("GPIO15", {"GPIO15": self._dio_model}),  # XTAL_32K_P, also ADC2_CH4
-                    PinResource("GPIO16", {"GPIO16": self._dio_model}),  # XTAL_32K_N, also ADC2_CH5
+                    PinResource("XTAL_32K_P", {"GPIO15": self._dio_model}),  # also ADC2_CH4
+                    PinResource("XTAL_32K_N", {"GPIO16": self._dio_model}),  # also ADC2_CH5
                     PinResource("GPIO17", {"GPIO17": self._dio_model}),  # also ADC2_CH6
                     PinResource("GPIO18", {"GPIO18": self._dio_model}),  # also ADC2_CH7
                     PinResource("GPIO19", {"GPIO19": self._dio_model}),  # also ADC2_CH8 / USB_D-
@@ -184,8 +184,8 @@ class Esp32s3_Wroom_1_Device(
                     # PinResource('SPIQ', {'GPIO31': self._dio_model}),
                     # PinResource('SPID', {'GPIO32': self._dio_model}),
                     # VDD_SPI / VDD3P3_CPU domain
-                    PinResource("GPIO48", {"GPIO48": self._dio_model}),  # SPICLK_N, appendix A
-                    PinResource("GPIO47", {"GPIO47": self._dio_model}),  # SPICLK_P, appendix A
+                    PinResource("SPICLK_N", {"GPIO48": self._dio_model}),  # appendix A
+                    PinResource("SPICLK_P", {"GPIO47": self._dio_model}),  # appendix A
                     # these may be allocated for PSRAM and should not be used
                     # PinResource('GPIO33', {'GPIO33': self._dio_model}),
                     # PinResource('GPIO34', {'GPIO34': self._dio_model}),
@@ -194,10 +194,10 @@ class Esp32s3_Wroom_1_Device(
                     # PinResource('GPIO37', {'GPIO37': self._dio_model}),
                     # VDD3P3_CPU domain
                     PinResource("GPIO38", {"GPIO38": self._dio_model}),
-                    PinResource("GPIO39", {"GPIO39": self._dio_model}),  # MTCK
-                    PinResource("GPIO40", {"GPIO40": self._dio_model}),  # MTDO
-                    PinResource("GPIO41", {"GPIO41": self._dio_model}),  # MTDI
-                    PinResource("GPIO42", {"GPIO42": self._dio_model}),  # MTMS
+                    PinResource("MTCK", {"GPIO39": self._dio_model}),
+                    PinResource("MTDO", {"GPIO40": self._dio_model}),
+                    PinResource("MTDI", {"GPIO41": self._dio_model}),
+                    PinResource("MTMS", {"GPIO42": self._dio_model}),
                     # PinResource('U0TXD', {'GPIO43': self._dio_model}),  # for programming
                     # PinResource('U0RXD', {'GPIO44': self._dio_model}),  # for programming
                     # PeripheralFixedResource('U0', uart_model, {
@@ -295,8 +295,8 @@ class Freenove_Esp32s3_Wrover_Device(Esp32s3_Interfaces, BaseIoControllerWrapped
         # 'GPIO19': '22',  # USB_D+
         # 'GPIO20': '23',  # USB_D-
         "GPIO21": "24",
-        "GPIO47": "25",  # GPIO47
-        "GPIO48": "26",  # GPIO48, internal WS2812
+        "SPICLK_P": "25",  # GPIO47
+        "SPICLK_N": "26",  # GPIO48, internal WS2812
         # 'GPIO45': '27',  # strapping pin, VDD_SPI
         # 'GPIO35': '29',  # PSRAM
         # 'GPIO36': '30',  # PSRAM
@@ -304,8 +304,8 @@ class Freenove_Esp32s3_Wrover_Device(Esp32s3_Interfaces, BaseIoControllerWrapped
         # 'GPIO38': '32',  # SD_CMD
         # 'GPIO39': '33',  # SD_CLK
         # 'GPIO40': '34',  # SD_DATA
-        "GPIO41": "35",
-        "GPIO42": "36",
+        "MTDI": "35",  # GPIO41
+        "MTMS": "36",  # GPIO42
         "GPIO2": "37",  # internal LED
         "GPIO1": "38",
     }
