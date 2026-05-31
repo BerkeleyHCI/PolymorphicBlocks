@@ -342,7 +342,7 @@ class Freenove_Esp32_Wrover_Device(Esp32_Interfaces, BaseIoControllerWrapped, Ge
 
         self.footprint(
             "U",
-            "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD",
+            "edg:Freenove_ESP32-WROVER",
             self._make_pinning(
                 {
                     "1": self.v3v3,  # 3v3, output of internal AMS1117-3.3V LDO
@@ -358,8 +358,7 @@ class Freenove_Esp32_Wrover_Device(Esp32_Interfaces, BaseIoControllerWrapped, Ge
                 self._PIN_REMAPPING,
             ),
             mfr="",
-            part="XIAO RP2040",
-            datasheet="https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html",
+            part="Freenove ESP32-WROVER",
         )
 
 
@@ -370,7 +369,6 @@ class Freenove_Esp32_Wrover(
     IoController,
     BaseIoControllerWrapper,
     GeneratorBlock,
-    FootprintBlock,
     WrapperSubboardBlock,
 ):
     """ESP32-WROVER-DEV breakout with camera.

@@ -27,22 +27,13 @@ class Esp32s3_Interfaces(
 class Esp32s3_Wroom_1_Device(
     Esp32s3_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, FootprintBlock, JlcPart
 ):
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "VDD": "2",
-        "GND": ["1", "40", "41"],  # 41 is EP
-        "CHIP_PU": "3",  # aka EN
-        "GPIO0": "27",
-        "U0RXD": "36",
-        "U0TXD": "37",
-    }
-
     _PIN_MAPPING = {
         "GPIO4": "4",
         "GPIO5": "5",
         "GPIO6": "6",
         "GPIO7": "7",
-        "XTAL_32K_P": "8",  # GPIO15
-        "XTAL_32K_N": "9",  # GPIO16
+        "GPIO15": "8",
+        "GPIO16": "9",
         "GPIO17": "10",
         "GPIO18": "11",
         "GPIO8": "12",
@@ -57,23 +48,27 @@ class Esp32s3_Wroom_1_Device(
         "GPIO13": "21",
         "GPIO14": "22",
         "GPIO21": "23",
-        "SPICLK_P": "24",  # GPIO47
-        "SPICLK_N": "25",  # GPIO48
+        "GPIO47": "24",
+        "GPIO48": "25",
         # 'GPIO45': '26',  # strapping pin
         # 'GPIO35': '28',  # not available on PSRAM variants
         # 'GPIO36': '29',  # not available on PSRAM variants
         # 'GPIO37': '30',  # not available on PSRAM variants
         "GPIO38": "31",
-        "MTCK": "32",  # GPIO39
-        "MTDO": "33",  # GPIO40
-        "MTDI": "34",  # GPIO41
-        "MTMS": "35",  # GPIO42
+        "GPIO39": "32",
+        "GPIO40": "33",
+        "GPIO41": "34",
+        "GPIO42": "35",
         "GPIO2": "38",
         "GPIO1": "39",
     }
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self._model = self.ArgParameter(_model)
+        self._allowed_pins = self.ArgParameter(_allowed_pins)
+        self.generator_param(self._allowed_pins)
 
         self.pwr = self.Port(
             VoltageSink(  # assumes single-rail module
@@ -95,7 +90,8 @@ class Esp32s3_Wroom_1_Device(
             pulldown_capable=True,
         )
 
-        self.chip_pu = self.Port(self._dio_model)  # table 2-5, power up/down control, do NOT leave floating
+        self.chip_pu = self.Port(self._dio_model, optional=True)
+        self.require((~self._model).implies(self.chip_pu.is_connected()), "chip_pu must not be left floating")
         self.io0 = self.Port(
             self._dio_model, optional=True
         )  # table 2-11, default pullup (SPI boot), set low to download boot
@@ -150,82 +146,88 @@ class Esp32s3_Wroom_1_Device(
         i2s_model = I2sController(DigitalBidir.empty())
         dvp8_model = Dvp8Host(DigitalBidir.empty())
 
-        return PinMapUtil(
-            [  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
-                # VDD3P3_RTC domain
-                # PinResource('GPIO0', {'GPIO0': self._dio_model}),  # strapping pin, boot mode
-                PinResource("GPIO1", {"GPIO1": self._dio_model, "ADC1_CH0": adc_model, "TOUCH1": touch_model}),
-                PinResource("GPIO2", {"GPIO2": self._dio_model, "ADC1_CH1": adc_model, "TOUCH2": touch_model}),
-                # technically a strapping pin for JTAG control, but needs to be enabled by eFuse
-                PinResource("GPIO3", {"GPIO3": self._dio_model, "ADC1_CH2": adc_model, "TOUCH3": touch_model}),
-                PinResource("GPIO4", {"GPIO4": self._dio_model, "ADC1_CH3": adc_model, "TOUCH4": touch_model}),
-                PinResource("GPIO5", {"GPIO5": self._dio_model, "ADC1_CH4": adc_model, "TOUCH5": touch_model}),
-                PinResource("GPIO6", {"GPIO6": self._dio_model, "ADC1_CH5": adc_model, "TOUCH6": touch_model}),
-                PinResource("GPIO7", {"GPIO7": self._dio_model, "ADC1_CH6": adc_model, "TOUCH7": touch_model}),
-                PinResource("GPIO8", {"GPIO8": self._dio_model, "ADC1_CH7": adc_model, "TOUCH8": touch_model}),
-                PinResource("GPIO9", {"GPIO9": self._dio_model, "ADC1_CH8": adc_model, "TOUCH9": touch_model}),
-                PinResource("GPIO10", {"GPIO10": self._dio_model, "ADC1_CH9": adc_model, "TOUCH10": touch_model}),
-                # ADC2 pins can't be used simultaneously with WiFi (section 2.3.3) and are not allocatable
-                PinResource("GPIO11", {"GPIO11": self._dio_model, "TOUCH11": touch_model}),  # also ADC2_CH0
-                PinResource("GPIO12", {"GPIO12": self._dio_model, "TOUCH12": touch_model}),  # also ADC2_CH1
-                PinResource("GPIO13", {"GPIO13": self._dio_model, "TOUCH13": touch_model}),  # also ADC2_CH2
-                PinResource("GPIO14", {"GPIO14": self._dio_model, "TOUCH14": touch_model}),  # also ADC2_CH3
-                PinResource("XTAL_32K_P", {"GPIO15": self._dio_model}),  # also ADC2_CH4
-                PinResource("XTAL_32K_N", {"GPIO16": self._dio_model}),  # also ADC2_CH5
-                PinResource("GPIO17", {"GPIO17": self._dio_model}),  # also ADC2_CH6
-                PinResource("GPIO18", {"GPIO18": self._dio_model}),  # also ADC2_CH7
-                PinResource("GPIO19", {"GPIO19": self._dio_model}),  # also ADC2_CH8 / USB_D-
-                PinResource("GPIO20", {"GPIO20": self._dio_model}),  # also ADC2_CH9 / USB_D+
-                PinResource("GPIO21", {"GPIO21": self._dio_model}),
-                # VDD_SPI domain
-                # section 2.3.3, these are allocated for flash and should not be used
-                # PinResource('SPICS1', {'GPIO26': self._dio_model}),
-                # PinResource('SPIHD', {'GPIO27': self._dio_model}),
-                # PinResource('SPIWP', {'GPIO28': self._dio_model}),
-                # PinResource('SPICS0', {'GPIO29': self._dio_model}),
-                # PinResource('SPICLK', {'GPIO30': self._dio_model}),
-                # PinResource('SPIQ', {'GPIO31': self._dio_model}),
-                # PinResource('SPID', {'GPIO32': self._dio_model}),
-                # VDD_SPI / VDD3P3_CPU domain
-                PinResource("SPICLK_N", {"GPIO48": self._dio_model}),  # appendix A
-                PinResource("SPICLK_P", {"GPIO47": self._dio_model}),  # appendix A
-                # these may be allocated for PSRAM and should not be used
-                # PinResource('GPIO33', {'GPIO33': self._dio_model}),
-                # PinResource('GPIO34', {'GPIO34': self._dio_model}),
-                # PinResource('GPIO35', {'GPIO35': self._dio_model}),
-                # PinResource('GPIO36', {'GPIO36': self._dio_model}),
-                # PinResource('GPIO37', {'GPIO37': self._dio_model}),
-                # VDD3P3_CPU domain
-                PinResource("GPIO38", {"GPIO38": self._dio_model}),
-                PinResource("MTCK", {"GPIO39": self._dio_model}),
-                PinResource("MTDO", {"GPIO40": self._dio_model}),
-                PinResource("MTDI", {"GPIO41": self._dio_model}),
-                PinResource("MTMS", {"GPIO42": self._dio_model}),
-                # PinResource('U0TXD', {'GPIO43': self._dio_model}),  # for programming
-                # PinResource('U0RXD', {'GPIO44': self._dio_model}),  # for programming
-                # PeripheralFixedResource('U0', uart_model, {
-                #   'tx': ['GPIO43'], 'rx': ['GPIO44']
-                # }),
-                # PinResource('GPIO45', {'GPIO45': self._dio_model}),  # strapping pin, VDD_SPI power source
-                # PinResource('GPIO46', {'GPIO46': self._dio_model}),  # strapping pin, boot mode, keep low
-                PeripheralAnyResource("U1", uart_model),
-                PeripheralAnyResource("U2", uart_model),
-                PeripheralAnyResource("I2CEXT0", i2c_model),
-                PeripheralAnyResource("I2CEXT1", i2c_model),
-                PeripheralAnyResource("I2CEXT0_T", i2c_target_model),  # TODO shared resource w/ I2C controller
-                PeripheralAnyResource("I2CEXT1_T", i2c_target_model),  # TODO shared resource w/ I2C controller
-                # SPI0/1 may be used for (possibly on-chip) flash / PSRAM
-                PeripheralAnyResource("SPI2", spi_model),
-                PeripheralAnyResource("SPI3", spi_model),
-                PeripheralAnyResource("SPI2_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("SPI3_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("TWAI", can_model),
-                PeripheralAnyResource("I2S0", i2s_model),
-                PeripheralAnyResource("I2S1", i2s_model),
-                PeripheralAnyResource("DVP", dvp8_model),  # TODO this also eats an I2S port, also available as 16-bit
-                PeripheralFixedResource("USB", UsbDevicePort.empty(), {"dp": ["GPIO20"], "dm": ["GPIO19"]}),
-            ]
-        ).remap_pins(self._PIN_MAPPING)
+        return (
+            PinMapUtil(
+                [  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
+                    # VDD3P3_RTC domain
+                    # PinResource('GPIO0', {'GPIO0': self._dio_model}),  # strapping pin, boot mode
+                    PinResource("GPIO1", {"GPIO1": self._dio_model, "ADC1_CH0": adc_model, "TOUCH1": touch_model}),
+                    PinResource("GPIO2", {"GPIO2": self._dio_model, "ADC1_CH1": adc_model, "TOUCH2": touch_model}),
+                    # technically a strapping pin for JTAG control, but needs to be enabled by eFuse
+                    PinResource("GPIO3", {"GPIO3": self._dio_model, "ADC1_CH2": adc_model, "TOUCH3": touch_model}),
+                    PinResource("GPIO4", {"GPIO4": self._dio_model, "ADC1_CH3": adc_model, "TOUCH4": touch_model}),
+                    PinResource("GPIO5", {"GPIO5": self._dio_model, "ADC1_CH4": adc_model, "TOUCH5": touch_model}),
+                    PinResource("GPIO6", {"GPIO6": self._dio_model, "ADC1_CH5": adc_model, "TOUCH6": touch_model}),
+                    PinResource("GPIO7", {"GPIO7": self._dio_model, "ADC1_CH6": adc_model, "TOUCH7": touch_model}),
+                    PinResource("GPIO8", {"GPIO8": self._dio_model, "ADC1_CH7": adc_model, "TOUCH8": touch_model}),
+                    PinResource("GPIO9", {"GPIO9": self._dio_model, "ADC1_CH8": adc_model, "TOUCH9": touch_model}),
+                    PinResource("GPIO10", {"GPIO10": self._dio_model, "ADC1_CH9": adc_model, "TOUCH10": touch_model}),
+                    # ADC2 pins can't be used simultaneously with WiFi (section 2.3.3) and are not allocatable
+                    PinResource("GPIO11", {"GPIO11": self._dio_model, "TOUCH11": touch_model}),  # also ADC2_CH0
+                    PinResource("GPIO12", {"GPIO12": self._dio_model, "TOUCH12": touch_model}),  # also ADC2_CH1
+                    PinResource("GPIO13", {"GPIO13": self._dio_model, "TOUCH13": touch_model}),  # also ADC2_CH2
+                    PinResource("GPIO14", {"GPIO14": self._dio_model, "TOUCH14": touch_model}),  # also ADC2_CH3
+                    PinResource("GPIO15", {"GPIO15": self._dio_model}),  # XTAL_32K_P, also ADC2_CH4
+                    PinResource("GPIO16", {"GPIO16": self._dio_model}),  # XTAL_32K_N, also ADC2_CH5
+                    PinResource("GPIO17", {"GPIO17": self._dio_model}),  # also ADC2_CH6
+                    PinResource("GPIO18", {"GPIO18": self._dio_model}),  # also ADC2_CH7
+                    PinResource("GPIO19", {"GPIO19": self._dio_model}),  # also ADC2_CH8 / USB_D-
+                    PinResource("GPIO20", {"GPIO20": self._dio_model}),  # also ADC2_CH9 / USB_D+
+                    PinResource("GPIO21", {"GPIO21": self._dio_model}),
+                    # VDD_SPI domain
+                    # section 2.3.3, these are allocated for flash and should not be used
+                    # PinResource('SPICS1', {'GPIO26': self._dio_model}),
+                    # PinResource('SPIHD', {'GPIO27': self._dio_model}),
+                    # PinResource('SPIWP', {'GPIO28': self._dio_model}),
+                    # PinResource('SPICS0', {'GPIO29': self._dio_model}),
+                    # PinResource('SPICLK', {'GPIO30': self._dio_model}),
+                    # PinResource('SPIQ', {'GPIO31': self._dio_model}),
+                    # PinResource('SPID', {'GPIO32': self._dio_model}),
+                    # VDD_SPI / VDD3P3_CPU domain
+                    PinResource("GPIO48", {"GPIO48": self._dio_model}),  # SPICLK_N, appendix A
+                    PinResource("GPIO47", {"GPIO47": self._dio_model}),  # SPICLK_P, appendix A
+                    # these may be allocated for PSRAM and should not be used
+                    # PinResource('GPIO33', {'GPIO33': self._dio_model}),
+                    # PinResource('GPIO34', {'GPIO34': self._dio_model}),
+                    # PinResource('GPIO35', {'GPIO35': self._dio_model}),
+                    # PinResource('GPIO36', {'GPIO36': self._dio_model}),
+                    # PinResource('GPIO37', {'GPIO37': self._dio_model}),
+                    # VDD3P3_CPU domain
+                    PinResource("GPIO38", {"GPIO38": self._dio_model}),
+                    PinResource("GPIO39", {"GPIO39": self._dio_model}),  # MTCK
+                    PinResource("GPIO40", {"GPIO40": self._dio_model}),  # MTDO
+                    PinResource("GPIO41", {"GPIO41": self._dio_model}),  # MTDI
+                    PinResource("GPIO42", {"GPIO42": self._dio_model}),  # MTMS
+                    # PinResource('U0TXD', {'GPIO43': self._dio_model}),  # for programming
+                    # PinResource('U0RXD', {'GPIO44': self._dio_model}),  # for programming
+                    # PeripheralFixedResource('U0', uart_model, {
+                    #   'tx': ['GPIO43'], 'rx': ['GPIO44']
+                    # }),
+                    # PinResource('GPIO45', {'GPIO45': self._dio_model}),  # strapping pin, VDD_SPI power source
+                    # PinResource('GPIO46', {'GPIO46': self._dio_model}),  # strapping pin, boot mode, keep low
+                    PeripheralAnyResource("U1", uart_model),
+                    PeripheralAnyResource("U2", uart_model),
+                    PeripheralAnyResource("I2CEXT0", i2c_model),
+                    PeripheralAnyResource("I2CEXT1", i2c_model),
+                    PeripheralAnyResource("I2CEXT0_T", i2c_target_model),  # TODO shared resource w/ I2C controller
+                    PeripheralAnyResource("I2CEXT1_T", i2c_target_model),  # TODO shared resource w/ I2C controller
+                    # SPI0/1 may be used for (possibly on-chip) flash / PSRAM
+                    PeripheralAnyResource("SPI2", spi_model),
+                    PeripheralAnyResource("SPI3", spi_model),
+                    PeripheralAnyResource("SPI2_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
+                    PeripheralAnyResource("SPI3_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
+                    PeripheralAnyResource("TWAI", can_model),
+                    PeripheralAnyResource("I2S0", i2s_model),
+                    PeripheralAnyResource("I2S1", i2s_model),
+                    PeripheralAnyResource(
+                        "DVP", dvp8_model
+                    ),  # TODO this also eats an I2S port, also available as 16-bit
+                    PeripheralFixedResource("USB", UsbDevicePort.empty(), {"dp": ["GPIO20"], "dm": ["GPIO19"]}),
+                ]
+            )
+            .remap_pins(self._PIN_MAPPING)
+            .filter_pins(self.get(self._allowed_pins))
+        )
 
 
 class Esp32s3_Wroom_1(
@@ -271,23 +273,8 @@ class Esp32s3_Wroom_1(
             )
 
 
-class Freenove_Esp32s3_Wroom(
-    IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Interfaces, IoController, GeneratorBlock, FootprintBlock
-):
-    """Freenove ESP32S3 WROOM breakout breakout with camera.
-
-    Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
-
-    Top left is pin 1, going down the left side then up the right side.
-    Up is defined from the text orientation (antenna is on top).
-    """
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "VDD": "1",
-        "GND": "21",
-        "VUSB": "20",
-    }
-    RESOURCE_PIN_REMAP = {
+class Freenove_Esp32s3_Wrover_Device(Esp32s3_Interfaces, BaseIoControllerWrapped, GeneratorBlock, FootprintBlock):
+    _PIN_REMAPPING = {
         # 'GPIO4': '3',  # CAM_SIOD
         # 'GPIO5': '4',  # CAM_SIOC
         # 'GPIO6': '5',  # CAM_VYSNC
@@ -308,8 +295,8 @@ class Freenove_Esp32s3_Wroom(
         # 'GPIO19': '22',  # USB_D+
         # 'GPIO20': '23',  # USB_D-
         "GPIO21": "24",
-        "SPICLK_P": "25",  # GPIO47
-        "SPICLK_N": "26",  # GPIO48, internal WS2812
+        "GPIO47": "25",  # GPIO47
+        "GPIO48": "26",  # GPIO48, internal WS2812
         # 'GPIO45': '27',  # strapping pin, VDD_SPI
         # 'GPIO35': '29',  # PSRAM
         # 'GPIO36': '30',  # PSRAM
@@ -317,72 +304,20 @@ class Freenove_Esp32s3_Wroom(
         # 'GPIO38': '32',  # SD_CMD
         # 'GPIO39': '33',  # SD_CLK
         # 'GPIO40': '34',  # SD_DATA
-        "MTDI": "35",  # GPIO41
-        "MTMS": "36",  # GPIO42
+        "GPIO41": "35",
+        "GPIO42": "36",
         "GPIO2": "37",  # internal LED
         "GPIO1": "38",
     }
 
-    @override
-    def _vddio(self) -> Port[VoltageLink]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr
-        else:
-            return self.pwr_out
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-            self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr,
-                    "GND": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "VDD": self.pwr_out,
-                    "GND": self.gnd,
-                    "VUSB": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-
-    @override
-    def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
-        pwr = self._vddio()
-        return (
-            super()
-            ._io_pinmap()
-            .add(
-                [
-                    PeripheralFixedPin(
-                        "CAM_SCCB", I2cController(self._dio_model(pwr), has_pullup=True), {"scl": "4", "sda": "3"}
-                    )
-                ]
-            )
-        )
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._vdd_model())
-
-        self.vusb_out.init_from(
-            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
-        )
-        self.pwr_out.init_from(
-            VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-            )
-        )
-
-        self.generator_param(self.pwr.is_connected())
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.gnd = self.Port(Ground.empty(), optional=True)
+        self.v3v3 = self.Port(Passive.empty(), optional=True)
+        self.vusb = self.Port(Passive.empty(), optional=True)  # VUsb
+        self.cam_sccb = self.Port(I2cController.empty(), optional=True)  # internally connected to camera
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
@@ -391,7 +326,97 @@ class Freenove_Esp32s3_Wroom(
         self.footprint(
             "U",
             "edg:Freenove_ESP32-WROVER",
-            self._make_pinning(),
+            self._make_pinning(
+                {
+                    "1": self.v3v3,
+                    "21": self.gnd,
+                    "20": self.vusb,
+                    "3": self.cam_sccb.sda,
+                    "4": self.cam_sccb.scl,
+                },
+                self._PIN_REMAPPING,
+            ),
             mfr="",
             part="Freenove ESP32S3-WROOM",
         )
+
+
+class Freenove_Esp32s3_Wroom(
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    Esp32s3_Interfaces,
+    IoController,
+    BaseIoControllerWrapper,
+    GeneratorBlock,
+    WrapperSubboardBlock,
+):
+    """Freenove ESP32S3 WROOM breakout with camera.
+
+    Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
+
+    Top left is pin 1, going down the left side then up the right side.
+    Up is defined from the text orientation (antenna is on top).
+    """
+
+    @override
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.vusb_out.init_from(
+            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+        )
+
+        self.generator_param(
+            self.gnd.is_connected(),
+            self.pwr.is_connected(),
+            self.pwr_out.is_connected(),
+            self.vusb_out.is_connected(),
+            self.pin_assigns,
+        )
+        self._generator_param_all_ios()
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self.model = self.Block(
+            Esp32s3_Wroom_1_Device(
+                pin_assigns=self._make_model_pinning(
+                    Freenove_Esp32s3_Wrover_Device._PIN_REMAPPING, self.get(self.pin_assigns)
+                ),
+                _model=True,
+                _allowed_pins=list(Freenove_Esp32s3_Wrover_Device._PIN_REMAPPING.keys()),
+            )
+        )
+        self._export_ios_inner(self.model)
+
+        self.device = self.Block(
+            Freenove_Esp32s3_Wrover_Device(pin_assigns=self.model.actual_pin_assigns), external=True
+        )
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+
+        if self.get(self.gnd.is_connected()):
+            self.connect(self.gnd, self.model.gnd)
+            self.export_tap(self.gnd, self.device.gnd)
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            self.connect(self.gnd_model.gnd, self.model.gnd)
+
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            self.connect(self.pwr, self.model.pwr)
+            self.export_tap(self.pwr.net, self.device.v3v3)
+        else:  # board sources power from USB
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
+                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
+                )
+            )
+            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+            self.export_tap(self.pwr_out.net, self.device.v3v3)
+
+        if self.get(self.vusb_out.is_connected()):
+            self.export_tap(self.vusb_out.net, self.device.vusb)
