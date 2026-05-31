@@ -310,7 +310,7 @@ class Esp32c3(
 
 
 class Esp32c3_Wroom02_Footprint(
-    Esp32c3_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, FootprintBlock, JlcPart
+    Esp32c3_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, GeneratorBlock, FootprintBlock, JlcPart
 ):
 
     _PIN_REMAPPING = {
@@ -329,7 +329,7 @@ class Esp32c3_Wroom02_Footprint(
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.gnd = self.Port(Ground(), [Common])
+        self.gnd = self.Port(Ground.empty(), [Common])
         self.v3v3 = self.Port(VoltageSink.empty(), [Power])
 
         self.en = self.Port(DigitalSink.empty())
@@ -337,6 +337,9 @@ class Esp32c3_Wroom02_Footprint(
         self.io8 = self.Port(DigitalBidir.empty())
         self.io9 = self.Port(DigitalBidir.empty())
         self.uart0 = self.Port(UartPort(DigitalBidir.empty()), optional=True)
+
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
 
     @override
     def generate(self) -> None:
@@ -356,7 +359,8 @@ class Esp32c3_Wroom02_Footprint(
                     "8": self.io9,
                     "11": self.uart0.rx,
                     "12": self.uart0.tx,
-                }
+                },
+                self._PIN_REMAPPING,
             ),
             mfr="Espressif Systems",
             part="ESP32-C3-WROOM-02",
@@ -379,11 +383,13 @@ class Esp32c3_Wroom02_Device(
 
         self.model = self.Block(
             Esp32c3_Device(
-                pin_assigns=ArrayStringExpr(), _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys())
+                pin_assigns=ArrayStringExpr(),
+                _model=True,
+                _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys()),
             )
         )
-        self.gnd = self.Export(self.model.gnd)
-        self.v3v3 = self.Export(self.model.vdd3p3)
+        self.gnd = self.Export(self.model.gnd, [Common])
+        self.v3v3 = self.Export(self.model.vdd3p3, [Power])
         self.connect(self.v3v3, self.model.vdda, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi)
         self.en = self.Export(self.model.en)
         self.io2 = self.Export(self.model.io2)

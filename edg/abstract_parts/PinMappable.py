@@ -378,7 +378,9 @@ class PinMapUtil:
     @staticmethod
     def _resource_names(resource: BasePinMapResource) -> List[str]:
         if isinstance(resource, PinResource):
-            return [resource.pin] + [resource_name for resource_name, model in resource.name_models.items()]
+            return [resource.pin, resource.pinname] + [
+                resource_name for resource_name, model in resource.name_models.items()
+            ]
         elif isinstance(resource, (PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource)):
             return [resource.name]
         else:

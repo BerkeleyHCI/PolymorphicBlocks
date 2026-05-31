@@ -168,7 +168,7 @@ class DeskController(JlcBoardTop):
                 (["mcu", "programming"], "uart-auto"),
                 (["spk_drv", "pwr", "current_draw"], Range(0.0022, 0.08)),  # don't run at full power
                 (["npx", "pwr", "current_draw"], Range(0.0036, 0.08)),
-                (["mcu", "ic", "pwr", "current_draw"], Range(1.0e-6, 0.1)),  # assume it doesn't run full bore
+                (["mcu", "pwr", "current_draw"], Range(1.0e-6, 0.1)),  # assume it doesn't run full bore
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
