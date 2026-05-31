@@ -110,7 +110,7 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.en = self.Port(self._dio_model)  # needs external pullup
+        self.en = self.Port(DigitalSink.from_bidir(self._dio_model))  # needs external pullup
         self.io2 = self.Port(self._dio_model)  # needs external pullup; affects IO glitching on boot
         self.io8 = self.Port(self._dio_model)  # needs external pullup, required for download boot
         self.io9 = self.Port(
@@ -309,13 +309,11 @@ class Esp32c3(
         return True  # crystal oscillator always required
 
 
-class Esp32c3_Wroom02_Device(Esp32c3_Interfaces, InternalSubcircuit, FootprintBlock, JlcPart):
-    """ESP32C module
+class Esp32c3_Wroom02_Footprint(
+    Esp32c3_Interfaces, BaseIoControllerWrapped, InternalSubcircuit, FootprintBlock, JlcPart
+):
 
-    Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
-    """
-
-    RESOURCE_PIN_REMAP = {
+    _PIN_REMAPPING = {
         "MTMS": "3",  # GPIO4
         "MTDI": "4",  # GPIO5
         "MTCK": "5",  # GPIO6
@@ -328,20 +326,17 @@ class Esp32c3_Wroom02_Device(Esp32c3_Interfaces, InternalSubcircuit, FootprintBl
         "GPIO0": "18",
     }
 
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(super()._system_pinmap()).remap(
-            {
-                "Vdd": "1",
-                "Vss": ["9", "19"],  # 19 is EP
-                "EN": "2",
-                "GPIO2": "16",
-                "GPIO8": "7",
-                "GPIO9": "8",
-                "RXD": "11",  # RXD, GPIO20
-                "TXD": "12",  # TXD, GPIO21
-            }
-        )
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.gnd = self.Port(Ground(), [Common])
+        self.v3v3 = self.Port(VoltageSink.empty(), [Power])
+
+        self.en = self.Port(DigitalSink.empty())
+        self.io2 = self.Port(DigitalBidir.empty())
+        self.io8 = self.Port(DigitalBidir.empty())
+        self.io9 = self.Port(DigitalBidir.empty())
+        self.uart0 = self.Port(UartPort(DigitalBidir.empty()), optional=True)
 
     @override
     def generate(self) -> None:
@@ -350,13 +345,74 @@ class Esp32c3_Wroom02_Device(Esp32c3_Interfaces, InternalSubcircuit, FootprintBl
         self.footprint(
             "U",
             "RF_Module:ESP-WROOM-02",
-            self._make_pinning(),
+            self._make_pinning(
+                {
+                    "1": self.v3v3,
+                    "9": self.gnd,
+                    "19": self.gnd,  # EP
+                    "2": self.en,
+                    "16": self.io2,
+                    "7": self.io8,
+                    "8": self.io9,
+                    "11": self.uart0.rx,
+                    "12": self.uart0.tx,
+                }
+            ),
             mfr="Espressif Systems",
             part="ESP32-C3-WROOM-02",
             datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf",
         )
         self.assign(self.lcsc_part, "C2934560")
         self.assign(self.actual_basic_part, False)
+
+
+class Esp32c3_Wroom02_Device(
+    Esp32c3_Interfaces,
+    BaseIoControllerWrapper,
+    InternalSubcircuit,
+    GeneratorBlock,
+    WrapperSubboardBlock,
+):
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.model = self.Block(
+            Esp32c3_Device(
+                pin_assigns=ArrayStringExpr(), _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys())
+            )
+        )
+        self.gnd = self.Export(self.model.gnd)
+        self.v3v3 = self.Export(self.model.vdd3p3)
+        self.connect(self.v3v3, self.model.vdda, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi)
+        self.en = self.Export(self.model.en)
+        self.io2 = self.Export(self.model.io2)
+        self.io8 = self.Export(self.model.io8)
+        self.io9 = self.Export(self.model.io9, optional=True)
+        self.uart0 = self.Export(self.model.uart0, optional=True)
+        self.generator_param(self.pin_assigns)
+        self._generator_param_all_ios()
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self._export_ios_inner(self.model)
+        self.assign(
+            self.model.pin_assigns,
+            self._make_model_pinning(Esp32c3_Wroom02_Footprint._PIN_REMAPPING, self.get(self.pin_assigns)),
+        )
+
+        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns))
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self._export_tap_ios_inner(self.device)
+        self.export_tap(self.gnd, self.device.gnd)
+        self.export_tap(self.v3v3, self.device.v3v3)
+        self.export_tap(self.en, self.device.en)
+        self.export_tap(self.io2, self.device.io2)
+        self.export_tap(self.io8, self.device.io8)
+        self.export_tap(self.io9, self.device.io9)
+        self.export_tap(self.uart0, self.device.uart0)
 
 
 class Esp32c3_Wroom02(
@@ -366,7 +422,6 @@ class Esp32c3_Wroom02(
     Resettable,
     Esp32c3_Interfaces,
     IoControllerPowerRequired,
-    BaseIoControllerExportable,
     GeneratorBlock,
 ):
     """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
@@ -374,27 +429,40 @@ class Esp32c3_Wroom02(
     def __init__(self) -> None:
         super().__init__()
         self.ic: Esp32c3_Wroom02_Device
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
         self.io2_ext_connected: bool = False
         self.io8_ext_connected: bool = False
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
             self.ic = imp.Block(Esp32c3_Wroom02_Device(pin_assigns=ArrayStringExpr()))
+
+            def gpio_transform(self_io: BasePort, assign: Optional[str]) -> Optional[BasePort]:
+                if assign == "_GPIO2_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io2)
+                    self._io2_ext_connected = True
+                    return None
+                elif assign == "_GPIO8_STRAP_EXT_PU":
+                    self.connect(self_io, self.ic.io8)
+                    self._io8_ext_connected = True
+                    return None
+                elif assign == "_GPIO9_STRAP":
+                    self.connect(self_io, self.ic.io9)
+                    return None
+                return self_io
+
+            self._wrap_inner(self.ic, transforms={DigitalBidir: gpio_transform})
+
             self.connect(self.program_uart_node, self.ic.uart0)
             self.connect(self.program_en_node, self.ic.en)
             self.connect(self.program_boot_node, self.ic.io9)
 
             self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
             self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
-
-    @override
-    def generate(self) -> None:
-        super().generate()
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.en)
@@ -412,29 +480,6 @@ class Esp32c3_Wroom02(
         if not self.io2_ext_connected:
             self.connect(self.ic.io2, self.pwr.as_digital_source())
             self.io2_ext_connected = True  # set to ensure this runs after external connections
-
-    ExportType = TypeVar("ExportType", bound=Port)
-
-    @override
-    def _make_export_vector(
-        self, self_io: ExportType, inner_vector: Vector[ExportType], name: str, assign: Optional[str]
-    ) -> Optional[str]:
-        """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
-        if isinstance(self_io, DigitalBidir):
-            if assign == f"{name}=_GPIO2_STRAP_EXT_PU":  # assume external pullup
-                self.connect(self_io, self.ic.io2)
-                assert not self.io2_ext_connected  # assert not yet hard tied
-                self.io2_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO8_STRAP_EXT_PU":  # assume external pullup
-                self.connect(self_io, self.ic.io8)
-                assert not self.io8_ext_connected  # assert not yet hard tied
-                self.io8_ext_connected = True
-                return None
-            elif assign == f"{name}=_GPIO9_STRAP":
-                self.connect(self_io, self.ic.io9)
-                return None
-        return super()._make_export_vector(self_io, inner_vector, name, assign)
 
 
 class Xiao_Esp32c3(
