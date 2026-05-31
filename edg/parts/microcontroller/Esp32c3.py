@@ -439,8 +439,8 @@ class Esp32c3_Wroom02(
         self.ic: Esp32c3_Wroom02_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
-        self.io2_ext_connected: bool = False
-        self.io8_ext_connected: bool = False
+        self._io2_ext_connected: bool = False
+        self._io8_ext_connected: bool = False
 
     @override
     def generate(self) -> None:
@@ -482,12 +482,10 @@ class Esp32c3_Wroom02(
         # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
         # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
         # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-        if not self.io8_ext_connected:
+        if not self._io8_ext_connected:
             self.connect(self.ic.io8, self.pwr.as_digital_source())
-            self.io8_ext_connected = True  # set to ensure this runs after external connections
-        if not self.io2_ext_connected:
+        if not self._io2_ext_connected:
             self.connect(self.ic.io2, self.pwr.as_digital_source())
-            self.io2_ext_connected = True  # set to ensure this runs after external connections
 
 
 class Xiao_Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerWrapped, GeneratorBlock, FootprintBlock):

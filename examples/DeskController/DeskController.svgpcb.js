@@ -81,7 +81,12 @@ const DD1 = board.add(D_SOD_323, {
   translate: pt(1.049, 3.278), rotate: 0,
   id: 'DD1'
 })
-// mcu.ic
+// mcu.prog.conn
+const DJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+  translate: pt(1.299, 2.197), rotate: 0,
+  id: 'DJ2'
+})
+// mcu.ic.device
 const DU2 = board.add(ESP_WROOM_02, {
   translate: pt(0.561, 2.400), rotate: 0,
   id: 'DU2'
@@ -95,11 +100,6 @@ const DC3 = board.add(C_0805_2012Metric, {
 const DC4 = board.add(C_0603_1608Metric, {
   translate: pt(1.393, 2.344), rotate: 0,
   id: 'DC4'
-})
-// mcu.prog.conn
-const DJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(1.299, 2.197), rotate: 0,
-  id: 'DJ2'
 })
 // mcu.en_pull.rc.r
 const DR3 = board.add(R_0603_1608Metric, {
@@ -313,9 +313,9 @@ const DC22 = board.add(C_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "Dgnd", pads: [["DJ1", "2"], ["DTP1", "1"], ["DU1", "1"], ["DC1", "2"], ["DC2", "2"], ["DD1", "2"], ["DU2", "19"], ["DU2", "9"], ["DC3", "2"], ["DC4", "2"], ["DJ2", "5"], ["DC5", "2"], ["DR4", "2"], ["DJ3", "1"], ["DJ3", "10"], ["DJ3", "14"], ["DJ3", "15"], ["DJ3", "16"], ["DJ3", "18"], ["DJ3", "19"], ["DJ3", "2"], ["DJ3", "21"], ["DJ3", "23"], ["DJ3", "30"], ["DJ3", "6"], ["DJ3", "7"], ["DJ3", "8"], ["DJ3", "9"], ["DR5", "1"], ["DC8", "2"], ["DC9", "2"], ["DC10", "2"], ["DC11", "2"], ["DC12", "2"], ["DU4", "7"], ["DU4", "9"], ["DC13", "2"], ["DC14", "2"], ["DC16", "2"], ["DD9", "3"], ["DC17", "2"], ["DD10", "3"], ["DC18", "2"], ["DD11", "3"], ["DC19", "2"], ["DD12", "3"], ["DC20", "2"], ["DD13", "3"], ["DC21", "2"], ["DD14", "3"], ["DC22", "2"]]},
+  {name: "Dgnd", pads: [["DJ1", "2"], ["DTP1", "1"], ["DU1", "1"], ["DC1", "2"], ["DC2", "2"], ["DD1", "2"], ["DJ2", "5"], ["DU2", "19"], ["DU2", "9"], ["DC3", "2"], ["DC4", "2"], ["DC5", "2"], ["DR4", "2"], ["DJ3", "1"], ["DJ3", "10"], ["DJ3", "14"], ["DJ3", "15"], ["DJ3", "16"], ["DJ3", "18"], ["DJ3", "19"], ["DJ3", "2"], ["DJ3", "21"], ["DJ3", "23"], ["DJ3", "30"], ["DJ3", "6"], ["DJ3", "7"], ["DJ3", "8"], ["DJ3", "9"], ["DR5", "1"], ["DC8", "2"], ["DC9", "2"], ["DC10", "2"], ["DC11", "2"], ["DC12", "2"], ["DU4", "7"], ["DU4", "9"], ["DC13", "2"], ["DC14", "2"], ["DC16", "2"], ["DD9", "3"], ["DC17", "2"], ["DD10", "3"], ["DC18", "2"], ["DD11", "3"], ["DC19", "2"], ["DD12", "3"], ["DC20", "2"], ["DD13", "3"], ["DC21", "2"], ["DD14", "3"], ["DC22", "2"]]},
   {name: "Dpwr", pads: [["DFB1", "2"], ["DTP2", "1"], ["DU1", "3"], ["DC1", "1"], ["DU4", "1"], ["DU4", "6"], ["DC13", "1"], ["DC14", "1"], ["DR12", "1"], ["DD9", "1"], ["DC17", "1"], ["DD10", "1"], ["DC18", "1"], ["DD11", "1"], ["DC19", "1"], ["DD12", "1"], ["DC20", "1"], ["DD13", "1"], ["DC21", "1"], ["DD14", "1"], ["DC22", "1"]]},
-  {name: "Dv3v3", pads: [["DQ1", "1"], ["DR1", "1"], ["DQ2", "1"], ["DR2", "1"], ["DU1", "2"], ["DC2", "1"], ["DTP3", "1"], ["DD1", "1"], ["DU2", "1"], ["DC3", "1"], ["DC4", "1"], ["DJ2", "1"], ["DR3", "1"], ["DJ3", "20"], ["DJ3", "22"], ["DJ3", "25"], ["DC9", "1"], ["DC10", "1"], ["DR6", "1"], ["DR7", "1"], ["DR8", "1"], ["DQ3", "1"]]},
+  {name: "Dv3v3", pads: [["DQ1", "1"], ["DR1", "1"], ["DQ2", "1"], ["DR2", "1"], ["DU1", "2"], ["DC2", "1"], ["DTP3", "1"], ["DD1", "1"], ["DJ2", "1"], ["DU2", "1"], ["DC3", "1"], ["DC4", "1"], ["DR3", "1"], ["DJ3", "20"], ["DJ3", "22"], ["DJ3", "25"], ["DC9", "1"], ["DC10", "1"], ["DR6", "1"], ["DR7", "1"], ["DR8", "1"], ["DQ3", "1"]]},
   {name: "Dspk_chain_0", pads: [["DU2", "7"], ["DR8", "2"], ["DR9", "1"]]},
   {name: "Dspk_chain_1", pads: [["DR9", "2"], ["DC12", "1"], ["DTP4", "1"], ["DC15", "2"]]},
   {name: "Dspk_chain_2.a", pads: [["DU4", "8"], ["DJ4", "1"]]},
@@ -330,10 +330,10 @@ board.setNetlist([
   {name: "Dmcu.gpio.swr_0", pads: [["DU2", "14"], ["DD2", "2"], ["DD5", "2"]]},
   {name: "Dmcu.gpio.swr_1", pads: [["DU2", "13"], ["DD3", "2"], ["DD6", "2"]]},
   {name: "Dmcu.gpio.swr_2", pads: [["DU2", "10"], ["DD4", "2"], ["DD7", "2"]]},
-  {name: "Dmcu.program_uart_node.a_tx", pads: [["DU2", "12"], ["DJ2", "3"]]},
-  {name: "Dmcu.program_uart_node.b_tx", pads: [["DU2", "11"], ["DJ2", "4"]]},
-  {name: "Dmcu.program_en_node", pads: [["DU2", "2"], ["DJ2", "6"], ["DR3", "2"], ["DC5", "1"]]},
-  {name: "Dmcu.program_boot_node", pads: [["DU2", "8"], ["DJ2", "2"], ["DD8", "2"]]},
+  {name: "Dmcu.program_uart_node.a_tx", pads: [["DJ2", "4"], ["DU2", "11"]]},
+  {name: "Dmcu.program_uart_node.b_tx", pads: [["DJ2", "3"], ["DU2", "12"]]},
+  {name: "Dmcu.program_en_node", pads: [["DJ2", "6"], ["DU2", "2"], ["DR3", "2"], ["DC5", "1"]]},
+  {name: "Dmcu.program_boot_node", pads: [["DJ2", "2"], ["DU2", "8"], ["DD8", "2"]]},
   {name: "Dsw.sw[0,0].sw", pads: [["DSW1", "1"], ["DD2", "1"]]},
   {name: "Dsw.sw[0,1].sw", pads: [["DSW2", "1"], ["DD3", "1"]]},
   {name: "Dsw.sw[0,2].sw", pads: [["DSW3", "1"], ["DD4", "1"]]},
