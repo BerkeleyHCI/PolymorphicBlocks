@@ -19,8 +19,7 @@ class OledI2cTest(DesignTop):
         ) as imp:
             self.dut = imp.Block(Er_Oled_096_1_1())
 
-            self.rst = self.Block(DummyDigitalSource())
-            self.connect(self.rst.io, self.dut.reset)
+            self.rst = self.Block(DummyDigitalSource()).connected(self.dut.reset)
 
             self.mcu = imp.Block(IdealIoController())
             self.i2c_pull = imp.Block(I2cPullup())
@@ -49,15 +48,12 @@ class OledSpiTest(DesignTop):
         ) as imp:
             self.dut = imp.Block(Er_Oled_096_1_1())
 
-            self.rst = self.Block(DummyDigitalSource())
-            self.connect(self.rst.io, self.dut.reset)
+            self.rst = self.Block(DummyDigitalSource()).connected(self.dut.reset)
 
             self.mcu = imp.Block(IdealIoController())
             self.connect(self.mcu.spi.request(), self.dut.spi)
-            self.cs = self.Block(DummyDigitalSource())
-            self.connect(self.cs.io, self.dut.cs)
-            self.dc = self.Block(DummyDigitalSource())
-            self.connect(self.dc.io, self.dut.dc)
+            self.cs = self.Block(DummyDigitalSource()).connected(self.dut.cs)
+            self.dc = self.Block(DummyDigitalSource()).connected(self.dut.dc)
 
     @override
     def refinements(self) -> Refinements:

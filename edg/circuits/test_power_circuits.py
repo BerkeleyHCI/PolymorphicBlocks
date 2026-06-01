@@ -12,12 +12,10 @@ class RampLimiterTestTop(DesignTop):
         super().__init__()
         self.dut = self.Block(RampLimiter())
 
-        (self.dummyin,), _ = self.chain(self.dut.pwr_in, self.Block(DummyVoltageSource(voltage_out=12 * Volt(tol=0))))
-        (self.dummyout,), _ = self.chain(self.dut.pwr_out, self.Block(DummyVoltageSink(current_draw=1 * Amp(tol=0))))
-        (self.dummyctl,), _ = self.chain(
-            self.dut.control, self.Block(DummyDigitalSource(voltage_out=3.3 * Volt(tol=0)))
-        )
-        (self.dummygnd,), _ = self.chain(self.dut.gnd, self.Block(DummyGround()))
+        self.dummygnd = self.Block(DummyGround()).connected(self.dut.gnd)
+        self.dummyin = self.Block(DummyVoltageSource(voltage_out=12 * Volt(tol=0))).connected(self.dut.pwr_in)
+        self.dummyout = self.Block(DummyVoltageSink(current_draw=1 * Amp(tol=0))).connected(self.dut.pwr_out)
+        self.dummyctl = self.Block(DummyDigitalSource(voltage_out=3.3 * Volt(tol=0))).connected(self.dut.control)
 
     @override
     def refinements(self) -> Refinements:

@@ -21,8 +21,7 @@ class OverallocateTest(DesignTop):
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(7):  # device only has 6 IOs
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class FullMcuTest(DesignTop):
@@ -39,8 +38,7 @@ class FullMcuTest(DesignTop):
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(6):
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class BaseMcuTest(DesignTop):
@@ -56,8 +54,7 @@ class BaseMcuTest(DesignTop):
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(2):
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class AssignedPinsTest(BaseMcuTest):
