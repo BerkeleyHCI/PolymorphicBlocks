@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, List, Mapping, Dict, Union, TYPE_CHECKING
+from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable, overload, Set
 
 from deprecated import deprecated
 from typing_extensions import TypeVar, override
@@ -36,12 +36,42 @@ class FootprintBlock(Block):
         self.fp_pnp_offset_x = self.Parameter(FloatExpr())
         self.fp_pnp_offset_y = self.Parameter(FloatExpr())
 
-    # TODO: allow value to be taken from parameters, ideally w/ string concat from params
+    @overload
     def footprint(
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, Union["Passive", "HasPassivePort"]],
+        pinning: Mapping[str, Union[Passive, HasPassivePort]],
+        mfr: Optional[StringLike] = None,
+        part: Optional[StringLike] = None,
+        value: Optional[StringLike] = None,
+        datasheet: Optional[StringLike] = None,
+        pnp_rot: Optional[float] = None,
+        pnp_offset: Optional[tuple[float, float]] = None,
+    ) -> None: ...
+
+    @overload
+    def footprint(
+        self,
+        refdes: StringLike,
+        footprint: StringLike,
+        pinning: Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
+        mfr: Optional[StringLike] = None,
+        part: Optional[StringLike] = None,
+        value: Optional[StringLike] = None,
+        datasheet: Optional[StringLike] = None,
+        pnp_rot: Optional[float] = None,
+        pnp_offset: Optional[tuple[float, float]] = None,
+    ) -> None: ...
+
+    def footprint(
+        self,
+        refdes: StringLike,
+        footprint: StringLike,
+        pinning: Union[
+            Mapping[str, Union[Passive, HasPassivePort]],
+            Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
+        ],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
@@ -75,12 +105,21 @@ class FootprintBlock(Block):
         self.fp_is_footprint = self.Metadata("")
 
         pinning_array = []
+        assigned_pins: Set[str] = set()
         for pin_name, pin_port in pinning.items():
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
             if not isinstance(pin_port, (CircuitPort, Passive)):
                 raise EdgTypeError(f"Footprint(...) pin", pin_port, Passive)
-            pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
+
+            if isinstance(pin_name, str):
+                pin_tuples: Tuple[str, ...] = (pin_name,)
+            else:
+                pin_tuples = tuple(iter(pin_name))
+            for pin in pin_tuples:
+                pinning_array.append(f"{pin}={pin_port._name_from(self)}")
+                assert pin not in assigned_pins, f"duplicate pin name {pin} in footprint pinning"
+                assigned_pins.add(pin)
         self.assign(self.fp_pinning, pinning_array)
 
         self.assign(self.fp_footprint, footprint)

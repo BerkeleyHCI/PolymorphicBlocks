@@ -89,8 +89,8 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "15": self.vdd,
                 "16": self.step,
                 "17": self.ref,
-                "3": self.gnd,
-                "18": self.gnd,
+                ("3", "18"): self.gnd,
+                "29": self.gnd,  # GNDs must be tied together externally by connecting to PAD GND
                 "19": self.dir,
                 # pin 20 NC
                 "21": self.out1b,
@@ -103,7 +103,6 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "28": self.vbb2,
                 "1": self.out2b,
                 "2": self.enable,
-                "29": self.gnd,  # GNDs must be tied together externally by connecting to PAD GND
             },
             mfr="Allegro MicroSystems",
             part="A4988SETTR-R",

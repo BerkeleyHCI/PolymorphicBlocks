@@ -6,8 +6,7 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
-@abstract_block
-class Stm32g031Base_Device(
+class Stm32g031_Device(
     IoControllerI2cTarget,
     IoControllerCan,
     IoControllerUsb,
@@ -17,13 +16,33 @@ class Stm32g031Base_Device(
     JlcPart,
     FootprintBlock,
 ):
-    PACKAGE: str  # package name for footprint(...)
-    PART: str  # part name for footprint(...)
-    LCSC_PART: str
-    LCSC_BASIC_PART: bool
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+    _PIN_MAPPING = {
+        "PC14": "1",
+        "PC15": "2",
+        "PA0": "6",
+        "PA1": "7",
+        "PA2": "8",
+        "PA3": "9",
+        "PA4": "10",
+        "PA5": "11",
+        "PA6": "12",
+        "PA7": "13",
+        "PB0": "14",
+        "PB1": "15",
+        "PA8": "16",
+        "PC6": "17",
+        "PA11": "18",
+        "PA12": "19",
+        "PA13": "20",
+        "PA14": "21",
+        "PA15": "22",
+        "PB3": "23",
+        "PB4": "24",
+        "PB5": "25",
+        "PB6": "26",
+        "PB7": "27",
+        "PB8": "28",
+    }
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -44,14 +63,12 @@ class Stm32g031Base_Device(
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(
-            {  # Pin/peripheral resource definitions (section 4)
-                "Vdd": self.pwr,
-                "Vss": self.gnd,
-                "PF2-NRST": self.nrst,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
+        return {
+            "3": self.pwr,
+            "4": self.gnd,
+            "5": self.nrst,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
@@ -174,7 +191,7 @@ class Stm32g031Base_Device(
                     },
                 ),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
@@ -182,59 +199,18 @@ class Stm32g031Base_Device(
 
         self.footprint(
             "U",
-            self.PACKAGE,
+            "Package_DFN_QFN:QFN-28_4x4mm_P0.5mm",
             self._make_pinning(),
             mfr="STMicroelectronics",
-            part=self.PART,
+            part="STM32G031Gxxx",
             datasheet="https://www.st.com/resource/en/datasheet/stm32g031c6.pdf",
             pnp_rot=90,
         )
-        self.assign(self.lcsc_part, self.LCSC_PART)
+        self.assign(self.lcsc_part, "C432211")  # G8U6 variant
         self.assign(self.actual_basic_part, False)
 
 
-class Stm32g031_G_Device(Stm32g031Base_Device):
-    """ "STM32G031 GxU in UFQFPN28 package."""
-
-    SYSTEM_PIN_REMAP = {
-        "Vdd": "3",
-        "Vss": "4",
-        "PF2-NRST": "5",
-    }
-    RESOURCE_PIN_REMAP = {
-        "PC14": "1",
-        "PC15": "2",
-        "PA0": "6",
-        "PA1": "7",
-        "PA2": "8",
-        "PA3": "9",
-        "PA4": "10",
-        "PA5": "11",
-        "PA6": "12",
-        "PA7": "13",
-        "PB0": "14",
-        "PB1": "15",
-        "PA8": "16",
-        "PC6": "17",
-        "PA11": "18",
-        "PA12": "19",
-        "PA13": "20",
-        "PA14": "21",
-        "PA15": "22",
-        "PB3": "23",
-        "PB4": "24",
-        "PB5": "25",
-        "PB6": "26",
-        "PB7": "27",
-        "PB8": "28",
-    }
-    PACKAGE = "Package_DFN_QFN:QFN-28_4x4mm_P0.5mm"
-    PART = "STM32G031Gxxx"
-    LCSC_PART = "C432211"  # G8U6 variant
-
-
-@abstract_block
-class Stm32g031Base(
+class Stm32g031_G(
     Resettable,
     IoControllerI2cTarget,
     Microcontroller,
@@ -242,11 +218,9 @@ class Stm32g031Base(
     IoControllerPowerRequired,
     GeneratorBlock,
 ):
-    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.ic: Stm32g031Base_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
     @override
@@ -254,7 +228,7 @@ class Stm32g031Base(
         super().contents()
 
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+            self.ic = imp.Block(Stm32g031_Device(pin_assigns=ArrayStringExpr()))
             self.connect(self.swd_node, self.ic.swd)
             self.connect(self.reset_node, self.ic.nrst)
 
@@ -271,7 +245,3 @@ class Stm32g031Base(
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up
-
-
-class Stm32g031_G(Stm32g031Base):
-    DEVICE = Stm32g031_G_Device

@@ -6,8 +6,7 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
-@abstract_block
-class Stm32l432Base_Device(
+class Stm32l432_Device(
     IoControllerI2cTarget,
     IoControllerDac,
     IoControllerCan,
@@ -18,13 +17,34 @@ class Stm32l432Base_Device(
     JlcPart,
     FootprintBlock,
 ):
-    PACKAGE: str  # package name for footprint(...)
-    PART: str  # part name for footprint(...)
-    LCSC_PART: str
-    LCSC_BASIC_PART: bool
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+    _PIN_MAPPING = {
+        "PC14": "2",
+        "PC15": "3",
+        "PA0": "6",
+        "PA1": "7",
+        "PA2": "8",
+        "PA3": "9",
+        "PA4": "10",
+        "PA5": "11",
+        "PA6": "12",
+        "PA7": "13",
+        "PB0": "14",
+        "PB1": "15",
+        "PA8": "18",
+        "PA9": "19",
+        "PA10": "20",
+        "PA11": "21",
+        "PA12": "22",
+        "PA13": "23",
+        "PA14": "24",
+        "PA15": "25",
+        "PB3": "26",
+        "PB4": "27",
+        "PB5": "28",
+        "PB6": "29",
+        "PB7": "30",
+        "PH3": "31",
+    }
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -46,15 +66,13 @@ class Stm32l432Base_Device(
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(
-            {  # Pin/peripheral resource definitions (section 4)
-                "Vdd": self.pwr,
-                "VddA": self.pwr,
-                "Vss": self.gnd,
-                "NRST": self.nrst,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
+        return {
+            ("16", "32", "33"): self.gnd,  # recommended to connect EP to PCB ground
+            ("17", "1"): self.pwr,
+            "5": self.pwr,  # VddA
+            "4": self.nrst,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
@@ -173,7 +191,7 @@ class Stm32l432Base_Device(
                     },
                 ),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
@@ -181,60 +199,17 @@ class Stm32l432Base_Device(
 
         self.footprint(
             "U",
-            self.PACKAGE,
+            "Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm",
             self._make_pinning(),
             mfr="STMicroelectronics",
-            part=self.PART,
+            part="STM32L432Kxxx",
             datasheet="https://www.st.com/resource/en/datasheet/stm32l432kc.pdf",
         )
-        self.assign(self.lcsc_part, self.LCSC_PART)
+        self.assign(self.lcsc_part, "C1337280")  # KCU6 variant, maximum memory variant
         self.assign(self.actual_basic_part, False)
 
 
-class Stm32l432k_Device(Stm32l432Base_Device):
-    """ "STM32L432Kx in UFQFPN32 package."""
-
-    SYSTEM_PIN_REMAP = {
-        "Vdd": ["17", "1"],
-        "Vss": ["16", "32", "33"],  # recommended to connect EP to PCB ground
-        "VddA": "5",
-        "NRST": "4",
-    }
-    RESOURCE_PIN_REMAP = {
-        "PC14": "2",
-        "PC15": "3",
-        "PA0": "6",
-        "PA1": "7",
-        "PA2": "8",
-        "PA3": "9",
-        "PA4": "10",
-        "PA5": "11",
-        "PA6": "12",
-        "PA7": "13",
-        "PB0": "14",
-        "PB1": "15",
-        "PA8": "18",
-        "PA9": "19",
-        "PA10": "20",
-        "PA11": "21",
-        "PA12": "22",
-        "PA13": "23",
-        "PA14": "24",
-        "PA15": "25",
-        "PB3": "26",
-        "PB4": "27",
-        "PB5": "28",
-        "PB6": "29",
-        "PB7": "30",
-        "PH3": "31",
-    }
-    PACKAGE = "Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm"
-    PART = "STM32L432Kxxx"
-    LCSC_PART = "C1337280"  # KCU6 variant, maximum memory variant
-
-
-@abstract_block
-class Stm32l432Base(
+class Stm32l432k(
     Resettable,
     IoControllerDac,
     IoControllerCan,
@@ -246,7 +221,6 @@ class Stm32l432Base(
     IoControllerPowerRequired,
     GeneratorBlock,
 ):
-    DEVICE: Type[Stm32l432Base_Device] = Stm32l432Base_Device
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -257,7 +231,7 @@ class Stm32l432Base(
         super().contents()
 
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+            self.ic = imp.Block(Stm32l432_Device(pin_assigns=ArrayStringExpr()))
             self.connect(self.swd_node, self.ic.swd)
             self.connect(self.reset_node, self.ic.nrst)
 
@@ -283,7 +257,3 @@ class Stm32l432Base(
     def _crystal_required(self) -> bool:  # crystal needed for CAN b/c tighter freq tolerance
         # note: no crystal needed for USB, has clock recovery system (CRS) trimming for USB only
         return len(self.get(self.can.requested())) > 0 or super()._crystal_required()
-
-
-class Stm32l432k(Stm32l432Base):
-    DEVICE = Stm32l432k_Device

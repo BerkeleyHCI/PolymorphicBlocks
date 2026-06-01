@@ -36,10 +36,9 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
     }
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
-            "31": self.vdda,
-            "32": self.vdda,
+            ("31", "32"): self.vdda,
             "33": self.gnd,
             "6": self.io2,
             "7": self.en,
@@ -51,8 +50,7 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             "11": self.vdd3p3_rtc,
             "17": self.vdd3p3_cpu,
             "18": self.vdd_spi,
-            "2": self.vdd3p3,
-            "3": self.vdd3p3,
+            ("2", "3"): self.vdd3p3,
             "30": self.xtal.xtal_in,
             "29": self.xtal.xtal_out,
         }
@@ -216,7 +214,6 @@ class Esp32c3(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32c3_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
         self._io2_ext_connected: bool = False
@@ -436,7 +433,6 @@ class Esp32c3_Wroom02(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32c3_Wroom02_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
         self._io2_ext_connected: bool = False

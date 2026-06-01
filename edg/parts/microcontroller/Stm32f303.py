@@ -1,28 +1,109 @@
-from abc import abstractmethod
 from typing import *
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ...circuits import *
 
 
 @non_library
-class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, BaseIoControllerPinmapGenerator):
-    """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C).
-    Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
-    a power source, so there's a bit more complexity here."""
+class Stm32f303_Interfaces(IoControllerI2cTarget, IoControllerDac, IoControllerCan):
+    """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C)."""
 
-    RESOURCE_PIN_REMAP: Dict[str, str]
 
-    @abstractmethod
-    def _vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-        """Returns VDDIO, VDDA (either can be VoltageSink or VoltageSource)."""
-        ...
+class Nucleo_F303k8(
+    IoControllerUsbOut,
+    IoControllerPowerOut,
+    IoController,
+    Stm32f303_Interfaces,
+    BaseIoControllerPinmapGenerator,
+    GeneratorBlock,
+    FootprintBlock,
+):
+    """Nucleo32 F303K8 configured as power source from USB."""
 
-    def _vdd_model(self) -> VoltageSink:
-        return VoltageSink(  # assumes single-rail module
-            voltage_limits=(2, 3.6) * Volt,  # table 19
-            current_draw=(0.00055, 80) * mAmp + self.io_current_draw.upper(),  # table 25 Idd standby to max
+    _PIN_MAPPING = {
+        "PA9": "1",  # CN3.1, D1
+        "PA10": "2",  # CN3.2, D0
+        # 'NRST': '3'  # CN3.3, RESET
+        "PA12": "5",  # CN3.5, D2
+        "PB0": "6",  # CN3.6, D3
+        "PB7": "7",  # CN3.7, D4
+        "PB6": "8",  # CN3.8, D5
+        "PB1": "9",  # CN3.9, D6
+        "PF0": "10",  # CN3.10, D7
+        "PF1": "11",  # CN3.11, D8
+        "PA8": "12",  # CN3.12, D9
+        "PA11": "13",  # CN3.13, D10
+        "PB5": "14",  # CN3.14, D11
+        "PB4": "15",  # CN3.15, D12
+        # 'NRST': '18'  # CN4.3, RESET
+        "PA2": "20",  # CN4.5, A7
+        "PA7": "21",  # CN4.6, A6
+        "PA6": "22",  # CN4.7, A5
+        "PA5": "23",  # CN4.8, A4
+        "PA4": "24",  # CN4.9, A3
+        "PA3": "25",  # CN4.10, A2
+        "PA1": "26",  # CN4.11, A1
+        "PA0": "27",  # CN4.12, A0
+        "PB3": "30",  # CN4.15, D13
+    }
+
+    @override
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
+        return {
+            ("4", "17"): self.gnd,
+            "29": self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out,
+            "19": self.vusb_out,
+        }
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.gnd.init_from(Ground())
+        self.pwr.init_from(
+            VoltageSink(  # assumes single-rail module
+                voltage_limits=(2, 3.6) * Volt,  # table 19
+                current_draw=(0.00055, 80) * mAmp + self.io_current_draw.upper(),  # table 25 Idd standby to max
+            )
+        )
+
+        self.vusb_out.init_from(
+            VoltageSource(
+                voltage_out=(4.75 - 0.58, 5.1)
+                * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
+                current_limits=(0, 0.5) * Amp,  # max USB draw  # TODO higher from external power
+            )
+        )
+        self.pwr_out.init_from(
+            VoltageSource(
+                voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
+                current_limits=(0, 0.5) * Amp,  # max USB current draw, LDO also guarantees 500mA output current
+            )
+        )
+
+        self.generator_param(self.pwr.is_connected())
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self.require(
+            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
+            "can't source USB power if power input connected",
+        )
+        self.require(
+            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
+            "can't source 3v3 power if power input connected",
+        )
+
+        self.footprint(
+            "U",
+            "edg:Nucleo32",
+            self._make_pinning(),
+            mfr="STMicroelectronics",
+            part="NUCLEO-F303K8",
+            datasheet="https://www.st.com/resource/en/user_manual/dm00231744.pdf",
         )
 
     @override
@@ -30,7 +111,12 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
         """Returns the mappable for a STM32F303 device with the input power and ground references.
         This allows a shared definition between discrete chips and microcontroller boards"""
         # these are common to all IO blocks
-        vdd, vdda = self._vddio_vdda()
+        if self.get(self.pwr.is_connected()):  # board sinks power
+            vdd: Port[VoltageLink] = self.pwr
+            vdda: Port[VoltageLink] = self.pwr
+        else:
+            vdd = self.pwr_out
+            vdda = self.pwr_out
 
         input_threshold_factor = (0.3, 0.7)  # TODO relaxed (but more complex) bounds available for different IO blocks
         current_limits = (-20, 20) * mAmp  # Section 6.3.14, TODO loose with relaxed VOL/VOH
@@ -172,126 +258,4 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
                     {"swdio": "PA13", "swclk": "PA14", "reset": "NRST"},  # TODO some are FTf pins  # note: SWO is PB3
                 ),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
-
-
-@non_library
-class Stm32f303_Device(Stm32f303_Ios, IoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
-    """STM32F303 chip.
-    TODO IMPLEMENT ME"""
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(
-            {
-                # 'Vbat': self.vdd,
-                # 'VddA': self.vdda,
-                # 'VssA': self.gnd,
-                "Vss": self.gnd,
-                "Vdd": self.pwr,
-                # 'BOOT0': self.gnd,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
-
-
-class Nucleo_F303k8(
-    IoControllerUsbOut, IoControllerPowerOut, IoController, Stm32f303_Ios, GeneratorBlock, FootprintBlock
-):
-    """Nucleo32 F303K8 configured as power source from USB."""
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-        "Vss": ["4", "17"],
-        "Vdd": "29",
-        "Vusb": "19",
-        "Vin": "16",
-    }
-    RESOURCE_PIN_REMAP = {
-        "PA9": "1",  # CN3.1, D1
-        "PA10": "2",  # CN3.2, D0
-        # 'NRST': '3'  # CN3.3, RESET
-        "PA12": "5",  # CN3.5, D2
-        "PB0": "6",  # CN3.6, D3
-        "PB7": "7",  # CN3.7, D4
-        "PB6": "8",  # CN3.8, D5
-        "PB1": "9",  # CN3.9, D6
-        "PF0": "10",  # CN3.10, D7
-        "PF1": "11",  # CN3.11, D8
-        "PA8": "12",  # CN3.12, D9
-        "PA11": "13",  # CN3.13, D10
-        "PB5": "14",  # CN3.14, D11
-        "PB4": "15",  # CN3.15, D12
-        # 'NRST': '18'  # CN4.3, RESET
-        "PA2": "20",  # CN4.5, A7
-        "PA7": "21",  # CN4.6, A6
-        "PA6": "22",  # CN4.7, A5
-        "PA5": "23",  # CN4.8, A4
-        "PA4": "24",  # CN4.9, A3
-        "PA3": "25",  # CN4.10, A2
-        "PA1": "26",  # CN4.11, A1
-        "PA0": "27",  # CN4.12, A0
-        "PB3": "30",  # CN4.15, D13
-    }
-
-    @override
-    def _vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            return self.pwr, self.pwr
-        else:
-            return self.pwr_out, self.pwr_out
-
-    @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
-        if self.get(self.pwr.is_connected()):  # board sinks power
-            self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-            self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
-            return VariantPinRemapper(
-                {
-                    "Vdd": self.pwr,
-                    "Vss": self.gnd,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-        else:  # board sources power (default)
-            return VariantPinRemapper(
-                {
-                    "Vdd": self.pwr_out,
-                    "Vss": self.gnd,
-                    "Vusb": self.vusb_out,
-                }
-            ).remap(self.SYSTEM_PIN_REMAP)
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(self._vdd_model())
-
-        self.vusb_out.init_from(
-            VoltageSource(
-                voltage_out=(4.75 - 0.58, 5.1)
-                * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
-                current_limits=(0, 0.5) * Amp,  # max USB draw  # TODO higher from external power
-            )
-        )
-        self.pwr_out.init_from(
-            VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
-                current_limits=(0, 0.5) * Amp,  # max USB current draw, LDO also guarantees 500mA output current
-            )
-        )
-
-        self.generator_param(self.pwr.is_connected())
-
-    @override
-    def generate(self) -> None:
-        super().generate()
-
-        self.footprint(
-            "U",
-            "edg:Nucleo32",
-            self._make_pinning(),
-            mfr="STMicroelectronics",
-            part="NUCLEO-F303K8",
-            datasheet="https://www.st.com/resource/en/user_manual/dm00231744.pdf",
-        )
+        ).remap_pins(self._PIN_MAPPING)

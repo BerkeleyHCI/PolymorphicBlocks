@@ -77,23 +77,22 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "1": self.cpl,
                 "2": self.cph,
                 "3": self.vcp,
-                "4": self.vm,
+                ("4", "11"): self.vm,
                 "5": self.outs["1"],
                 "6": self.pgnds["1"],
                 "7": self.pgnds["2"],
                 "8": self.outs["2"],
                 "9": self.outs["3"],
                 "10": self.pgnds["3"],
-                "11": self.vm,
                 "12": self.gnd,  # compp, can be grounded if unused (datasheet 10.1)
                 "13": self.gnd,  # compn, can be grounded if unused (datasheet 10.1)
-                "14": self.gnd,
+                ("14", "20", "28"): self.gnd,
+                "29": self.gnd,  # exposed pad
                 "15": self.v3p3,
                 "16": self.nreset,
                 "17": self.nsleep,
                 "18": self.nfault,  # open-drain fault status (requires external pullup)
                 "19": self.gnd,  # ncompo, can be grounded if unused (datasheet 10.1)
-                "20": self.gnd,
                 "21": self.gnd,  # NC, grounded when unused in example layouts
                 "22": self.ens["3"],
                 "23": self.ins["3"],
@@ -101,8 +100,6 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "25": self.ins["2"],
                 "26": self.ens["1"],
                 "27": self.ins["1"],
-                "28": self.gnd,
-                "29": self.gnd,  # exposed pad
             },
             mfr="Texas Instruments",
             part="DRV8313PWP",

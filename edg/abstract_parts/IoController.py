@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable
+from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable, Mapping, Iterable
 from typing_extensions import override
 from deprecated import deprecated
 
@@ -272,7 +272,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
         self.generator_param(self.pin_assigns)
         self._generator_param_all_ios()  # defined in contents() so subclass __init__ can define additional _io_ports
 
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         """Implement me. Defines the fixed pin mappings from pin number to port."""
         raise NotImplementedError
 
@@ -280,7 +280,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
         """Implement me. Defines the assignable IO pinmaps."""
         raise NotImplementedError
 
-    def _make_pinning(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _make_pinning(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         allocation_list = []
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):  # derive Vector connections from requested

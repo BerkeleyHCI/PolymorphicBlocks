@@ -114,13 +114,10 @@ class Esp32_Wroom_32_Device(
         )
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
             "2": self.pwr,
-            "1": self.gnd,
-            "15": self.gnd,
-            "38": self.gnd,
-            "39": self.gnd,  # EP
+            ("1", "15", "38", "39"): self.gnd,
             "3": self.chip_pu,
             "25": self.io0,
             "24": self.io2,
@@ -267,7 +264,6 @@ class Esp32_Wroom_32(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32_Wroom_32_Device
         self.generator_param(self.reset.is_connected())
 
     @override
