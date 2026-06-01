@@ -117,10 +117,7 @@ class Esp32_Wroom_32_Device(
     def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return {
             "2": self.pwr,
-            "1": self.gnd,
-            "15": self.gnd,
-            "38": self.gnd,
-            "39": self.gnd,  # EP
+            ("1", "15", "38", "39"): self.gnd,
             "3": self.chip_pu,
             "25": self.io0,
             "24": self.io2,

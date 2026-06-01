@@ -134,11 +134,7 @@ class Mdbt50q_1mv2_Device(
             "28": self.pwr,  # Vdd
             "30": self.pwr,  # VddH
             # "31": DccH is disconnected - from section 8.3 for input voltage <3.6v
-            "1": self.gnd,
-            "2": self.gnd,
-            "15": self.gnd,
-            "33": self.gnd,
-            "55": self.gnd,
+            ("1", "2", "15", "33", "55"): self.gnd,
             "32": self.pwr_usb,
             "40": self.nreset,
         }
@@ -484,9 +480,7 @@ class Holyiot_18010_Footprint(
             self._make_pinning(
                 {
                     "14": self.vdd_nrf,
-                    "1": self.gnd,
-                    "25": self.gnd,
-                    "37": self.gnd,
+                    ("1", "25", "37"): self.gnd,
                     "22": self.vbus,
                     "21": self.p0_18,
                 },

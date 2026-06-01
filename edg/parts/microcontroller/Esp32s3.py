@@ -115,8 +115,7 @@ class Esp32s3_Wroom_1_Device(
     def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return {
             "2": self.pwr,  # including VDD3V3, VDD3P3_RTC, VDD_SPI, VDD3P3_CPU
-            "1": self.gnd,
-            "40": self.gnd,
+            ("1", "40"): self.gnd,
             "41": self.gnd,  # EP
             "3": self.chip_pu,
             "27": self.io0,
@@ -314,7 +313,6 @@ class Freenove_Esp32s3_Wrover_Device(Esp32s3_Interfaces, BaseIoControllerWrapped
         self.gnd = self.Port(Ground.empty(), optional=True)
         self.v3v3 = self.Port(Passive.empty(), optional=True)
         self.vusb = self.Port(Passive.empty(), optional=True)  # VUsb
-        self.cam_sccb = self.Port(I2cController.empty(), optional=True)  # internally connected to camera
         self.generator_param(self.pin_assigns)
         self._generator_param_all_ios()
 
@@ -330,8 +328,6 @@ class Freenove_Esp32s3_Wrover_Device(Esp32s3_Interfaces, BaseIoControllerWrapped
                     "1": self.v3v3,
                     "21": self.gnd,
                     "20": self.vusb,
-                    "3": self.cam_sccb.sda,
-                    "4": self.cam_sccb.scl,
                 },
                 self._PIN_REMAPPING,
             ),

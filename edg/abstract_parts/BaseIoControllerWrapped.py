@@ -121,7 +121,7 @@ class BaseIoControllerWrapped(BaseIoController):
         return pin_assigns
 
     def _make_pinning(
-        self, fixed_pinning: Dict[str, Union[Passive, HasPassivePort]], remapping: Dict[str, str]
+        self, fixed_pinning: Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]], remapping: Dict[str, str]
     ) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Creates the footprint pinning dict for the wrapped footprint, given the fixed pinning and
         remapping from pin name to this footprint's pin number.
