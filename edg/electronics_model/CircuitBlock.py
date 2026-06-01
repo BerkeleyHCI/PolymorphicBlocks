@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable
+from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable, overload
 
 from deprecated import deprecated
 from typing_extensions import TypeVar, override
@@ -36,11 +36,42 @@ class FootprintBlock(Block):
         self.fp_pnp_offset_x = self.Parameter(FloatExpr())
         self.fp_pnp_offset_y = self.Parameter(FloatExpr())
 
+    @overload
+    def footprint(
+        self,
+        refdes: StringLike,
+        footprint: StringLike,
+        pinning: Mapping[str, Union[Passive, HasPassivePort]],
+        mfr: Optional[StringLike] = None,
+        part: Optional[StringLike] = None,
+        value: Optional[StringLike] = None,
+        datasheet: Optional[StringLike] = None,
+        pnp_rot: Optional[float] = None,
+        pnp_offset: Optional[tuple[float, float]] = None,
+    ) -> None: ...
+
+    @overload
     def footprint(
         self,
         refdes: StringLike,
         footprint: StringLike,
         pinning: Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
+        mfr: Optional[StringLike] = None,
+        part: Optional[StringLike] = None,
+        value: Optional[StringLike] = None,
+        datasheet: Optional[StringLike] = None,
+        pnp_rot: Optional[float] = None,
+        pnp_offset: Optional[tuple[float, float]] = None,
+    ) -> None: ...
+
+    def footprint(
+        self,
+        refdes: StringLike,
+        footprint: StringLike,
+        pinning: Union[
+            Mapping[str, Union[Passive, HasPassivePort]],
+            Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
+        ],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
