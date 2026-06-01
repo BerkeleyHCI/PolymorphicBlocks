@@ -92,9 +92,9 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
 
         # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
         self.xtal = self.Port(  # vdda domain assumed
-            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.vdda.link().voltage), optional=True
+            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.vdda.link().voltage),
+            optional=_model,
         )
-        self.require((~self._model).implies(self.xtal.is_connected()))
 
         # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
         # TODO model from different 3.3v domains
