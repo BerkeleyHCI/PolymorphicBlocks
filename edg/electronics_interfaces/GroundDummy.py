@@ -14,7 +14,7 @@ class DummyGround(BaseDummyBlock[GroundLink]):
     def __getattr__(self, item: str) -> Any:
         if item == "gnd":
             warnings.warn(
-                f"Use .io instead.",
+                f"DummyGround.gnd is deprecated, use .io instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )

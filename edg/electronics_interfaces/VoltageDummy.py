@@ -33,7 +33,7 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
     def __getattr__(self, item: str) -> Any:
         if item == "pwr":
             warnings.warn(
-                f"Use .io instead.",
+                f"DummyVoltageSource.pwr is deprecated, use .io instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -71,7 +71,7 @@ class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
     def __getattr__(self, item: str) -> Any:
         if item == "pwr":
             warnings.warn(
-                f"Use .io instead.",
+                f"DummyVoltageSink.pwr is deprecated, use .io instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )

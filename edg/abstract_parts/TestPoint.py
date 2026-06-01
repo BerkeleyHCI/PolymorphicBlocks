@@ -33,7 +33,7 @@ class BaseTypedTestPoint(TypedTestPoint, Block, Generic[TestPointLinkType]):
 
 
 @non_library
-class BaseSingleTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[TestPointLinkType]):
+class BaseSingleTestPoint(BaseTypedTestPoint[TestPointLinkType], Generic[TestPointLinkType]):
     """Base class that provides naming infrastructure for single-wire test points"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -47,7 +47,7 @@ class BaseSingleTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[
 
 
 @non_library
-class BaseRfTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[TestPointLinkType]):
+class BaseRfTestPoint(BaseTypedTestPoint[TestPointLinkType], Generic[TestPointLinkType]):
     """Base class with utility infrastructure for typed RF test points."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -61,8 +61,8 @@ class BaseRfTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[Test
         self.conn.with_mixin(RfConnectorTestPoint((self.tp_name == "").then_else(self.io.link().name(), self.tp_name)))
 
 
-class GroundTestPoint(BaseSingleTestPoint[GroundLink], Block):
-    """Test point with a VoltageSink port."""
+class GroundTestPoint(BaseSingleTestPoint[GroundLink]):
+    """Test point with a Ground port."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -70,7 +70,7 @@ class GroundTestPoint(BaseSingleTestPoint[GroundLink], Block):
         self.connect(self.io.net, self.tp.io)
 
 
-class VoltageTestPoint(BaseSingleTestPoint[VoltageLink], Block):
+class VoltageTestPoint(BaseSingleTestPoint[VoltageLink]):
     """Test point with a VoltageSink port."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -79,7 +79,7 @@ class VoltageTestPoint(BaseSingleTestPoint[VoltageLink], Block):
         self.connect(self.io.net, self.tp.io)
 
 
-class DigitalTestPoint(BaseSingleTestPoint[DigitalLink], Block):
+class DigitalTestPoint(BaseSingleTestPoint[DigitalLink]):
     """Test point with a DigitalSink port."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -110,7 +110,7 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
             self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
-class AnalogTestPoint(BaseSingleTestPoint[AnalogLink], Block):
+class AnalogTestPoint(BaseSingleTestPoint[AnalogLink]):
     """Test point with a AnalogSink port"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -119,7 +119,7 @@ class AnalogTestPoint(BaseSingleTestPoint[AnalogLink], Block):
         self.connect(self.io.net, self.tp.io)
 
 
-class AnalogCoaxTestPoint(BaseRfTestPoint[AnalogLink], Block):
+class AnalogCoaxTestPoint(BaseRfTestPoint[AnalogLink]):
     """Test point with a AnalogSink port and using a coax connector with shielding connected to gnd.
     No impedance matching, this is intended for lower frequency signals where the wavelength would be
     much longer than the test lead length"""
@@ -130,7 +130,7 @@ class AnalogCoaxTestPoint(BaseRfTestPoint[AnalogLink], Block):
         self.connect(self.io.net, self.conn.sig)
 
 
-class I2cTestPoint(BaseTypedTestPoint[I2cLink], Block):
+class I2cTestPoint(BaseTypedTestPoint[I2cLink]):
     """Two test points for I2C SDA and SCL"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -147,7 +147,7 @@ class I2cTestPoint(BaseTypedTestPoint[I2cLink], Block):
         self.connect(self.tp_sda.io, self.io.sda)
 
 
-class SpiTestPoint(BaseTypedTestPoint[SpiLink], Block):
+class SpiTestPoint(BaseTypedTestPoint[SpiLink]):
     """Test points for SPI"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -166,7 +166,7 @@ class SpiTestPoint(BaseTypedTestPoint[SpiLink], Block):
         self.connect(self.tp_miso.io, self.io.miso)
 
 
-class CanControllerTestPoint(BaseTypedTestPoint[CanLogicLink], Block):
+class CanControllerTestPoint(BaseTypedTestPoint[CanLogicLink]):
     """Two test points for CAN controller-side TXD and RXD"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -183,7 +183,7 @@ class CanControllerTestPoint(BaseTypedTestPoint[CanLogicLink], Block):
         self.connect(self.tp_rxd.io, self.io.rxd)
 
 
-class CanDiffTestPoint(BaseTypedTestPoint[CanDiffLink], Block):
+class CanDiffTestPoint(BaseTypedTestPoint[CanDiffLink]):
     """Two test points for CAN differential-side canh and canl"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
