@@ -11,7 +11,6 @@ class Stm32f303_Interfaces(IoControllerI2cTarget, IoControllerDac, IoControllerC
     """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C)."""
 
 
-@deprecated("not maintained")
 class Nucleo_F303k8(
     IoControllerUsbOut,
     IoControllerPowerOut,
@@ -56,7 +55,6 @@ class Nucleo_F303k8(
             ("4", "17"): self.gnd,
             "29": self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out,
             "19": self.vusb_out,
-            "16": self.pwr,
         }
 
     def __init__(self) -> None:
