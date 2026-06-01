@@ -39,7 +39,12 @@ class BaseSingleTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.tp = self.Block(TestPoint((self.tp_name == "").then_else(self.io.link().name(), self.tp_name)))
+        self.tp = self.Block(TestPoint(StringExpr()))
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.assign(self.tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
 
 
 @non_library
@@ -50,6 +55,10 @@ class BaseRfTestPoint(BaseTypedTestPoint[TestPointLinkType], Block, Generic[Test
         super().__init__(*args, **kwargs)
         self.conn = self.Block(RfConnector())
         self.gnd = self.Export(self.conn.gnd, [Common])
+
+    @override
+    def contents(self) -> None:
+        super().contents()
         self.conn.with_mixin(RfConnectorTestPoint((self.tp_name == "").then_else(self.io.link().name(), self.tp_name)))
 
 
