@@ -1,3 +1,6 @@
+import warnings
+from typing import Any
+
 from ..electronics_model import *
 from .DummyDevices import BaseDummyBlock
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
@@ -27,6 +30,19 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
         self.voltage_limits = self.Parameter(RangeExpr(self.io.link().voltage_limits))
         self.reverse_voltage = self.Parameter(RangeExpr(self.io.link().reverse_voltage))
 
+    def __getattr__(self, item: str) -> Any:
+        if item == "pwr":
+            warnings.warn(
+                f"Use .io instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.io
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+
 
 class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
 
@@ -51,3 +67,16 @@ class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
 
         self.voltage = self.Parameter(RangeExpr(self.io.link().voltage))
         self.current_limits = self.Parameter(RangeExpr(self.io.link().current_limits))
+
+    def __getattr__(self, item: str) -> Any:
+        if item == "pwr":
+            warnings.warn(
+                f"Use .io instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.io
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
