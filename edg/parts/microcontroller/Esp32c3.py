@@ -36,7 +36,7 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
     }
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
             ("31", "32"): self.vdda,
             "33": self.gnd,

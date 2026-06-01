@@ -158,7 +158,7 @@ class Rp2040_Device(
 
     # Pin/peripheral resource definitions (table 3)
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
             "51": self.qspi_sd3,
             "52": self.qspi.sck,

@@ -129,7 +129,7 @@ class Mdbt50q_1mv2_Device(
         )
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
             "28": self.pwr,  # Vdd
             "30": self.pwr,  # VddH

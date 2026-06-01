@@ -112,7 +112,7 @@ class Esp32s3_Wroom_1_Device(
         )
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
+    def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
         return {
             "2": self.pwr,  # including VDD3V3, VDD3P3_RTC, VDD_SPI, VDD3P3_CPU
             ("1", "40"): self.gnd,
