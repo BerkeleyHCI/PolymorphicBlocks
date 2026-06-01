@@ -596,9 +596,9 @@ class Xiao_Esp32c3(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, self.model.vdd3p3)
+            self.connect(self.pwr_out_model.io, self.model.vdd3p3)
             if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+                self.connect(self.pwr_out, self.pwr_out_model.io)
             self.export_tap(self.pwr_out.net, self.device.v3v3)
 
         if self.get(self.vusb_out.is_connected()):

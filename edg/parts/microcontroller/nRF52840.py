@@ -719,9 +719,9 @@ class Feather_Nrf52840(
             self.pwr_out_model = self.Block(
                 DummyVoltageSource(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
             )
-            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            self.connect(self.pwr_out_model.io, self.model.pwr)
             if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+                self.connect(self.pwr_out, self.pwr_out_model.io)
             self.export_tap(self.pwr_out.net, self.device.pwr)
 
         if self.get(self.vusb_out.is_connected()):
