@@ -1,5 +1,5 @@
-from typing import Dict, TypeVar, Generic, Self
-from typing_extensions import override
+from typing import Dict, TypeVar, Generic
+from typing_extensions import override, Self
 
 from ..electronics_model import *
 from .VoltagePorts import VoltageSink, VoltageSource

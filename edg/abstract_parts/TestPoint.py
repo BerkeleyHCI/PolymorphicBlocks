@@ -1,5 +1,5 @@
-from typing import Any, TypeVar, Generic, Self
-from typing_extensions import override
+from typing import Any, TypeVar, Generic
+from typing_extensions import override, Self
 
 from ..electronics_interfaces import *
 from .Connectors import RfConnector, RfConnectorTestPoint
