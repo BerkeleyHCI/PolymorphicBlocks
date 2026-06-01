@@ -1,4 +1,4 @@
-from typing import Dict, TypeVar, Generic
+from typing import Dict, TypeVar, Generic, Self
 from typing_extensions import override
 
 from ..electronics_model import *
@@ -7,7 +7,6 @@ from .DigitalPorts import DigitalSink, DigitalSource, DigitalLink
 from .AnalogPort import AnalogSink, AnalogSource, AnalogLink
 
 DummyLinkType = TypeVar("DummyLinkType", bound=Link)
-SelfType = TypeVar("SelfType", bound="BaseDummyBlock[Link]")
 
 
 @non_library
@@ -18,7 +17,7 @@ class BaseDummyBlock(DummyDevice, Block, Generic[DummyLinkType]):
         super().__init__()
         self.io: Port[DummyLinkType]
 
-    def connected(self: SelfType, io: Port[DummyLinkType]) -> SelfType:
+    def connected(self, io: Port[DummyLinkType]) -> Self:
         builder.block().connect(io, self.io)
         return self
 

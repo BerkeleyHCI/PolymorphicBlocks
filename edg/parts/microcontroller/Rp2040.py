@@ -500,8 +500,7 @@ class Xiao_Rp2040(
             self.connect(self.gnd, self.model.gnd)
             self.export_tap(self.gnd, self.device.gnd)
         else:
-            # TODO debug this type failure
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)  # type: ignore
+            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
 
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)

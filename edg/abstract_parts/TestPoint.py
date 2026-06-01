@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Generic
+from typing import Any, TypeVar, Generic, Self
 from typing_extensions import override
 
 from ..electronics_interfaces import *
@@ -16,7 +16,6 @@ class TestPoint(InternalSubcircuit, Block):
 
 
 TestPointLinkType = TypeVar("TestPointLinkType", bound=Link)
-SelfType = TypeVar("SelfType", bound="BaseTypedTestPoint[Link]")
 
 
 @non_library
@@ -28,7 +27,7 @@ class BaseTypedTestPoint(TypedTestPoint, Block, Generic[TestPointLinkType]):
         self.io: Port[TestPointLinkType]
         self.tp_name = self.ArgParameter(tp_name)
 
-    def connected(self: SelfType, io: Port[TestPointLinkType]) -> SelfType:
+    def connected(self, io: Port[TestPointLinkType]) -> Self:
         builder.block().connect(io, self.io)
         return self
 

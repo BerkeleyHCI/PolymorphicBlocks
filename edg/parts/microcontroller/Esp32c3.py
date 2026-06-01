@@ -581,8 +581,7 @@ class Xiao_Esp32c3(
             self.connect(self.gnd, self.model.gnd)
             self.export_tap(self.gnd, self.device.gnd)
         else:
-            # TODO debug this type failure
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)  # type: ignore
+            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
 
         self.connect(
             self.model.vdda, self.model.vdd3p3, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi
