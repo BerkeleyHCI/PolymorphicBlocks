@@ -289,7 +289,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._param_docs = IdentityDict[ConstraintExpr, str]()
 
         self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
-        self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> expr for not-required
+        self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
         self._connects = self.manager.new_dict(Connection, anon_prefix="anon_link")
