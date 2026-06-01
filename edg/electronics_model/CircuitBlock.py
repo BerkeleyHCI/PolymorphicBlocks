@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable, overload
+from typing import Generic, Any, Optional, Mapping, Dict, Union, TYPE_CHECKING, Tuple, Iterable, overload, Set
 
 from deprecated import deprecated
 from typing_extensions import TypeVar, override
@@ -105,6 +105,7 @@ class FootprintBlock(Block):
         self.fp_is_footprint = self.Metadata("")
 
         pinning_array = []
+        assigned_pins: Set[str] = set()
         for pin_name, pin_port in pinning.items():
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
@@ -117,6 +118,8 @@ class FootprintBlock(Block):
                 pin_tuples = tuple(iter(pin_name))
             for pin in pin_tuples:
                 pinning_array.append(f"{pin}={pin_port._name_from(self)}")
+                assert pin not in assigned_pins, f"duplicate pin name {pin} in footprint pinning"
+                assigned_pins.add(pin)
         self.assign(self.fp_pinning, pinning_array)
 
         self.assign(self.fp_footprint, footprint)

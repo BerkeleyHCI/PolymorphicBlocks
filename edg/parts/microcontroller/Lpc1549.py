@@ -5,7 +5,7 @@ from typing_extensions import override
 from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
-# This file use an old style that uses inheritance to allow variations of the same chip.
+# This file uses an old style that uses inheritance to allow variations of the same chip.
 # This is no longer used elsewhere.
 # TODO: find a unified way to support variations of the same chip
 
