@@ -1,8 +1,12 @@
+import warnings
+from typing import Any
+
 from ..electronics_model import *
-from .VoltagePorts import VoltageSource, VoltageSink, Power
+from .DummyDevices import BaseDummyBlock
+from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 
 
-class DummyVoltageSource(DummyDevice):
+class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
     def __init__(
         self,
         voltage_out: RangeLike = RangeExpr.ZERO,
@@ -12,7 +16,7 @@ class DummyVoltageSource(DummyDevice):
     ) -> None:
         super().__init__()
 
-        self.pwr = self.Port(
+        self.io = self.Port(
             VoltageSource(
                 voltage_out=voltage_out,
                 current_limits=current_limits,
@@ -22,12 +26,25 @@ class DummyVoltageSource(DummyDevice):
             [Power, InOut],
         )
 
-        self.current_drawn = self.Parameter(RangeExpr(self.pwr.link().current_drawn))
-        self.voltage_limits = self.Parameter(RangeExpr(self.pwr.link().voltage_limits))
-        self.reverse_voltage = self.Parameter(RangeExpr(self.pwr.link().reverse_voltage))
+        self.current_drawn = self.Parameter(RangeExpr(self.io.link().current_drawn))
+        self.voltage_limits = self.Parameter(RangeExpr(self.io.link().voltage_limits))
+        self.reverse_voltage = self.Parameter(RangeExpr(self.io.link().reverse_voltage))
+
+    def __getattr__(self, item: str) -> Any:
+        if item == "pwr":
+            warnings.warn(
+                f"DummyVoltageSource.pwr is deprecated, use .io instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.io
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
 
 
-class DummyVoltageSink(DummyDevice):
+class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
 
     def __init__(
         self,
@@ -38,7 +55,7 @@ class DummyVoltageSink(DummyDevice):
     ) -> None:
         super().__init__()
 
-        self.pwr = self.Port(
+        self.io = self.Port(
             VoltageSink(
                 voltage_limits=voltage_limit,
                 current_draw=current_draw,
@@ -48,5 +65,18 @@ class DummyVoltageSink(DummyDevice):
             [Power, InOut],
         )
 
-        self.voltage = self.Parameter(RangeExpr(self.pwr.link().voltage))
-        self.current_limits = self.Parameter(RangeExpr(self.pwr.link().current_limits))
+        self.voltage = self.Parameter(RangeExpr(self.io.link().voltage))
+        self.current_limits = self.Parameter(RangeExpr(self.io.link().current_limits))
+
+    def __getattr__(self, item: str) -> Any:
+        if item == "pwr":
+            warnings.warn(
+                f"DummyVoltageSink.pwr is deprecated, use .io instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.io
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes

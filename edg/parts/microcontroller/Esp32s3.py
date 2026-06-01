@@ -393,8 +393,7 @@ class Freenove_Esp32s3_Wroom(
             self.connect(self.gnd, self.model.gnd)
             self.export_tap(self.gnd, self.device.gnd)
         else:
-            self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.model.gnd)
+            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.model.pwr)
@@ -406,9 +405,9 @@ class Freenove_Esp32s3_Wroom(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, self.model.pwr)
+            self.connect(self.pwr_out_model.io, self.model.pwr)
             if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+                self.connect(self.pwr_out, self.pwr_out_model.io)
             self.export_tap(self.pwr_out.net, self.device.v3v3)
 
         if self.get(self.vusb_out.is_connected()):

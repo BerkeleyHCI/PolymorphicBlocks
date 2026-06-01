@@ -11,12 +11,9 @@ class TestLed(SimpleBoardTop):
 
     @override
     def contents(self) -> None:
-        self.gnd = self.Block(DummyGround())
-        self.src = self.Block(DummyDigitalSource())
         self.led = self.Block(IndicatorLed())
-
-        self.connect(self.led.signal, self.src.io)
-        self.connect(self.gnd.gnd, self.led.gnd)
+        self.gnd = self.Block(DummyGround()).connected(self.led.gnd)
+        self.src = self.Block(DummyDigitalSource()).connected(self.led.signal)
 
 
 class TestBlinkyBasic(SimpleBoardTop):

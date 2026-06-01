@@ -96,10 +96,8 @@ class IotLedDriver(JlcBoardTop):
                 self.connect(self.mcu.gpio.request(f"led_pwm_{i}"), led_drv.pwm)
 
                 # no connectors to save space, just solder to one of the SMD pads
-                leda_sink = self.led_sink[i * 2] = imp.Block(DummyPassive())
-                self.connect(led_drv.leda, leda_sink.io)
-                ledk_sink = self.led_sink[i * 2 + 1] = imp.Block(DummyPassive())
-                self.connect(led_drv.ledk, ledk_sink.io)
+                self.led_sink[i * 2] = imp.Block(DummyPassive()).connected(led_drv.leda)
+                self.led_sink[i * 2 + 1] = imp.Block(DummyPassive()).connected(led_drv.ledk)
 
     @override
     def refinements(self) -> Refinements:

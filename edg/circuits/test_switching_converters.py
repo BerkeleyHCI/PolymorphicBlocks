@@ -171,10 +171,10 @@ class BuckPowerPathTestTop(DesignTop):
                 output_voltage_ripple=25 * mVolt,
             )
         )
-        (self.pwr_in,), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_in)
-        (self.switch,), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.switch)
-        (self.pwr_out,), _ = self.chain(self.Block(DummyVoltageSink()), self.dut.pwr_out)
-        (self.gnd,), _ = self.chain(self.Block(DummyGround()), self.dut.gnd)
+        self.gnd = self.Block(DummyGround()).connected(self.dut.gnd)
+        self.pwr_in = self.Block(DummyVoltageSource()).connected(self.dut.pwr_in)
+        self.switch = self.Block(DummyVoltageSource()).connected(self.dut.switch)
+        self.pwr_out = self.Block(DummyVoltageSink()).connected(self.dut.pwr_out)
 
         self.require(self.dut.actual_dutycycle.contains(Range(0.334, 0.832)))
         self.require(self.dut.actual_inductor_current_ripple.contains(Range(0.433, 0.478)))
@@ -206,10 +206,10 @@ class BoostPowerPathTestTop(DesignTop):
                 output_voltage_ripple=25 * mVolt,
             )
         )
-        (self.pwr_in,), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_in)
-        (self.pwr_out,), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_out)
-        (self.switch,), _ = self.chain(self.Block(DummyVoltageSink()), self.dut.switch)
-        (self.gnd,), _ = self.chain(self.Block(DummyGround()), self.dut.gnd)
+        self.gnd = self.Block(DummyGround()).connected(self.dut.gnd)
+        self.pwr_in = self.Block(DummyVoltageSource()).connected(self.dut.pwr_in)
+        self.pwr_out = self.Block(DummyVoltageSource()).connected(self.dut.pwr_out)
+        self.switch = self.Block(DummyVoltageSink()).connected(self.dut.switch)
 
         self.require(self.dut.actual_dutycycle.contains(Range(0.4, 0.771)))
         self.require(self.dut.actual_inductor_current_ripple.contains(Range(0.495, 0.546)))

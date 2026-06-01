@@ -500,8 +500,7 @@ class Xiao_Rp2040(
             self.connect(self.gnd, self.model.gnd)
             self.export_tap(self.gnd, self.device.gnd)
         else:
-            self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.model.gnd)
+            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
 
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
@@ -515,9 +514,9 @@ class Xiao_Rp2040(
                     current_limits=UsbConnector.USB2_CURRENT_LIMITS,
                 )
             )
-            self.connect(self.pwr_out_model.pwr, model_pwr)
+            self.connect(self.pwr_out_model.io, model_pwr)
             if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.pwr)
+                self.connect(self.pwr_out, self.pwr_out_model.io)
             self.export_tap(self.pwr_out.net, self.device.v3v3)
 
         if self.get(self.pwr_vin.is_connected()):

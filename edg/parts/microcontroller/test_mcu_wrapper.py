@@ -14,15 +14,14 @@ class OverallocateTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(7):  # device only has 6 IOs
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class FullMcuTest(DesignTop):
@@ -32,15 +31,14 @@ class FullMcuTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(6):
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class BaseMcuTest(DesignTop):
@@ -49,15 +47,14 @@ class BaseMcuTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
             self.ios = ElementDict[DummyDigitalSource]()
             for i in range(2):
-                self.ios[i] = self.Block(DummyDigitalSource())
-                self.connect(self.ios[i].io, self.dut.gpio.request(str(i)))
+                self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
 class AssignedPinsTest(BaseMcuTest):
@@ -84,8 +81,8 @@ class AssignedI2cTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 

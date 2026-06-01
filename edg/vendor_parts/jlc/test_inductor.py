@@ -13,8 +13,8 @@ class JlcInductorTestTop(Block):
                 # no frequency spec since JLC doesn't allow it
             )
         )
-        (self.dummya,), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.a)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.b)
 
 
 class InductorTestCase(unittest.TestCase):

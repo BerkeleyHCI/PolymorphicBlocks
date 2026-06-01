@@ -8,56 +8,56 @@ class CapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=0.1 * uFarad(tol=0.2), voltage=(0, 3.3) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class BigCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=(50, 1000) * uFarad, voltage=(0, 5) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class HighVoltageCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=0.2 * uFarad(tol=0.2), voltage=(0, 20) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class HighSingleCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=22 * uFarad(tol=0.2), voltage=(0, 10) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class MediumSingleCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=2 * uFarad(tol=0.2), voltage=(0, 20) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class DeratedCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=1 * uFarad(tol=0.2), voltage=(0, 5) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class BigMultiCapacitorGenericTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericMlcc(capacitance=(50, 1000) * uFarad, voltage=(0, 5) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class CapacitorTestCase(unittest.TestCase):

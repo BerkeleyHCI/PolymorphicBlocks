@@ -7,21 +7,17 @@ from .GenericResistor import GenericChipResistor
 class ResistorTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.dut = self.Block(
-            GenericChipResistor(
-                resistance=1 * kOhm(tol=0.1),
-            )
-        )
-        (self.dummya,), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
+        self.dut = self.Block(GenericChipResistor(resistance=1 * kOhm(tol=0.1)))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.a)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.b)
 
 
 class PowerResistorTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(GenericChipResistor(resistance=1 * kOhm(tol=0.1), power=(0, 0.24) * Watt))
-        (self.dummya,), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.a)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.b)
 
 
 class NonE12ResistorTestTop(Block):
@@ -32,8 +28,8 @@ class NonE12ResistorTestTop(Block):
                 resistance=8.06 * kOhm(tol=0.01),
             )
         )
-        (self.dummya,), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.a)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.b)
 
 
 class ResistorTestCase(unittest.TestCase):

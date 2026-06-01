@@ -18,8 +18,7 @@ class StTscSenseChannel(Block):
         super().contents()
         self.res = self.Block(Resistor(resistance=10 * kOhm(tol=0.05)))  # recommended by ST
         self.connect(self.io.net, self.res.a)  # ideal
-        self.load = self.Block(DummyPassive())  # avoid ERC
-        self.connect(self.res.b, self.load.io)
+        self.load = self.Block(DummyPassive()).connected(self.res.b)  # avoid ERC
 
 
 class StTscReference(Block):

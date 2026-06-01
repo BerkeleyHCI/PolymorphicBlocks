@@ -6,12 +6,6 @@ from ..abstract_parts import *
 from .OpampCircuits import Amplifier
 
 
-class AnalogSourceDummy(Block):
-    def __init__(self) -> None:
-        super().__init__()
-        self.port = self.Port(AnalogSource(), [InOut])
-
-
 class TestOpamp(Opamp):
     @override
     def contents(self) -> None:
@@ -34,11 +28,11 @@ class AmplifierTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(Amplifier(amplification=Range.from_tolerance(2, 0.05)))
-        (self.dummyin,), _ = self.chain(self.dut.input, self.Block(AnalogSourceDummy()))
-        (self.dummyref,), _ = self.chain(self.dut.reference, self.Block(AnalogSourceDummy()))
-        (self.dummyout,), _ = self.chain(self.dut.output, self.Block(DummyAnalogSink()))
-        (self.dummypwr,), _ = self.chain(self.dut.pwr, self.Block(DummyVoltageSource()))
-        (self.dummygnd,), _ = self.chain(self.dut.gnd, self.Block(DummyGround()))
+        self.dummygnd = self.Block(DummyGround()).connected(self.dut.gnd)
+        self.dummypwr = self.Block(DummyVoltageSource()).connected(self.dut.pwr)
+        self.dummyin = self.Block(DummyAnalogSource()).connected(self.dut.input)
+        self.dummyref = self.Block(DummyAnalogSource()).connected(self.dut.reference)
+        self.dummyout = self.Block(DummyAnalogSink()).connected(self.dut.output)
 
 
 class OpampCircuitTest(unittest.TestCase):

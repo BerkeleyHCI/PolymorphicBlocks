@@ -86,5 +86,4 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
         if self.get(self.hv_res) != RangeExpr.INF:
             self.hv_pu = self.Block(PullupResistor(self.hv_res)).connected(self.hv_pwr, self.hv_io)
         else:
-            self.dummy_hv = self.Block(DummyVoltageSink())  # must be connected
-            self.connect(self.dummy_hv.pwr, self.hv_pwr)
+            self.dummy_hv = self.Block(DummyVoltageSink()).connected(self.hv_pwr)  # mark as connected

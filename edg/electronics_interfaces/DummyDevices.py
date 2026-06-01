@@ -1,33 +1,46 @@
-from typing import Dict
-from typing_extensions import override
+from typing import Dict, TypeVar, Generic
+from typing_extensions import override, Self
 
 from ..electronics_model import *
 from .VoltagePorts import VoltageSink, VoltageSource
-from .DigitalPorts import DigitalSink, DigitalSource
-from .AnalogPort import AnalogSink, AnalogSource
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalLink
+from .AnalogPort import AnalogSink, AnalogSource, AnalogLink
+
+DummyLinkType = TypeVar("DummyLinkType", bound=Link)
 
 
-class DummyPassive(DummyDevice):
+@non_library
+class BaseDummyBlock(DummyDevice, Block, Generic[DummyLinkType]):
+    """Base class with utility infrastructure for typed dummy blocks, a non-physical device that provides a magic IO"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io: Port[DummyLinkType]
+
+    def connected(self, io: Port[DummyLinkType]) -> Self:
+        builder.block().connect(io, self.io)
+        return self
+
+
+class DummyPassive(BaseDummyBlock[PassiveLink]):
     def __init__(self) -> None:
         super().__init__()
         self.io = self.Port(Passive(), [InOut])
 
 
-class DummyDigitalSource(DummyDevice):
+class DummyDigitalSource(BaseDummyBlock[DigitalLink]):
     def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
-
         self.io = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits), [InOut])
 
 
-class DummyDigitalSink(DummyDevice):
+class DummyDigitalSink(BaseDummyBlock[DigitalLink]):
     def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL, current_draw: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
-
         self.io = self.Port(DigitalSink(voltage_limits=voltage_limit, current_draw=current_draw), [InOut])
 
 
-class DummyAnalogSource(DummyDevice):
+class DummyAnalogSource(BaseDummyBlock[AnalogLink]):
     def __init__(
         self,
         voltage_out: RangeLike = RangeExpr.ZERO,
@@ -36,7 +49,6 @@ class DummyAnalogSource(DummyDevice):
         impedance: RangeLike = RangeExpr.ZERO,
     ) -> None:
         super().__init__()
-
         self.io = self.Port(
             AnalogSource(
                 voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
@@ -45,7 +57,7 @@ class DummyAnalogSource(DummyDevice):
         )
 
 
-class DummyAnalogSink(DummyDevice):
+class DummyAnalogSink(BaseDummyBlock[AnalogLink]):
     def __init__(
         self,
         voltage_limit: RangeLike = RangeExpr.ALL,
@@ -54,7 +66,6 @@ class DummyAnalogSink(DummyDevice):
         impedance: RangeLike = RangeExpr.INF,
     ) -> None:
         super().__init__()
-
         self.io = self.Port(
             AnalogSink(
                 voltage_limits=voltage_limit, signal_limits=signal_limit, current_draw=current_draw, impedance=impedance
