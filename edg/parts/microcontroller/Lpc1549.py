@@ -5,6 +5,10 @@ from typing_extensions import override
 from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
+# This file use an old style that uses inheritance to allow variations of the same chip.
+# This is no longer used elsewhere.
+# TODO: find a unified way to support variations of the same chip
+
 
 @non_library
 class Lpc1549Base_Device(
@@ -75,7 +79,9 @@ class Lpc1549Base_Device(
                 "RTCXOUT": self.xtal_rtc.xtal_out,
                 "RESET": self.reset,
             }
-        ).remap(self.SYSTEM_PIN_REMAP)
+        ).remap(
+            self.SYSTEM_PIN_REMAP
+        )  # type: ignore
 
     @override
     def _io_pinmap(self) -> PinMapUtil:

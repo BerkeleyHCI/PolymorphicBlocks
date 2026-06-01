@@ -264,7 +264,6 @@ class Esp32_Wroom_32(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32_Wroom_32_Device
         self.generator_param(self.reset.is_connected())
 
     @override

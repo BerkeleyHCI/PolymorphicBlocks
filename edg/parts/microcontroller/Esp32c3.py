@@ -214,7 +214,6 @@ class Esp32c3(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32c3_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
         self._io2_ext_connected: bool = False
@@ -434,7 +433,6 @@ class Esp32c3_Wroom02(
 
     def __init__(self) -> None:
         super().__init__()
-        self.ic: Esp32c3_Wroom02_Device
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
 
         self._io2_ext_connected: bool = False

@@ -6,8 +6,7 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
-@abstract_block
-class Stm32f103Base_Device(
+class Stm32f103_Device(
     IoControllerI2cTarget,
     IoControllerCan,
     IoControllerUsb,
@@ -17,13 +16,43 @@ class Stm32f103Base_Device(
     JlcPart,
     FootprintBlock,
 ):
-    PACKAGE: str  # package name for footprint(...)
-    PART: str  # part name for footprint(...)
-    LCSC_PART: str
-    LCSC_BASIC_PART: bool
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+    _PIN_MAPPING = {
+        "PC13": "2",
+        "PC14": "3",
+        "PC15": "4",
+        "PA0": "10",
+        "PA1": "11",
+        "PA2": "12",
+        "PA3": "13",
+        "PA4": "14",
+        "PA5": "15",
+        "PA6": "16",
+        "PA7": "17",
+        "PB0": "18",
+        "PB1": "19",
+        "PB2": "20",
+        "PB10": "21",
+        "PB11": "22",
+        "PB12": "25",
+        "PB13": "26",
+        "PB14": "27",
+        "PB15": "28",
+        "PA8": "29",
+        "PA9": "30",
+        "PA10": "31",
+        "PA11": "32",
+        "PA12": "33",
+        "PA13": "34",
+        "PA14": "37",
+        "PA15": "38",
+        "PB3": "39",
+        "PB4": "40",
+        "PB5": "41",
+        "PB6": "42",
+        "PB7": "43",
+        "PB8": "45",
+        "PB9": "46",
+    }
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -64,19 +93,17 @@ class Stm32f103Base_Device(
 
     @override
     def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(
-            {  # Pin/peripheral resource definitions (table 3)
-                "Vbat": self.pwr,
-                "VddA": self.pwr,
-                "VssA": self.gnd,
-                "Vss": self.gnd,
-                "Vdd": self.pwr,
-                "BOOT0": self.gnd,
-                "OSC_IN": self.osc.xtal_in,  # TODO remappable to PD0
-                "OSC_OUT": self.osc.xtal_out,  # TODO remappable to PD1
-                "NRST": self.nrst,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
+        return {
+            "1": self.pwr,  # Vbat
+            "9": self.pwr,  # VddA
+            "8": self.gnd,  # VssA
+            ("23", "35", "47"): self.gnd,  # Vss
+            ("24", "36", "48"): self.pwr,  # Vdd
+            "44": self.gnd,  # BOOT0
+            "5": self.osc.xtal_in,  # TODO remappable to PD0
+            "6": self.osc.xtal_out,  # TODO remappable to PD1
+            "7": self.nrst,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
@@ -198,7 +225,7 @@ class Stm32f103Base_Device(
                     {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]},  # TODO shared resource w/ I2C controller
                 ),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
@@ -206,71 +233,15 @@ class Stm32f103Base_Device(
 
         self.footprint(
             "U",
-            self.PACKAGE,
+            "Package_QFP:LQFP-48_7x7mm_P0.5mm",
             self._make_pinning(),
             mfr="STMicroelectronics",
-            part=self.PART,
+            part="STM32F103xxT6",
             datasheet="https://www.st.com/resource/en/datasheet/stm32f103c8.pdf",
             pnp_rot=-90,
         )
-        self.assign(self.lcsc_part, self.LCSC_PART)
-        self.assign(self.actual_basic_part, self.LCSC_BASIC_PART)
-
-
-class Stm32f103_48_Device(Stm32f103Base_Device):
-    SYSTEM_PIN_REMAP = {
-        "Vbat": "1",
-        "VddA": "9",
-        "VssA": "8",
-        "Vss": ["23", "35", "47"],
-        "Vdd": ["24", "36", "48"],
-        "BOOT0": "44",
-        "OSC_IN": "5",
-        "OSC_OUT": "6",
-        "NRST": "7",
-    }
-    RESOURCE_PIN_REMAP = {
-        "PC13": "2",
-        "PC14": "3",
-        "PC15": "4",
-        "PA0": "10",
-        "PA1": "11",
-        "PA2": "12",
-        "PA3": "13",
-        "PA4": "14",
-        "PA5": "15",
-        "PA6": "16",
-        "PA7": "17",
-        "PB0": "18",
-        "PB1": "19",
-        "PB2": "20",
-        "PB10": "21",
-        "PB11": "22",
-        "PB12": "25",
-        "PB13": "26",
-        "PB14": "27",
-        "PB15": "28",
-        "PA8": "29",
-        "PA9": "30",
-        "PA10": "31",
-        "PA11": "32",
-        "PA12": "33",
-        "PA13": "34",
-        "PA14": "37",
-        "PA15": "38",
-        "PB3": "39",
-        "PB4": "40",
-        "PB5": "41",
-        "PB6": "42",
-        "PB7": "43",
-        "PB8": "45",
-        "PB9": "46",
-    }
-    PACKAGE = "Package_QFP:LQFP-48_7x7mm_P0.5mm"
-    PART = "STM32F103xxT6"
-    LCSC_PART = "C8304"  # max memory CBT6 variant
-    # C77994 for GD32F103C8T6, probably mostly drop-in compatible, NOT basic part
-    LCSC_BASIC_PART = True
+        self.assign(self.lcsc_part, "C8304")  # max memory CBT6 variant
+        self.assign(self.actual_basic_part, False)
 
 
 class UsbDpPullUp(InternalSubcircuit, Block):
@@ -284,8 +255,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
         self.connect(self.usb.dp.net, self.dp.b)
 
 
-@abstract_block
-class Stm32f103Base(
+class Stm32f103_48(
     Resettable,
     IoControllerI2cTarget,
     IoControllerCan,
@@ -296,7 +266,6 @@ class Stm32f103Base(
     IoControllerPowerRequired,
     GeneratorBlock,
 ):
-    DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device
     DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # as in common dev boards / eval boards
 
     def __init__(self, **kwargs: Any) -> None:
@@ -314,7 +283,7 @@ class Stm32f103Base(
         super().contents()
 
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+            self.ic = imp.Block(Stm32f103_Device(pin_assigns=ArrayStringExpr()))
             self.connect(self.xtal_node, self.ic.osc)
             self.connect(self.swd_node, self.ic.swd)
             self.connect(self.reset_node, self.ic.nrst)
@@ -354,7 +323,3 @@ class Stm32f103Base(
             or len(self.get(self.usb.requested())) > 0
             or super()._crystal_required()
         )
-
-
-class Stm32f103_48(Stm32f103Base):
-    DEVICE = Stm32f103_48_Device

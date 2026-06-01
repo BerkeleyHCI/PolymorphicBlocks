@@ -6,8 +6,7 @@ from ...vendor_parts.jlc.JlcPart import JlcPart
 from ...circuits import *
 
 
-@abstract_block
-class Stm32g431Base_Device(
+class Stm32g431_Device(
     IoControllerI2cTarget,
     IoControllerCan,
     IoControllerUsb,
@@ -18,13 +17,32 @@ class Stm32g431Base_Device(
     JlcPart,
     FootprintBlock,
 ):
-    PACKAGE: str  # package name for footprint(...)
-    PART: str  # part name for footprint(...)
-    LCSC_PART: str
-    LCSC_BASIC_PART: bool
-
-    SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-    RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+    _PIN_MAPPING = {
+        "PF0": "2",
+        "PF1": "3",
+        "PA0": "5",
+        "PA1": "6",
+        "PA2": "7",
+        "PA3": "8",
+        "PA4": "9",
+        "PA5": "10",
+        "PA6": "11",
+        "PA7": "12",
+        "PA8": "18",
+        "PA9": "19",
+        "PA10": "20",
+        "PA11": "21",
+        "PA12": "22",
+        "PA13": "23",
+        "PA14": "24",
+        "PA15": "25",
+        "PB0": "13",
+        "PB3": "26",
+        "PB4": "27",
+        "PB5": "28",
+        "PB6": "29",
+        "PB7": "30",
+    }
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -42,16 +60,12 @@ class Stm32g431Base_Device(
 
     @override
     def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
-        return VariantPinRemapper(
-            {
-                "Vdd": self.pwr,
-                "Vss": self.gnd,
-                # 'VddA': self.pwr,
-                # 'VssA': self.gnd,
-                "BOOT0": self.gnd,
-                "PG10-NRST": self.nrst,
-            }
-        ).remap(self.SYSTEM_PIN_REMAP)
+        return {
+            ("1", "15", "17"): self.pwr,  # 15 VDDA
+            ("14", "16", "32"): self.gnd,  # 14 VSSA
+            "31": self.gnd,  # BOOT0
+            "4": self.nrst,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
@@ -205,63 +219,24 @@ class Stm32g431Base_Device(
                 PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
                 PeripheralFixedResource("USBCC", UsbCcPort(pullup_capable=True), {"cc1": ["PB6"], "cc2": ["PB4"]}),
             ]
-        ).remap_pins(self.RESOURCE_PIN_REMAP)
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
         super().generate()
         self.footprint(
             "U",
-            self.PACKAGE,
+            "Package_DFN_QFN:UFQFPN-32-1EP_5x5mm_P0.5mm_EP3.5x3.5mm",
             self._make_pinning(),
             mfr="STMicroelectronics",
-            part=self.PART,
+            part="STM32G431KB",
             datasheet="https://www.st.com/resource/en/datasheet/stm32g431kb.pdf",
         )
-        self.assign(self.lcsc_part, self.LCSC_PART)
+        self.assign(self.lcsc_part, "C1341901")  # STM32G431KBU3
         self.assign(self.actual_basic_part, False)
 
 
-class Stm32g431_G_Device(Stm32g431Base_Device):
-    SYSTEM_PIN_REMAP = {
-        "Vdd": ["1", "15", "17"],  # 15 VDDA
-        "Vss": ["14", "16", "32"],  # 14 VSSA
-        "BOOT0": "31",
-        "PG10-NRST": "4",
-    }
-    RESOURCE_PIN_REMAP = {
-        "PF0": "2",
-        "PF1": "3",
-        "PA0": "5",
-        "PA1": "6",
-        "PA2": "7",
-        "PA3": "8",
-        "PA4": "9",
-        "PA5": "10",
-        "PA6": "11",
-        "PA7": "12",
-        "PA8": "18",
-        "PA9": "19",
-        "PA10": "20",
-        "PA11": "21",
-        "PA12": "22",
-        "PA13": "23",
-        "PA14": "24",
-        "PA15": "25",
-        "PB0": "13",
-        "PB3": "26",
-        "PB4": "27",
-        "PB5": "28",
-        "PB6": "29",
-        "PB7": "30",
-    }
-    PACKAGE = "Package_DFN_QFN:UFQFPN-32-1EP_5x5mm_P0.5mm_EP3.5x3.5mm"
-    PART = "STM32G431KB"
-    LCSC_PART = "C1341901"  # STM32G431KBU3
-
-
-@abstract_block
-class Stm32g431Base(
+class Stm32g431kb(
     Resettable,
     IoControllerI2cTarget,
     Microcontroller,
@@ -269,8 +244,6 @@ class Stm32g431Base(
     IoControllerPowerRequired,
     GeneratorBlock,
 ):
-    DEVICE: Type[Stm32g431Base_Device] = Stm32g431Base_Device
-
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.generator_param(self.reset.is_connected(), self.pin_assigns, self.gpio.requested())
@@ -279,7 +252,7 @@ class Stm32g431Base(
     def contents(self) -> None:
         super().contents()
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
-            self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+            self.ic = imp.Block(Stm32g431_Device(pin_assigns=ArrayStringExpr()))
             self.connect(self.swd_node, self.ic.swd)
             self.connect(self.reset_node, self.ic.nrst)
 
@@ -300,7 +273,3 @@ class Stm32g431Base(
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up
-
-
-class Stm32g431kb(Stm32g431Base):
-    DEVICE = Stm32g431_G_Device
