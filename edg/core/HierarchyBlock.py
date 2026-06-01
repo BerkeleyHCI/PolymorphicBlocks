@@ -672,7 +672,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
     T = TypeVar("T", bound=BasePort)
 
     @override
-    def Port(self, tpe: T, tags: Iterable[PortTag] = [], *, optional: bool = False, doc: Optional[str] = None) -> T:
+    def Port(self, tpe: T, tags: Iterable[PortTag] = [], *, optional: BoolLike = False, doc: Optional[str] = None) -> T:
         """Registers a port for this Block"""
         if not isinstance(tpe, (Port, Vector)):
             raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")

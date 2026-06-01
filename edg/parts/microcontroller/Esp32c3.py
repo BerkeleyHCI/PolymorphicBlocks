@@ -58,7 +58,6 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
     def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self._model = self.ArgParameter(_model)
         self._allowed_pins = self.ArgParameter(_allowed_pins)
         self.generator_param(self._allowed_pins)
 
@@ -108,19 +107,17 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=True)  # needs external pullup
-        self.io2 = self.Port(self._dio_model, optional=True)  # needs external pullup; affects IO glitching on boot
-        self.io8 = self.Port(self._dio_model, optional=True)  # needs external pullup, required for download boot
+        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=_model)  # needs external pullup
+        self.io2 = self.Port(self._dio_model, optional=_model)  # needs external pullup; affects IO glitching on boot
+        self.io8 = self.Port(self._dio_model, optional=_model)  # needs external pullup, required for download boot
         self.io9 = self.Port(
             self._dio_model, optional=True
         )  # internally pulled up for SPI boot, connect to GND for download
-        self.require((~self._model).implies(self.en.is_connected() & self.io2.is_connected() & self.io8.is_connected()))
 
         # similarly, the programming UART is fixed and allocated separately
         self.uart0 = self.Port(UartPort(self._dio_model), optional=True)
 
-        self.lna_in = self.Port(Passive(), optional=True)
-        self.require((~self._model).implies(self.lna_in.is_connected()))
+        self.lna_in = self.Port(Passive(), optional=_model)
 
     @override
     def generate(self) -> None:

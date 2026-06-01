@@ -289,7 +289,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._param_docs = IdentityDict[ConstraintExpr, str]()
 
         self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
-        self._required_ports = IdentitySet[BasePort]()
+        self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> optional expr for required
         self._port_docs = IdentityDict[BasePort, str]()
 
         self._connects = self.manager.new_dict(Connection, anon_prefix="anon_link")
@@ -397,11 +397,17 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         for name, port in self._ports.items():
             if port in self._required_ports:
                 if isinstance(port, Port):
-                    port.is_connected()._populate_expr_proto(edgir.add_pair(pb.constraints, f"(reqd){name}"), ref_map)
+                    connected_condition = port.is_connected()
                 elif isinstance(port, Vector):
-                    (port.length() > 0)._populate_expr_proto(edgir.add_pair(pb.constraints, f"(reqd){name}"), ref_map)
+                    connected_condition = port.length() > 0
                 else:
                     raise ValueError(f"unknown non-optional port type {port}")
+
+                precondition = self._required_ports[port]
+                if precondition is not None:
+                    self.require(precondition.implies(connected_condition), f"(reqd){name}")
+                else:
+                    self.require(connected_condition, f"(reqd){name}")
 
         self._constraints.finalize()  # needed for source locator generation
 
@@ -525,7 +531,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     T = TypeVar("T", bound=BasePort)
 
-    def Port(self, tpe: T, *, optional: bool = False, doc: Optional[str] = None) -> T:
+    def Port(self, tpe: T, *, optional: BoolLike = False, doc: Optional[str] = None) -> T:
         """Registers a port for this Block"""
         if self._elaboration_state != BlockElaborationState.init:
             raise BlockDefinitionError(
@@ -539,8 +545,13 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         elt = tpe._bind(self)
         self._ports.register(elt)
 
-        if not optional:
-            self._required_ports.add(elt)
+        if isinstance(optional, bool):
+            if not optional:
+                self._required_ports[elt] = None
+        elif isinstance(optional, BoolExpr):
+            self._required_ports[elt] = ~optional
+        else:
+            raise EdgTypeError(f"optional flag to Port(...)", optional, (bool, BoolExpr))
 
         if doc is not None:
             self._port_docs[elt] = doc
