@@ -11,7 +11,7 @@ class VoltageTestTop(DesignTop):
         super().__init__()
         self.src = self.Block(DummyVoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 1) * Amp))
         self.sink = self.Block(DummyVoltageSink(voltage_limit=5 * Volt(tol=0.1), current_draw=1 * Amp(tol=0)))
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.connect(self.src.io, self.sink.io)
 
 
 class NoSourceVoltageTest(DesignTop):
@@ -29,7 +29,7 @@ class OvervoltageTestTop(DesignTop):
         super().__init__()
         self.src = self.Block(DummyVoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 1) * Amp))
         self.sink = self.Block(DummyVoltageSink(voltage_limit=3.3 * Volt(tol=0.1), current_draw=1 * Amp(tol=0)))
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.connect(self.src.io, self.sink.io)
 
 
 class OvercurrentTestTop(DesignTop):
@@ -40,7 +40,7 @@ class OvercurrentTestTop(DesignTop):
         self.src = self.Block(DummyVoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 1) * Amp))
         self.sink1 = self.Block(DummyVoltageSink(voltage_limit=5 * Volt(tol=0.1), current_draw=1 * Amp(tol=0)))
         self.sink2 = self.Block(DummyVoltageSink(voltage_limit=5 * Volt(tol=0.1), current_draw=1 * Amp(tol=0)))
-        self.connect(self.src.pwr, self.sink1.pwr, self.sink2.pwr)
+        self.connect(self.src.io, self.sink1.io, self.sink2.io)
 
 
 class ReverseVoltageTestTop(DesignTop):
@@ -70,7 +70,7 @@ class ReverseVoltageTestTop(DesignTop):
                 current_draw=0 * Amp(tol=0),
             )
         )
-        self.connect(self.src.pwr, self.sink.pwr, self.sink2.pwr)
+        self.connect(self.src.io, self.sink.io, self.sink2.io)
         self.require(self.src.reverse_voltage == 5 * Volt(tol=0))
 
 
@@ -103,7 +103,7 @@ class ReverseMultiSourceTestTop(DesignTop):
                 reverse_current_limits=(0, 1) * Amp,
             )
         )
-        self.connect(self.src.pwr, self.sink1.pwr, self.sink2.pwr)
+        self.connect(self.src.io, self.sink1.io, self.sink2.io)
 
 
 class ReverseNoSinkTest(DesignTop):
@@ -120,7 +120,7 @@ class ReverseNoSinkTest(DesignTop):
                 reverse_current_limits=(0, 1) * Amp,
             )
         )
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.connect(self.src.io, self.sink.io)
 
 
 class ReverseOvervoltageTestTop(DesignTop):
@@ -144,7 +144,7 @@ class ReverseOvervoltageTestTop(DesignTop):
                 reverse_current_limits=(0, 1) * Amp,
             )
         )
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.connect(self.src.io, self.sink.io)
         self.require(self.src.reverse_voltage != RangeExpr.EMPTY)
 
 
@@ -169,7 +169,7 @@ class ReverseForwardOvervoltageTestTop(DesignTop):
                 reverse_current_limits=(0, 1) * Amp,
             )
         )
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.connect(self.src.io, self.sink.io)
         self.require(self.src.reverse_voltage != RangeExpr.EMPTY)
 
 

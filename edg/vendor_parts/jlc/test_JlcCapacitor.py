@@ -6,16 +6,16 @@ class JlcCapacitorTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(JlcCapacitor(capacitance=10 * nFarad(tol=0.1), voltage=(0, 3.3) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class JlcBigCapacitorTestTop(Block):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(JlcCapacitor(capacitance=(50, 1000) * uFarad, voltage=(0, 3.3) * Volt))
-        (self.dummya,), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
-        (self.dummyb,), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
+        self.dummya = self.Block(DummyPassive()).connected(self.dut.pos)
+        self.dummyb = self.Block(DummyPassive()).connected(self.dut.neg)
 
 
 class CapacitorTestCase(unittest.TestCase):

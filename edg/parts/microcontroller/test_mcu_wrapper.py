@@ -14,8 +14,8 @@ class OverallocateTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
@@ -31,8 +31,8 @@ class FullMcuTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
@@ -47,8 +47,8 @@ class BaseMcuTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 
@@ -81,8 +81,8 @@ class AssignedI2cTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Xiao_Esp32c3())
 

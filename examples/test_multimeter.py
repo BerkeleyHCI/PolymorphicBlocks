@@ -37,8 +37,7 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
         self.res = ElementDict[Resistor]()
         for i, resistance in enumerate(self.get(self.resistances)):
             if resistance.upper == float("inf"):  # open circuit for this step
-                self.dummy = self.Block(DummyPassive())
-                self.connect(self.dummy.io, self.switch.inputs.request(str(i)))
+                self.dummy = self.Block(DummyPassive()).connected(self.switch.inputs.request(str(i)))
             else:
                 res = self.res[i] = self.Block(Resistor(resistance))
                 self.connect(res.a, self.input)

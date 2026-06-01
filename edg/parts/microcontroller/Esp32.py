@@ -413,8 +413,7 @@ class Freenove_Esp32_Wrover(
             self.connect(self.gnd, self.model.gnd)
             self.export_tap(self.gnd, self.device.gnd)
         else:
-            self.gnd_model = self.Block(DummyGround())
-            self.connect(self.gnd_model.gnd, self.model.gnd)
+            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
 
         if self.get(self.pwr.is_connected()):  # power supplied externally
             self.connect(self.pwr, self.model.pwr)

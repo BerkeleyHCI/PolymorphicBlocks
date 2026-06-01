@@ -1,8 +1,9 @@
 from ..electronics_model import *
-from .GroundPort import Ground, Common
+from .DummyDevices import BaseDummyBlock
+from .GroundPort import Ground, Common, GroundLink
 
 
-class DummyGround(DummyDevice):
+class DummyGround(BaseDummyBlock[GroundLink]):
     def __init__(self) -> None:
         super().__init__()
-        self.gnd = self.Port(Ground(), [Common, InOut])
+        self.io = self.Port(Ground(), [Common, InOut])

@@ -14,8 +14,8 @@ class OledI2cTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Er_Oled_096_1_1())
 
@@ -43,8 +43,8 @@ class OledSpiTest(DesignTop):
         self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
-            ImplicitConnect(self.pwr.pwr, [Power]),
-            ImplicitConnect(self.gnd.gnd, [Common]),
+            ImplicitConnect(self.pwr.io, [Power]),
+            ImplicitConnect(self.gnd.io, [Common]),
         ) as imp:
             self.dut = imp.Block(Er_Oled_096_1_1())
 

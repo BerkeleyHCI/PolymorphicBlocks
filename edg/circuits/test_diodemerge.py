@@ -10,13 +10,9 @@ class DiodeMergeTestTop(DesignTop):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(DiodePowerMerge(voltage_drop=(0, 1) * Volt))
-        (self.srca,), _ = self.chain(
-            self.dut.pwr_ins.request(), self.Block(DummyVoltageSource(voltage_out=(12, 14) * Volt))
-        )
-        (self.srcb,), _ = self.chain(
-            self.dut.pwr_ins.request(), self.Block(DummyVoltageSource(voltage_out=(4, 5) * Volt))
-        )
-        (self.sink,), _ = self.chain(self.dut.pwr_out, self.Block(DummyVoltageSink(current_draw=(0.5, 1.5) * Amp)))
+        self.srca = self.Block(DummyVoltageSource(voltage_out=(12, 14) * Volt)).connected(self.dut.pwr_ins.request())
+        self.srcb = self.Block(DummyVoltageSource(voltage_out=(4, 5) * Volt)).connected(self.dut.pwr_ins.request())
+        self.sink = self.Block(DummyVoltageSink(current_draw=(0.5, 1.5) * Amp)).connected(self.dut.pwr_out)
 
     @override
     def refinements(self) -> Refinements:
