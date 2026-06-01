@@ -405,9 +405,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
                 precondition = self._required_ports[port]
                 if precondition is not None:
-                    self.require(precondition.implies(connected_condition), f"(reqd){name}")
-                else:
-                    self.require(connected_condition, f"(reqd){name}")
+                    connected_condition = precondition.implies(connected_condition)
+
+                # add required constraints first
+                connected_condition._populate_expr_proto(edgir.add_pair(pb.constraints, f"(reqd){name}"), ref_map)
 
         self._constraints.finalize()  # needed for source locator generation
 
