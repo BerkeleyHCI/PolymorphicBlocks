@@ -1,6 +1,5 @@
 from typing import *
 
-from deprecated import deprecated
 from typing_extensions import override
 
 from ...circuits import *

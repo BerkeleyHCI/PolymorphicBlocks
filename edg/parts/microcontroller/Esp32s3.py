@@ -65,7 +65,6 @@ class Esp32s3_Wroom_1_Device(
     def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self._model = self.ArgParameter(_model)
         self._allowed_pins = self.ArgParameter(_allowed_pins)
         self.generator_param(self._allowed_pins)
 
@@ -89,8 +88,7 @@ class Esp32s3_Wroom_1_Device(
             pulldown_capable=True,
         )
 
-        self.chip_pu = self.Port(self._dio_model, optional=True)
-        self.require((~self._model).implies(self.chip_pu.is_connected()), "chip_pu must not be left floating")
+        self.chip_pu = self.Port(self._dio_model, optional=_model)
         self.io0 = self.Port(
             self._dio_model, optional=True
         )  # table 2-11, default pullup (SPI boot), set low to download boot

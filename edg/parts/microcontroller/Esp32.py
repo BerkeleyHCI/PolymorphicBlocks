@@ -62,7 +62,6 @@ class Esp32_Wroom_32_Device(
     def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self._model = self.ArgParameter(_model)
         self._allowed_pins = self.ArgParameter(_allowed_pins)
         self.generator_param(self._allowed_pins)
 
@@ -85,8 +84,7 @@ class Esp32_Wroom_32_Device(
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.chip_pu = self.Port(self._dio_model, optional=True)
-        self.require((~self._model).implies(self.chip_pu.is_connected()), "chip_pu must not be left floating")
+        self.chip_pu = self.Port(self._dio_model, optional=_model)
         # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
         self.io0 = self.Port(self._dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
         self.io2 = self.Port(

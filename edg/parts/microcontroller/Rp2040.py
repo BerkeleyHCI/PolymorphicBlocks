@@ -111,19 +111,10 @@ class Rp2040_Device(
             pulldown_capable=True,
         )
 
-        self.qspi = self.Port(SpiController(self._dio_std_model), optional=True)  # TODO actually QSPI
-        self.qspi_cs = self.Port(self._dio_std_model, optional=True)
-        self.qspi_sd2 = self.Port(self._dio_std_model, optional=True)
-        self.qspi_sd3 = self.Port(self._dio_std_model, optional=True)
-        self.require(
-            (~self._model).implies(
-                self.qspi.is_connected()
-                & self.qspi_cs.is_connected()
-                & self.qspi_sd2.is_connected()
-                & self.qspi_sd3.is_connected()
-            ),
-            "SPI memory required",
-        )
+        self.qspi = self.Port(SpiController(self._dio_std_model), optional=self._model)  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model, optional=self._model)
+        self.qspi_sd2 = self.Port(self._dio_std_model, optional=self._model)
+        self.qspi_sd3 = self.Port(self._dio_std_model, optional=self._model)
 
         self.xosc = self.Port(
             CrystalDriver(

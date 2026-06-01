@@ -14,6 +14,7 @@ class TestBlockBase(Block):
         self.base_float = self.Parameter(FloatExpr())
         self.base_port = self.Port(TestPortBase())  # required to test required constraint
         self.base_port_constr = self.Port(TestPortBase(self.base_float), optional=True)
+        self.base_port_optional = self.Port(TestPortBase(), optional=self.base_port.is_connected())
 
 
 @abstract_block_default(lambda: TestBlock)
@@ -56,23 +57,36 @@ class BlockBaseProtoTestCase(unittest.TestCase):
         self.assertTrue(self.pb.params[0].value.HasField("floating"))
 
     def test_port_def(self) -> None:
-        self.assertEqual(len(self.pb.ports), 2)
+        self.assertEqual(len(self.pb.ports), 3)
         self.assertEqual(self.pb.ports[0].name, "base_port")
         self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
         self.assertEqual(self.pb.ports[1].name, "base_port_constr")
         self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
+        self.assertEqual(self.pb.ports[2].name, "base_port_optional")
+        self.assertEqual(self.pb.ports[2].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
 
-    def test_connected_constraint(self) -> None:
+    def test_required_constraint(self) -> None:
         expected_constr = edgir.ValueExpr()
         expected_constr.ref.steps.add().name = "base_port"
         expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
         self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
         self.assertEqual(self.pb.constraints[0].value, expected_constr)
 
+    def test_optional_required_constraint(self) -> None:
+        expected_constr = edgir.ValueExpr()
+        expected_constr.binary.op = edgir.BinaryExpr.Op.IMPLIES
+        expected_constr.binary.lhs.unary.op = edgir.UnaryExpr.Op.NOT
+        expected_constr.binary.lhs.unary.val.ref.steps.add().name = "base_port"
+        expected_constr.binary.lhs.unary.val.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+        expected_constr.binary.rhs.ref.steps.add().name = "base_port_optional"
+        expected_constr.binary.rhs.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+        self.assertEqual(self.pb.constraints[1].name, "(reqd)base_port_optional")
+        self.assertEqual(self.pb.constraints[1].value, expected_constr)
+
     def test_port_init(self) -> None:
-        self.assertEqual(self.pb.constraints[1].name, "(init)base_port_constr.float_param")
+        self.assertEqual(self.pb.constraints[2].name, "(init)base_port_constr.float_param")
         self.assertEqual(
-            self.pb.constraints[1].value, edgir.AssignRef(["base_port_constr", "float_param"], ["base_float"])
+            self.pb.constraints[2].value, edgir.AssignRef(["base_port_constr", "float_param"], ["base_float"])
         )
 
 
@@ -114,10 +128,11 @@ class BlockProtoTestCase(unittest.TestCase):
         self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
 
     def test_port_def(self) -> None:
-        self.assertEqual(len(self.pb.ports), 3)
-        self.assertEqual(self.pb.ports[2].name, "port_lit")
-        self.assertEqual(self.pb.ports[2].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
+        self.assertEqual(len(self.pb.ports), 4)
+        self.assertEqual(self.pb.ports[3].name, "port_lit")
+        self.assertEqual(self.pb.ports[3].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
         self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
+        self.assertEqual(self.pb.constraints[1].name, "(reqd)base_port_optional")
 
     def test_param_def(self) -> None:
         self.assertEqual(len(self.pb.params), 4)
@@ -129,17 +144,17 @@ class BlockProtoTestCase(unittest.TestCase):
         self.assertTrue(self.pb.params[3].value.HasField("array"))
 
     def test_superclass_init(self) -> None:
-        self.assertEqual(self.pb.constraints[1].name, "(init)base_port_constr.float_param")
+        self.assertEqual(self.pb.constraints[2].name, "(init)base_port_constr.float_param")
         self.assertEqual(
-            self.pb.constraints[1].value, edgir.AssignRef(["base_port_constr", "float_param"], ["base_float"])
+            self.pb.constraints[2].value, edgir.AssignRef(["base_port_constr", "float_param"], ["base_float"])
         )
 
     def test_port_init(self) -> None:
-        self.assertEqual(self.pb.constraints[2].name, "(init)port_lit.float_param")
+        self.assertEqual(self.pb.constraints[3].name, "(init)port_lit.float_param")
 
     def test_param_init(self) -> None:
-        self.assertEqual(self.pb.constraints[3].name, "(init)range_init")
-        self.assertEqual(self.pb.constraints[3].value, edgir.AssignLit(["range_init"], Range(-4.2, -1.3)))
+        self.assertEqual(self.pb.constraints[4].name, "(init)range_init")
+        self.assertEqual(self.pb.constraints[4].value, edgir.AssignLit(["range_init"], Range(-4.2, -1.3)))
 
         expected_assign = edgir.ValueExpr()
         expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(["array_init"]))
@@ -147,14 +162,14 @@ class BlockProtoTestCase(unittest.TestCase):
         expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
         expected_array.vals.add().CopyFrom(edgir.lit_to_expr(True))
         expected_array.vals.add().CopyFrom(edgir.lit_to_expr(False))
-        self.assertEqual(self.pb.constraints[4].name, "(init)array_init")
-        self.assertEqual(self.pb.constraints[4].value, expected_assign)
+        self.assertEqual(self.pb.constraints[5].name, "(init)array_init")
+        self.assertEqual(self.pb.constraints[5].value, expected_assign)
 
         expected_assign = edgir.ValueExpr()
         expected_assign.assign.dst.CopyFrom(edgir.LocalPathList(["array_empty"]))
         expected_assign.assign.src.array.SetInParent()
-        self.assertEqual(self.pb.constraints[5].name, "(init)array_empty")
-        self.assertEqual(self.pb.constraints[5].value, expected_assign)
+        self.assertEqual(self.pb.constraints[6].name, "(init)array_empty")
+        self.assertEqual(self.pb.constraints[6].value, expected_assign)
 
     def test_docs(self) -> None:
         self.assertEqual(self.pb.meta.members.node["_docs"].members.node[""].text_leaf, "Test docstring")
