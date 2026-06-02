@@ -24,7 +24,12 @@ class Esp32s3_Interfaces(
 
 
 class Esp32s3_Wroom_1_Device(
-    Esp32s3_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, FootprintBlock, JlcPart
+    Esp32s3_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    FootprintBlock,
+    JlcPart,
 ):
     _PIN_MAPPING = {
         "GPIO4": "4",
@@ -62,11 +67,8 @@ class Esp32s3_Wroom_1_Device(
         "GPIO1": "39",
     }
 
-    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.pwr = self.Port(
             VoltageSink(  # assumes single-rail module
@@ -88,7 +90,7 @@ class Esp32s3_Wroom_1_Device(
             pulldown_capable=True,
         )
 
-        self.chip_pu = self.Port(self._dio_model, optional=_model)
+        self.chip_pu = self.Port(self._dio_model, optional=self._model)
         self.io0 = self.Port(
             self._dio_model, optional=True
         )  # table 2-11, default pullup (SPI boot), set low to download boot
@@ -373,11 +375,7 @@ class Freenove_Esp32s3_Wroom(
         super().generate()
 
         self.model = self.Block(
-            Esp32s3_Wroom_1_Device(
-                pin_assigns=ArrayStringExpr(),
-                _model=True,
-                _allowed_pins=list(Freenove_Esp32s3_Wrover_Device._PIN_REMAPPING.keys()),
-            )
+            Esp32s3_Wroom_1_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.device = self.Block(Freenove_Esp32s3_Wrover_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Freenove_Esp32s3_Wrover_Device._PIN_REMAPPING)

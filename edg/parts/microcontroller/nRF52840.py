@@ -15,7 +15,13 @@ class Nrf52840_Interfaces(
 
 
 class Mdbt50q_1mv2_Device(
-    Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, JlcPart, GeneratorBlock, FootprintBlock
+    Nrf52840_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    JlcPart,
+    GeneratorBlock,
+    FootprintBlock,
 ):
     # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
     # that other modules should wrap
@@ -74,11 +80,8 @@ class Mdbt50q_1mv2_Device(
         "P1.01": "61",
     }
 
-    def __init__(self, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(
@@ -684,10 +687,7 @@ class Feather_Nrf52840(
         super().generate()
 
         self.model = self.Block(
-            Mdbt50q_1mv2_Device(
-                pin_assigns=ArrayStringExpr(),
-                _allowed_pins=list(Feather_Nrf52840_Device._PIN_REMAPPING.keys()),
-            )
+            Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Feather_Nrf52840_Device._PIN_REMAPPING)

@@ -25,7 +25,12 @@ class Esp32_Interfaces(
 
 
 class Esp32_Wroom_32_Device(
-    Esp32_Interfaces, InternalSubcircuit, BaseIoControllerPinmapGenerator, FootprintBlock, JlcPart
+    Esp32_Interfaces,
+    InternalSubcircuit,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    FootprintBlock,
+    JlcPart,
 ):
     """ESP32-WROOM-32 module
 
@@ -59,11 +64,8 @@ class Esp32_Wroom_32_Device(
         "GPIO23": "37",
     }
 
-    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.pwr = self.Port(
             VoltageSink(
@@ -84,7 +86,7 @@ class Esp32_Wroom_32_Device(
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.chip_pu = self.Port(self._dio_model, optional=_model)
+        self.chip_pu = self.Port(self._dio_model, optional=self._model)
         # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
         self.io0 = self.Port(self._dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
         self.io2 = self.Port(
@@ -395,11 +397,7 @@ class Freenove_Esp32_Wrover(
         super().generate()
 
         self.model = self.Block(
-            Esp32_Wroom_32_Device(
-                pin_assigns=ArrayStringExpr(),
-                _model=True,
-                _allowed_pins=list(Freenove_Esp32_Wrover_Device._PIN_REMAPPING.keys()),
-            )
+            Esp32_Wroom_32_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.device = self.Block(Freenove_Esp32_Wrover_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Freenove_Esp32_Wrover_Device._PIN_REMAPPING)

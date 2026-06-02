@@ -12,7 +12,13 @@ class Rp2040_Interfaces(IoControllerI2cTarget, IoControllerUsb, BaseIoController
 
 
 class Rp2040_Device(
-    Rp2040_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
+    Rp2040_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    GeneratorBlock,
+    JlcPart,
+    FootprintBlock,
 ):
     _PIN_MAPPING = {
         "GPIO0": "2",
@@ -51,11 +57,8 @@ class Rp2040_Device(
         "SWCLK": "24",
     }
 
-    def __init__(self, *, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.gnd = self.Port(Ground(), [Common])
         self.iovdd = self.Port(
@@ -110,10 +113,10 @@ class Rp2040_Device(
             pulldown_capable=True,
         )
 
-        self.qspi = self.Port(SpiController(self._dio_std_model), optional=_model)  # TODO actually QSPI
-        self.qspi_cs = self.Port(self._dio_std_model, optional=_model)
-        self.qspi_sd2 = self.Port(self._dio_std_model, optional=_model)
-        self.qspi_sd3 = self.Port(self._dio_std_model, optional=_model)
+        self.qspi = self.Port(SpiController(self._dio_std_model), optional=self._model)  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model, optional=self._model)
+        self.qspi_sd2 = self.Port(self._dio_std_model, optional=self._model)
+        self.qspi_sd3 = self.Port(self._dio_std_model, optional=self._model)
 
         self.xosc = self.Port(
             CrystalDriver(
@@ -465,11 +468,7 @@ class Xiao_Rp2040(
         )
 
         self.model = self.Block(
-            Rp2040_Device(
-                pin_assigns=ArrayStringExpr(),
-                _model=True,
-                _allowed_pins=list(Xiao_Rp2040_Device._PIN_REMAPPING.keys()),
-            )
+            Rp2040_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Xiao_Rp2040_Device._PIN_REMAPPING)

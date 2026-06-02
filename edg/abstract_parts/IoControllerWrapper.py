@@ -5,6 +5,21 @@ from ..electronics_interfaces import *
 from .IoController import BaseIoController
 
 
+class BaseIoControllerModelable(BaseIoController):
+    """Base class for a BaseIoController that can (optionally) be used as a (non-physical) model.
+    This only adds parameters as a standard interface and is not functional.
+    Subclasses must plumb these parameters."""
+
+    def __init__(
+        self, *args: Any, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._model = self.ArgParameter(_model)
+        self._allowed_pins = self.ArgParameter(_allowed_pins)
+        self.generator_param(self._allowed_pins)
+
+
 class BaseIoControllerWrapped(BaseIoController):
     """Base class for IoController wrapped blocks, particularly footprints that are used
     with an outer WrapperSubboardBlock to implement e.g. a dev board or module around a modeling subcircuit.
@@ -237,12 +252,13 @@ class BaseIoControllerWrapper(BaseIoController):
         raise NotImplementedError  # use _wrap_inner_model_device instead
 
     def _wrap_inner_model_device(
-        self, model: BaseIoController, device: BaseIoControllerWrapped, remapping: Dict[str, str]
+        self, model: BaseIoControllerModelable, device: BaseIoControllerWrapped, remapping: Dict[str, str]
     ) -> None:
         """A version of _wrap_inner, but for the model (non-physical, directly connected) and device (physical,
         export tapped) for a wrapper block.
 
         Both the model and device should have pin_assigns unassigned, since this will assign them.
+        The model must also have _allowed_pins unassigned.
 
         Export IO transforms are not supported. Where needed, the wrapper should instead represent
         the device footprint instead of the application circuit, which should be defined at one level of hierarchy
@@ -251,6 +267,7 @@ class BaseIoControllerWrapper(BaseIoController):
         Requires _generator_param_all_ios, so all the IOs names are available, and pin_assigns to be a generator param.
         """
         self.assign(model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
+        self.assign(model._allowed_pins, list(remapping.keys()))
         self._export_ios_inner(model)
         self.assign(self.io_current_draw, model.io_current_draw)
 
