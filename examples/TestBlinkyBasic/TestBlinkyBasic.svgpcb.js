@@ -19,7 +19,7 @@ const R1 = board.add(R_0603_1608Metric, {
 board.setNetlist([
   {name: "mcu.gnd", pads: [["U1", "13"], ["R1", "2"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
-  {name: "mcu.device.vcc", pads: [["U1", "14"]]},
+  {name: "mcu.vusb_out", pads: [["U1", "14"]]},
   {name: "led.signal", pads: [["U1", "7"], ["D1", "2"]]},
   {name: "led.package.k", pads: [["D1", "1"], ["R1", "1"]]}
 ])
