@@ -683,15 +683,6 @@ class Feather_Nrf52840(
     def generate(self) -> None:
         super().generate()
 
-        self.require(
-            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
-            "can't source USB power if power input connected",
-        )
-        self.require(
-            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
-            "can't source 3v3 power if power input connected",
-        )
-
         self.model = self.Block(
             Mdbt50q_1mv2_Device(
                 pin_assigns=self._make_model_pinning(

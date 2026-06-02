@@ -330,6 +330,16 @@ class IoController(ProgrammableController, BaseIoController):
         self.gnd = self.Port(Ground.empty(), [Common], optional=True)
         self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
 
+    @override
+    def contents(self) -> None:
+        super().contents()
+        # self-powered microcontrollers (like USB dev boards) can be used without GND
+        # for instance with keyswitches connected to only GPIO
+        self.require(
+            self.pwr.is_connected().implies(self.gnd.is_connected()),
+            "gnd must be connected if pwr or pwr_out connected",
+        )
+
 
 @non_library
 class IoControllerPowerRequired(IoController):

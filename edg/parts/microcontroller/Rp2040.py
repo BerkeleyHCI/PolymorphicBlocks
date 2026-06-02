@@ -464,24 +464,6 @@ class Xiao_Rp2040(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
-        self.require(
-            ~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in"
-        )
-        self.require(
-            (self.pwr_vin.is_connected() | self.vusb_out.is_connected()).implies(~self.pwr.is_connected()),
-            "cannot use 3.3v input if VUsb used",
-        )
-        self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
-        self.require(
-            (
-                self.pwr_vin.is_connected()
-                | self.vusb_out.is_connected()
-                | self.pwr.is_connected()
-                | self.pwr_out.is_connected()
-            ).implies(self.gnd.is_connected()),
-            "ground required if power used",
-        )
-
         self.model = self.Block(
             Rp2040_Device(
                 pin_assigns=self._make_model_pinning(Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns)),

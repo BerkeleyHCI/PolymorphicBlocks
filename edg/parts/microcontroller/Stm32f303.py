@@ -87,15 +87,6 @@ class Nucleo_F303k8(
     def generate(self) -> None:
         super().generate()
 
-        self.require(
-            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
-            "can't source USB power if power input connected",
-        )
-        self.require(
-            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
-            "can't source 3v3 power if power input connected",
-        )
-
         self.footprint(
             "U",
             "edg:Nucleo32",

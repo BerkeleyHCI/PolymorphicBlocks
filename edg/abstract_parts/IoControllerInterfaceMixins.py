@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_interfaces import *
 from .IoController import BaseIoController, IoController
 
@@ -117,6 +119,20 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
             doc="Power output port, typically of the device's Vdd or VddIO rail at 3.3v",
         )
 
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.pwr.is_connected().implies(~self.pwr_out.is_connected())
+                & self.pwr_out.is_connected().implies(~self.pwr.is_connected()),
+                "can only connect one of pwr and pwr_out (same physical pin)",
+            )
+            self.require(
+                self.pwr_out.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if pwr or pwr_out connected",
+            )
+
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's USB Vbus."""
@@ -127,12 +143,46 @@ class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
             VoltageSource.empty(), optional=True, doc="Power output port of the device's Vbus, typically 5v"
         )
 
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.vusb_out.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if pwr or pwr_out connected",
+            )
+            self.require(
+                self.vusb_out.is_connected().implies(~self.pwr.is_connected()),
+                "can't sink logic-level pwr if sourcing power from USB",
+            )
+
 
 class IoControllerVin(BlockInterfaceMixin[IoController]):
-    """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator."""
+    """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator.
+    If also used with IoControllerUsbOut, it is assumed that pwr_vin is the same physical pin as vusb_out.
+    TODO: support devices with separate Vin and Vbus"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.pwr_vin = self.Port(
             VoltageSink.empty(), optional=True, doc="Power input pin, typically rated for 5v or a bit beyond."
         )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.pwr_vin.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if pwr or pwr_out connected",
+            )
+            self.require(
+                self.vusb_out.is_connected().implies(~self.pwr.is_connected()),
+                "can't sink logic-level pwr if powered from external vin",
+            )
+
+        if isinstance(self, IoControllerUsbOut):
+            self.require(
+                self.pwr_vin.is_connected().implies(~self.vusb_out.is_connected()),
+                "can only connect one of pwr_vin and vusb_out (same physical pin)",
+            )
