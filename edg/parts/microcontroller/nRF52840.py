@@ -15,7 +15,13 @@ class Nrf52840_Interfaces(
 
 
 class Mdbt50q_1mv2_Device(
-    Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, JlcPart, GeneratorBlock, FootprintBlock
+    Nrf52840_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    JlcPart,
+    GeneratorBlock,
+    FootprintBlock,
 ):
     # in the absence of a chip-level subcircuit, this is used as the authoritative base device model
     # that other modules should wrap
@@ -74,11 +80,8 @@ class Mdbt50q_1mv2_Device(
         "P1.01": "61",
     }
 
-    def __init__(self, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(
@@ -683,52 +686,25 @@ class Feather_Nrf52840(
     def generate(self) -> None:
         super().generate()
 
-        self.require(
-            self.pwr.is_connected().implies(~self.vusb_out.is_connected()),
-            "can't source USB power if power input connected",
-        )
-        self.require(
-            self.pwr.is_connected().implies(~self.pwr_out.is_connected()),
-            "can't source 3v3 power if power input connected",
-        )
-
         self.model = self.Block(
-            Mdbt50q_1mv2_Device(
-                pin_assigns=self._make_model_pinning(
-                    Feather_Nrf52840_Device._PIN_REMAPPING, self.get(self.pin_assigns)
-                ),
-                _allowed_pins=list(Feather_Nrf52840_Device._PIN_REMAPPING.keys()),
+            Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
+        )
+        self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Feather_Nrf52840_Device._PIN_REMAPPING)
+
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
+
+        self.connect(
+            self._generate_pwr_node(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS),
+            self.model.pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.pwr)
+
+        self.vusb_out.init_from(
+            VoltageSource(
+                voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,
             )
         )
-        self._export_ios_inner(self.model)
-
-        self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
-
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.pwr)
-            self.export_tap(self.pwr.net, self.device.pwr)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
-            )
-            self.connect(self.pwr_out_model.io, self.model.pwr)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.pwr)
-
-        if self.get(self.vusb_out.is_connected()):
-            self.vusb_out.init_from(
-                VoltageSource(
-                    voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.export_tap(self.vusb_out.net, self.device.vusb)
+        self.export_tap(self.vusb_out.net, self.device.vusb)

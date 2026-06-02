@@ -12,7 +12,13 @@ class Rp2040_Interfaces(IoControllerI2cTarget, IoControllerUsb, BaseIoController
 
 
 class Rp2040_Device(
-    Rp2040_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
+    Rp2040_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    GeneratorBlock,
+    JlcPart,
+    FootprintBlock,
 ):
     _PIN_MAPPING = {
         "GPIO0": "2",
@@ -51,12 +57,8 @@ class Rp2040_Device(
         "SWCLK": "24",
     }
 
-    def __init__(self, *, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
-        self._model = self.ArgParameter(_model)
 
         self.gnd = self.Port(Ground(), [Common])
         self.iovdd = self.Port(
@@ -465,61 +467,24 @@ class Xiao_Rp2040(
             VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
-        self.require(
-            ~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in"
-        )
-        self.require(
-            (self.pwr_vin.is_connected() | self.vusb_out.is_connected()).implies(~self.pwr.is_connected()),
-            "cannot use 3.3v input if VUsb used",
-        )
-        self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
-        self.require(
-            (
-                self.pwr_vin.is_connected()
-                | self.vusb_out.is_connected()
-                | self.pwr.is_connected()
-                | self.pwr_out.is_connected()
-            ).implies(self.gnd.is_connected()),
-            "ground required if power used",
-        )
-
         self.model = self.Block(
-            Rp2040_Device(
-                pin_assigns=self._make_model_pinning(Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
-                _model=True,
-                _allowed_pins=list(Xiao_Rp2040_Device._PIN_REMAPPING.keys()),
-            )
+            Rp2040_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
-        self._export_ios_inner(self.model)
+        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Xiao_Rp2040_Device._PIN_REMAPPING)
 
-        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
 
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, model_pwr)
-            self.export_tap(self.pwr.net, self.device.v3v3)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(
-                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.connect(self.pwr_out_model.io, model_pwr)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.v3v3)
+        self.connect(
+            self._generate_pwr_node(
+                voltage_out=3.3 * Volt(tol=0.05),
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
+            ),
+            model_pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.v3v3)
 
-        if self.get(self.pwr_vin.is_connected()):
-            self.export_tap(self.pwr_vin.net, self.device.vcc)
-        if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out.net, self.device.vcc)
+        self.export_tap((self.pwr_vin if self.get(self.pwr_vin.is_connected()) else self.vusb_out).net, self.device.vcc)

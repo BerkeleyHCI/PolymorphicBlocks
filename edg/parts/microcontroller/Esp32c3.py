@@ -20,7 +20,14 @@ class Esp32c3_Interfaces(
     """Defines base interfaces for ESP32C3 microcontrollers"""
 
 
-class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, FootprintBlock, JlcPart):
+class Esp32c3_Device(
+    Esp32c3_Interfaces,
+    BaseIoControllerModelable,
+    BaseIoControllerPinmapGenerator,
+    InternalSubcircuit,
+    FootprintBlock,
+    JlcPart,
+):
 
     RESOURCE_PIN_REMAP = {
         "GPIO0": "4",
@@ -55,11 +62,8 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             "29": self.xtal.xtal_out,
         }
 
-    def __init__(self, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
 
         self.gnd = self.Port(Ground(), [Common])
         self.vdda = self.Port(  # models total current draw
@@ -93,7 +97,7 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
         # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
         self.xtal = self.Port(  # vdda domain assumed
             CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.vdda.link().voltage),
-            optional=_model,
+            optional=self._model,
         )
 
         # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
@@ -107,9 +111,9 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
             pullup_capable=True,
             pulldown_capable=True,
         )
-        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=_model)  # needs external pullup
-        self.io2 = self.Port(self._dio_model, optional=_model)  # needs external pullup; affects IO glitching on boot
-        self.io8 = self.Port(self._dio_model, optional=_model)  # needs external pullup, required for download boot
+        self.en = self.Port(DigitalSink.from_bidir(self._dio_model), optional=self._model)  # needs external pullup
+        self.io2 = self.Port(self._dio_model, optional=self._model)  # needs external pullup; affects boot IO glitching
+        self.io8 = self.Port(self._dio_model, optional=self._model)  # needs external pullup, required for download boot
         self.io9 = self.Port(
             self._dio_model, optional=True
         )  # internally pulled up for SPI boot, connect to GND for download
@@ -117,7 +121,7 @@ class Esp32c3_Device(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator, Intern
         # similarly, the programming UART is fixed and allocated separately
         self.uart0 = self.Port(UartPort(self._dio_model), optional=True)
 
-        self.lna_in = self.Port(Passive(), optional=_model)
+        self.lna_in = self.Port(Passive(), optional=self._model)
 
     @override
     def generate(self) -> None:
@@ -378,11 +382,7 @@ class Esp32c3_Wroom02_Device(
         super().__init__(**kwargs)
 
         self.model = self.Block(
-            Esp32c3_Device(
-                pin_assigns=ArrayStringExpr(),
-                _model=True,
-                _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys()),
-            )
+            Esp32c3_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.gnd = self.Export(self.model.gnd, [Common])
         self.v3v3 = self.Export(self.model.vdd3p3, [Power])
@@ -399,15 +399,9 @@ class Esp32c3_Wroom02_Device(
     def generate(self) -> None:
         super().generate()
 
-        self._export_ios_inner(self.model)
-        self.assign(
-            self.model.pin_assigns,
-            self._make_model_pinning(Esp32c3_Wroom02_Footprint._PIN_REMAPPING, self.get(self.pin_assigns)),
-        )
+        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Esp32c3_Wroom02_Footprint._PIN_REMAPPING)
 
-        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-        self._export_tap_ios_inner(self.device)
         self.export_tap(self.gnd, self.device.gnd)
         self.export_tap(self.v3v3, self.device.v3v3)
         self.export_tap(self.en, self.device.en)
@@ -565,41 +559,24 @@ class Xiao_Esp32c3(
         super().generate()
 
         self.model = self.Block(
-            Esp32c3_Device(
-                pin_assigns=self._make_model_pinning(Xiao_Esp32c3_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
-                _model=True,
-                _allowed_pins=list(Xiao_Esp32c3_Device._PIN_REMAPPING.keys()),
-            )
+            Esp32c3_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
-        self._export_ios_inner(self.model)
+        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Xiao_Esp32c3_Device._PIN_REMAPPING)
 
-        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
 
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
-
-        self.connect(
+        model_pwr = self.connect(
             self.model.vdda, self.model.vdd3p3, self.model.vdd3p3_rtc, self.model.vdd3p3_cpu, self.model.vdd_spi
         )
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.vdd3p3)
-            self.export_tap(self.pwr.net, self.device.v3v3)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(
-                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.connect(self.pwr_out_model.io, self.model.vdd3p3)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.v3v3)
+        self.connect(
+            self._generate_pwr_node(
+                voltage_out=3.3 * Volt(tol=0.05),
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
+            ),
+            model_pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.v3v3)
 
-        if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out.net, self.device.vusb)
+        self.export_tap(self.vusb_out.net, self.device.vusb)

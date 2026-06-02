@@ -1,7 +1,23 @@
-from typing import *
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
+from typing_extensions import override
 
 from ..electronics_interfaces import *
 from .IoController import BaseIoController
+
+
+class BaseIoControllerModelable(BaseIoController):
+    """Base class for a BaseIoController that can (optionally) be used as a (non-physical) model.
+    This only adds parameters as a standard interface and is not functional.
+    Subclasses must plumb these parameters."""
+
+    def __init__(
+        self, *args: Any, _model: BoolLike = False, _allowed_pins: ArrayStringLike = [], **kwargs: Any
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._model = self.ArgParameter(_model)
+        self._allowed_pins = self.ArgParameter(_allowed_pins)
+        self.generator_param(self._allowed_pins)
 
 
 class BaseIoControllerWrapped(BaseIoController):
@@ -204,6 +220,9 @@ class BaseIoControllerWrapper(BaseIoController):
         remapping is specified as the forward remapping, from pinname to device pinnum.
 
         Requires _generator_param_all_ios, so all the IOs names are available.
+
+        In most cases, use _wrap_inner_model_device which provides all the wrapping functionality, though
+        this may be useful where other logic needs to happen with parameters.
         """
         inverse_remapping = {v: k for k, v in remapping.items()}
 
@@ -227,3 +246,33 @@ class BaseIoControllerWrapper(BaseIoController):
                 remapped_assigns.append(assign)
 
         return remapped_assigns
+
+    @override
+    def _wrap_inner(self, *args: Any, **kwargs: Any) -> None:
+        raise NotImplementedError  # use _wrap_inner_model_device instead
+
+    def _wrap_inner_model_device(
+        self, model: BaseIoControllerModelable, device: BaseIoControllerWrapped, remapping: Dict[str, str]
+    ) -> None:
+        """A version of _wrap_inner, but for the model (non-physical, directly connected) and device (physical,
+        export tapped) for a wrapper block.
+
+        Both the model and device should have pin_assigns unassigned, since this will assign them.
+        The model must also have _allowed_pins unassigned.
+
+        Export IO transforms are not supported. Where needed, the wrapper should instead represent
+        the device footprint instead of the application circuit, which should be defined at one level of hierarchy
+        higher.
+
+        Requires _generator_param_all_ios, so all the IOs names are available, and pin_assigns to be a generator param.
+        """
+        assert isinstance(self, GeneratorBlock)
+
+        self.assign(model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
+        self.assign(model._allowed_pins, list(remapping.keys()))
+        self._export_ios_inner(model)
+        self.assign(self.io_current_draw, model.io_current_draw)
+
+        self.assign(device.pin_assigns, model.actual_pin_assigns)
+        self._export_tap_ios_inner(device)
+        self.assign(self.actual_pin_assigns, device.actual_pin_assigns)

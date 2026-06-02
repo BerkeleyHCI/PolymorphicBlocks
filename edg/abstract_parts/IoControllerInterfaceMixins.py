@@ -1,4 +1,6 @@
-from typing import Any
+from typing import Any, Union
+
+from typing_extensions import override
 
 from ..electronics_interfaces import *
 from .IoController import BaseIoController, IoController
@@ -117,15 +119,85 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
             doc="Power output port, typically of the device's Vdd or VddIO rail at 3.3v",
         )
 
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.pwr_out.is_connected().implies(~self.pwr.is_connected()),
+                "can only connect one of pwr and pwr_out (same physical pin)",
+            )
+            self.require(
+                self.pwr_out.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if pwr_out connected",
+            )
+
+    def _generate_gnd_node(self) -> Ground:
+        """Helper function that returns a ground node, either directly taking the gnd port if available,
+        or generating an internal ground node.
+
+        Requires self.gnd.is_connected() as a generator param.
+        """
+        assert isinstance(self, IoController)
+        if self.get(self.gnd.is_connected()):  # gnd connected externally
+            return self.gnd
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            return self.gnd_model.io
+
+    def _generate_pwr_node(
+        self, voltage_out: RangeLike, current_limits: RangeLike
+    ) -> Union[VoltageSink, VoltageSource]:
+        """Helper function that returns a power node, either directly taking the pwr port if available,
+        or generating an internal voltage node and optionally connecting it to pwr_out (if used).
+
+        Requires self.pwr.is_connected(), self.pwr_out.is_connected as generator params.
+        """
+        assert isinstance(self, IoController)
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            return self.pwr
+        else:
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=voltage_out,  # tolerance is a guess
+                    current_limits=current_limits,
+                )
+            )
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.io)
+            return self.pwr_out_model.io
+
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
-    """IO controller mixin that provides an output of the IO controller's USB Vbus."""
+    """IO controller mixin that provides an output of the IO controller's USB Vbus.
+
+    If also used with IoControllerVin, it is assumed that pwr_vin is the same physical pin as vusb_out.
+    TODO: support devices with separate Vin and Vbus"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.vusb_out = self.Port(
             VoltageSource.empty(), optional=True, doc="Power output port of the device's Vbus, typically 5v"
         )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.vusb_out.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if vusb_out connected",
+            )
+            self.require(
+                self.vusb_out.is_connected().implies(~self.pwr.is_connected()),
+                "can't sink logic-level pwr if sourcing power from USB",
+            )
+
+        if isinstance(self, IoControllerVin):
+            self.require(
+                self.vusb_out.is_connected().implies(~self.pwr_vin.is_connected()),
+                "can only connect one of pwr_vin and vusb_out (same physical pin)",
+            )
 
 
 class IoControllerVin(BlockInterfaceMixin[IoController]):
@@ -136,3 +208,16 @@ class IoControllerVin(BlockInterfaceMixin[IoController]):
         self.pwr_vin = self.Port(
             VoltageSink.empty(), optional=True, doc="Power input pin, typically rated for 5v or a bit beyond."
         )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        if isinstance(self, IoController):
+            self.require(
+                self.pwr_vin.is_connected().implies(self.gnd.is_connected()),
+                "gnd must be connected if pwr_vin connected",
+            )
+            self.require(
+                self.pwr_vin.is_connected().implies(~self.pwr.is_connected()),
+                "can't sink logic-level pwr if powered from external vin",
+            )

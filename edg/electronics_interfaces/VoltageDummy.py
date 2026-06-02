@@ -16,7 +16,7 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
     ) -> None:
         super().__init__()
 
-        self.io = self.Port(
+        self.io: VoltageSource = self.Port(
             VoltageSource(
                 voltage_out=voltage_out,
                 current_limits=current_limits,
@@ -55,7 +55,7 @@ class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
     ) -> None:
         super().__init__()
 
-        self.io = self.Port(
+        self.io: VoltageSink = self.Port(
             VoltageSink(
                 voltage_limits=voltage_limit,
                 current_draw=current_draw,
