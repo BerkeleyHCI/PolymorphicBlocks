@@ -253,6 +253,6 @@ class BaseIoControllerWrapper(BaseIoController):
         self._export_ios_inner(self.model)
         self.assign(self.io_current_draw, self.model.io_current_draw)
 
-        self.assgin(self.device.pin_assigns, self.model.actual_pin_assigns)
+        self.assign(self.device.pin_assigns, self.model.actual_pin_assigns)
         self._export_tap_ios_inner(self.device)
         self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
