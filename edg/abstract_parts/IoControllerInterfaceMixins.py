@@ -130,7 +130,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
             )
             self.require(
                 self.pwr_out.is_connected().implies(self.gnd.is_connected()),
-                "gnd must be connected if pwr or pwr_out connected",
+                "gnd must be connected if pwr_out connected",
             )
 
 
@@ -149,7 +149,7 @@ class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
         if isinstance(self, IoController):
             self.require(
                 self.vusb_out.is_connected().implies(self.gnd.is_connected()),
-                "gnd must be connected if pwr or pwr_out connected",
+                "gnd must be connected if vusb_out connected",
             )
             self.require(
                 self.vusb_out.is_connected().implies(~self.pwr.is_connected()),
@@ -174,7 +174,7 @@ class IoControllerVin(BlockInterfaceMixin[IoController]):
         if isinstance(self, IoController):
             self.require(
                 self.pwr_vin.is_connected().implies(self.gnd.is_connected()),
-                "gnd must be connected if pwr or pwr_out connected",
+                "gnd must be connected if pwr_vin connected",
             )
             self.require(
                 self.vusb_out.is_connected().implies(~self.pwr.is_connected()),

@@ -337,7 +337,7 @@ class IoController(ProgrammableController, BaseIoController):
         # for instance with keyswitches connected to only GPIO
         self.require(
             self.pwr.is_connected().implies(self.gnd.is_connected()),
-            "gnd must be connected if pwr or pwr_out connected",
+            "gnd must be connected if pwr connected",
         )
 
 
