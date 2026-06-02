@@ -56,7 +56,6 @@ class Rp2040_Device(
 
         self._allowed_pins = self.ArgParameter(_allowed_pins)
         self.generator_param(self._allowed_pins)
-        self._model = self.ArgParameter(_model)
 
         self.gnd = self.Port(Ground(), [Common])
         self.iovdd = self.Port(
@@ -111,10 +110,10 @@ class Rp2040_Device(
             pulldown_capable=True,
         )
 
-        self.qspi = self.Port(SpiController(self._dio_std_model), optional=self._model)  # TODO actually QSPI
-        self.qspi_cs = self.Port(self._dio_std_model, optional=self._model)
-        self.qspi_sd2 = self.Port(self._dio_std_model, optional=self._model)
-        self.qspi_sd3 = self.Port(self._dio_std_model, optional=self._model)
+        self.qspi = self.Port(SpiController(self._dio_std_model), optional=_model)  # TODO actually QSPI
+        self.qspi_cs = self.Port(self._dio_std_model, optional=_model)
+        self.qspi_sd2 = self.Port(self._dio_std_model, optional=_model)
+        self.qspi_sd3 = self.Port(self._dio_std_model, optional=_model)
 
         self.xosc = self.Port(
             CrystalDriver(
