@@ -250,10 +250,10 @@ class BaseIoControllerWrapper(BaseIoController):
 
         Requires _generator_param_all_ios, so all the IOs names are available, and pin_assigns to be a generator param.
         """
-        self.assign(self.model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
-        self._export_ios_inner(self.model)
-        self.assign(self.io_current_draw, self.model.io_current_draw)
+        self.assign(model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
+        self._export_ios_inner(model)
+        self.assign(self.io_current_draw, model.io_current_draw)
 
-        self.assign(self.device.pin_assigns, self.model.actual_pin_assigns)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self.assign(device.pin_assigns, model.actual_pin_assigns)
+        self._export_tap_ios_inner(device)
+        self.assign(self.actual_pin_assigns, device.actual_pin_assigns)
