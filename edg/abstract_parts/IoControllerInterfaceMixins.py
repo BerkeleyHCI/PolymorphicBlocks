@@ -169,7 +169,10 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
 
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
-    """IO controller mixin that provides an output of the IO controller's USB Vbus."""
+    """IO controller mixin that provides an output of the IO controller's USB Vbus.
+
+    If also used with IoControllerVin, it is assumed that pwr_vin is the same physical pin as vusb_out.
+    TODO: support devices with separate Vin and Vbus"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -190,11 +193,15 @@ class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
                 "can't sink logic-level pwr if sourcing power from USB",
             )
 
+        if isinstance(self, IoControllerVin):
+            self.require(
+                self.vusb_out.is_connected().implies(~self.pwr_vin.is_connected()),
+                "can only connect one of pwr_vin and vusb_out (same physical pin)",
+            )
+
 
 class IoControllerVin(BlockInterfaceMixin[IoController]):
-    """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator.
-    If also used with IoControllerUsbOut, it is assumed that pwr_vin is the same physical pin as vusb_out.
-    TODO: support devices with separate Vin and Vbus"""
+    """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -213,10 +220,4 @@ class IoControllerVin(BlockInterfaceMixin[IoController]):
             self.require(
                 self.pwr_vin.is_connected().implies(~self.pwr.is_connected()),
                 "can't sink logic-level pwr if powered from external vin",
-            )
-
-        if isinstance(self, IoControllerUsbOut):
-            self.require(
-                self.vusb_out.is_connected().implies(~self.pwr_vin.is_connected()),
-                "can only connect one of pwr_vin and vusb_out (same physical pin)",
             )
