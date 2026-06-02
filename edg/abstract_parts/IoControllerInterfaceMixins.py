@@ -124,8 +124,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
         super().contents()
         if isinstance(self, IoController):
             self.require(
-                self.pwr.is_connected().implies(~self.pwr_out.is_connected())
-                & self.pwr_out.is_connected().implies(~self.pwr.is_connected()),
+                self.pwr_out.is_connected().implies(~self.pwr.is_connected()),
                 "can only connect one of pwr and pwr_out (same physical pin)",
             )
             self.require(
@@ -212,12 +211,12 @@ class IoControllerVin(BlockInterfaceMixin[IoController]):
                 "gnd must be connected if pwr_vin connected",
             )
             self.require(
-                self.vusb_out.is_connected().implies(~self.pwr.is_connected()),
+                self.pwr_vin.is_connected().implies(~self.pwr.is_connected()),
                 "can't sink logic-level pwr if powered from external vin",
             )
 
         if isinstance(self, IoControllerUsbOut):
             self.require(
-                self.pwr_vin.is_connected().implies(~self.vusb_out.is_connected()),
+                self.vusb_out.is_connected().implies(~self.pwr_vin.is_connected()),
                 "can only connect one of pwr_vin and vusb_out (same physical pin)",
             )
