@@ -382,11 +382,7 @@ class Esp32c3_Wroom02_Device(
         super().__init__(**kwargs)
 
         self.model = self.Block(
-            Esp32c3_Device(
-                pin_assigns=ArrayStringExpr(),
-                _model=True,
-                _allowed_pins=list(Esp32c3_Wroom02_Footprint._PIN_REMAPPING.keys()),
-            )
+            Esp32c3_Device(pin_assigns=ArrayStringExpr(), _model=True, _allowed_pins=ArrayStringExpr())
         )
         self.gnd = self.Export(self.model.gnd, [Common])
         self.v3v3 = self.Export(self.model.vdd3p3, [Power])
