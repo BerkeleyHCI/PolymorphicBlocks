@@ -399,15 +399,9 @@ class Esp32c3_Wroom02_Device(
     def generate(self) -> None:
         super().generate()
 
-        self._export_ios_inner(self.model)
-        self.assign(
-            self.model.pin_assigns,
-            self._make_model_pinning(Esp32c3_Wroom02_Footprint._PIN_REMAPPING, self.get(self.pin_assigns)),
-        )
+        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Esp32c3_Wroom02_Footprint._PIN_REMAPPING)
 
-        self.device = self.Block(Esp32c3_Wroom02_Footprint(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
-        self._export_tap_ios_inner(self.device)
         self.export_tap(self.gnd, self.device.gnd)
         self.export_tap(self.v3v3, self.device.v3v3)
         self.export_tap(self.en, self.device.en)
@@ -566,16 +560,13 @@ class Xiao_Esp32c3(
 
         self.model = self.Block(
             Esp32c3_Device(
-                pin_assigns=self._make_model_pinning(Xiao_Esp32c3_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
+                pin_assigns=ArrayStringExpr(),
                 _model=True,
                 _allowed_pins=list(Xiao_Esp32c3_Device._PIN_REMAPPING.keys()),
             )
         )
-        self._export_ios_inner(self.model)
-
-        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self.device = self.Block(Xiao_Esp32c3_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Xiao_Esp32c3_Device._PIN_REMAPPING)
 
         if self.get(self.gnd.is_connected()):
             self.connect(self.gnd, self.model.gnd)

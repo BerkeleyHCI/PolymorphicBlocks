@@ -204,6 +204,9 @@ class BaseIoControllerWrapper(BaseIoController):
         remapping is specified as the forward remapping, from pinname to device pinnum.
 
         Requires _generator_param_all_ios, so all the IOs names are available.
+
+        In most cases, use _wrap_inner_model_device which provides all the wrapping functionality, though
+        this may be useful where other logic needs to happen with parameters.
         """
         inverse_remapping = {v: k for k, v in remapping.items()}
 
@@ -227,3 +230,29 @@ class BaseIoControllerWrapper(BaseIoController):
                 remapped_assigns.append(assign)
 
         return remapped_assigns
+
+    @override
+    def _wrap_inner(self, *args: Any, **kwargs: Any) -> None:
+        raise NotImplementedError  # use _wrap_inner_model_device instead
+
+    def _wrap_inner_model_device(
+        self, model: BaseIoController, device: BaseIoControllerWrapped, remapping: Dict[str, str]
+    ) -> None:
+        """A version of _wrap_inner, but for the model (non-physical, directly connected) and device (physical,
+        export tapped) for a wrapper block.
+
+        Both the model and device should have pin_assigns unassigned, since this will assign them.
+
+        Export IO transforms are not supported. Where needed, the wrapper should instead represent
+        the device footprint instead of the application circuit, which should be defined at one level of hierarchy
+        higher.
+
+        Requires _generator_param_all_ios, so all the IOs names are available, and pin_assigns to be a generator param.
+        """
+        self.assign(self.model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
+        self._export_ios_inner(self.model)
+        self.assign(self.io_current_draw, self.model.io_current_draw)
+
+        self.assgin(self.device.pin_assigns, self.model.actual_pin_assigns)
+        self._export_tap_ios_inner(self.device)
+        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)

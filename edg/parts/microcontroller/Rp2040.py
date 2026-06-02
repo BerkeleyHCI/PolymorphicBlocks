@@ -466,16 +466,13 @@ class Xiao_Rp2040(
 
         self.model = self.Block(
             Rp2040_Device(
-                pin_assigns=self._make_model_pinning(Xiao_Rp2040_Device._PIN_REMAPPING, self.get(self.pin_assigns)),
+                pin_assigns=ArrayStringExpr(),
                 _model=True,
                 _allowed_pins=list(Xiao_Rp2040_Device._PIN_REMAPPING.keys()),
             )
         )
-        self._export_ios_inner(self.model)
-
-        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Xiao_Rp2040_Device._PIN_REMAPPING)
 
         if self.get(self.gnd.is_connected()):
             self.connect(self.gnd, self.model.gnd)
