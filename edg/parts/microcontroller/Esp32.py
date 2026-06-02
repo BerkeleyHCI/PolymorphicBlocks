@@ -416,4 +416,4 @@ class Freenove_Esp32_Wrover(
         )
         self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.v3v3)
 
-        self.export_tap(self.vusb_out.net, self.device.vusb)
+        self.export_tap(self.vusb_out.net, self.device.vcc)
