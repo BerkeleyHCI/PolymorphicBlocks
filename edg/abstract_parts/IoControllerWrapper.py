@@ -266,6 +266,8 @@ class BaseIoControllerWrapper(BaseIoController):
 
         Requires _generator_param_all_ios, so all the IOs names are available, and pin_assigns to be a generator param.
         """
+        assert isinstance(self, GeneratorBlock)
+
         self.assign(model.pin_assigns, self._make_model_pinning(remapping, self.get(self.pin_assigns)))
         self.assign(model._allowed_pins, list(remapping.keys()))
         self._export_ios_inner(model)
