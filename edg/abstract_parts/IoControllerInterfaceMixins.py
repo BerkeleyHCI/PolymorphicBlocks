@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from typing_extensions import override
 
@@ -132,6 +132,41 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
                 self.pwr_out.is_connected().implies(self.gnd.is_connected()),
                 "gnd must be connected if pwr_out connected",
             )
+
+    def _generate_gnd_node(self) -> Ground:
+        """Helper function that returns a ground node, either directly taking the gnd port if available,
+        or generating an internal ground node.
+
+        Requires self.gnd.is_connected() as a generator param.
+        """
+        assert isinstance(self, IoController)
+        if self.get(self.gnd.is_connected()):  # gnd connected externally
+            return self.gnd
+        else:
+            self.gnd_model = self.Block(DummyGround())
+            return self.gnd_model.io
+
+    def _generate_pwr_node(
+        self, voltage_out: RangeLike, current_limits: RangeLike
+    ) -> Union[VoltageSink, VoltageSource]:
+        """Helper function that returns a power node, either directly taking the pwr port if available,
+        or generating an internal voltage node and optionally connecting it to pwr_out (if used).
+
+        Requires self.pwr.is_connected(), self.pwr_out.is_connected as generator params.
+        """
+        assert isinstance(self, IoController)
+        if self.get(self.pwr.is_connected()):  # power supplied externally
+            return self.pwr
+        else:
+            self.pwr_out_model = self.Block(
+                DummyVoltageSource(
+                    voltage_out=voltage_out,  # tolerance is a guess
+                    current_limits=current_limits,
+                )
+            )
+            if self.get(self.pwr_out.is_connected()):
+                self.connect(self.pwr_out, self.pwr_out_model.io)
+            return self.pwr_out_model.io
 
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):

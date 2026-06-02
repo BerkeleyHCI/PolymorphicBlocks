@@ -9,7 +9,7 @@ from .GroundPort import Ground, Common, GroundLink
 class DummyGround(BaseDummyBlock[GroundLink]):
     def __init__(self) -> None:
         super().__init__()
-        self.io = self.Port(Ground(), [Common, InOut])
+        self.io: Ground = self.Port(Ground(), [Common, InOut])
 
     def __getattr__(self, item: str) -> Any:
         if item == "gnd":

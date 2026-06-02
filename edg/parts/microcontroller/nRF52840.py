@@ -692,29 +692,13 @@ class Feather_Nrf52840(
         self.device = self.Block(Feather_Nrf52840_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Feather_Nrf52840_Device._PIN_REMAPPING)
 
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
 
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.pwr)
-            self.export_tap(self.pwr.net, self.device.pwr)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
-            )
-            self.connect(self.pwr_out_model.io, self.model.pwr)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.pwr)
+        self.connect(
+            self._generate_pwr_node(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS),
+            self.model.pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.pwr)
 
-        if self.get(self.vusb_out.is_connected()):
-            self.vusb_out.init_from(
-                VoltageSource(
-                    voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.export_tap(self.vusb_out.net, self.device.vusb)
+        self.export_tap(self.vusb_out.net, self.device.vusb)

@@ -474,30 +474,18 @@ class Xiao_Rp2040(
         self.device = self.Block(Xiao_Rp2040_Device(pin_assigns=ArrayStringExpr()), external=True)
         self._wrap_inner_model_device(self.model, self.device, Xiao_Rp2040_Device._PIN_REMAPPING)
 
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
 
         self.connect(self.model.vreg_vout, self.model.dvdd)
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, model_pwr)
-            self.export_tap(self.pwr.net, self.device.v3v3)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(
-                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.connect(self.pwr_out_model.io, model_pwr)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.v3v3)
+        self.connect(
+            self._generate_pwr_node(
+                voltage_out=3.3 * Volt(tol=0.05),
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
+            ),
+            model_pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.v3v3)
 
-        if self.get(self.pwr_vin.is_connected()):
-            self.export_tap(self.pwr_vin.net, self.device.vcc)
-        if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out.net, self.device.vcc)
+        self.export_tap((self.pwr_vin if self.get(self.pwr_vin.is_connected()) else self.vusb_out).net, self.device.vcc)

@@ -41,6 +41,14 @@ class FullMcuTest(DesignTop):
                 self.ios[i] = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request(str(i)))
 
 
+class UnpoweredMcuTest(DesignTop):
+    # tests a wrapper without ground or power connections
+    def __init__(self) -> None:
+        super().__init__()
+        self.dut = self.Block(Xiao_Esp32c3())
+        self.io = self.Block(DummyDigitalSource()).connected(self.dut.gpio.request())
+
+
 class BaseMcuTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
@@ -104,6 +112,9 @@ class McuWrapperTestCase(unittest.TestCase):
     def test_overallocate(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(OverallocateTest)
+
+    def test_unpowered_mcu(self) -> None:
+        ScalaCompiler.compile(UnpoweredMcuTest)
 
     def test_auto_pins(self) -> None:
         ScalaCompiler.compile(FullMcuTest)  # check that it compiles without error

@@ -396,39 +396,24 @@ class Freenove_Esp32_Wrover(
 
         self.model = self.Block(
             Esp32_Wroom_32_Device(
-                pin_assigns=self._make_model_pinning(
-                    Freenove_Esp32_Wrover_Device._PIN_REMAPPING, self.get(self.pin_assigns)
-                ),
+                pin_assigns=ArrayStringExpr(),
                 _model=True,
                 _allowed_pins=list(Freenove_Esp32_Wrover_Device._PIN_REMAPPING.keys()),
             )
         )
-        self._export_ios_inner(self.model)
+        self.device = self.Block(Freenove_Esp32_Wrover_Device(pin_assigns=ArrayStringExpr()), external=True)
+        self._wrap_inner_model_device(self.model, self.device, Freenove_Esp32_Wrover_Device._PIN_REMAPPING)
 
-        self.device = self.Block(Freenove_Esp32_Wrover_Device(pin_assigns=self.model.actual_pin_assigns), external=True)
-        self._export_tap_ios_inner(self.device)
-        self.assign(self.actual_pin_assigns, self.device.actual_pin_assigns)
+        self.connect(self._generate_gnd_node(), self.model.gnd)
+        self.export_tap(self.gnd, self.device.gnd)
 
-        if self.get(self.gnd.is_connected()):
-            self.connect(self.gnd, self.model.gnd)
-            self.export_tap(self.gnd, self.device.gnd)
-        else:
-            self.gnd_model = self.Block(DummyGround()).connected(self.model.gnd)
+        self.connect(
+            self._generate_pwr_node(
+                voltage_out=3.3 * Volt(tol=0.05),
+                current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
+            ),
+            self.model.pwr,
+        )
+        self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.v3v3)
 
-        if self.get(self.pwr.is_connected()):  # power supplied externally
-            self.connect(self.pwr, self.model.pwr)
-            self.export_tap(self.pwr.net, self.device.v3v3)
-        else:  # board sources power from USB
-            self.pwr_out_model = self.Block(
-                DummyVoltageSource(
-                    voltage_out=3.3 * Volt(tol=0.05),  # tolerance is a guess
-                    current_limits=UsbConnector.USB2_CURRENT_LIMITS,
-                )
-            )
-            self.connect(self.pwr_out_model.io, self.model.pwr)
-            if self.get(self.pwr_out.is_connected()):
-                self.connect(self.pwr_out, self.pwr_out_model.io)
-            self.export_tap(self.pwr_out.net, self.device.v3v3)
-
-        if self.get(self.vusb_out.is_connected()):
-            self.export_tap(self.vusb_out.net, self.device.vcc)
+        self.export_tap(self.vusb_out.net, self.device.vusb)
