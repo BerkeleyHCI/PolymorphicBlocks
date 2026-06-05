@@ -113,7 +113,7 @@ class BleJoystick(JlcBoardTop):
             self.vbat_gated = self.connect(self.gate.pwr_out)
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-            self.chg = imp.Block(Mcp73831(charging_current=200 * mAmp(tol=0.2)))
+            self.chg = imp.Block(Mcp73831(charging_current=100 * mAmp(tol=0.2)))
             self.connect(self.usb.pwr, self.chg.pwr)
             self.connect(self.chg.pwr_bat, self.bat.chg)
 
@@ -122,8 +122,9 @@ class BleJoystick(JlcBoardTop):
             ImplicitConnect(self.v3v3, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            self.mcu = imp.Block(IoController())
-            self.mcu.with_mixin(IoControllerBle())
+            self.mcu = imp.Block(Holyiot_18010())  # nRF52 weirdly requires Vbus, so this can't be abstract
+            self.connect(self.mcu.pwr_usb, self.vusb)
+            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
             # debugging LEDs
             (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
@@ -136,21 +137,19 @@ class BleJoystick(JlcBoardTop):
             self.connect(self.gate.btn_out, self.mcu.gpio.request("sw"))
             self.connect(self.mcu.gpio.request("gate_ctl"), self.gate.control)
 
-            self.trig = imp.Block(A1304())
-            (self.trig_div,), _ = self.chain(
-                self.trig.out,
-                imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10) * kOhm)),
-                self.mcu.adc.request("trig"),
-            )
+            (self.trig,), _ = self.chain(imp.Block(A1304()), self.mcu.adc.request("trig"))
+
+            mcu_i2c = self.mcu.i2c.request("i2c")
+            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
+
+            self.imu = imp.Block(Lsm6ds3trc())
+            self.connect(mcu_i2c, self.imu.i2c)
 
             (self.vbat_sense,), _ = self.chain(
                 self.vbat_gated,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
                 self.mcu.adc.request("vbat_sense"),
             )
-
-            mcu_i2c = self.mcu.i2c.request("i2c")
-            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
 
         self.btns = self.Block(ButtonSubboard())
         self.connect(self.btns.gnd, self.gnd)
@@ -172,20 +171,7 @@ class BleJoystick(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        # "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
-                        # # note, only ADC pins are IO0/1/3/4/5 (pins 18/17/15/3/4)
-                        # "ax1=3",
-                        # "ax2=15",
-                        # "trig=17",
-                        # "vbat_sense=18",
-                        # # 'vbat_sense_gate=14',
-                        # # 'gate_ctl=5',
-                        # "i2c.scl=4",
-                        # "i2c.sda=14",
-                        # "sw=5",  # joystick
-                        # "sw0=10",  # membranes
-                        # "sw1=13",
-                        # "sw2=6",
+                        # TODO pin this
                     ],
                 ),
                 (
@@ -193,11 +179,9 @@ class BleJoystick(JlcBoardTop):
                     [
                         "i2c.scl=12",
                         "i2c.sda=11",
+                        # TODO pin the rest
                     ],
                 ),
-                (["mp2722", "power_path", "dutycycle_limit"], Range(0.1, 1)),  # allow tracking
-                (["mp2722", "power_path", "inductor", "manual_frequency_rating"], Range(0.0, 10e6)),
-                (["mp2722", "power_path", "inductor", "footprint_spec"], "Inductor_SMD:L_1210_3225Metric"),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
