@@ -149,19 +149,26 @@ class BleJoystick(JlcBoardTop):
             self.imu = imp.Block(Lsm6ds3trc())
             self.connect(mcu_i2c, self.imu.i2c)
 
+        # MIXED POWER DOMAINS
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.vbat_sense_gate = imp.Block(HighSideSwitch())
+            self.connect(self.vbat_sense_gate.pwr, self.vbat_gated)
+            self.connect(self.mcu.gpio.request("vbat_sense_gate"), self.vbat_sense_gate.control)
+
             (self.vbat_sense,), _ = self.chain(
-                self.vbat_gated,
+                self.vbat_sense_gate.output,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
                 self.mcu.adc.request("vbat_sense"),
             )
             self.connect(self.mcu.gpio.request("chg", self.chg.prog))
 
-        self.btns = self.Block(ButtonSubboard())
-        self.connect(self.btns.gnd, self.gnd)
-        self.connect(self.btns.pwr, self.v3v3)
-        self.connect(self.btns.i2c, mcu_i2c)
-        self.connect(self.btns.io0, self.mcu.gpio.request("btn_io0"))
-        self.connect(self.btns.vbat, self.vbat_gated)
+            self.btns = imp.Block(ButtonSubboard())
+            self.connect(self.btns.pwr, self.v3v3)
+            self.connect(self.btns.vbat, self.vbat_gated)
+            self.connect(self.btns.i2c, mcu_i2c)
+            self.connect(self.btns.io0, self.mcu.gpio.request("btn_io0"))
 
     @override
     def refinements(self) -> Refinements:
