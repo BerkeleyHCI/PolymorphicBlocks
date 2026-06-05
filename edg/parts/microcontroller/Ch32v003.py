@@ -8,7 +8,7 @@ from ..connector.Headers import PinHeader254
 from ..connector.TagConnect import TagConnect
 
 
-@abstract_block_default(lambda: Ch32VSdiHeader254)
+@abstract_block_default(lambda: Ch32vSdiHeader254)
 class Ch32vSdiHeader(ProgrammingConnector):
     """Abstract programming header for the CH32V using the one-pin SDI interface with SWIO pin.."""
 
@@ -21,7 +21,7 @@ class Ch32vSdiHeader(ProgrammingConnector):
         self.reset = self.Port(DigitalBidir.empty(), optional=True)  # may not be connected internally
 
 
-class Ch32VSdiHeader254(Ch32vSdiHeader):
+class Ch32vSdiHeader254(Ch32vSdiHeader):
     """3-pin minimal programming header for CH32V."""
 
     @override
@@ -36,7 +36,7 @@ class Ch32VSdiHeader254(Ch32vSdiHeader):
         self.conn = self.Block(PinHeader254()).connected({"1": self.pwr, "2": self.gnd, "3": self.swio})
 
 
-class Ch32VSdiTc2030(Ch32vSdiHeader):
+class Ch32vSdiTc2030(Ch32vSdiHeader):
     """UNOFFICIAL tag connect header, based on the SWD pinout and mapping SWDIO to SWIO."""
 
     @override
@@ -96,8 +96,8 @@ class Ch32v003_Device(
 
         self.nrst = self.Port(  # Table 3-19
             DigitalSink.from_supply(
-                self.gnd,
-                self.pwr,
+                self.vss,
+                self.vdd,
                 voltage_limit_tolerance=(-0.3, 0.3) * Volt,
                 input_threshold_abs=(
                     0.28 * (self.vdd.link().voltage.lower() - 1.8) + 0.6 + self.vss.link().voltage.lower(),
@@ -109,7 +109,7 @@ class Ch32v003_Device(
         )  # note, switched internal pull-up resistor, 35-55 kOhm
 
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.vdd.link().voltage), optional=True
         )  # Table 3-10 crystal / resonator specs, typ 24 MHz
 
         self.swio = self.Port(DigitalBidir.empty())

@@ -25,6 +25,32 @@ class JoystickSubboard(SubboardBlock):
         self.export_tap(self.ax2.net, self.conn.pins.request("6"))
 
 
+class ButtonSubboard(SubboardBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.pwr = self.Port(VoltageSink.empty())
+        self.i2c = self.Port(I2cTarget.empty())
+        self.io0 = self.Port(DigitalBidir.empty())
+        self.vbat = self.Port(VoltageSink.empty())
+
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.pwr, [Power]),
+        ) as imp:
+            self.ioe = imp.Block(IoController())
+            self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request(), self.i2c)
+
+        self.conn = self.Block(Fpc050Pair(6), external=True)
+        self.export_tap(self.gnd.net, self.conn.pins.request("1"))
+        self.export_tap(self.pwr.net, self.conn.pins.request("2"))
+        self.export_tap(self.i2c.scl.net, self.conn.pins.request("3"))
+        self.export_tap(self.i2c.sda.net, self.conn.pins.request("4"))
+        self.export_tap(self.io0.net, self.conn.pins.request("5"))
+        self.export_tap(self.vbat.net, self.conn.pins.request("6"))
+
+
 class BleJoystick(JlcBoardTop):
     """BLE joystick with XYAB buttons"""
 
@@ -128,13 +154,22 @@ class BleJoystick(JlcBoardTop):
                 self.mcu.adc.request("vbat_sense"),
             )
 
-            (self.i2c_pull,), _ = self.chain(self.mcu.i2c.request("i2c"), imp.Block(I2cPullup()), self.mp2722.i2c)
+            mcu_i2c = self.mcu.i2c.request("i2c")
+            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()), self.mp2722.i2c)
+
+        self.btns = self.Block(ButtonSubboard())
+        self.connect(self.btns.gnd, self.gnd)
+        self.connect(self.btns.pwr, self.v3v3)
+        self.connect(self.btns.i2c, mcu_i2c)
+        self.connect(self.btns.io0, self.mcu.gpio.request("btn_io0"))
+        self.connect(self.btns.vbat, self.vbat)  # TODO use power-gated version
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
-                (["mcu"], Esp32c3_Wroom02),
+                (["mcu"], Holyiot_18010),
+                (["btns", "ioe"], Ch32v003),
                 (["reg_3v3"], Ap7215),
                 (["sw[0]", "package"], SmtSwitch),
                 (["sw[1]", "package"], SmtSwitch),
@@ -146,20 +181,20 @@ class BleJoystick(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
-                        # note, only ADC pins are IO0/1/3/4/5 (pins 18/17/15/3/4)
-                        "ax1=3",
-                        "ax2=15",
-                        "trig=17",
-                        "vbat_sense=18",
-                        # 'vbat_sense_gate=14',
-                        # 'gate_ctl=5',
-                        "i2c.scl=4",
-                        "i2c.sda=14",
-                        "sw=5",  # joystick
-                        "sw0=10",  # membranes
-                        "sw1=13",
-                        "sw2=6",
+                        # "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
+                        # # note, only ADC pins are IO0/1/3/4/5 (pins 18/17/15/3/4)
+                        # "ax1=3",
+                        # "ax2=15",
+                        # "trig=17",
+                        # "vbat_sense=18",
+                        # # 'vbat_sense_gate=14',
+                        # # 'gate_ctl=5',
+                        # "i2c.scl=4",
+                        # "i2c.sda=14",
+                        # "sw=5",  # joystick
+                        # "sw0=10",  # membranes
+                        # "sw1=13",
+                        # "sw2=6",
                     ],
                 ),
                 (["mcu", "programming"], "uart-auto-button"),
@@ -169,6 +204,7 @@ class BleJoystick(JlcBoardTop):
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
+                (Ch32vSdiHeader, Ch32vSdiTc2030),
                 (TestPoint, CompactKeystone5015),
                 (PassiveConnector, JstPhKVertical),
             ],
