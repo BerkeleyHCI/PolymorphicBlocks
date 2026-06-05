@@ -157,7 +157,6 @@ class Ch32v003_Device(
             self.gnd,
             self.pwr,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            signal_limit_tolerance=(0, 0),  # conversion voltage range, 0 to Vref+ (assumed VddA)
             impedance=(100, float("inf")) * kOhm,
         )
 
@@ -167,82 +166,36 @@ class Ch32v003_Device(
         i2c_model = I2cController(DigitalBidir.empty())
         i2c_target_model = I2cTarget(DigitalBidir.empty())
 
-        # return PinMapUtil(
-        #     [  # Table 5, partial table for 48-pin only
-        #         PinResource("PA0", {"PA0": dio_std_model, "ADC12_IN0": adc_model}),
-        #         PinResource("PA1", {"PA1": dio_std_model, "ADC12_IN1": adc_model}),
-        #         PinResource("PA2", {"PA2": dio_std_model, "ADC12_IN2": adc_model}),
-        #         PinResource("PA3", {"PA3": dio_std_model, "ADC12_IN3": adc_model}),
-        #         PinResource("PA4", {"PA4": dio_std_model, "ADC12_IN4": adc_model}),
-        #         PinResource("PA5", {"PA5": dio_std_model, "ADC12_IN5": adc_model}),
-        #         PinResource("PA6", {"PA6": dio_std_model, "ADC12_IN6": adc_model}),
-        #         PinResource("PA7", {"PA7": dio_std_model, "ADC12_IN7": adc_model}),
-        #         PinResource("PB0", {"PB0": dio_std_model, "ADC12_IN8": adc_model}),
-        #         PinResource("PB1", {"PB1": dio_std_model, "ADC12_IN9": adc_model}),
-        #         PinResource("PB2", {"PB2": dio_ft_model}),  # BOOT1
-        #         PinResource("PB10", {"PB10": dio_ft_model}),
-        #         PinResource("PB11", {"PB11": dio_ft_model}),
-        #         PinResource("PB12", {"PB12": dio_ft_model}),
-        #         PinResource("PB13", {"PB13": dio_ft_model}),
-        #         PinResource("PB14", {"PB14": dio_ft_model}),
-        #         PinResource("PB15", {"PB15": dio_ft_model}),
-        #         PinResource("PA8", {"PA8": dio_ft_model}),
-        #         PinResource("PA9", {"PA9": dio_ft_model}),
-        #         PinResource("PA10", {"PA10": dio_ft_model}),
-        #         PinResource("PA11", {"PA11": dio_ft_model}),
-        #         PinResource("PA12", {"PA12": dio_ft_model}),
-        #         # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
-        #         # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
-        #         PinResource("PA15", {"PA15": dio_ft_model}),  # default is JTDI
-        #         PinResource("PB3", {"PB3": dio_ft_model}),  # SWO, default is JTDO
-        #         PinResource("PB4", {"PB4": dio_ft_model}),  # default is JNTRST
-        #         PinResource("PB5", {"PB5": dio_std_model}),
-        #         PinResource("PB6", {"PB6": dio_ft_model}),
-        #         PinResource("PB7", {"PB7": dio_ft_model}),
-        #         PinResource("PB8", {"PB8": dio_ft_model}),
-        #         PinResource("PB9", {"PB9": dio_ft_model}),
-        #         # PinResource('NRST', {'NRST': dio_std_model}),  # non-mappable to IO!
-        #         # de-prioritize these for auto-assignment since they're low-current
-        #         PinResource("PC13", {"PC13": dio_pc_13_14_15_model}),
-        #         PinResource("PC14", {"PC14": dio_pc_13_14_15_model, "OSC32_IN": Passive()}),
-        #         PinResource("PC15", {"PC15": dio_pc_13_14_15_model, "OSC32_OUT": Passive()}),
-        #         PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2", "PD5"], "rx": ["PA3", "PD6"]}),
-        #         PeripheralFixedResource(
-        #             "SPI1", spi_model, {"sck": ["PA5", "PB3"], "miso": ["PA6", "PB4"], "mosi": ["PA7", "PB5"]}
-        #         ),
-        #         PeripheralFixedResource(
-        #             "USART3", uart_model, {"tx": ["PB10", "PD8", "PC10"], "rx": ["PB11", "PD9", "PC11"]}
-        #         ),
-        #         PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PB10"], "sda": ["PB11"]}),
-        #         PeripheralFixedResource(
-        #             "I2C2_T",
-        #             i2c_target_model,
-        #             {"scl": ["PB10"], "sda": ["PB11"]},  # TODO shared resource w/ I2C controller
-        #         ),
-        #         PeripheralFixedResource("SPI2", spi_model, {"sck": ["PB13"], "miso": ["PB14"], "mosi": ["PB15"]}),
-        #         PeripheralFixedResource("USART1", uart_model, {"tx": ["PA9", "PB6"], "rx": ["PA10", "PB7"]}),
-        #         PeripheralFixedResource(
-        #             "CAN",
-        #             CanControllerPort(DigitalBidir.empty()),
-        #             {"txd": ["PA12", "PD1", "PB9"], "rxd": ["PA11", "PD0", "PB8"]},
-        #         ),
-        #         PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
-        #         PeripheralFixedPin(
-        #             "SWD",
-        #             SwdTargetPort(dio_std_model),
-        #             {  # TODO most are FT pins
-        #                 "swdio": "PA13",
-        #                 "swclk": "PA14",  # note: SWO is PB3
-        #             },
-        #         ),
-        #         PeripheralFixedResource("I2C1", i2c_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
-        #         PeripheralFixedResource(
-        #             "I2C1_T",
-        #             i2c_target_model,
-        #             {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]},  # TODO shared resource w/ I2C controller
-        #         ),
-        #     ]
-        # ).remap_pins(self._PIN_MAPPING)
+        return PinMapUtil(
+            [  # table 2-1
+                PinResource("PD4", {"PD4": dio_std_model, "A7": adc_model}),
+                PinResource("PD5", {"PD5": dio_std_model, "A5": adc_model}),
+                PinResource("PD6", {"PD6": dio_std_model, "A6": adc_model}),
+                PinResource("PD7", {"PD7": dio_std_model}),  # NRST
+                PinResource("PA1", {"PA1": dio_std_model, "A1": adc_model}),
+                PinResource("PA2", {"PA2": dio_std_model, "A0": adc_model}),
+                PinResource("PD0", {"PD0": dio_std_model}),
+                PinResource("PC0", {"PC0": dio_std_model}),
+                PinResource("PC1", {"PC1": dio_ft_model}),
+                PinResource("PC2", {"PC2": dio_ft_model}),
+                PinResource("PC3", {"PC3": dio_std_model}),
+                PinResource("PC4", {"PC4": dio_ft_model, "A2": adc_model}),
+                PinResource("PC5", {"PC5": dio_ft_model}),
+                PinResource("PC6", {"PC6": dio_ft_model}),
+                PinResource("PC7", {"PC7": dio_std_model}),
+                PinResource("PD1", {"PD1": dio_std_model}),  # SWIO
+                PinResource("PD2", {"PD2": dio_std_model, "A3": adc_model}),
+                PinResource("PD3", {"PD3": dio_std_model, "A4": adc_model}),
+                PeripheralFixedResource(
+                    "U", uart_model, {"tx": ["PD5", "PD0", "PD6", "PC0"], "rx": ["PD6", "PD1", "PD5", "PC1"]}
+                ),
+                PeripheralFixedResource("SPI", spi_model, {"sck": ["PC5"], "miso": ["PC7"], "mosi": ["PC6"]}),
+                PeripheralFixedResource("I2C", i2c_model, {"scl": ["PC2", "PD1", "PC5"], "sda": ["PC1", "PD0", "PC6"]}),
+                PeripheralFixedResource(
+                    "I2C_T", i2c_target_model, {"scl": ["PC2", "PD1", "PC5"], "sda": ["PC1", "PD0", "PC6"]}
+                ),
+            ]
+        ).remap_pins(self._PIN_MAPPING)
 
     @override
     def generate(self) -> None:
@@ -264,7 +217,6 @@ class Ch32v003(
     Resettable,
     IoControllerI2cTarget,
     Microcontroller,
-    IoControllerWithSwdTargetConnector,
     WithCrystalGenerator,
     IoControllerPowerRequired,
     GeneratorBlock,
