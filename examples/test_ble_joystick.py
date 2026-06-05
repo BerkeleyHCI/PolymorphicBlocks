@@ -7,6 +7,8 @@ from .util import run_test_board
 
 
 class JoystickSubboard(SubboardBlock):
+    """Joystick mounted on a FPC to allow for placement flexibility"""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -26,6 +28,8 @@ class JoystickSubboard(SubboardBlock):
 
 
 class ButtonSubboard(SubboardBlock):
+    """Button sub-board that sits on top of the main board, providing the D-pad and neopixel rings."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -80,7 +84,7 @@ class ButtonSubboard(SubboardBlock):
 
 
 class BleJoystick(JlcBoardTop):
-    """BLE joystick with XYAB buttons"""
+    """BLE joystick with d-pad, trigger, and RGBs."""
 
     @override
     def contents(self) -> None:
@@ -150,6 +154,7 @@ class BleJoystick(JlcBoardTop):
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
                 self.mcu.adc.request("vbat_sense"),
             )
+            self.connect(self.mcu.gpio.request("chg", self.chg.prog))
 
         self.btns = self.Block(ButtonSubboard())
         self.connect(self.btns.gnd, self.gnd)
