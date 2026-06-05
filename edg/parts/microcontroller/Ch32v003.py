@@ -4,6 +4,52 @@ from typing_extensions import override
 
 from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
+from ..connector.Headers import PinHeader254
+from ..connector.TagConnect import TagConnect
+
+
+@abstract_block_default(lambda: Ch32VSdiHeader254)
+class Ch32vSdiHeader(ProgrammingConnector):
+    """Abstract programming header for the CH32V using the one-pin SDI interface with SWIO pin.."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.swio = self.Port(DigitalBidir.empty())
+        self.reset = self.Port(DigitalBidir.empty(), optional=True)  # may not be connected internally
+
+
+class Ch32VSdiHeader254(Ch32vSdiHeader):
+    """3-pin minimal programming header for CH32V."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.gnd.init_from(Ground())
+        self.pwr.init_from(VoltageSink())
+        self.swio.init_from(DigitalBidir())
+        self.reset.init_from(DigitalBidir())
+
+        self.conn = self.Block(PinHeader254()).connected({"1": self.pwr, "2": self.gnd, "3": self.swio})
+
+
+class Ch32VSdiTc2030(Ch32vSdiHeader):
+    """UNOFFICIAL tag connect header, based on the SWD pinout and mapping SWDIO to SWIO."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.gnd.init_from(Ground())
+        self.pwr.init_from(VoltageSink())
+        self.swio.init_from(DigitalBidir())
+        self.reset.init_from(DigitalBidir())
+
+        self.conn = self.Block(TagConnect(6)).connected({"1": self.pwr, "5": self.gnd, "2": self.swio, "3": self.reset})
+        # unused: 4 = swclk, 6 = swo
 
 
 class Ch32v003_Device(
@@ -14,140 +60,113 @@ class Ch32v003_Device(
     JlcPart,
     FootprintBlock,
 ):
-    _PIN_MAPPING = {
-        # "PC13": "2",
-        # "PC14": "3",
-        # "PC15": "4",
-        # "PA0": "10",
-        # "PA1": "11",
-        # "PA2": "12",
-        # "PA3": "13",
-        # "PA4": "14",
-        # "PA5": "15",
-        # "PA6": "16",
-        # "PA7": "17",
-        # "PB0": "18",
-        # "PB1": "19",
-        # "PB2": "20",
-        # "PB10": "21",
-        # "PB11": "22",
-        # "PB12": "25",
-        # "PB13": "26",
-        # "PB14": "27",
-        # "PB15": "28",
-        # "PA8": "29",
-        # "PA9": "30",
-        # "PA10": "31",
-        # "PA11": "32",
-        # "PA12": "33",
-        # "PA13": "34",
-        # "PA14": "37",
-        # "PA15": "38",
-        # "PB3": "39",
-        # "PB4": "40",
-        # "PB5": "41",
-        # "PB6": "42",
-        # "PB7": "43",
-        # "PB8": "45",
-        # "PB9": "46",
+    _PIN_MAPPING = {  # F4P6 version, TSSOP-20
+        "PD4": "1",
+        "PD5": "2",
+        "PD6": "3",
+        # "PD7": "4",  # NRST
+        # "PA1": "5",  # OSCI
+        # "PA2": "6",  # OSCO
+        "PD0": "8",
+        "PC0": "10",
+        "PC1": "11",
+        "PC2": "12",
+        "PC3": "13",
+        "PC4": "14",
+        "PC5": "15",
+        "PC6": "16",
+        "PC7": "17",
+        # "PD1": "18",  # SWIO
+        "PD2": "19",
+        "PD3": "20",
     }
 
-    # def __init__(self, **kwargs: Any) -> None:
-    #     super().__init__(**kwargs)
-    #
-    #     # Additional ports (on top of BaseIoController)
-    #     self.pwr = self.Port(
-    #         VoltageSink(
-    #             voltage_limits=(3.0, 3.6)
-    #             * Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
-    #             current_draw=(0, 50.3) * mAmp + self.io_current_draw.upper(),  # Table 13
-    #         ),
-    #         [Power],
-    #     )
-    #     self.gnd = self.Port(Ground(), [Common])
-    #
-    #     self.nrst = self.Port(
-    #         DigitalSink.from_supply(
-    #             self.gnd,
-    #             self.pwr,
-    #             voltage_limit_tolerance=(-0.3, 0.3)
-    #             * Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
-    #             input_threshold_abs=(0.8, 2) * Volt,
-    #             pullup_capable=True,
-    #         ),
-    #         optional=True,
-    #     )  # note, internal pull-up resistor, 30-50 kOhm by Table 35
-    #
-    #     # TODO need to pass through to pin mapper
-    #     # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-    #     #                                      voltage_out=self.pwr.link().voltage),
-    #     #                        optional=True)  # TODO other specs from Table 23
-    #     self.osc = self.Port(
-    #         CrystalDriver(frequency_limits=(4, 16) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
-    #     )  # Table 22
-    #
-    #     self.swd = self.Port(SwdTargetPort.empty())
-    #     self._io_ports.insert(0, self.swd)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        # Additional ports (on top of BaseIoController)
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.8, 5.5) * Volt,  # stricter range when ADC used
+                current_draw=(0.009, 8.0) * mAmp + self.io_current_draw.upper(),  # standby min to 48MHz run max
+            ),
+            [Power],
+        )
+        self.vss = self.Port(Ground(), [Common])
+
+        self.nrst = self.Port(  # Table 3-19
+            DigitalSink.from_supply(
+                self.gnd,
+                self.pwr,
+                voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+                input_threshold_abs=(
+                    0.28 * (self.vdd.link().voltage.lower() - 1.8) + 0.6 + self.vss.link().voltage.lower(),
+                    0.41 * (self.vdd.link().voltage.upper() - 1.8) + 1.3 + self.vss.link().voltage.upper(),
+                ),
+                pullup_capable=True,
+            ),
+            optional=True,
+        )  # note, switched internal pull-up resistor, 35-55 kOhm
+
+        self.osc = self.Port(
+            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
+        )  # Table 3-10 crystal / resonator specs, typ 24 MHz
+
+        self.swio = self.Port(DigitalBidir.empty())
 
     @override
     def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
-        # return {
-        #     "1": self.pwr,  # Vbat
-        #     "9": self.pwr,  # VddA
-        #     "8": self.gnd,  # VssA
-        #     ("23", "35", "47"): self.gnd,  # Vss
-        #     ("24", "36", "48"): self.pwr,  # Vdd
-        #     "44": self.gnd,  # BOOT0
-        #     "5": self.osc.xtal_in,  # TODO remappable to PD0
-        #     "6": self.osc.xtal_out,  # TODO remappable to PD1
-        #     "7": self.nrst,
-        # }
+        return {
+            "7": self.vss,
+            "9": self.vdd,
+            "5": self.osc.xtal_in,  # TODO remappable to PA1
+            "6": self.osc.xtal_out,  # TODO remappable to PA2
+            "4": self.nrst,
+            "18": self.swio,
+        }
 
     @override
     def _io_pinmap(self) -> PinMapUtil:
-        # # Port models
-        # dio_ft_model = DigitalBidir.from_supply(
-        #     self.gnd,
-        #     self.pwr,
-        #     voltage_limit_abs=(-0.3, 5.2) * Volt,  # Table 5.3.1, general operating conditions, TODO relaxed for Vdd>2v
-        #     current_limits=(-20, 20) * mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True,
-        #     pulldown_capable=True,
-        # )
-        # dio_std_model = DigitalBidir.from_supply(
-        #     self.gnd,
-        #     self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # Table 5.3.1, general operating conditions
-        #     current_limits=(-20, 20) * mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True,
-        #     pulldown_capable=True,
-        # )
-        # dio_pc_13_14_15_model = DigitalBidir.from_supply(
-        #     self.gnd,
-        #     self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # Table 5.3.1, general operating conditions
-        #     current_limits=(-3, 3) * mAmp,  # Section 5.3.13 Output driving current
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True,
-        #     pulldown_capable=True,
-        # )
-        #
-        # adc_model = AnalogSink.from_supply(
-        #     self.gnd,
-        #     self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # general operating conditions, IO input voltage
-        #     signal_limit_tolerance=(0, 0),  # conversion voltage range, 0 to Vref+ (assumed VddA)
-        #     impedance=(100, float("inf")) * kOhm,
-        # )
-        #
-        # uart_model = UartPort(DigitalBidir.empty())
-        # spi_model = SpiController(DigitalBidir.empty())
-        # # TODO SPI peripherals, which have fixed-pin CS lines
-        # i2c_model = I2cController(DigitalBidir.empty())
-        # i2c_target_model = I2cTarget(DigitalBidir.empty())
-        #
+        # Port models
+        dio_ft_model = DigitalBidir.from_supply(
+            self.gnd,
+            self.pwr,
+            voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # table 3.1
+            input_threshold_abs=(  # table 3-16
+                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
+                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+            ),
+            pullup_capable=True,  # 35-55 kOhm
+            pulldown_capable=True,  # 35-55 kOhm
+        )
+        dio_std_model = DigitalBidir.from_supply(
+            self.gnd,
+            self.pwr,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # table 3.1
+            input_threshold_abs=(  # table 3-16
+                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
+                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+            ),
+            pullup_capable=True,  # 35-55 kOhm
+            pulldown_capable=True,  # 35-55 kOhm
+        )
+
+        adc_model = AnalogSink.from_supply(
+            self.gnd,
+            self.pwr,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
+            signal_limit_tolerance=(0, 0),  # conversion voltage range, 0 to Vref+ (assumed VddA)
+            impedance=(100, float("inf")) * kOhm,
+        )
+
+        uart_model = UartPort(DigitalBidir.empty())
+        spi_model = SpiController(DigitalBidir.empty())
+        # TODO SPI peripherals, which have fixed-pin CS lines
+        i2c_model = I2cController(DigitalBidir.empty())
+        i2c_target_model = I2cTarget(DigitalBidir.empty())
+
         # return PinMapUtil(
         #     [  # Table 5, partial table for 48-pin only
         #         PinResource("PA0", {"PA0": dio_std_model, "ADC12_IN0": adc_model}),
@@ -229,18 +248,16 @@ class Ch32v003_Device(
     def generate(self) -> None:
         super().generate()
 
-        # self.footprint(
-        #     "U",
-        #     "Package_QFP:LQFP-48_7x7mm_P0.5mm",
-        #     self._make_pinning(),
-        #     mfr="STMicroelectronics",
-        #     part="STM32F103xxT6",
-        #     datasheet="https://www.st.com/resource/en/datasheet/stm32f103c8.pdf",
-        #     pnp_rot=-90,
-        # )
-        # self.assign(self.lcsc_part, "C8304")  # max memory CBT6 variant
-        # self.assign(self.actual_basic_part, False)
-
+        self.footprint(
+            "U",
+            "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm",
+            self._make_pinning(),
+            mfr="WCH",
+            part="CH32V003F4P6",
+            datasheet="https://www.wch-ic.com/downloads/CH32V003DS0_PDF.html",
+        )
+        self.assign(self.lcsc_part, "C5187096")
+        self.assign(self.actual_basic_part, False)
 
 
 class Ch32v003(
@@ -252,16 +269,13 @@ class Ch32v003(
     IoControllerPowerRequired,
     GeneratorBlock,
 ):
-    """Low-cost, bare bones RISC-V microcontroller"""
-    DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # as in common dev boards / eval boards
+    """Low-cost, bare bones RISC-V (RV32EC) microcontroller"""
+
+    DEFAULT_CRYSTAL_FREQUENCY = 24 * MHertz(tol=0.005)  # 24 MHz as typical in datasheet
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.generator_param(
-            self.reset.is_connected(),
-            self.pin_assigns,
-            self.gpio.requested(),
-        )
+        self.generator_param(self.reset.is_connected())
 
     @override
     def generate(self) -> None:
@@ -270,19 +284,14 @@ class Ch32v003(
         with self.implicit_connect(ImplicitConnect(self.pwr, [Power]), ImplicitConnect(self.gnd, [Common])) as imp:
             self.ic = imp.Block(Ch32v003_Device(pin_assigns=ArrayStringExpr()))
             self._wrap_inner(self.ic)
-            # self.connect(self.xtal_node, self.ic.osc)
-            # self.connect(self.swd_node, self.ic.swd)
-            # self.connect(self.reset_node, self.ic.nrst)
-            #
-            # self.pwr_cap = ElementDict[DecouplingCapacitor]()
-            # # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
-            # self.pwr_cap[0] = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
-            # for i in range(1, 4):
-            #     self.pwr_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
-            #
-            # # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
-            # self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
-            # self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
+
+            self.sdi = imp.Block(Ch32vSdiHeader())
+            self.connect(self.ic.swio, self.sdi.swio)
+            self.connect(self.ic.nrst, self.sdi.reset)
+
+            self.connect(self.xtal_node, self.ic.osc)
+
+            self.vdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)
