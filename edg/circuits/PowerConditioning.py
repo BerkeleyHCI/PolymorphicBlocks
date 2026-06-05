@@ -347,7 +347,10 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
             optional=True,
             doc="Allows the button state to be read independently of the control signal. Open-drain.",
         )
-        self.btn_in = self.Port(DigitalBidir.empty(), doc="Should be connected to a button output. Do not connect IO")
+        self.btn_in = self.Port(
+            DigitalBidir.empty(),
+            doc="Connect to button that pulls down to GND to turn on power. Do not connect to GPIO.",
+        )
         self.control = self.Port(
             DigitalSink.empty(), doc="external control to latch the power on"
         )  # digital level control - gnd-referenced NFET gate

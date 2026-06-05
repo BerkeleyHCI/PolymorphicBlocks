@@ -31,16 +31,44 @@ class ButtonSubboard(SubboardBlock):
 
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr = self.Port(VoltageSink.empty())
+
+        self.vbat = self.Port(VoltageSink.empty())
         self.i2c = self.Port(I2cTarget.empty())
         self.io0 = self.Port(DigitalBidir.empty())
-        self.vbat = self.Port(VoltageSink.empty())
+
+        self.tp_gnd = self.Block(GroundTestPoint("gnd")).connected(self.gnd)
+        self.tp_pwr = self.Block(VoltageTestPoint("v3v3")).connected(self.pwr)
+        self.tp_vbat = self.Block(VoltageTestPoint("vbat")).connected(self.vbat)
+        self.tp_i2c = self.Block(I2cTestPoint("i2c")).connected(self.i2c)
+        self.tp_io0 = self.Block(DigitalTestPoint("io0")).connected(self.io0)
 
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.pwr, [Power]),
         ) as imp:
             self.ioe = imp.Block(IoController())
-            self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request(), self.i2c)
+            self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request("i2c"), self.i2c)
+            self.connect(self.ioe.gpio.request("io0"), self.io0)
+
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.ioe.gpio.request("led"))
+
+            # d-pad buttons
+            self.sw = ElementDict[DigitalSwitch]()
+            for i in range(8):
+                sw = self.sw[i] = imp.Block(DigitalSwitch())
+                self.connect(sw.out, self.ioe.gpio.request(f"sw{i}"))
+
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.vbat, [Power]),
+        ) as imp:
+            (self.npx_tp, self.npx_js, self.npx_dpad), _ = self.chain(
+                self.ioe.gpio.request("npx"),
+                imp.Block(DigitalTestPoint()),
+                imp.Block(NeopixelArray(8)),
+                imp.Block(NeopixelArray(8)),
+            )
 
         self.conn = self.Block(Fpc050Pair(6), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
@@ -75,36 +103,19 @@ class BleJoystick(JlcBoardTop):
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            # (self.gate, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-            #     self.vbat,
-            #     imp.Block(SoftPowerGate()),
-            #     imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
-            #     self.Block(VoltageTestPoint()),
-            #     imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
-            # )
-
-            # self.chg = imp.Block(Mcp73831(charging_current=200*mAmp(tol=0.2)))
-            # self.connect(self.usb.pwr, self.chg.pwr)
-            # self.connect(self.chg.pwr_bat, self.bat.chg)
-
-            self.mp2722 = imp.Block(Mp2722(output_voltage=(3.7, 4.35) * Volt, charging_current=200 * mAmp(tol=0.2)))
-            self.connect(self.mp2722.pwr_in, self.usb.pwr)
-            self.connect(self.mp2722.batt, self.vbat)
-            self.connect(self.mp2722.cc, self.usb.cc)
-            (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.mp2722.pwr_out,
+            (self.gate, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+                self.vbat,
+                imp.Block(SoftPowerGate()),
                 imp.Block(VoltageRegulator(output_voltage=3.3 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
+            self.vbat_gated = self.connect(self.gate.pwr_out)
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-            self.fake_ntc = imp.Block(VoltageDivider(output_voltage=(1.5, 2) * Volt, impedance=(10, 100) * kOhm))
-            self.connect(self.mp2722.vrntc, self.fake_ntc.input)
-            self.connect(self.fake_ntc.output, self.mp2722.ntc1)  # TODO actual NTC
-
-            # self.vbat_sense_gate = imp.Block(HighSideSwitch())
-            # self.connect(self.vbat_sense_gate.pwr, self.vbat)
+            self.chg = imp.Block(Mcp73831(charging_current=200 * mAmp(tol=0.2)))
+            self.connect(self.usb.pwr, self.chg.pwr)
+            self.connect(self.chg.pwr_bat, self.bat.chg)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
@@ -112,24 +123,18 @@ class BleJoystick(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.mcu = imp.Block(IoController())
-            self.mcu.with_mixin(IoControllerWifi())
+            self.mcu.with_mixin(IoControllerBle())
+
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
 
             self.stick = imp.Block(JoystickSubboard())
-            (self.ax1_div,), _ = self.chain(
-                self.stick.ax1,
-                imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10) * kOhm)),
-                self.mcu.adc.request("ax1"),
-            )
-            (self.ax2_div,), _ = self.chain(
-                self.stick.ax2,
-                imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10) * kOhm)),
-                self.mcu.adc.request("ax2"),
-            )
+            self.connect(self.stick.ax1, self.mcu.adc.request("ax1"))
+            self.connect(self.stick.ax2, self.mcu.adc.request("ax2"))
+            self.connect(self.stick.sw, self.gate.btn_in)
 
-            # self.connect(self.stick.sw, self.gate.btn_in)
-            # self.connect(self.gate.btn_out, self.mcu.gpio.request('sw'))
-            # self.connect(self.mcu.gpio.request('gate_ctl'), self.gate.control)
-            self.connect(self.stick.sw, self.mcu.gpio.request("sw"), self.mp2722.rst)
+            self.connect(self.gate.btn_out, self.mcu.gpio.request("sw"))
+            self.connect(self.mcu.gpio.request("gate_ctl"), self.gate.control)
 
             self.trig = imp.Block(A1304())
             (self.trig_div,), _ = self.chain(
@@ -138,31 +143,21 @@ class BleJoystick(JlcBoardTop):
                 self.mcu.adc.request("trig"),
             )
 
-            self.sw = ElementDict[DigitalSwitch]()
-            for i in range(3):
-                sw = self.sw[i] = imp.Block(DigitalSwitch())
-                self.connect(sw.out, self.mcu.gpio.request(f"sw{i}"))
-
-            # debugging LEDs
-            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
-
-            # self.connect(self.vbat_sense_gate.control, self.mcu.gpio.request('vbat_sense_gate'))
             (self.vbat_sense,), _ = self.chain(
-                # self.vbat_sense_gate.output,
-                self.vbat,
+                self.vbat_gated,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
                 self.mcu.adc.request("vbat_sense"),
             )
 
             mcu_i2c = self.mcu.i2c.request("i2c")
-            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()), self.mp2722.i2c)
+            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
 
         self.btns = self.Block(ButtonSubboard())
         self.connect(self.btns.gnd, self.gnd)
         self.connect(self.btns.pwr, self.v3v3)
         self.connect(self.btns.i2c, mcu_i2c)
         self.connect(self.btns.io0, self.mcu.gpio.request("btn_io0"))
-        self.connect(self.btns.vbat, self.vbat)  # TODO use power-gated version
+        self.connect(self.btns.vbat, self.vbat_gated)
 
     @override
     def refinements(self) -> Refinements:
@@ -171,10 +166,6 @@ class BleJoystick(JlcBoardTop):
                 (["mcu"], Holyiot_18010),
                 (["btns", "ioe"], Ch32v003),
                 (["reg_3v3"], Ap7215),
-                (["sw[0]", "package"], SmtSwitch),
-                (["sw[1]", "package"], SmtSwitch),
-                (["sw[2]", "package"], SmtSwitch),
-                (["mcu", "boot", "package"], SmtSwitch),
             ],
             instance_values=[
                 (["refdes_prefix"], "J"),  # unique refdes for panelization
@@ -197,7 +188,13 @@ class BleJoystick(JlcBoardTop):
                         # "sw2=6",
                     ],
                 ),
-                (["mcu", "programming"], "uart-auto-button"),
+                (
+                    ["btns", "ioe", "pin_assigns"],
+                    [
+                        "i2c.scl=12",
+                        "i2c.sda=11",
+                    ],
+                ),
                 (["mp2722", "power_path", "dutycycle_limit"], Range(0.1, 1)),  # allow tracking
                 (["mp2722", "power_path", "inductor", "manual_frequency_rating"], Range(0.0, 10e6)),
                 (["mp2722", "power_path", "inductor", "footprint_spec"], "Inductor_SMD:L_1210_3225Metric"),
@@ -207,10 +204,10 @@ class BleJoystick(JlcBoardTop):
                 (Ch32vSdiHeader, Ch32vSdiTc2030),
                 (TestPoint, CompactKeystone5015),
                 (PassiveConnector, JstPhKVertical),
+                (Neopixel, Ws2812c_2020),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
-                (SmtSwitch, ["fp_footprint"], "project:MembraneSwitch_4mm"),
             ],
         )
 

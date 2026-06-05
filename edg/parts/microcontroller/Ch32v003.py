@@ -31,7 +31,7 @@ class Ch32vSdiHeader254(Ch32vSdiHeader):
         self.gnd.init_from(Ground())
         self.pwr.init_from(VoltageSink())
         self.swio.init_from(DigitalBidir())
-        self.reset.init_from(DigitalBidir())
+        self.reset.init_from(DigitalBidir())  # not connected
 
         self.conn = self.Block(PinHeader254()).connected({"1": self.pwr, "2": self.gnd, "3": self.swio})
 
@@ -112,7 +112,32 @@ class Ch32v003_Device(
             CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.vdd.link().voltage), optional=True
         )  # Table 3-10 crystal / resonator specs, typ 24 MHz
 
-        self.swio = self.Port(DigitalBidir.empty())
+        self._dio_ft_model = DigitalBidir.from_supply(
+            self.vss,
+            self.vdd,
+            voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # table 3.1
+            input_threshold_abs=(  # table 3-16
+                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
+                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+            ),
+            pullup_capable=True,  # 35-55 kOhm
+            pulldown_capable=True,  # 35-55 kOhm
+        )
+        self._dio_std_model = DigitalBidir.from_supply(
+            self.vss,
+            self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # table 3.1
+            input_threshold_abs=(  # table 3-16
+                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
+                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+            ),
+            pullup_capable=True,  # 35-55 kOhm
+            pulldown_capable=True,  # 35-55 kOhm
+        )
+
+        self.swio = self.Port(self._dio_std_model)
 
     @override
     def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
@@ -128,34 +153,9 @@ class Ch32v003_Device(
     @override
     def _io_pinmap(self) -> PinMapUtil:
         # Port models
-        dio_ft_model = DigitalBidir.from_supply(
-            self.gnd,
-            self.pwr,
-            voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
-            input_threshold_abs=(  # table 3-16
-                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
-                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
-            ),
-            pullup_capable=True,  # 35-55 kOhm
-            pulldown_capable=True,  # 35-55 kOhm
-        )
-        dio_std_model = DigitalBidir.from_supply(
-            self.gnd,
-            self.pwr,
-            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
-            input_threshold_abs=(  # table 3-16
-                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
-                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
-            ),
-            pullup_capable=True,  # 35-55 kOhm
-            pulldown_capable=True,  # 35-55 kOhm
-        )
-
         adc_model = AnalogSink.from_supply(
-            self.gnd,
-            self.pwr,
+            self.vss,
+            self.vdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
             impedance=(100, float("inf")) * kOhm,
         )
@@ -168,24 +168,24 @@ class Ch32v003_Device(
 
         return PinMapUtil(
             [  # table 2-1
-                PinResource("PD4", {"PD4": dio_std_model, "A7": adc_model}),
-                PinResource("PD5", {"PD5": dio_std_model, "A5": adc_model}),
-                PinResource("PD6", {"PD6": dio_std_model, "A6": adc_model}),
-                PinResource("PD7", {"PD7": dio_std_model}),  # NRST
-                PinResource("PA1", {"PA1": dio_std_model, "A1": adc_model}),
-                PinResource("PA2", {"PA2": dio_std_model, "A0": adc_model}),
-                PinResource("PD0", {"PD0": dio_std_model}),
-                PinResource("PC0", {"PC0": dio_std_model}),
-                PinResource("PC1", {"PC1": dio_ft_model}),
-                PinResource("PC2", {"PC2": dio_ft_model}),
-                PinResource("PC3", {"PC3": dio_std_model}),
-                PinResource("PC4", {"PC4": dio_ft_model, "A2": adc_model}),
-                PinResource("PC5", {"PC5": dio_ft_model}),
-                PinResource("PC6", {"PC6": dio_ft_model}),
-                PinResource("PC7", {"PC7": dio_std_model}),
-                PinResource("PD1", {"PD1": dio_std_model}),  # SWIO
-                PinResource("PD2", {"PD2": dio_std_model, "A3": adc_model}),
-                PinResource("PD3", {"PD3": dio_std_model, "A4": adc_model}),
+                PinResource("PD4", {"PD4": self._dio_std_model, "A7": adc_model}),
+                PinResource("PD5", {"PD5": self._dio_std_model, "A5": adc_model}),
+                PinResource("PD6", {"PD6": self._dio_std_model, "A6": adc_model}),
+                PinResource("PD7", {"PD7": self._dio_std_model}),  # NRST
+                PinResource("PA1", {"PA1": self._dio_std_model, "A1": adc_model}),
+                PinResource("PA2", {"PA2": self._dio_std_model, "A0": adc_model}),
+                PinResource("PD0", {"PD0": self._dio_std_model}),
+                PinResource("PC0", {"PC0": self._dio_std_model}),
+                PinResource("PC1", {"PC1": self._dio_ft_model}),
+                PinResource("PC2", {"PC2": self._dio_ft_model}),
+                PinResource("PC3", {"PC3": self._dio_std_model}),
+                PinResource("PC4", {"PC4": self._dio_ft_model, "A2": adc_model}),
+                PinResource("PC5", {"PC5": self._dio_ft_model}),
+                PinResource("PC6", {"PC6": self._dio_ft_model}),
+                PinResource("PC7", {"PC7": self._dio_std_model}),
+                PinResource("PD1", {"PD1": self._dio_std_model}),  # SWIO
+                PinResource("PD2", {"PD2": self._dio_std_model, "A3": adc_model}),
+                PinResource("PD3", {"PD3": self._dio_std_model, "A4": adc_model}),
                 PeripheralFixedResource(
                     "U", uart_model, {"tx": ["PD5", "PD0", "PD6", "PC0"], "rx": ["PD6", "PD1", "PD5", "PC1"]}
                 ),
