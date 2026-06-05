@@ -162,7 +162,7 @@ class BleJoystick(JlcBoardTop):
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
                 self.mcu.adc.request("vbat_sense"),
             )
-            self.connect(self.mcu.gpio.request("chg", self.chg.prog))
+            self.connect(self.mcu.gpio.request("chg", self.chg.prog))  # allow custom charge cutoff
 
             self.btns = imp.Block(ButtonSubboard())
             self.connect(self.btns.pwr, self.v3v3)
