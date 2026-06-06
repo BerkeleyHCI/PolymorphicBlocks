@@ -73,7 +73,7 @@ class Keyboard(SimpleBoardTop):
                 (Neopixel, Sk6812Mini_E),
                 (RotaryEncoder, Pec11s),
             ],
-            instance_values=[(["mcu", "pin_assigns"], [])],  # TODO pining: NPX must be SPI MOSI
+            instance_values=[(["mcu", "pin_assigns"], [])],  # TODO pinning: NPX must be SPI MOSI
             class_values=[
                 # assume LEDs not run at full power to satisfy current limit checks
                 (Sk6812Mini_E, ["pwr", "current_draw"], Range(0.001, 0.030)),
