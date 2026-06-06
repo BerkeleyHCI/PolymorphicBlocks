@@ -51,35 +51,3 @@ class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnect
         self.conn = self.Block(TagConnect(6)).connected(
             {"1": self.pwr, "2": self.swd.swdio, "3": self.reset, "4": self.swd.swclk, "5": self.gnd, "6": self.swo}
         )
-
-
-class SwdCortexTargetTc2050(
-    SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
-):
-    """UNOFFICIAL tag connect SWD header, maintaining physical pin compatibility with the 2x05 1.27mm header.
-    NOT RECOMMENDED for use, this is a legacy artifact and will be removed.
-    Use one of the official pinnings instead."""
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.gnd.init_from(Ground())
-        self.pwr.init_from(VoltageSink())
-        self.swd.init_from(SwdHostPort())
-        self.swo.init_from(DigitalBidir())
-        self.tdi.init_from(DigitalBidir())
-        # reset modeled as pulldown to not conflict with other drivers, technically an open-drain
-        self.reset.init_from(DigitalSource.pulldown_from_supply(self.gnd))
-
-        self.conn = self.Block(TagConnect(10)).connected(
-            {
-                "1": self.pwr,
-                ("2", "3", "5"): self.gnd,
-                "10": self.swd.swdio,
-                "9": self.swd.swclk,
-                "8": self.swo,
-                "7": self.tdi,
-                "6": self.reset,
-            }
-        )

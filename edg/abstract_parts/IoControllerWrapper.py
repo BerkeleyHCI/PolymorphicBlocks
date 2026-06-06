@@ -5,6 +5,7 @@ from ..electronics_interfaces import *
 from .IoController import BaseIoController
 
 
+@non_library
 class BaseIoControllerModelable(BaseIoController):
     """Base class for a BaseIoController that can (optionally) be used as a (non-physical) model.
     This only adds parameters as a standard interface and is not functional.
@@ -17,9 +18,11 @@ class BaseIoControllerModelable(BaseIoController):
 
         self._model = self.ArgParameter(_model)
         self._allowed_pins = self.ArgParameter(_allowed_pins)
-        self.generator_param(self._allowed_pins)
+        if isinstance(self, GeneratorBlock):
+            self.generator_param(self._allowed_pins)
 
 
+@non_library
 class BaseIoControllerWrapped(BaseIoController):
     """Base class for IoController wrapped blocks, particularly footprints that are used
     with an outer WrapperSubboardBlock to implement e.g. a dev board or module around a modeling subcircuit.
@@ -156,6 +159,7 @@ class BaseIoControllerWrapped(BaseIoController):
         return pinning
 
 
+@non_library
 class BaseIoControllerWrapper(BaseIoController):
     """Base class for a block that contains a BaseIoControllerWrapped as the physical footprint
     as well as a non-physical device model.

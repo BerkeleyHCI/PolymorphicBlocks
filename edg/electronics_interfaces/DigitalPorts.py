@@ -608,6 +608,9 @@ class DigitalBidir(HasPassivePort, DigitalBase):
         self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
         self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
+    def as_voltage_source(self) -> VoltageSource:
+        return self._convert(DigitalSourceAdapterVoltageSource())
+
 
 class DigitalSingleSourceFake:
     @staticmethod

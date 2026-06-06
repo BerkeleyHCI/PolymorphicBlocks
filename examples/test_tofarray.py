@@ -161,7 +161,7 @@ class TofArray(JlcBoardTop):
                 ),
             ],
             class_refinements=[
-                (SwdCortexTargetConnector, SwdCortexTargetTc2050),
+                (SwdCortexTargetConnector, SwdCortexTargetTagConnect),
                 (Speaker, ConnectorSpeaker),
             ],
         )
