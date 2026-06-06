@@ -51,7 +51,7 @@ class DiodeSwitchCell(SwitchCell, InternalBlock):
         self.connect(self.d.cathode, self.row.net)
 
 
-@abstract_block_default(lambda: DiodeSwitchCellNeopixelImp)
+@abstract_block_default(lambda: DiodeSwitchCellNeopixel)
 class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
     """SwitchCell mixin that adds a neopixel to the switch cell, with power and data ports."""
 
@@ -64,7 +64,7 @@ class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
         self.npx_gnd = self.Port(Ground.empty())
 
 
-class DiodeSwitchCellNeopixelImp(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock):
+class DiodeSwitchCellNeopixel(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock):
     """SwitchCell implementation with neopixel."""
 
     @override
