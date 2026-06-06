@@ -62,6 +62,7 @@ class Ch32vSdi2Tc2030(Ch32vSdi2Header):
 class Ch32v203_Device(
     IoControllerI2cTarget,
     IoControllerUsb,
+    IoControllerCan,
     InternalSubcircuit,
     BaseIoControllerPinmapGenerator,
     GeneratorBlock,
@@ -131,29 +132,30 @@ class Ch32v203_Device(
         self._dio_ft_model = DigitalBidir.from_supply(
             self.vss,
             self.vdd,
-            voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
+            voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 4-1
+            current_limits=(-20, 20) * mAmp,  # 4.3.10 output drive current characteristics
             input_threshold_abs=(  # table 3-16
-                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
-                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+                0.32 * (self.vdd.link().voltage.lower() - 1.8) + 0.55 + self.vss.link().voltage.lower(),
+                0.42 * (self.vdd.link().voltage.upper() - 1.8) + 1.3 + self.vss.link().voltage.upper(),
             ),
-            pullup_capable=True,  # 35-55 kOhm
-            pulldown_capable=True,  # 35-55 kOhm
+            pullup_capable=True,  # 30-50 kOhm
+            pulldown_capable=True,  # 30-50 kOhm
         )
         self._dio_std_model = DigitalBidir.from_supply(
             self.vss,
             self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 4-1
+            current_limits=(-20, 20) * mAmp,  # 4.3.10 output drive current characteristics
             input_threshold_abs=(  # table 3-16
-                0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
-                0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
+                0.28 * (self.vdd.link().voltage.lower() - 1.8) + 0.6 + self.vss.link().voltage.lower(),
+                0.42 * (self.vdd.link().voltage.upper() - 1.8) + 1 + self.vss.link().voltage.upper(),
             ),
-            pullup_capable=True,  # 35-55 kOhm
-            pulldown_capable=True,  # 35-55 kOhm
+            pullup_capable=True,  # 30-50 kOhm
+            pulldown_capable=True,  # 30-50 kOhm
         )
 
-        self.swio = self.Port(self._dio_std_model)
+        self.swdio = self.Port(self._dio_ft_model)
+        self.swclk = self.Port(self._dio_ft_model)
 
     @override
     def _system_pinmap(self) -> Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]]:
@@ -175,8 +177,9 @@ class Ch32v203_Device(
         adc_model = AnalogSink.from_supply(
             self.vss,
             self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            impedance=(100, float("inf")) * kOhm,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 4-1
+            signal_limit_tolerance=(0, 0) * Volt,  # table 4-27 conversion range, up to Vref+ up to VddA
+            # impedance depends on sampling rate
         )
 
         uart_model = UartPort(DigitalBidir.empty())
@@ -187,31 +190,63 @@ class Ch32v203_Device(
 
         return PinMapUtil(
             [  # table 2-1
-                PinResource("PD4", {"PD4": self._dio_std_model, "A7": adc_model}),
-                PinResource("PD5", {"PD5": self._dio_std_model, "A5": adc_model}),
-                PinResource("PD6", {"PD6": self._dio_std_model, "A6": adc_model}),
-                PinResource("PD7", {"PD7": self._dio_std_model}),  # NRST
-                PinResource("PA1", {"PA1": self._dio_std_model, "A1": adc_model}),
-                PinResource("PA2", {"PA2": self._dio_std_model, "A0": adc_model}),
-                PinResource("PD0", {"PD0": self._dio_std_model}),
-                PinResource("PC0", {"PC0": self._dio_std_model}),
-                PinResource("PC1", {"PC1": self._dio_ft_model}),
-                PinResource("PC2", {"PC2": self._dio_ft_model}),
-                PinResource("PC3", {"PC3": self._dio_std_model}),
-                PinResource("PC4", {"PC4": self._dio_ft_model, "A2": adc_model}),
-                PinResource("PC5", {"PC5": self._dio_ft_model}),
-                PinResource("PC6", {"PC6": self._dio_ft_model}),
-                PinResource("PC7", {"PC7": self._dio_std_model}),
-                PinResource("PD1", {"PD1": self._dio_std_model}),  # SWIO
-                PinResource("PD2", {"PD2": self._dio_std_model, "A3": adc_model}),
-                PinResource("PD3", {"PD3": self._dio_std_model, "A4": adc_model}),
+                PinResource("PC13-TAMPER-RTC", {"PC13": self._dio_std_model}),
+                PinResource("PC14-OSC32_IN", {"PC14": self._dio_std_model}),
+                PinResource("PC15-OSC32_OUT", {"PC15": self._dio_std_model}),
+                PinResource("OSC_IN", {"PD0": self._dio_std_model}),
+                PinResource("OSC_OUT", {"PD1": self._dio_std_model}),
+                PinResource("PA0-WKUP", {"PA0": self._dio_std_model, "ADC_IN0": adc_model}),
+                PinResource("PA1", {"PA1": self._dio_std_model, "ADC_IN1": adc_model}),
+                PinResource("PA2", {"PA2": self._dio_std_model, "ADC_IN2": adc_model}),
+                PinResource("PA3", {"PA3": self._dio_std_model, "ADC_IN3": adc_model}),
+                PinResource("PA4", {"PA4": self._dio_std_model, "ADC_IN4": adc_model}),
+                PinResource("PA5", {"PA5": self._dio_std_model, "ADC_IN5": adc_model}),
+                PinResource("PA6", {"PA6": self._dio_std_model, "ADC_IN6": adc_model}),
+                PinResource("PA7", {"PA7": self._dio_std_model, "ADC_IN7": adc_model}),
+                PinResource("PB0", {"PB0": self._dio_std_model, "ADC_IN8": adc_model}),
+                PinResource("PB1", {"PB1": self._dio_std_model, "ADC_IN9": adc_model}),
+                PinResource("PB2", {"PB2": self._dio_ft_model}),  # BOOT1
+                PinResource("PB10", {"PB10": self._dio_ft_model}),
+                PinResource("PB11", {"PB11": self._dio_ft_model}),
+                PinResource("PB12", {"PB12": self._dio_ft_model}),
+                PinResource("PB13", {"PB13": self._dio_ft_model}),
+                PinResource("PB14", {"PB14": self._dio_ft_model}),
+                PinResource("PB15", {"PB15": self._dio_ft_model}),
+                PinResource("PA8", {"PA8": self._dio_ft_model}),
+                PinResource("PA9", {"PA9": self._dio_ft_model}),
+                PinResource("PA10", {"PA10": self._dio_ft_model}),
+                PinResource("PA11", {"PA11": self._dio_ft_model}),
+                PinResource("PA12", {"PA12": self._dio_ft_model}),  # merged w/ SWDIO on some devices
+                PinResource("PA13", {"PA13": self._dio_ft_model}),  # SWDIO
+                PinResource("PA14", {"PA14": self._dio_ft_model}),  # SWCLK
+                PinResource("PA15", {"PA15": self._dio_ft_model}),
+                PinResource("PB3", {"PB3": self._dio_ft_model}),
+                PinResource("PB4", {"PB4": self._dio_ft_model}),
+                PinResource("PB5", {"PB5": self._dio_ft_model}),
+                PinResource("PB6", {"PB6": self._dio_ft_model}),
+                PinResource("PB7", {"PB7": self._dio_ft_model}),
+                PinResource("PB8", {"PB8": self._dio_ft_model}),  # merged w/ BOOT0 on some devices
+                PinResource("PB9", {"PB9": self._dio_ft_model}),
                 PeripheralFixedResource(
-                    "U", uart_model, {"tx": ["PD5", "PD0", "PD6", "PC0"], "rx": ["PD6", "PD1", "PD5", "PC1"]}
+                    "USART1", uart_model, {"tx": ["PA9", "PB6", "PB15", "PA6"], "rx": ["PA10", "PB7", "PA8", "PA7"]}
                 ),
-                PeripheralFixedResource("SPI", spi_model, {"sck": ["PC5"], "miso": ["PC7"], "mosi": ["PC6"]}),
-                PeripheralFixedResource("I2C", i2c_model, {"scl": ["PC2", "PD1", "PC5"], "sda": ["PC1", "PD0", "PC6"]}),
+                PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2"], "rx": ["PA3"]}),
+                PeripheralFixedResource("USART3", uart_model, {"tx": ["PB10"], "rx": ["PB11"]}),
+                PeripheralFixedResource("USART4", uart_model, {"tx": ["PB0", "PA5"], "rx": ["PB1", "PB5"]}),
+                PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource("USBFS", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PB6"], "dp": ["PB7"]}),
+                PeripheralFixedResource("I2C1", i2c_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
+                PeripheralFixedResource("I2C1_T", i2c_target_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
+                PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PB10"], "sda": ["PB11"]}),
+                PeripheralFixedResource("I2C2_T", i2c_target_model, {"scl": ["PB10"], "sda": ["PB11"]}),
                 PeripheralFixedResource(
-                    "I2C_T", i2c_target_model, {"scl": ["PC2", "PD1", "PC5"], "sda": ["PC1", "PD0", "PC6"]}
+                    "SPI1", spi_model, {"sck": ["PA5", "PB3"], "miso": ["PA6", "PB4"], "mosi": ["PA7", "PB5"]}
+                ),
+                PeripheralFixedResource("SPI2", spi_model, {"sck": ["PB13"], "miso": ["PB14"], "mosi": ["PB15"]}),
+                PeripheralFixedResource(
+                    "CAN",
+                    CanControllerPort(DigitalBidir.empty()),
+                    {"rxd": ["PA11", "PB8"], "txd": ["PA12", "PB9"]},
                 ),
             ]
         ).remap_pins(self._PIN_MAPPING)
@@ -222,13 +257,13 @@ class Ch32v203_Device(
 
         self.footprint(
             "U",
-            "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm",
+            "Package_QFP:LQFP-32_7x7mm_P0.8mm",
             self._make_pinning(),
             mfr="WCH",
-            part="CH32V003F4P6",
+            part="CH32V203K8T6",
             datasheet="https://www.wch-ic.com/downloads/CH32V003DS0_PDF.html",
         )
-        self.assign(self.lcsc_part, "C5187096")
+        self.assign(self.lcsc_part, "C5372188")
         self.assign(self.actual_basic_part, False)
 
 
@@ -236,6 +271,7 @@ class Ch32v203(
     Resettable,
     IoControllerI2cTarget,
     IoControllerUsb,
+    IoControllerCan,
     Microcontroller,
     WithCrystalGenerator,
     IoControllerPowerRequired,
@@ -247,7 +283,7 @@ class Ch32v203(
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.generator_param(self.reset.is_connected())
+        self.generator_param(self.reset.is_connected(), self.usb.requested(), self.can.requested())
 
     @override
     def generate(self) -> None:
@@ -273,3 +309,11 @@ class Ch32v203(
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)
+
+    @override
+    def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
+        return (
+            len(self.get(self.can.requested())) > 0
+            or len(self.get(self.usb.requested())) > 0
+            or super()._crystal_required()
+        )

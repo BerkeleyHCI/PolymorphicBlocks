@@ -116,7 +116,7 @@ class Ch32v003_Device(
             self.vss,
             self.vdd,
             voltage_limit_abs=(-0.3, 5.5) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # 3.3.9 output drive current characteristics
             input_threshold_abs=(  # table 3-16
                 0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
                 0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
@@ -128,7 +128,7 @@ class Ch32v003_Device(
             self.vss,
             self.vdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            current_limits=(-20, 20) * mAmp,  # table 3.1
+            current_limits=(-20, 20) * mAmp,  # 3.3.9 output drive current characteristics
             input_threshold_abs=(  # table 3-16
                 0.19 * (self.vdd.link().voltage.lower() - 2.7) + 0.65 + self.vss.link().voltage.lower(),
                 0.22 * (self.vdd.link().voltage.upper() - 2.7) + 1.55 + self.vss.link().voltage.upper(),
@@ -157,7 +157,8 @@ class Ch32v003_Device(
             self.vss,
             self.vdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # table 3.1
-            impedance=(100, float("inf")) * kOhm,
+            signal_limit_tolerance=(0, 0) * Volt,  # table 3-23, conversion voltage range
+            # impedance depends on sampling rate
         )
 
         uart_model = UartPort(DigitalBidir.empty())
