@@ -41,7 +41,7 @@ class Ch32vSdi2Header254(Ch32vSdi2Header):
 
 
 class Ch32vSdi2Tc2030(Ch32vSdi2Header):
-    """UNOFFICIAL tag connect header, based on the SWD pinout and mapping SWDIO to SWIO."""
+    """UNOFFICIAL tag connect header, based on the SWD pinout."""
 
     @override
     def contents(self) -> None:
