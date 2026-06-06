@@ -110,6 +110,7 @@ class SwitchDiodeMatrix(SwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemp
 
     @override
     def _svgpcb_template(self) -> str:
+        # TODO: layout generator broken from the COL2ROW change
         switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "sw"])
         diode_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "d"])
         switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]", "sw"])
