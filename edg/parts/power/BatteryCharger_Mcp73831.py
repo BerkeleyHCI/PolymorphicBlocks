@@ -51,8 +51,9 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Mcp73831(PowerConditioner, Block):
-    """Single-cell Li-ion / Li-poly charger, seemingly popular on Adafruit and Sparkfun boards."""
+class Mcp73831(PowerConditioner, GeneratorBlock):
+    """Single-cell Li-ion / Li-poly charger, seemingly popular on Adafruit and Sparkfun boards.
+    Optional disable via the PROG pin, which generates an additional FET."""
 
     def __init__(self, charging_current: RangeLike) -> None:
         super().__init__()
@@ -60,17 +61,24 @@ class Mcp73831(PowerConditioner, Block):
         self.ic = self.Block(Mcp73831_Device(actual_charging_current=RangeExpr()))
 
         self.pwr_bat = self.Export(self.ic.vbat, [Output])
-        self.pwr = self.Export(self.ic.vdd, [Input, Power])
+        self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.vss, [Common])
         self.stat = self.Export(
             self.ic.stat, optional=True
         )  # hi-Z when not charging, low when charging, high when done
+        self.prog_ctl = self.Port(
+            DigitalBidir(),
+            optional=True,
+            doc="GPIO that controls a FET that enables charging, pull high to enable",
+        )
+
+        self.generator_param(self.prog_ctl.is_connected())
 
         self.charging_current = self.ArgParameter(charging_current)
 
     @override
-    def contents(self) -> None:
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         self.vdd_cap = self.Block(  # not formally specified on the datasheet, but this is used in the reference board
             DecouplingCapacitor(4.7 * uFarad(tol=0.2))
@@ -84,7 +92,21 @@ class Mcp73831(PowerConditioner, Block):
             AnalogSetpointResistor(
                 resistance=(1 / self.charging_current).shrink_multiply(Range.from_tolerance(1000, 0.1))
             )
-        ).connected(self.gnd, self.ic.prog)
+        ).connected(io=self.ic.prog)
+        if self.get(self.prog_ctl.is_connected()):
+            self.prog_sw = self.Block(
+                SwitchFet.NFet(
+                    drain_voltage=self.pwr.link().voltage,
+                    drain_current=(0, 0),  # effectively none
+                    gate_voltage=(self.prog_ctl.link().output_thresholds.upper(), self.prog_ctl.link().voltage.upper()),
+                )
+            )
+            self.connect(self.prog_res.gnd, self.prog_sw.drain.adapt_to(Ground()))
+            self.connect(self.prog_sw.source.adapt_to(Ground()), self.gnd)
+            self.connect(self.prog_sw.gate, self.prog_ctl.net)
+        else:
+            self.connect(self.prog_res.gnd, self.gnd)
+
         # tolerance is a guess
         self.assign(self.ic.actual_charging_current, 1000 * Volt(tol=0.1) / self.prog_res.actual_resistance)
         self.require(
