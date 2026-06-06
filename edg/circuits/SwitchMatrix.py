@@ -6,29 +6,39 @@ from ..abstract_parts import *
 
 
 class SwitchCell(InternalBlock):
-    """A single cell in the switch matrix, consisting of a switch and diode, passive-typed.
+    """A single cell in the switch matrix, consisting of a switch and diode.
     Provides a layer of hierarchy for layout replication."""
 
-    def __init__(self, sw_voltage: RangeLike, d_voltage: RangeLike, current_drawn: RangeLike, voltage_drop: RangeLike):
+    def __init__(self, voltage_drop: RangeLike):
         super().__init__()
-        self.sw_voltage = self.ArgParameter(sw_voltage)
-        self.d_voltage = self.ArgParameter(d_voltage)
-        self.current_drawn = self.ArgParameter(current_drawn)
         self.voltage_drop = self.ArgParameter(voltage_drop)
 
-        self.row = self.Port(Passive())  # diode anode, externally pulled, driven to col by switch closure
-        self.col = self.Port(Passive())  # switch common, externally driven for column scan
+        self.col = self.Port(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
+        self.row = self.Port(
+            DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
+                voltage_out=self.col.link().voltage.lower() + voltage_drop,  # use spec to avoid circular dependency
+                output_thresholds=(self.col.link().voltage + voltage_drop).hull(float("inf")),
+                low_driver=True,
+                high_driver=False,
+            )
+        )
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.sw = self.Block(Switch(voltage=self.sw_voltage, current=self.current_drawn))
-        self.d = self.Block(
-            Diode(current=self.current_drawn, reverse_voltage=self.d_voltage, voltage_drop=self.voltage_drop)
+        self.sw = self.Block(
+            Switch(voltage=self.row.link().voltage - self.col.link().voltage, current=self.row.link().current_drawn)
         )
-        self.connect(self.d.anode, self.row)
+        self.d = self.Block(
+            Diode(
+                current=self.row.link().current_drawn,
+                reverse_voltage=(self.row.link().voltage - self.col.link().voltage).abs(),
+                voltage_drop=self.voltage_drop,
+            )
+        )
+        self.connect(self.d.anode, self.row.net)
         self.connect(self.d.cathode, self.sw.sw)
-        self.connect(self.sw.com, self.col)
+        self.connect(self.sw.com, self.col.net)
 
 
 class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
@@ -158,50 +168,16 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     def generate(self) -> None:
         super().generate()
 
-        # generate row (output) ports with forward declaration
         for row in range(self.get(self.nrows)):
-            self.rows.append_elt(
-                DigitalSource(  # modeled as low-side driver
-                    voltage_out=RangeExpr(),
-                    output_thresholds=RangeExpr(),
-                    low_driver=True,
-                    high_driver=False,
-                ),
-                str(row),
-            )
+            self.rows.append_elt(DigitalSource.empty(), str(row))
 
-        # generate parts and column (input) ports and aggregate parameters for row ports
-        self.sw = ElementDict[Switch]()
-        self.d = ElementDict[Diode]()
-        row_voltages = [RangeExpr._to_expr_type(RangeExpr.EMPTY)] * self.get(self.nrows)
-        row_thresholds = [FloatExpr._to_expr_type(float("-inf"))] * self.get(self.nrows)
+        self.sw = ElementDict[SwitchCell]()
         for col in range(self.get(self.ncols)):
-            # ideal, negligible current draw (assumed) and thresholds checked at other side
-            col_port = self.cols.append_elt(DigitalSink(), str(col))
+            col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
             for row in range(self.get(self.nrows)):
-                row_port = self.rows[str(row)]
-                sw = self.sw[f"{col},{row}"] = self.Block(
-                    Switch(voltage=row_port.link().voltage, current=row_port.link().current_drawn)
-                )
-                d = self.d[f"{col},{row}"] = self.Block(
-                    Diode(
-                        current=row_port.link().current_drawn,
-                        # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
-                        reverse_voltage=col_port.link().voltage,
-                        voltage_drop=self.voltage_drop,
-                    )
-                )
-                lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
-                highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
-                row_voltages[row] = row_voltages[row].hull((lowest_output, highest_output))
-                row_thresholds[row] = row_thresholds[row].max(highest_output)
-                self.connect(d.anode, row_port.net)
-                self.connect(d.cathode, sw.sw)
-                self.connect(sw.com, col_port.net)
-
-        for row in range(self.get(self.nrows)):
-            self.assign(self.rows[str(row)].voltage_out, row_voltages[row])
-            self.assign(self.rows[str(row)].output_thresholds, (row_thresholds[row], float("inf")))
+                cell = self.sw[f"{col},{row}"] = self.Block(SwitchCell(voltage_drop=self.voltage_drop))
+                self.connect(cell.col, col_port)
+                self.connect(cell.row, self.rows[str(row)])
 
         self.rows.defined()
         self.cols.defined()
