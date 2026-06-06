@@ -1,6 +1,6 @@
 const board = new PCB();
 
-const sw = SwitchMatrix_2_3_sw(pt(0.039, 0.039))
+const sw = SwitchDiodeMatrix_2_3_sw(pt(0.039, 0.039))
 // jlc_th.th1
 const DH1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(2.222, 3.240), rotate: 0,
@@ -334,12 +334,12 @@ board.setNetlist([
   {name: "Dmcu.program_uart_node.b_tx", pads: [["DJ2", "3"], ["DU2", "12"]]},
   {name: "Dmcu.program_en_node", pads: [["DJ2", "6"], ["DU2", "2"], ["DR3", "2"], ["DC5", "1"]]},
   {name: "Dmcu.program_boot_node", pads: [["DJ2", "2"], ["DU2", "8"], ["DD8", "2"]]},
-  {name: "Dsw.sw[0,0].sw", pads: [["DSW1", "1"], ["DD2", "1"]]},
-  {name: "Dsw.sw[0,1].sw", pads: [["DSW2", "1"], ["DD3", "1"]]},
-  {name: "Dsw.sw[0,2].sw", pads: [["DSW3", "1"], ["DD4", "1"]]},
-  {name: "Dsw.sw[1,0].sw", pads: [["DSW4", "1"], ["DD5", "1"]]},
-  {name: "Dsw.sw[1,1].sw", pads: [["DSW5", "1"], ["DD6", "1"]]},
-  {name: "Dsw.sw[1,2].sw", pads: [["DSW6", "1"], ["DD7", "1"]]},
+  {name: "Dsw.sw[0,0].sw.sw", pads: [["DSW1", "1"], ["DD2", "1"]]},
+  {name: "Dsw.sw[0,1].sw.sw", pads: [["DSW2", "1"], ["DD3", "1"]]},
+  {name: "Dsw.sw[0,2].sw.sw", pads: [["DSW3", "1"], ["DD4", "1"]]},
+  {name: "Dsw.sw[1,0].sw.sw", pads: [["DSW4", "1"], ["DD5", "1"]]},
+  {name: "Dsw.sw[1,1].sw.sw", pads: [["DSW5", "1"], ["DD6", "1"]]},
+  {name: "Dsw.sw[1,2].sw.sw", pads: [["DSW6", "1"], ["DD7", "1"]]},
   {name: "Dledr.package.k", pads: [["DD8", "1"], ["DR4", "1"]]},
   {name: "Doled.reset", pads: [["DU2", "16"], ["DJ3", "17"]]},
   {name: "Doled.i2c.scl", pads: [["DU2", "17"], ["DJ3", "13"], ["DR6", "2"]]},
@@ -403,7 +403,7 @@ renderPCB({
   mmPerUnit: 25.4
 })
 
-function SwitchMatrix_2_3_sw(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffset=[0.25, 0]) {
+function SwitchDiodeMatrix_2_3_sw(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffset=[0.25, 0]) {
   // Circuit generator params
   const ncols = 2
   const nrows = 3
