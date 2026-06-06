@@ -1,12 +1,12 @@
-from typing import cast, Optional, Tuple, Any
+from typing import Optional, Tuple, Any
 
 from typing_extensions import override
 
 from ..abstract_parts import *
-from ..parts.human_interface.Neopixel import Neopixel
 
 
-class SwitchCell(InternalBlock):
+@abstract_block_default(lambda: SwitchCell)
+class BaseSwitchCell(InternalBlock, Block):
     """A single cell in the switch matrix, consisting of a switch and diode.
     Provides a layer of hierarchy for layout replication."""
 
@@ -23,6 +23,10 @@ class SwitchCell(InternalBlock):
                 high_driver=False,
             )
         )
+
+
+class SwitchCell(BaseSwitchCell, InternalBlock):
+    """Implementation of the switch cell"""
 
     @override
     def contents(self) -> None:
@@ -43,7 +47,7 @@ class SwitchCell(InternalBlock):
 
 
 @abstract_block_default(lambda: SwitchCellNeopixelImp)
-class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
+class SwitchCellNeopixel(BlockInterfaceMixin[BaseSwitchCell], InternalBlock):
     """SwitchCell mixin that adds a neopixel to the switch cell, with power and data ports."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -68,7 +72,21 @@ class SwitchCellNeopixelImp(SwitchCellNeopixel, SwitchCell, InternalBlock):
         self.connect(self.npx.dout, self.npx_dout)
 
 
-class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
+@abstract_block_default(lambda: SwitchMatrix)
+class BaseSwitchMatrix(InternalBlock, Block):
+
+    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
+        super().__init__()
+
+        self.rows = self.Port(Vector(DigitalSource.empty()))
+        self.cols = self.Port(Vector(DigitalSink.empty()))
+        self.voltage_drop = self.ArgParameter(voltage_drop)
+
+        self.nrows = self.ArgParameter(nrows)
+        self.ncols = self.ArgParameter(ncols)
+
+
+class SwitchMatrix(BaseSwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
 
@@ -180,15 +198,8 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
             (self._svgpcb_get(self.nrows) + 1) * 0.5 * 25.4 + 1.0,
         )
 
-    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
-        super().__init__()
-
-        self.rows = self.Port(Vector(DigitalSource.empty()))
-        self.cols = self.Port(Vector(DigitalSink.empty()))
-        self.voltage_drop = self.ArgParameter(voltage_drop)
-
-        self.nrows = self.ArgParameter(nrows)
-        self.ncols = self.ArgParameter(ncols)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.generator_param(self.nrows, self.ncols)
 
     @override
@@ -211,7 +222,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 
 
 @abstract_block_default(lambda: SwitchMatrixNeopixelsImp)
-class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
+class SwitchMatrixNeopixels(BlockInterfaceMixin[BaseSwitchMatrix]):
     """SwitchMatrix mixin that adds a neopixel on every switch element, in the SwitchCell hierarchy block.
     Adds power and data ports for the chain.
 

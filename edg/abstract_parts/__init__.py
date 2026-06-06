@@ -81,6 +81,7 @@ from .Fet import SwitchFet, TableSwitchFet
 from .Antenna import Antenna, TableAntenna
 from .SolidStateRelay import SolidStateRelay, VoltageIsolatedSwitch, AnalogIsolatedSwitch
 from .AnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
+from .Neopixel import Neopixel
 from .Switch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .Switch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .Switch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
