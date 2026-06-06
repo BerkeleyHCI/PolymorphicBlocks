@@ -1,12 +1,12 @@
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, List
 
 from typing_extensions import override
 
 from ..abstract_parts import *
 
 
-@abstract_block_default(lambda: SwitchCell)
-class BaseSwitchCell(InternalBlock, Block):
+@abstract_block_default(lambda: DiodeSwitchCell)
+class SwitchCell(InternalBlock, Block):
     """A single cell in the switch matrix, consisting of a switch and diode.
     Provides a layer of hierarchy for layout replication."""
 
@@ -25,7 +25,7 @@ class BaseSwitchCell(InternalBlock, Block):
         )
 
 
-class SwitchCell(BaseSwitchCell, InternalBlock):
+class DiodeSwitchCell(SwitchCell, InternalBlock):
     """Implementation of the switch cell"""
 
     @override
@@ -46,8 +46,8 @@ class SwitchCell(BaseSwitchCell, InternalBlock):
         self.connect(self.sw.com, self.col.net)
 
 
-@abstract_block_default(lambda: SwitchCellNeopixelImp)
-class SwitchCellNeopixel(BlockInterfaceMixin[BaseSwitchCell], InternalBlock):
+@abstract_block_default(lambda: DiodeSwitchCellNeopixelImp)
+class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
     """SwitchCell mixin that adds a neopixel to the switch cell, with power and data ports."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -59,7 +59,7 @@ class SwitchCellNeopixel(BlockInterfaceMixin[BaseSwitchCell], InternalBlock):
         self.npx_gnd = self.Port(Ground.empty())
 
 
-class SwitchCellNeopixelImp(SwitchCellNeopixel, SwitchCell, InternalBlock):
+class DiodeSwitchCellNeopixelImp(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock):
     """SwitchCell implementation with neopixel."""
 
     @override
@@ -208,7 +208,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
         for row in range(self.get(self.nrows)):
             self.rows.append_elt(DigitalSource.empty(), str(row))
 
-        self.sw = ElementDict[SwitchCell]()
+        self.sw = ElementDict[DiodeSwitchCell]()
         for col in range(self.get(self.ncols)):
             col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
             for row in range(self.get(self.nrows)):
@@ -220,7 +220,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
         self.cols.defined()
 
 
-@abstract_block_default(lambda: SwitchDiodeMatrixNeopixelsImp)
+@abstract_block_default(lambda: SwitchDiodeMatrixNeopixels)
 class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
     """SwitchMatrix mixin that adds a neopixel with every switch, in the SwitchCell hierarchy block.
     Adds power and data ports for the chain.
@@ -242,7 +242,7 @@ class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
         self.npx_gnd = self.Port(Ground.empty())
 
 
-class SwitchDiodeMatrixNeopixelsImp(SwitchMatrixNeopixels, SwitchDiodeMatrix, HumanInterface, GeneratorBlock):
+class SwitchDiodeMatrixNeopixels(SwitchMatrixNeopixels, SwitchDiodeMatrix, HumanInterface, GeneratorBlock):
     """SwitchMatrix implementation with neopixel chain."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -254,4 +254,31 @@ class SwitchDiodeMatrixNeopixelsImp(SwitchMatrixNeopixels, SwitchDiodeMatrix, Hu
         super().generate()
 
         npx_order = self.get(self.npx_order)
-        # TODO IMPLEMENT ME
+        switch_cells: List[DiodeSwitchCell] = []
+
+        if npx_order in ("row", "row_snake"):
+            for row in range(self.get(self.nrows)):
+                cols = range(self.get(self.ncols))
+                if npx_order == "row_snake" and row % 2 == 1:
+                    cols = reversed(cols)
+                for col in cols:
+                    switch_cells.append(self.sw[f"{col},{row}"])
+        elif npx_order in ("col", "col_snake"):
+            for col in range(self.get(self.ncols)):
+                rows = range(self.get(self.nrows))
+                if npx_order == "col_snake" and col % 2 == 1:
+                    rows = reversed(rows)
+                for row in rows:
+                    switch_cells.append(self.sw[f"{col},{row}"])
+        else:
+            raise ValueError(f"Invalid npx_order {npx_order}")
+
+        last_npx_dout = self.npx_din
+        for switch_cell in switch_cells:
+            cell_npx = switch_cell.with_mixin(SwitchCellNeopixel())
+            self.connect(self.npx_pwr, cell_npx.npx_pwr)
+            self.connect(self.npx_gnd, cell_npx.npx_gnd)
+            self.connect(cell_npx.npx_din, last_npx_dout)
+            last_npx_dout = cell_npx.npx_dout
+
+        self.connect(last_npx_dout, self.npx_dout)
