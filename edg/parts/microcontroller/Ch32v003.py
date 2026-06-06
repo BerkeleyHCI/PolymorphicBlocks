@@ -10,7 +10,7 @@ from ..connector.TagConnect import TagConnect
 
 @abstract_block_default(lambda: Ch32vSdiHeader254)
 class Ch32vSdiHeader(ProgrammingConnector):
-    """Abstract programming header for the CH32V using the one-pin SDI interface with SWIO pin.."""
+    """Abstract programming header for the CH32V using the one-pin SDI interface with SWIO pin."""
 
     def __init__(self) -> None:
         super().__init__()
