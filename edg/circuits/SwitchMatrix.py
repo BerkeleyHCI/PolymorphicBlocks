@@ -215,7 +215,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
         for row in range(self.get(self.nrows)):
             self.rows.append_elt(DigitalSink.empty(), str(row))
 
-        self.sw = ElementDict[DiodeSwitchCell]()
+        self.sw = ElementDict[SwitchCell]()
         for col in range(self.get(self.ncols)):
             col_port = self.cols.append_elt(DigitalSource.empty(), str(col))
             for row in range(self.get(self.nrows)):
@@ -261,26 +261,26 @@ class SwitchDiodeMatrixNeopixels(SwitchMatrixNeopixels, SwitchDiodeMatrix, Human
         super().generate()
 
         npx_order = self.get(self.npx_order)
-        switch_cells: List[DiodeSwitchCell] = []
+        switch_cells: List[SwitchCell] = []
 
         if npx_order in ("row", "row_snake"):
             for row in range(self.get(self.nrows)):
-                cols = range(self.get(self.ncols))
+                cols = list(range(self.get(self.ncols)))
                 if npx_order == "row_snake" and row % 2 == 1:
-                    cols = reversed(cols)
+                    cols = list(reversed(cols))
                 for col in cols:
                     switch_cells.append(self.sw[f"{col},{row}"])
         elif npx_order in ("col", "col_snake"):
             for col in range(self.get(self.ncols)):
-                rows = range(self.get(self.nrows))
+                rows = list(range(self.get(self.nrows)))
                 if npx_order == "col_snake" and col % 2 == 1:
-                    rows = reversed(rows)
+                    rows = list(reversed(rows))
                 for row in rows:
                     switch_cells.append(self.sw[f"{col},{row}"])
         else:
             raise ValueError(f"Invalid npx_order {npx_order}")
 
-        last_npx_dout = self.npx_din
+        last_npx_dout: Port[DigitalLink] = self.npx_din
         for switch_cell in switch_cells:
             cell_npx = switch_cell.with_mixin(SwitchCellNeopixel())
             self.connect(self.npx_pwr, cell_npx.npx_pwr)
