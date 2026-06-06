@@ -245,5 +245,7 @@ class Ch32v003(
 
             self.vdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
+        self.reset_cap = self.Block(DigitalCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.nrst)
+
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)

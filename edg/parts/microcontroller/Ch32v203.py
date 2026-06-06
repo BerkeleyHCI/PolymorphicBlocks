@@ -110,7 +110,6 @@ class Ch32v203_Device(
         )
         self.vss = self.Port(Ground(), [Common])
 
-        # TODO CLEAN STARTING HERE
         self.nrst = self.Port(  # Table 3-19
             DigitalSink.from_supply(
                 self.vss,
@@ -123,11 +122,11 @@ class Ch32v203_Device(
                 pullup_capable=True,
             ),
             optional=True,
-        )  # note, switched internal pull-up resistor, 35-55 kOhm
+        )  # note, switched internal pull-up resistor, 30-50 kOhm
 
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.vdd.link().voltage), optional=True
-        )  # Table 3-10 crystal / resonator specs, typ 24 MHz
+            CrystalDriver(frequency_limits=(3, 25) * MHertz, voltage_out=self.vdd.link().voltage), optional=True
+        )  # Table 4-11 crystal / resonator specs, typ 8 MHz
 
         self._dio_ft_model = DigitalBidir.from_supply(
             self.vss,
@@ -244,7 +243,7 @@ class Ch32v203(
 ):
     """General-purpose RISC-V (RV32IMAC) microcontroller with USB"""
 
-    DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # 24 MHz as typical in datasheet
+    DEFAULT_CRYSTAL_FREQUENCY = 8 * MHertz(tol=0.005)  # 8 MHz as typical in datasheet
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -259,12 +258,18 @@ class Ch32v203(
             self._wrap_inner(self.ic)
 
             self.sdi = imp.Block(Ch32vSdi2Header())
-            self.connect(self.ic.swio, self.sdi.swio)
+            self.connect(self.ic.swclk, self.sdi.swclk)
+            self.connect(self.ic.swdio, self.sdi.swdio)
             self.connect(self.ic.nrst, self.sdi.reset)
 
             self.connect(self.xtal_node, self.ic.osc)
 
-            self.vdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+            self.vdd_cap = ElementDict[DecouplingCapacitor]()  # assume one 0.1uF cap per power pair
+            for i in range(2):
+                self.vdd_cap[i] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+            self.vdda_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+        self.reset_cap = self.Block(DigitalCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.nrst)
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)
