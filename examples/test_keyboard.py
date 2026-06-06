@@ -22,7 +22,7 @@ class Keyboard(SimpleBoardTop):
         super().contents()
 
         self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(Ldl1117(3.3 * Volt(tol=0.05)))
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
         self.connect(self.usb.gnd, self.reg.gnd)
         self.connect(self.usb.pwr, self.reg.pwr_in)
 
@@ -30,18 +30,35 @@ class Keyboard(SimpleBoardTop):
             ImplicitConnect(self.reg.pwr_out, [Power]),
             ImplicitConnect(self.reg.gnd, [Common]),
         ) as imp:
-            self.mcu = imp.Block(Stm32f103_48())
+            self.mcu = imp.Block(IoController())
             self.connect(self.usb.usb, self.mcu.usb.request())
 
-            self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
+
+            self.sw = self.Block(SwitchMatrix(nrows=3, ncols=4))
             self.connect(self.sw.cols, self.mcu.gpio.request_vector())
             self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+
+            self.enc = imp.Block(DigitalRotaryEncoder())
+            self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
+            self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
+            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
+
+            self.oled = imp.Block(Er_Oled_096_1_1())
+            self.connect(self.mcu.spi.request("spi"), self.oled.spi)
+            self.connect(self.mcu.gpio.request("oled_cs"), self.oled.cs)
+            self.connect(self.mcu.gpio.request("oled_dc"), self.oled.dc)
+            self.connect(self.mcu.gpio.request("oled_reset"), self.oled.reset)
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
+                (IoController, Ch32v203),
+                (LinearRegulator, Ldl1117),
                 (Switch, KailhSocket),
+                (RotaryEncoder, Pec11s),
             ],
         )
 

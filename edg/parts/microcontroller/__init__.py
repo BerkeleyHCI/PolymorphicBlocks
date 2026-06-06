@@ -1,4 +1,5 @@
 from .Ch32v003 import Ch32v003, Ch32vSdiHeader, Ch32vSdiHeader254, Ch32vSdiTc2030
+from .Ch32v203 import Ch32v203, Ch32vSdi2Header, Ch32vSdi2Header254, Ch32vSdi2Tc2030
 from .Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Stm32f103 import Stm32f103_48
 from .Stm32f303 import Nucleo_F303k8

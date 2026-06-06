@@ -208,6 +208,7 @@ class BleJoystick(JlcBoardTop):
                         "i2c.scl=12",
                         "i2c.sda=11",
                         # TODO pin the rest
+                        # TODO: NPX pin must be routed to MOSI
                     ],
                 ),
             ],
