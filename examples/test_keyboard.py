@@ -33,9 +33,23 @@ class Keyboard(SimpleBoardTop):
             self.mcu = imp.Block(IoController())
             self.connect(self.usb.usb, self.mcu.usb.request())
 
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
+
             self.sw = self.Block(SwitchMatrix(nrows=3, ncols=4))
             self.connect(self.sw.cols, self.mcu.gpio.request_vector())
             self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+
+            self.enc = imp.Block(DigitalRotaryEncoder())
+            self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
+            self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
+            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
+
+            self.oled = imp.Block(Er_Oled_096_1_1())
+            self.connect(self.mcu.spi.request("spi"), self.oled.spi)
+            self.connect(self.mcu.gpio.request("oled_cs"), self.oled.cs)
+            self.connect(self.mcu.gpio.request("oled_dc"), self.oled.dc)
+            self.connect(self.mcu.gpio.request("oled_reset"), self.oled.reset)
 
     @override
     def refinements(self) -> Refinements:
@@ -44,6 +58,7 @@ class Keyboard(SimpleBoardTop):
                 (IoController, Ch32v203),
                 (LinearRegulator, Ldl1117),
                 (Switch, KailhSocket),
+                (RotaryEncoder, Pec11s),
             ],
         )
 
