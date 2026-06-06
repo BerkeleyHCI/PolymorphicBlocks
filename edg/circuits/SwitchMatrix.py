@@ -5,6 +5,32 @@ from typing_extensions import override
 from ..abstract_parts import *
 
 
+class SwitchCell(InternalBlock):
+    """A single cell in the switch matrix, consisting of a switch and diode, passive-typed.
+    Provides a layer of hierarchy for layout replication."""
+
+    def __init__(self, sw_voltage: RangeLike, d_voltage: RangeLike, current_drawn: RangeLike, voltage_drop: RangeLike):
+        super().__init__()
+        self.sw_voltage = self.ArgParameter(sw_voltage)
+        self.d_voltage = self.ArgParameter(d_voltage)
+        self.current_drawn = self.ArgParameter(current_drawn)
+        self.voltage_drop = self.ArgParameter(voltage_drop)
+
+        self.row = self.Port(Passive())  # diode anode, externally pulled, driven to col by switch closure
+        self.col = self.Port(Passive())  # switch common, externally driven for column scan
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.sw = self.Block(Switch(voltage=self.sw_voltage, current=self.current_drawn))
+        self.d = self.Block(
+            Diode(current=self.current_drawn, reverse_voltage=self.d_voltage, voltage_drop=self.voltage_drop)
+        )
+        self.connect(self.d.anode, self.row)
+        self.connect(self.d.cathode, self.sw.sw)
+        self.connect(self.sw.com, self.col)
+
+
 class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
