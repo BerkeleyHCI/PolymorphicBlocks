@@ -233,7 +233,7 @@ class SwitchMatrixNeopixels(BlockInterfaceMixin[BaseSwitchMatrix]):
     - "col_snake": chains neopixels in col order, reversing direction every other col
     """
 
-    def __init__(self, *args: Any, npx_order: StringLike, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, npx_order: StringLike = "row_snake", **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.npx_order = self.ArgParameter(npx_order)
 
