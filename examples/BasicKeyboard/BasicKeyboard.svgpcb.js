@@ -8,20 +8,20 @@ const U1 = board.add(XIAO_RP2040_SMD, {
 })
 
 board.setNetlist([
-  {name: "mcu.gpio.0_0", pads: [["U1", "7"], ["SW1", "2"], ["SW2", "2"], ["SW3", "2"]]},
-  {name: "mcu.gpio.0_1", pads: [["U1", "8"], ["SW4", "2"], ["SW5", "2"], ["SW6", "2"]]},
-  {name: "mcu.gpio.1_0", pads: [["U1", "9"], ["D1", "2"], ["D4", "2"]]},
-  {name: "mcu.gpio.1_1", pads: [["U1", "11"], ["D2", "2"], ["D5", "2"]]},
-  {name: "mcu.gpio.1_2", pads: [["U1", "10"], ["D3", "2"], ["D6", "2"]]},
+  {name: "mcu.gpio.0_0", pads: [["U1", "7"], ["SW1", "1"], ["SW2", "1"], ["SW3", "1"]]},
+  {name: "mcu.gpio.0_1", pads: [["U1", "8"], ["SW4", "1"], ["SW5", "1"], ["SW6", "1"]]},
+  {name: "mcu.gpio.1_0", pads: [["U1", "9"], ["D1", "1"], ["D4", "1"]]},
+  {name: "mcu.gpio.1_1", pads: [["U1", "11"], ["D2", "1"], ["D5", "1"]]},
+  {name: "mcu.gpio.1_2", pads: [["U1", "10"], ["D3", "1"], ["D6", "1"]]},
   {name: "mcu.gnd", pads: [["U1", "13"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
   {name: "mcu.vusb_out", pads: [["U1", "14"]]},
-  {name: "sw.sw[0,0].sw.sw", pads: [["SW1", "1"], ["D1", "1"]]},
-  {name: "sw.sw[0,1].sw.sw", pads: [["SW2", "1"], ["D2", "1"]]},
-  {name: "sw.sw[0,2].sw.sw", pads: [["SW3", "1"], ["D3", "1"]]},
-  {name: "sw.sw[1,0].sw.sw", pads: [["SW4", "1"], ["D4", "1"]]},
-  {name: "sw.sw[1,1].sw.sw", pads: [["SW5", "1"], ["D5", "1"]]},
-  {name: "sw.sw[1,2].sw.sw", pads: [["SW6", "1"], ["D6", "1"]]}
+  {name: "sw.sw[0,0].sw.com", pads: [["SW1", "2"], ["D1", "2"]]},
+  {name: "sw.sw[0,1].sw.com", pads: [["SW2", "2"], ["D2", "2"]]},
+  {name: "sw.sw[0,2].sw.com", pads: [["SW3", "2"], ["D3", "2"]]},
+  {name: "sw.sw[1,0].sw.com", pads: [["SW4", "2"], ["D4", "2"]]},
+  {name: "sw.sw[1,1].sw.com", pads: [["SW5", "2"], ["D5", "2"]]},
+  {name: "sw.sw[1,2].sw.com", pads: [["SW6", "2"], ["D6", "2"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

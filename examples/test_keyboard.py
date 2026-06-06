@@ -75,7 +75,8 @@ class Keyboard(SimpleBoardTop):
             ],
             instance_values=[(["mcu", "pin_assigns"], [])],  # TODO pining: NPX must be SPI MOSI
             class_values=[
-                (Sk6812Mini_E, ["pwr", "current_draw"], Range(0.001, 0.030)),  # don't run at full power
+                # assume LEDs not run at full power to satisfy current limit checks
+                (Sk6812Mini_E, ["pwr", "current_draw"], Range(0.001, 0.030)),
             ],
         )
 
