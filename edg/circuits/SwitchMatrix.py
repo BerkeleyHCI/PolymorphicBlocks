@@ -1,8 +1,9 @@
-from typing import cast, Optional, Tuple
+from typing import cast, Optional, Tuple, Any
 
 from typing_extensions import override
 
 from ..abstract_parts import *
+from ..parts.human_interface.Neopixel import Neopixel
 
 
 class SwitchCell(InternalBlock):
@@ -41,6 +42,32 @@ class SwitchCell(InternalBlock):
         self.connect(self.sw.com, self.col.net)
 
 
+@abstract_block_default(lambda: SwitchCellNeopixelImp)
+class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
+    """SwitchCell mixin that adds a neopixel to the switch cell, with power and data ports."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.npx_din = self.Port(DigitalSink.empty())
+        self.npx_dout = self.Port(DigitalSource.empty(), optional=True)
+        self.npx_pwr = self.Port(VoltageSink.empty())
+        self.npx_gnd = self.Port(Ground.empty())
+
+
+class SwitchCellNeopixelImp(SwitchCellNeopixel, SwitchCell, InternalBlock):
+    """SwitchCell implementation with neopixel."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.npx = self.Block(Neopixel())
+        self.connect(self.npx.pwr, self.npx_pwr)
+        self.connect(self.npx.gnd, self.npx_gnd)
+        self.connect(self.npx.din, self.npx_din)
+        self.connect(self.npx.dout, self.npx_dout)
+
+
 class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
@@ -59,17 +86,17 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
 
     @override
     def _svgpcb_template(self) -> str:
-        switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]"])
-        diode_block = self._svgpcb_footprint_block_path_of(["d[0,0]"])
-        switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]"])
-        diode_reftype, diode_refnum = self._svgpcb_refdes_of(["d[0,0]"])
+        switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "sw"])
+        diode_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "d"])
+        switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]", "sw"])
+        diode_reftype, diode_refnum = self._svgpcb_refdes_of(["sw[0,0]", "d"])
         assert switch_block is not None and diode_block is not None
         switch_footprint = self._svgpcb_footprint_of(switch_block)
-        switch_sw_pin = self._svgpcb_pin_of(["sw[0,0]"], ["sw"])
-        switch_com_pin = self._svgpcb_pin_of(["sw[0,0]"], ["com"])
+        switch_sw_pin = self._svgpcb_pin_of(["sw[0,0]", "sw"], ["sw"])
+        switch_com_pin = self._svgpcb_pin_of(["sw[0,0]", "sw"], ["com"])
         diode_footprint = self._svgpcb_footprint_of(diode_block)
-        diode_a_pin = self._svgpcb_pin_of(["d[0,0]"], ["anode"])
-        diode_k_pin = self._svgpcb_pin_of(["d[0,0]"], ["cathode"])
+        diode_a_pin = self._svgpcb_pin_of(["sw[0,0]", "d"], ["anode"])
+        diode_k_pin = self._svgpcb_pin_of(["sw[0,0]", "d"], ["cathode"])
         assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
 
         return f"""\
@@ -181,3 +208,40 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 
         self.rows.defined()
         self.cols.defined()
+
+
+@abstract_block_default(lambda: SwitchMatrixNeopixelsImp)
+class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
+    """SwitchMatrix mixin that adds a neopixel on every switch element, in the SwitchCell hierarchy block.
+    Adds power and data ports for the chain.
+
+    npx_order can be:
+    - "row": chains neopixels in row order
+    - "row_snake": chains neopixels in row order, reversing direction every other row
+    - "col": chains neopixels in column order
+    - "col_snake": chains neopixels in col order, reversing direction every other col
+    """
+
+    def __init__(self, *args: Any, npx_order: StringLike, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.npx_order = self.ArgParameter(npx_order)
+
+        self.npx_din = self.Port(DigitalSink.empty())
+        self.npx_dout = self.Port(DigitalSource.empty(), optional=True)
+        self.npx_pwr = self.Port(VoltageSink.empty())
+        self.npx_gnd = self.Port(Ground.empty())
+
+
+class SwitchMatrixNeopixelsImp(SwitchMatrixNeopixels, SwitchMatrix, HumanInterface, GeneratorBlock):
+    """SwitchMatrix implementation with neopixel chain."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(self.npx_order)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        npx_order = self.get(self.npx_order)
+        # TODO IMPLEMENT ME
