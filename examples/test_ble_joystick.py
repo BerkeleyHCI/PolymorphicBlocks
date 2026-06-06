@@ -212,7 +212,7 @@ class BleJoystick(JlcBoardTop):
                 ),
             ],
             class_refinements=[
-                (EspProgrammingHeader, EspProgrammingTc2030),
+                (SwdCortexTargetConnector, SwdCortexTargetTagConnect),
                 (Ch32vSdiHeader, Ch32vSdiTc2030),
                 (TestPoint, CompactKeystone5015),
                 (PassiveConnector, JstPhKVertical),

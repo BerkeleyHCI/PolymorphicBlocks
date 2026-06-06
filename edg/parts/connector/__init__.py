@@ -53,4 +53,4 @@ from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310
 
 # Applications
 from .SwdHeaders import SwdCortexTargetHeader
-from .SwdHeaders import SwdCortexTargetTagConnect, SwdCortexTargetTc2050
+from .SwdHeaders import SwdCortexTargetTagConnect

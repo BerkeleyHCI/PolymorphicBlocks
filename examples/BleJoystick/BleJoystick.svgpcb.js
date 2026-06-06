@@ -22,17 +22,17 @@ const JJ1 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
 })
 // usb.conn
 const JJ2 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(1.266, 0.165), rotate: 0,
+  translate: pt(1.243, 0.165), rotate: 0,
   id: 'JJ2'
 })
 // usb.cc_pull.cc1.res
 const JR1 = board.add(R_0603_1608Metric, {
-  translate: pt(1.115, 0.420), rotate: 0,
+  translate: pt(1.091, 0.420), rotate: 0,
   id: 'JR1'
 })
 // usb.cc_pull.cc2.res
 const JR2 = board.add(R_0603_1608Metric, {
-  translate: pt(1.271, 0.420), rotate: 0,
+  translate: pt(1.247, 0.420), rotate: 0,
   id: 'JR2'
 })
 // tp_bat.tp
@@ -52,17 +52,17 @@ const JTP3 = board.add(TestPoint_TE_RCT_0805, {
 })
 // vbat_sense.ic
 const JU1 = board.add(SOT_23_8, {
-  translate: pt(1.674, 0.067), rotate: 0,
+  translate: pt(1.651, 0.067), rotate: 0,
   id: 'JU1'
 })
 // vbat_sense.vs_cap.cap
 const JC1 = board.add(C_0603_1608Metric, {
-  translate: pt(1.652, 0.330), rotate: 0,
+  translate: pt(1.628, 0.330), rotate: 0,
   id: 'JC1'
 })
 // vbat_sense.Rs.res.res
 const JR3 = board.add(R_1206_3216Metric, {
-  translate: pt(1.683, 0.217), rotate: 0,
+  translate: pt(1.660, 0.217), rotate: 0,
   id: 'JR3'
 })
 // gate.pull_res
@@ -127,27 +127,27 @@ const JTP5 = board.add(TestPoint_TE_RCT_0805, {
 })
 // chg.ic
 const JU3 = board.add(SOT_23_5, {
-  translate: pt(1.972, 0.067), rotate: 0,
+  translate: pt(1.948, 0.067), rotate: 0,
   id: 'JU3'
 })
 // chg.vdd_cap.cap
 const JC4 = board.add(C_0805_2012Metric, {
-  translate: pt(1.958, 0.212), rotate: 0,
+  translate: pt(1.935, 0.212), rotate: 0,
   id: 'JC4'
 })
 // chg.vbat_cap.cap
 const JC5 = board.add(C_0805_2012Metric, {
-  translate: pt(2.131, 0.212), rotate: 0,
+  translate: pt(2.108, 0.212), rotate: 0,
   id: 'JC5'
 })
 // chg.prog_res.res
 const JR6 = board.add(R_0603_1608Metric, {
-  translate: pt(1.950, 0.319), rotate: 0,
+  translate: pt(1.926, 0.319), rotate: 0,
   id: 'JR6'
 })
 // chg.prog_sw
 const JQ3 = board.add(SOT_23, {
-  translate: pt(2.168, 0.067), rotate: 0,
+  translate: pt(2.144, 0.067), rotate: 0,
   id: 'JQ3'
 })
 // mcu.ic.device
@@ -157,27 +157,27 @@ const JU4 = board.add(Holyiot_18010_NRF52840, {
 })
 // mcu.vcc_cap.cap
 const JC6 = board.add(C_0805_2012Metric, {
-  translate: pt(0.667, 0.369), rotate: 0,
+  translate: pt(0.667, 0.413), rotate: 0,
   id: 'JC6'
 })
 // mcu.swd.conn
-const JJ3 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
-  translate: pt(0.769, 0.146), rotate: 0,
+const JJ3 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+  translate: pt(0.767, 0.167), rotate: 0,
   id: 'JJ3'
 })
 // mcu.vbus_cap.cap
 const JC7 = board.add(C_0805_2012Metric, {
-  translate: pt(0.840, 0.369), rotate: 0,
+  translate: pt(0.840, 0.413), rotate: 0,
   id: 'JC7'
 })
 // mcu.usb_res.dp.res
 const JR7 = board.add(R_0603_1608Metric, {
-  translate: pt(0.658, 0.476), rotate: 0,
+  translate: pt(0.658, 0.519), rotate: 0,
   id: 'JR7'
 })
 // mcu.usb_res.dm.res
 const JR8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.814, 0.476), rotate: 0,
+  translate: pt(0.814, 0.519), rotate: 0,
   id: 'JR8'
 })
 // usb_esd
@@ -264,7 +264,7 @@ const JJ7 = board.add(Hirose_FH12_8S_0_5SH_1x08_1MP_P0_50mm_Horizontal, {
 board.setNetlist([
   {name: "Jvbat", pads: [["JJ1", "2"], ["JTP1", "1"], ["JR4", "1"], ["JQ1", "2"], ["JU3", "3"], ["JC5", "1"]]},
   {name: "Jvusb", pads: [["JJ2", "A4"], ["JJ2", "A9"], ["JJ2", "B4"], ["JJ2", "B9"], ["JTP2", "1"], ["JU3", "4"], ["JC4", "1"], ["JU4", "22"], ["JC7", "1"]]},
-  {name: "Jgnd", pads: [["JJ1", "1"], ["JJ2", "A1"], ["JJ2", "A12"], ["JJ2", "B1"], ["JJ2", "B12"], ["JJ2", "S1"], ["JR1", "1"], ["JR2", "1"], ["JTP3", "1"], ["JU1", "3"], ["JU1", "7"], ["JU1", "8"], ["JC1", "2"], ["JR5", "1"], ["JQ2", "2"], ["JU2", "1"], ["JC2", "2"], ["JC3", "2"], ["JD3", "2"], ["JU3", "2"], ["JC4", "2"], ["JC5", "2"], ["JQ3", "2"], ["JU4", "1"], ["JU4", "25"], ["JU4", "37"], ["JC6", "2"], ["JJ3", "3"], ["JJ3", "5"], ["JJ3", "9"], ["JC7", "2"], ["JU5", "3"], ["JU6", "1"], ["JU6", "2"], ["JU6", "3"], ["JU6", "6"], ["JU6", "7"], ["JC8", "2"], ["JC9", "2"], ["JU7", "11"], ["JU7", "9"], ["JC10", "2"], ["JC12", "2"], ["JJ4", "1"], ["JJ7", "1"], ["JJ7", "6"]]},
+  {name: "Jgnd", pads: [["JJ1", "1"], ["JJ2", "A1"], ["JJ2", "A12"], ["JJ2", "B1"], ["JJ2", "B12"], ["JJ2", "S1"], ["JR1", "1"], ["JR2", "1"], ["JTP3", "1"], ["JU1", "3"], ["JU1", "7"], ["JU1", "8"], ["JC1", "2"], ["JR5", "1"], ["JQ2", "2"], ["JU2", "1"], ["JC2", "2"], ["JC3", "2"], ["JD3", "2"], ["JU3", "2"], ["JC4", "2"], ["JC5", "2"], ["JQ3", "2"], ["JU4", "1"], ["JU4", "25"], ["JU4", "37"], ["JC6", "2"], ["JJ3", "5"], ["JC7", "2"], ["JU5", "3"], ["JU6", "1"], ["JU6", "2"], ["JU6", "3"], ["JU6", "6"], ["JU6", "7"], ["JC8", "2"], ["JC9", "2"], ["JU7", "11"], ["JU7", "9"], ["JC10", "2"], ["JC12", "2"], ["JJ4", "1"], ["JJ7", "1"], ["JJ7", "6"]]},
   {name: "Jvbat_gated", pads: [["JU1", "1"], ["JR3", "1"], ["JQ1", "3"], ["JTP5", "1"], ["JJ7", "7"], ["JJ7", "8"]]},
   {name: "Jv3v3", pads: [["JU1", "4"], ["JC1", "1"], ["JU2", "3"], ["JC3", "1"], ["JTP4", "1"], ["JD3", "1"], ["JU4", "14"], ["JC6", "1"], ["JJ3", "1"], ["JD4", "2"], ["JR10", "1"], ["JR11", "1"], ["JU6", "12"], ["JU6", "5"], ["JU6", "8"], ["JC8", "1"], ["JC9", "1"], ["JU7", "13"], ["JU7", "2"], ["JU7", "4"], ["JC10", "1"], ["JJ7", "2"]]},
   {name: "Jusb_chain_0.d_P", pads: [["JJ2", "A6"], ["JJ2", "B6"], ["JR7", "1"], ["JU5", "2"]]},
@@ -284,8 +284,7 @@ board.setNetlist([
   {name: "Jchg.prog_res.gnd", pads: [["JR6", "1"], ["JQ3", "3"]]},
   {name: "Jmcu.swd_node.swdio", pads: [["JU4", "32"], ["JJ3", "2"]]},
   {name: "Jmcu.swd_node.swclk", pads: [["JU4", "31"], ["JJ3", "4"]]},
-  {name: "Jmcu.reset_node", pads: [["JU4", "21"], ["JJ3", "10"]]},
-  {name: "Jmcu.swd.tdi", pads: [["JJ3", "8"]]},
+  {name: "Jmcu.reset_node", pads: [["JU4", "21"], ["JJ3", "3"]]},
   {name: "Jmcu.swd.swo", pads: [["JJ3", "6"]]},
   {name: "Jmcu.usb_res.interior.dp", pads: [["JU4", "24"], ["JR7", "2"]]},
   {name: "Jmcu.usb_res.interior.dm", pads: [["JU4", "23"], ["JR8", "2"]]},
