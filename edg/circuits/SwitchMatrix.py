@@ -72,8 +72,8 @@ class SwitchCellNeopixelImp(SwitchCellNeopixel, SwitchCell, InternalBlock):
         self.connect(self.npx.dout, self.npx_dout)
 
 
-@abstract_block_default(lambda: SwitchMatrix)
-class BaseSwitchMatrix(InternalBlock, Block):
+@abstract_block_default(lambda: SwitchDiodeMatrix)
+class SwitchMatrix(InternalBlock, Block):
 
     def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
         super().__init__()
@@ -86,16 +86,15 @@ class BaseSwitchMatrix(InternalBlock, Block):
         self.ncols = self.ArgParameter(ncols)
 
 
-class SwitchMatrix(BaseSwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
+class SwitchDiodeMatrix(SwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
 
     Internally, the switches are in a matrix, with the driver driving one col low at a time while
-    reading which rows are low (with the other cols weakly pulled high).
-    This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
+    reading which rows are low (with the other cols floating or weakly pulled high).
+    Internally, this uses the Switch abstract block, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
     This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
-    Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
     """
 
     @override
@@ -221,8 +220,8 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
         self.cols.defined()
 
 
-@abstract_block_default(lambda: SwitchMatrixNeopixelsImp)
-class SwitchMatrixNeopixels(BlockInterfaceMixin[BaseSwitchMatrix]):
+@abstract_block_default(lambda: SwitchDiodeMatrixNeopixelsImp)
+class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
     """SwitchMatrix mixin that adds a neopixel with every switch, in the SwitchCell hierarchy block.
     Adds power and data ports for the chain.
 
@@ -243,7 +242,7 @@ class SwitchMatrixNeopixels(BlockInterfaceMixin[BaseSwitchMatrix]):
         self.npx_gnd = self.Port(Ground.empty())
 
 
-class SwitchMatrixNeopixelsImp(SwitchMatrixNeopixels, SwitchMatrix, HumanInterface, GeneratorBlock):
+class SwitchDiodeMatrixNeopixelsImp(SwitchMatrixNeopixels, SwitchDiodeMatrix, HumanInterface, GeneratorBlock):
     """SwitchMatrix implementation with neopixel chain."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

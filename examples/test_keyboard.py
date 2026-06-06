@@ -39,6 +39,10 @@ class Keyboard(SimpleBoardTop):
             self.sw = self.Block(SwitchMatrix(nrows=3, ncols=4))
             self.connect(self.sw.cols, self.mcu.gpio.request_vector())
             self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+            sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels())
+            self.connect(self.mcu.gpio.request("npx"), sw_npx.npx_din)
+            self.connect(self.usb.pwr, sw_npx.npx_pwr)
+            self.connect(self.usb.gnd, sw_npx.npx_gnd)
 
             self.enc = imp.Block(DigitalRotaryEncoder())
             self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
