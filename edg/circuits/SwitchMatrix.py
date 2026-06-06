@@ -7,43 +7,48 @@ from ..abstract_parts import *
 
 @abstract_block_default(lambda: DiodeSwitchCell)
 class SwitchCell(InternalBlock, Block):
-    """A single cell in the switch matrix, consisting of a switch and diode.
-    Provides a layer of hierarchy for layout replication."""
+    """A single cell in the switch matrix."""
 
     def __init__(self, voltage_drop: RangeLike):
         super().__init__()
         self.voltage_drop = self.ArgParameter(voltage_drop)
 
-        self.col = self.Port(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
-        self.row = self.Port(
-            DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
-                voltage_out=self.col.link().voltage.lower() + voltage_drop,  # use spec to avoid circular dependency
-                output_thresholds=(self.col.link().voltage + voltage_drop).hull(float("inf")),
-                low_driver=True,
-                high_driver=False,
-            )
-        )
+        self.row = self.Port(DigitalSink.empty())
+        self.col = self.Port(DigitalSource.empty())
 
 
 class DiodeSwitchCell(SwitchCell, InternalBlock):
-    """Implementation of the switch cell"""
+    """A single cell in the switch matrix, consisting of a switch and diode to support multiple key presses.
+    Provides a layer of hierarchy for layout replication."""
 
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.col.init_from(
+            DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
+                voltage_out=self.row.link().voltage.lower()
+                + self.voltage_drop,  # use spec to avoid circular dependency
+                output_thresholds=(self.row.link().voltage + self.voltage_drop).hull(float("inf")),
+                low_driver=True,
+                high_driver=False,
+            )
+        )
+        self.row.init_from(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
+
         self.sw = self.Block(
-            Switch(voltage=self.row.link().voltage - self.col.link().voltage, current=self.row.link().current_drawn)
+            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_drawn)
         )
         self.d = self.Block(
             Diode(
-                current=self.row.link().current_drawn,
-                reverse_voltage=(self.row.link().voltage - self.col.link().voltage).abs(),
+                current=self.col.link().current_drawn,
+                reverse_voltage=(self.col.link().voltage - self.row.link().voltage).abs(),
                 voltage_drop=self.voltage_drop,
             )
         )
-        self.connect(self.d.anode, self.row.net)
-        self.connect(self.d.cathode, self.sw.sw)
-        self.connect(self.sw.com, self.col.net)
+        self.connect(self.col.net, self.sw.sw)
+        self.connect(self.sw.com, self.d.anode)
+        self.connect(self.d.cathode, self.row.net)
 
 
 @abstract_block_default(lambda: DiodeSwitchCellNeopixelImp)
@@ -78,20 +83,22 @@ class SwitchMatrix(InternalBlock, Block):
     def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
         super().__init__()
 
-        self.rows = self.Port(Vector(DigitalSource.empty()))
-        self.cols = self.Port(Vector(DigitalSink.empty()))
         self.voltage_drop = self.ArgParameter(voltage_drop)
-
         self.nrows = self.ArgParameter(nrows)
         self.ncols = self.ArgParameter(ncols)
+
+        self.rows = self.Port(Vector(DigitalSink.empty()))
+        self.cols = self.Port(Vector(DigitalSource.empty()))
 
 
 class SwitchDiodeMatrix(SwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
 
-    Internally, the switches are in a matrix, with the driver driving one col low at a time while
-    reading which rows are low (with the other cols floating or weakly pulled high).
+    Internally, the switches are in a matrix and follows COL2ROW conventions:
+    - the driver drives one row low at a time, other rows are floating or weakly pulled high
+    - the columns are weakly pulled high, and read low when the switch is pressed
+
     Internally, this uses the Switch abstract block, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
     This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
@@ -206,11 +213,11 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
         super().generate()
 
         for row in range(self.get(self.nrows)):
-            self.rows.append_elt(DigitalSource.empty(), str(row))
+            self.rows.append_elt(DigitalSink.empty(), str(row))
 
         self.sw = ElementDict[DiodeSwitchCell]()
         for col in range(self.get(self.ncols)):
-            col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
+            col_port = self.cols.append_elt(DigitalSource.empty(), str(col))
             for row in range(self.get(self.nrows)):
                 cell = self.sw[f"{col},{row}"] = self.Block(SwitchCell(voltage_drop=self.voltage_drop))
                 self.connect(cell.col, col_port)
