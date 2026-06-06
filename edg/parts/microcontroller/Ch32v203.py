@@ -168,7 +168,7 @@ class Ch32v203_Device(
             "4": self.nrst,
             "23": self.swdio,  # TODO remappable to PA13
             "24": self.swclk,  # TODO remappable to PA14
-            "18": self.vss,  # BOOT0, TODO theoretically usable as output-only PB8
+            "31": self.vss,  # BOOT0, TODO theoretically usable as output-only PB8
         }
 
     @override
@@ -231,18 +231,19 @@ class Ch32v203_Device(
                     "USART1", uart_model, {"tx": ["PA9", "PB6", "PB15", "PA6"], "rx": ["PA10", "PB7", "PA8", "PA7"]}
                 ),
                 PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2"], "rx": ["PA3"]}),
-                PeripheralFixedResource("USART3", uart_model, {"tx": ["PB10"], "rx": ["PB11"]}),
-                PeripheralFixedResource("USART4", uart_model, {"tx": ["PB0", "PA5"], "rx": ["PB1", "PB5"]}),
+                # unavailable on K8
+                # PeripheralFixedResource("USART3", uart_model, {"tx": ["PB10"], "rx": ["PB11"]}),
+                # PeripheralFixedResource("USART4", uart_model, {"tx": ["PB0", "PA5"], "rx": ["PB1", "PB5"]}),
                 PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
-                PeripheralFixedResource("USBFS", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PB6"], "dp": ["PB7"]}),
+                # PeripheralFixedResource("USBFS", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PB6"], "dp": ["PB7"]}),
                 PeripheralFixedResource("I2C1", i2c_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
                 PeripheralFixedResource("I2C1_T", i2c_target_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
-                PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PB10"], "sda": ["PB11"]}),
-                PeripheralFixedResource("I2C2_T", i2c_target_model, {"scl": ["PB10"], "sda": ["PB11"]}),
+                # PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PB10"], "sda": ["PB11"]}),
+                # PeripheralFixedResource("I2C2_T", i2c_target_model, {"scl": ["PB10"], "sda": ["PB11"]}),
                 PeripheralFixedResource(
                     "SPI1", spi_model, {"sck": ["PA5", "PB3"], "miso": ["PA6", "PB4"], "mosi": ["PA7", "PB5"]}
                 ),
-                PeripheralFixedResource("SPI2", spi_model, {"sck": ["PB13"], "miso": ["PB14"], "mosi": ["PB15"]}),
+                # PeripheralFixedResource("SPI2", spi_model, {"sck": ["PB13"], "miso": ["PB14"], "mosi": ["PB15"]}),
                 PeripheralFixedResource(
                     "CAN",
                     CanControllerPort(DigitalBidir.empty()),
@@ -261,7 +262,7 @@ class Ch32v203_Device(
             self._make_pinning(),
             mfr="WCH",
             part="CH32V203K8T6",
-            datasheet="https://www.wch-ic.com/downloads/CH32V003DS0_PDF.html",
+            datasheet="https://www.wch-ic.com/downloads/CH32V203DS0_PDF.html",
         )
         self.assign(self.lcsc_part, "C5372188")
         self.assign(self.actual_basic_part, False)
