@@ -223,14 +223,14 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 
 @abstract_block_default(lambda: SwitchMatrixNeopixelsImp)
 class SwitchMatrixNeopixels(BlockInterfaceMixin[BaseSwitchMatrix]):
-    """SwitchMatrix mixin that adds a neopixel on every switch element, in the SwitchCell hierarchy block.
+    """SwitchMatrix mixin that adds a neopixel with every switch, in the SwitchCell hierarchy block.
     Adds power and data ports for the chain.
 
     npx_order can be:
-    - "row": chains neopixels in row order
-    - "row_snake": chains neopixels in row order, reversing direction every other row
-    - "col": chains neopixels in column order
-    - "col_snake": chains neopixels in col order, reversing direction every other col
+    - "row": chains neopixels across a row before moving to the next row
+    - "row_snake": above, but reversing direction every other row
+    - "col": chains neopixels across a column before moving to the next column
+    - "col_snake": above, but reversing direction every other col
     """
 
     def __init__(self, *args: Any, npx_order: StringLike = "row_snake", **kwargs: Any) -> None:
