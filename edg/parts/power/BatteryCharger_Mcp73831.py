@@ -61,7 +61,7 @@ class Mcp73831(PowerConditioner, GeneratorBlock):
         self.ic = self.Block(Mcp73831_Device(actual_charging_current=RangeExpr()))
 
         self.pwr_bat = self.Export(self.ic.vbat, [Output])
-        self.pwr = self.Export(self.ic.vdd, [Power])
+        self.pwr = self.Export(self.ic.vdd, [Input, Power])
         self.gnd = self.Export(self.ic.vss, [Common])
         self.stat = self.Export(
             self.ic.stat, optional=True

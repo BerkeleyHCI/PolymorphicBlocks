@@ -19,7 +19,7 @@ class JoystickSubboard(SubboardBlock):
         self.ax1 = self.Export(self.stick.ax1)
         self.ax2 = self.Export(self.stick.ax2)
 
-        self.conn = self.Block(Fpc050Pair(6), external=True)
+        self.conn = self.Block(Fpc050Pair(8), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.pwr.net, self.conn.pins.request("2"))
         self.export_tap(self.sw.net, self.conn.pins.request("4"))
@@ -76,13 +76,15 @@ class ButtonSubboard(SubboardBlock):
                 imp.Block(NeopixelArray(8)),
             )
 
-        self.conn = self.Block(Fpc050Pair(6), external=True)
+        self.conn = self.Block(Fpc050Pair(8, cable="opposite"), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.pwr.net, self.conn.pins.request("2"))
         self.export_tap(self.i2c.scl.net, self.conn.pins.request("3"))
         self.export_tap(self.i2c.sda.net, self.conn.pins.request("4"))
         self.export_tap(self.io0.net, self.conn.pins.request("5"))
-        self.export_tap(self.vbat.net, self.conn.pins.request("6"))
+        self.export_tap(self.gnd.net, self.conn.pins.request("6"))
+        self.export_tap(self.vbat.net, self.conn.pins.request("7"))
+        self.export_tap(self.vbat.net, self.conn.pins.request("8"))
 
 
 class BleJoystick(JlcBoardTop):
@@ -94,7 +96,8 @@ class BleJoystick(JlcBoardTop):
 
         # really should operate down to ~3.3v,
         # this forces the model to allow the LDO to go into tracking
-        self.bat = self.Block(LipoConnector(voltage=(4.0, 4.2) * Volt, actual_voltage=(4.0, 4.2) * Volt))
+        # and allows the neopixels to go below their minimum rated voltage which works in practice
+        self.bat = self.Block(LipoConnector(voltage=(3.8, 4.2) * Volt, actual_voltage=(3.8, 4.2) * Volt))
         self.usb = self.Block(UsbCReceptacle(current_limits=(0, 1) * Amp))
 
         self.vbat = self.connect(self.bat.pwr)
@@ -119,11 +122,12 @@ class BleJoystick(JlcBoardTop):
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
             self.vbat_gated = self.connect(self.gate.pwr_out)
+            self.tp_vgate = self.Block(VoltageTestPoint()).connected(self.gate.pwr_out)
             self.v3v3 = self.connect(self.reg_3v3.pwr_out, self.vbat_sense.pwr)
 
             self.chg = imp.Block(Mcp73831(charging_current=100 * mAmp(tol=0.2)))
             self.connect(self.usb.pwr, self.chg.pwr)
-            self.connect(self.chg.pwr_bat, self.bat.chg)
+            self.connect(self.chg.pwr_bat, self.bat.pwr)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
@@ -142,6 +146,7 @@ class BleJoystick(JlcBoardTop):
 
             mcu_i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
+            self.tp_i2c = self.Block(I2cTestPoint()).connected(mcu_i2c)
 
             self.connect(mcu_i2c, self.vbat_sense.i2c)
             self.imu = imp.Block(Lsm6ds3trc())
