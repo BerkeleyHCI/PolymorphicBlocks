@@ -64,6 +64,9 @@ class IotFan(JlcBoardTop):
             self.connect(self.vin_sense.pwr, self.v3v3)
             self.connect(self.vin_sense.i2c, mcu_i2c)
 
+            self.dist = imp.Block(Vl53l5cx())
+            self.connect(mcu_i2c, self.dist.i2c)
+
         # 5V DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v5, [Power]),

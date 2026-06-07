@@ -12,6 +12,7 @@ from .FlirLepton import FlirLepton
 from .Camera_Ov2640_Fpc24 import Ov2640, Ov2640_Fpc24
 
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xConnector, Vl53l0xArray
+from .DistanceArray_Vl53l5cx import Vl53l5cx
 from .EnvironmentalSensor_Bme680 import Bme680
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
