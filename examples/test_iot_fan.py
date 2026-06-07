@@ -13,11 +13,9 @@ class IotFan(JlcBoardTop):
     def contents(self) -> None:
         super().contents()
 
-        RING_LEDS = 18  # number of RGBs for the ring indicator
-
         self.pwr = self.Block(PowerBarrelJack(voltage_out=12 * Volt(tol=0.05), current_limits=(0, 5) * Amp))
 
-        self.v12 = self.connect(self.pwr.pwr)
+        self.vin = self.connect(self.pwr.pwr)
         self.gnd = self.connect(self.pwr.gnd)
 
         self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
@@ -27,9 +25,12 @@ class IotFan(JlcBoardTop):
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            self.vin_sense = imp.Block(Ina219(10 * mOhm(tol=0.01)))
+            self.connect(self.vin_sense.sense_pos, self.vin)
+
             (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
-                self.v12,
-                imp.Block(VoltageRegulator(output_voltage=4 * Volt(tol=0.05))),
+                self.vin_sense.sense_neg,
+                imp.Block(VoltageRegulator(output_voltage=4.5 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8) * Volt)),
             )
@@ -59,50 +60,39 @@ class IotFan(JlcBoardTop):
             self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
             self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
 
-            (self.v12_sense,), _ = self.chain(
-                self.v12,
-                imp.Block(VoltageSenseDivider(full_scale_voltage=2.2 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
-                self.mcu.adc.request("v12_sense"),
-            )
+            mcu_i2c = self.mcu.i2c.request("i2c")
+            self.connect(self.vin_sense.pwr, self.v3v3)
+            self.connect(self.vin_sense.i2c, mcu_i2c)
 
         # 5V DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.rgb_ring,), _ = self.chain(self.mcu.gpio.request("rgb"), imp.Block(NeopixelArray(RING_LEDS)))
+            (self.rgb_ring,), _ = self.chain(self.mcu.gpio.request("rgb"), imp.Block(NeopixelArray(6)))
 
         # 12V DOMAIN
-        self.fan = ElementDict[CpuFanConnector]()
-        self.fan_drv = ElementDict[HighSideSwitch]()
-        self.fan_sense = ElementDict[OpenDrainDriver]()
-        self.fan_ctl = ElementDict[OpenDrainDriver]()
-
         with self.implicit_connect(
-            ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            for i in range(2):
-                fan = self.fan[i] = self.Block(CpuFanConnector())
-                fan_drv = self.fan_drv[i] = imp.Block(
-                    HighSideSwitch(pull_resistance=4.7 * kOhm(tol=0.05), max_rds=0.3 * Ohm)
-                )
-                self.connect(fan.pwr, fan_drv.output)
-                self.connect(fan.gnd, self.gnd)
-                self.connect(self.mcu.gpio.request(f"fan_drv_{i}"), fan_drv.control)
+            self.fan = imp.Block(CpuFanConnector())
+            self.fan_drv = imp.Block(HighSideSwitch(pull_resistance=4.7 * kOhm(tol=0.05), max_rds=0.3 * Ohm))
+            self.connect(self.fan_drv.pwr, self.vin)
+            self.connect(self.fan.pwr, self.fan_drv.output)
+            self.connect(self.mcu.gpio.request(f"fan_drv"), self.fan_drv.control)
 
-                self.connect(fan.sense, self.mcu.gpio.request(f"fan_sense_{i}"))
-                (self.fan_ctl[i],), _ = self.chain(
-                    self.mcu.gpio.request(f"fan_ctl_{i}"),
-                    imp.Block(OpenDrainDriver()),
-                    fan.with_mixin(CpuFanPwmControl()).control,
-                )
+            self.connect(self.fan.sense, self.mcu.gpio.request(f"fan_tach"))
+            (self.fan_ctl,), _ = self.chain(
+                self.mcu.gpio.request(f"fan_pwm"),
+                imp.Block(OpenDrainDriver()),
+                self.fan.with_mixin(CpuFanPwmControl()).control,
+            )
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
-                (["mcu"], Esp32c3),
+                (["mcu"], Esp32s3_Wroom_1),
                 (["reg_5v"], Tps54202h),
                 (["reg_3v3"], Ap7215),
             ],
@@ -111,26 +101,25 @@ class IotFan(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        "v12_sense=4",
-                        "rgb=_GPIO2_STRAP_EXT_PU",  # force using the strapping pin, since we're out of IOs
-                        "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
-                        "fan_drv_0=5",
-                        "fan_ctl_0=8",
-                        "fan_sense_0=9",
-                        "fan_drv_1=10",
-                        "fan_ctl_1=13",
-                        "fan_sense_1=12",
-                        "enc_sw=25",
-                        "enc_b=16",
-                        "enc_a=26",
+                        # "v12_sense=4",
+                        # "rgb=_GPIO2_STRAP_EXT_PU",  # force using the strapping pin, since we're out of IOs
+                        # "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
+                        # "fan_drv_0=5",
+                        # "fan_ctl_0=8",
+                        # "fan_sense_0=9",
+                        # "fan_drv_1=10",
+                        # "fan_ctl_1=13",
+                        # "fan_sense_1=12",
+                        # "enc_sw=25",
+                        # "enc_b=16",
+                        # "enc_a=26",
                     ],
                 ),
                 (["mcu", "programming"], "uart-auto"),
                 (["reg_5v", "power_path", "inductor", "manual_frequency_rating"], Range(0, 9e6)),
-                (["fan_drv[0]", "drv", "footprint_spec"], "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"),
-                (["fan_drv[0]", "drv", "part"], "AO4407A"),  # default DMG4407 is out of stock
-                (["fan_drv[1]", "drv", "footprint_spec"], ParamValue(["fan_drv[0]", "drv", "footprint_spec"])),
-                (["fan_drv[1]", "drv", "part"], ParamValue(["fan_drv[0]", "drv", "part"])),
+                (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
+                # gate voltage limit parsing is very unreliable
+                (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -140,9 +129,7 @@ class IotFan(JlcBoardTop):
                 (TagConnect, TagConnectNonLegged),
             ],
             class_values=[
-                (Esp32c3, ["not_recommended"], True),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
-                (DiscreteRfWarning, ["discrete_rf_warning"], False),
             ],
         )
 
