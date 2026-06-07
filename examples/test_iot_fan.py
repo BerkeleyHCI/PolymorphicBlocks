@@ -241,6 +241,7 @@ class IotFan(JlcBoardTop):
                 (Esp32s3_Wroom_1, ["programming"], "uart-auto"),
                 (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
+                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
             ],
         )
 
