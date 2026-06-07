@@ -21,8 +21,9 @@ class I2cLink(Link):
         # so this structurally allows multiple pullups, but an assertion checks that there aren't multiple
         self.pull = self.Port(Vector(I2cPullupPort().empty()), optional=True)
 
-        # TODO propagate controller addresses
-        self.addresses = self.Parameter(ArrayIntExpr(self.targets.flatten(lambda x: x.addresses)))
+        self.addresses = self.Parameter(
+            ArrayIntExpr(self.targets.flatten(lambda x: x.addresses).concat(self.controller.addresses))
+        )
 
         self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
@@ -99,6 +100,7 @@ class I2cController(Port[I2cLink]):
         self.scl = self.Port(DigitalSource.from_bidir(model))
         self.sda = self.Port(model)
 
+        self.addresses = self.Parameter(ArrayIntExpr(addresses))
         self.frequency = self.Parameter(RangeExpr(RangeExpr.ZERO))
         self.has_pullup = self.Parameter(BoolExpr(has_pullup))
 
