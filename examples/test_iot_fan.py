@@ -143,6 +143,7 @@ class IotFan(JlcBoardTop):
                 # gate voltage limit parsing is very unreliable
                 (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
                 (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
+                (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.25)),  # restrict current draw for sizing
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -150,6 +151,7 @@ class IotFan(JlcBoardTop):
                 (Neopixel, Sk6805_Ec15),
                 (TestPoint, CompactKeystone5015),
                 (TagConnect, TagConnectNonLegged),
+                (PassiveConnector, JstPhKVertical),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
