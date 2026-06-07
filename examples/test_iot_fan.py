@@ -57,6 +57,9 @@ class ControlSubboard(SubboardBlock):
             self.als = imp.Block(Bh1750())
             self.connect(self.i2c, self.als.i2c)
 
+            self.qwiic = imp.Block(QwiicTarget())
+            self.connect(self.i2c, self.qwiic.i2c)
+
         # 5V DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v5, [Power]),
@@ -69,7 +72,7 @@ class ControlSubboard(SubboardBlock):
                 imp.Block(NeopixelArray(6)),
             )
 
-        self.conn = self.Block(PinSocket254Pair(9), external=True)
+        self.conn = self.Block(PinSocket254Pair(12), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.v3v3.net, self.conn.pins.request("2"))
         self.export_tap(self.v5.net, self.conn.pins.request("3"))
@@ -173,10 +176,7 @@ class IotFan(JlcBoardTop):
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg_5v"], Tps54202h),
-                (["reg_3v3"], Ap7215),
-            ],
+            instance_refinements=[],
             instance_values=[
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
                 (
@@ -205,6 +205,7 @@ class IotFan(JlcBoardTop):
             ],
             class_refinements=[
                 (IoController, Esp32s3_Wroom_1),
+                (VoltageRegulator, Tps54202h),
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (PowerBarrelJack, Pj_036ah),
                 (Neopixel, Sk6805_Ec15),
