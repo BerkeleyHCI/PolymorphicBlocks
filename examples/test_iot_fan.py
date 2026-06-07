@@ -27,6 +27,7 @@ class ControlSubboard(SubboardBlock):
         self.enc_b = self.Port(DigitalBidir.empty())
         self.enc_sw = self.Port(DigitalBidir.empty())
 
+    @override
     def contents(self) -> None:
         super().contents()
 

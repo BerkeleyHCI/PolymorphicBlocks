@@ -63,7 +63,7 @@ class I2cControllerBridge(PortBridge):
         super().__init__()
 
         self.outer_port = self.Port(I2cController.empty())
-        self.inner_link = self.Port(I2cTarget.empty())
+        self.inner_link = self.Port(I2cTarget(DigitalBidir.empty()))
 
     @override
     def contents(self) -> None:
@@ -77,9 +77,7 @@ class I2cControllerBridge(PortBridge):
                 addresses=self.inner_link.link().addresses,
             )
         )
-        self.inner_link.init_from(I2cTarget(DigitalBidir.empty(), []))
 
-        # this duplicates DigitalBidirBridge but mixing in the pullup
         self.scl_bridge = self.Block(DigitalBidirBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
         self.connect(self.scl_bridge.inner_link, self.inner_link.scl)
@@ -120,7 +118,6 @@ class I2cTargetBridge(PortBridge):
 
         self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), self.inner_link.link().addresses))
 
-        # this duplicates DigitalBidirBridge but mixing in the pullup
         self.scl_bridge = self.Block(DigitalSinkBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
         self.connect(self.scl_bridge.inner_link, self.inner_link.scl)
