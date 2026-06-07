@@ -20,8 +20,9 @@ class ControlSubboard(SubboardBlock):
         self.pd_int = self.Port(DigitalBidir.empty())
         self.spk = self.Port(DigitalSource.empty())
         self.drv = self.Port(DigitalSource.empty())
-        self.pwm = self.Port(DigitalSource.empty())
         self.tach = self.Port(DigitalBidir.empty())
+        self.pwm = self.Port(DigitalSource.empty())
+        self.npx_en = self.Port(DigitalSource.empty())
         self.enc_a = self.Port(DigitalBidir.empty())
         self.enc_b = self.Port(DigitalBidir.empty())
         self.enc_sw = self.Port(DigitalBidir.empty())
@@ -45,6 +46,7 @@ class ControlSubboard(SubboardBlock):
             self.connect(self.mcu.gpio.request("drv"), self.drv)
             self.connect(self.mcu.gpio.request("tach"), self.tach)
             self.connect(self.mcu.gpio.request("pwm"), self.pwm)
+            self.connect(self.mcu.gpio.request("npx_en"), self.npx_en)
             self.connect(self.mcu.gpio.request("enc_a"), self.enc_a)
             self.connect(self.mcu.gpio.request("enc_b"), self.enc_b)
             self.connect(self.mcu.gpio.request("enc_sw"), self.enc_sw)
@@ -74,7 +76,7 @@ class ControlSubboard(SubboardBlock):
                 imp.Block(NeopixelArray(6)),
             )
 
-        self.conn = self.Block(PinSocket254Pair(13), external=True)
+        self.conn = self.Block(PinSocket254Pair(14), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.v3v3.net, self.conn.pins.request("2"))
         self.export_tap(self.v5.net, self.conn.pins.request("3"))
@@ -84,10 +86,11 @@ class ControlSubboard(SubboardBlock):
         self.export_tap(self.spk.net, self.conn.pins.request("7"))
         self.export_tap(self.drv.net, self.conn.pins.request("8"))
         self.export_tap(self.pwm.net, self.conn.pins.request("9"))
-        self.export_tap(self.tach.net, self.conn.pins.request("10"))
-        self.export_tap(self.enc_a.net, self.conn.pins.request("11"))
-        self.export_tap(self.enc_b.net, self.conn.pins.request("12"))
-        self.export_tap(self.enc_sw.net, self.conn.pins.request("13"))
+        self.export_tap(self.npx_en.net, self.conn.pins.request("10"))
+        self.export_tap(self.tach.net, self.conn.pins.request("11"))
+        self.export_tap(self.enc_a.net, self.conn.pins.request("12"))
+        self.export_tap(self.enc_b.net, self.conn.pins.request("13"))
+        self.export_tap(self.enc_sw.net, self.conn.pins.request("14"))
 
 
 class IotFan(JlcBoardTop):
@@ -167,10 +170,13 @@ class IotFan(JlcBoardTop):
                 self.Block(Speaker()),
             )
 
-            # optional solder-jumper to allow strong signal drive for external neopixels
-            (self.npx_shift, self.npx_jmp), _ = self.chain(
-                self.control.pwm, imp.Block(L74Ahct1g125()), imp.Block(DigitalJumper())
+            # series resistor limits drive conflicts with fan controller
+            (self.npx_shift, self.npx_res), _ = self.chain(
+                self.control.pwm,
+                imp.Block(L74Ahct1g125()),
+                imp.Block(DigitalSeriesResistor(100 * Ohm(tol=0.05))),
             )
+            self.connect(self.control.npx_en, self.npx_shift.output_enable)
 
         # 12V DOMAIN
         with self.implicit_connect(
@@ -184,7 +190,7 @@ class IotFan(JlcBoardTop):
 
             self.connect(self.fan.sense, self.control.tach)
             (self.fan_ctl,), _ = self.chain(self.control.pwm, imp.Block(OpenDrainDriver()))
-            self.connect(self.npx_jmp.output, self.fan_ctl.output, self.fan.with_mixin(CpuFanPwmControl()).control)
+            self.connect(self.npx_res.output, self.fan_ctl.output, self.fan.with_mixin(CpuFanPwmControl()).control)
 
     @override
     def refinements(self) -> Refinements:
@@ -214,7 +220,7 @@ class IotFan(JlcBoardTop):
                 (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
                 (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
                 (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.25)),  # restrict current draw for sizing
-                (["npx_jmp", "output", "high_driver"], False),  # waive the driver conflict ERC
+                (["npx_res", "output", "high_driver"], False),  # waive the driver conflict ERC
             ],
             class_refinements=[
                 (IoController, Esp32s3_Wroom_1),
