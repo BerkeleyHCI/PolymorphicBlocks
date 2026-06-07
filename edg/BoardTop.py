@@ -44,6 +44,7 @@ class BaseBoardTop(DesignTop):
                 (SwdCortexTargetConnector, SwdCortexTargetHeader),
                 (SpiMemory, W25q),
                 (Speaker, ConnectorSpeaker),
+                (Neopixel, Ws2812b),
             ],
             class_values=[
                 (SelectorArea, ["footprint_area"], Range.from_lower(4.0)),  # at least 0603

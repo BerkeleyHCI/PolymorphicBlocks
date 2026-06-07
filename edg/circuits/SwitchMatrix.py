@@ -1,20 +1,107 @@
-from typing import cast, Optional, Tuple
+from typing import Optional, Tuple, Any, List
 
 from typing_extensions import override
 
 from ..abstract_parts import *
 
 
-class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
+@abstract_block_default(lambda: DiodeSwitchCell)
+class SwitchCell(InternalBlock, Block):
+    """A single cell in the switch matrix."""
+
+    def __init__(self, voltage_drop: RangeLike):
+        super().__init__()
+        self.voltage_drop = self.ArgParameter(voltage_drop)
+
+        self.row = self.Port(DigitalSink.empty())
+        self.col = self.Port(DigitalSource.empty())
+
+
+class DiodeSwitchCell(SwitchCell, InternalBlock):
+    """A single cell in the switch matrix, consisting of a switch and diode to support multiple key presses.
+    Provides a layer of hierarchy for layout replication."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.col.init_from(
+            DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
+                voltage_out=self.row.link().voltage.lower()
+                + self.voltage_drop,  # use spec to avoid circular dependency
+                output_thresholds=(self.row.link().voltage + self.voltage_drop).hull(float("inf")),
+                low_driver=True,
+                high_driver=False,
+            )
+        )
+        self.row.init_from(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
+
+        self.sw = self.Block(
+            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_drawn)
+        )
+        self.d = self.Block(
+            Diode(
+                current=self.col.link().current_drawn,
+                reverse_voltage=(self.col.link().voltage - self.row.link().voltage).abs(),
+                voltage_drop=self.voltage_drop,
+            )
+        )
+        self.connect(self.col.net, self.sw.sw)
+        self.connect(self.sw.com, self.d.anode)
+        self.connect(self.d.cathode, self.row.net)
+
+
+@abstract_block_default(lambda: DiodeSwitchCellNeopixel)
+class SwitchCellNeopixel(BlockInterfaceMixin[SwitchCell], InternalBlock):
+    """SwitchCell mixin that adds a neopixel to the switch cell, with power and data ports."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.npx_din = self.Port(DigitalSink.empty())
+        self.npx_dout = self.Port(DigitalSource.empty(), optional=True)
+        self.npx_pwr = self.Port(VoltageSink.empty())
+        self.npx_gnd = self.Port(Ground.empty())
+
+
+class DiodeSwitchCellNeopixel(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock):
+    """SwitchCell implementation with neopixel."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.npx = self.Block(Neopixel())
+        self.connect(self.npx.pwr, self.npx_pwr)
+        self.connect(self.npx.gnd, self.npx_gnd)
+        self.connect(self.npx.din, self.npx_din)
+        self.connect(self.npx.dout, self.npx_dout)
+
+
+@abstract_block_default(lambda: SwitchDiodeMatrix)
+class SwitchMatrix(InternalBlock, Block):
+
+    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
+        super().__init__()
+
+        self.voltage_drop = self.ArgParameter(voltage_drop)
+        self.nrows = self.ArgParameter(nrows)
+        self.ncols = self.ArgParameter(ncols)
+
+        self.rows = self.Port(Vector(DigitalSink.empty()))
+        self.cols = self.Port(Vector(DigitalSource.empty()))
+
+
+class SwitchDiodeMatrix(SwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
 
-    Internally, the switches are in a matrix, with the driver driving one col low at a time while
-    reading which rows are low (with the other cols weakly pulled high).
-    This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
+    Internally, the switches are in a matrix and follows COL2ROW conventions:
+    - the driver drives one row low at a time, other rows are floating or weakly pulled high
+    - the columns are weakly pulled high, and read low when the switch is pressed
+
+    Internally, this uses the Switch abstract block, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
     This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
-    Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
     """
 
     @override
@@ -23,17 +110,18 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
 
     @override
     def _svgpcb_template(self) -> str:
-        switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]"])
-        diode_block = self._svgpcb_footprint_block_path_of(["d[0,0]"])
-        switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]"])
-        diode_reftype, diode_refnum = self._svgpcb_refdes_of(["d[0,0]"])
+        # TODO: layout generator broken from the COL2ROW change
+        switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "sw"])
+        diode_block = self._svgpcb_footprint_block_path_of(["sw[0,0]", "d"])
+        switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]", "sw"])
+        diode_reftype, diode_refnum = self._svgpcb_refdes_of(["sw[0,0]", "d"])
         assert switch_block is not None and diode_block is not None
         switch_footprint = self._svgpcb_footprint_of(switch_block)
-        switch_sw_pin = self._svgpcb_pin_of(["sw[0,0]"], ["sw"])
-        switch_com_pin = self._svgpcb_pin_of(["sw[0,0]"], ["com"])
+        switch_sw_pin = self._svgpcb_pin_of(["sw[0,0]", "sw"], ["sw"])
+        switch_com_pin = self._svgpcb_pin_of(["sw[0,0]", "sw"], ["com"])
         diode_footprint = self._svgpcb_footprint_of(diode_block)
-        diode_a_pin = self._svgpcb_pin_of(["d[0,0]"], ["anode"])
-        diode_k_pin = self._svgpcb_pin_of(["d[0,0]"], ["cathode"])
+        diode_a_pin = self._svgpcb_pin_of(["sw[0,0]", "d"], ["anode"])
+        diode_k_pin = self._svgpcb_pin_of(["sw[0,0]", "d"], ["cathode"])
         assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
 
         return f"""\
@@ -117,65 +205,88 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
             (self._svgpcb_get(self.nrows) + 1) * 0.5 * 25.4 + 1.0,
         )
 
-    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
-        super().__init__()
-
-        self.rows = self.Port(Vector(DigitalSource.empty()))
-        self.cols = self.Port(Vector(DigitalSink.empty()))
-        self.voltage_drop = self.ArgParameter(voltage_drop)
-
-        self.nrows = self.ArgParameter(nrows)
-        self.ncols = self.ArgParameter(ncols)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.generator_param(self.nrows, self.ncols)
 
     @override
     def generate(self) -> None:
         super().generate()
 
-        # generate row (output) ports with forward declaration
         for row in range(self.get(self.nrows)):
-            self.rows.append_elt(
-                DigitalSource(  # modeled as low-side driver
-                    voltage_out=RangeExpr(),
-                    output_thresholds=RangeExpr(),
-                    low_driver=True,
-                    high_driver=False,
-                ),
-                str(row),
-            )
+            self.rows.append_elt(DigitalSink.empty(), str(row))
 
-        # generate parts and column (input) ports and aggregate parameters for row ports
-        self.sw = ElementDict[Switch]()
-        self.d = ElementDict[Diode]()
-        row_voltages = [RangeExpr._to_expr_type(RangeExpr.EMPTY)] * self.get(self.nrows)
-        row_thresholds = [FloatExpr._to_expr_type(float("-inf"))] * self.get(self.nrows)
+        self.sw = ElementDict[SwitchCell]()
         for col in range(self.get(self.ncols)):
-            # ideal, negligible current draw (assumed) and thresholds checked at other side
-            col_port = self.cols.append_elt(DigitalSink(), str(col))
+            col_port = self.cols.append_elt(DigitalSource.empty(), str(col))
             for row in range(self.get(self.nrows)):
-                row_port = self.rows[str(row)]
-                sw = self.sw[f"{col},{row}"] = self.Block(
-                    Switch(voltage=row_port.link().voltage, current=row_port.link().current_drawn)
-                )
-                d = self.d[f"{col},{row}"] = self.Block(
-                    Diode(
-                        current=row_port.link().current_drawn,
-                        # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
-                        reverse_voltage=col_port.link().voltage,
-                        voltage_drop=self.voltage_drop,
-                    )
-                )
-                lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
-                highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
-                row_voltages[row] = row_voltages[row].hull((lowest_output, highest_output))
-                row_thresholds[row] = row_thresholds[row].max(highest_output)
-                self.connect(d.anode, row_port.net)
-                self.connect(d.cathode, sw.sw)
-                self.connect(sw.com, col_port.net)
-
-        for row in range(self.get(self.nrows)):
-            self.assign(self.rows[str(row)].voltage_out, row_voltages[row])
-            self.assign(self.rows[str(row)].output_thresholds, (row_thresholds[row], float("inf")))
+                cell = self.sw[f"{col},{row}"] = self.Block(SwitchCell(voltage_drop=self.voltage_drop))
+                self.connect(cell.col, col_port)
+                self.connect(cell.row, self.rows[str(row)])
 
         self.rows.defined()
         self.cols.defined()
+
+
+@abstract_block_default(lambda: SwitchDiodeMatrixNeopixels)
+class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
+    """SwitchMatrix mixin that adds a neopixel with every switch, in the SwitchCell hierarchy block.
+    Adds power and data ports for the chain.
+
+    npx_order can be:
+    - "row": chains neopixels across a row before moving to the next row
+    - "row_snake": above, but reversing direction every other row
+    - "col": chains neopixels across a column before moving to the next column
+    - "col_snake": above, but reversing direction every other col
+    """
+
+    def __init__(self, *args: Any, npx_order: StringLike = "row_snake", **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.npx_order = self.ArgParameter(npx_order)
+
+        self.npx_din = self.Port(DigitalSink.empty())
+        self.npx_dout = self.Port(DigitalSource.empty(), optional=True)
+        self.npx_pwr = self.Port(VoltageSink.empty())
+        self.npx_gnd = self.Port(Ground.empty())
+
+
+class SwitchDiodeMatrixNeopixels(SwitchMatrixNeopixels, SwitchDiodeMatrix, HumanInterface, GeneratorBlock):
+    """SwitchMatrix implementation with neopixel chain."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(self.npx_order)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        npx_order = self.get(self.npx_order)
+        switch_cells: List[SwitchCell] = []
+
+        if npx_order in ("row", "row_snake"):
+            for row in range(self.get(self.nrows)):
+                cols = list(range(self.get(self.ncols)))
+                if npx_order == "row_snake" and row % 2 == 1:
+                    cols = list(reversed(cols))
+                for col in cols:
+                    switch_cells.append(self.sw[f"{col},{row}"])
+        elif npx_order in ("col", "col_snake"):
+            for col in range(self.get(self.ncols)):
+                rows = list(range(self.get(self.nrows)))
+                if npx_order == "col_snake" and col % 2 == 1:
+                    rows = list(reversed(rows))
+                for row in rows:
+                    switch_cells.append(self.sw[f"{col},{row}"])
+        else:
+            raise ValueError(f"Invalid npx_order {npx_order}")
+
+        last_npx_dout: Port[DigitalLink] = self.npx_din
+        for switch_cell in switch_cells:
+            cell_npx = switch_cell.with_mixin(SwitchCellNeopixel())
+            self.connect(self.npx_pwr, cell_npx.npx_pwr)
+            self.connect(self.npx_gnd, cell_npx.npx_gnd)
+            self.connect(cell_npx.npx_din, last_npx_dout)
+            last_npx_dout = cell_npx.npx_dout
+
+        self.connect(last_npx_dout, self.npx_dout)

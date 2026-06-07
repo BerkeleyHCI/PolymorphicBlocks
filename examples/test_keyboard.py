@@ -31,7 +31,7 @@ class Keyboard(SimpleBoardTop):
             ImplicitConnect(self.reg.gnd, [Common]),
         ) as imp:
             self.mcu = imp.Block(IoController())
-            self.connect(self.usb.usb, self.mcu.usb.request())
+            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
             # debugging LEDs
             (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
@@ -51,6 +51,18 @@ class Keyboard(SimpleBoardTop):
             self.connect(self.mcu.gpio.request("oled_dc"), self.oled.dc)
             self.connect(self.mcu.gpio.request("oled_reset"), self.oled.reset)
 
+        # Vbus 5v DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.usb.pwr, [Power]),
+            ImplicitConnect(self.usb.gnd, [Common]),
+        ) as imp:
+            sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels())
+            self.connect(self.usb.gnd, sw_npx.npx_gnd)
+            self.connect(self.usb.pwr, sw_npx.npx_pwr)
+            (self.npx_shift, self.npx_tp), _ = self.chain(
+                self.mcu.gpio.request("npx"), imp.Block(L74Ahct1g125()), imp.Block(DigitalTestPoint()), sw_npx.npx_din
+            )
+
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
@@ -58,7 +70,13 @@ class Keyboard(SimpleBoardTop):
                 (IoController, Ch32v203),
                 (LinearRegulator, Ldl1117),
                 (Switch, KailhSocket),
+                (Neopixel, Sk6812Mini_E),
                 (RotaryEncoder, Pec11s),
+            ],
+            instance_values=[(["mcu", "pin_assigns"], [])],  # TODO pinning: NPX must be SPI MOSI
+            class_values=[
+                # assume LEDs not run at full power to satisfy current limit checks
+                (Sk6812Mini_E, ["pwr", "current_draw"], Range(0.001, 0.030)),
             ],
         )
 

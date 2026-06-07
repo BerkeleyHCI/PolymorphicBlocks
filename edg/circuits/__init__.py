@@ -19,7 +19,7 @@ from .BuckBoostConverterPowerPath import BuckBoostConverterPowerPath
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
 from .LedMatrix import CharlieplexedLedMatrix
-from .SwitchMatrix import SwitchMatrix
+from .SwitchMatrix import SwitchMatrix, SwitchMatrixNeopixels
 from .ResistiveSensor import ConnectorResistiveSensor
 
 from .ControlCircuits import CompensatorType2
