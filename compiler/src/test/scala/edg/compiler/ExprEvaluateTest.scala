@@ -344,6 +344,14 @@ class ExprEvaluateTest extends AnyFlatSpec {
         ValueExpr.Literal(Seq(Literal.Text("D"), Literal.Text("E"), Literal.Text("F")))
       )
     ) should equal(ArrayValue(Seq(TextValue("A"), TextValue("B"), TextValue("D"), TextValue("E"), TextValue("F"))))
+
+    assertThrows[ExprEvaluateException] { // can't mix and match types
+      evalTest.map(ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Text("A"))),
+        ValueExpr.Literal(Seq(Literal.Integer(0)))
+      ))
+    }
   }
 
   it should "handle array unary set ops" in {

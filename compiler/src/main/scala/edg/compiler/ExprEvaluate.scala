@@ -38,11 +38,10 @@ object ExprEvaluate {
           case (IntValue(lhs), IntValue(rhs)) => IntValue(lhs + rhs)
           case (TextValue(lhs), TextValue(rhs)) => TextValue(lhs + rhs)
           case (ArrayValue(lhss), ArrayValue(rhss)) =>
-            if ((lhss.map(_.getClass) ++ rhss.map(_.getClass)).distinct.size <= 1) { // if all elts are the same type, we can keep as array, otherwise promote to array of values
-              ArrayValue(lhss ++ rhss)
-            } else {
+            if ((lhss.map(_.getClass) ++ rhss.map(_.getClass)).distinct.size > 1) {
               throw new ExprEvaluateException(s"Attempt to concat array of differing types $lhss, $rhss")
             }
+            ArrayValue(lhss ++ rhss)
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
         }
