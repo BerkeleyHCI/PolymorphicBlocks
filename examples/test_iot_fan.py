@@ -167,7 +167,7 @@ class IotFan(JlcBoardTop):
                 self.control.spk,
                 imp.Block(LowPassRcDac(1 * kOhm(tol=0.05), 20 * kHertz(tol=0.5))),
                 self.Block(AnalogTestPoint()),
-                imp.Block(Pam8302a()),
+                imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()),
             )
 
