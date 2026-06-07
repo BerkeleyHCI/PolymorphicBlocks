@@ -208,8 +208,10 @@ class BinaryExpr(_message.Message):
         UNDEFINED: BinaryExpr._Op.ValueType
         ADD: BinaryExpr._Op.ValueType
         "* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        "
+        SHRINK_SUB: BinaryExpr._Op.ValueType
+        "* Sub :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n\n        SUB = 11; // Use ADD and NEGATE instead\n        A span-shrinking subtract operation for two Range types.\n        See the documentation for shrink_sub in the Python core HDL code for details.\n        "
         MULT: BinaryExpr._Op.ValueType
-        "SUB = 11; // Use ADD and NEGATE instead\n\n        * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        "
+        "* Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        "
         SHRINK_MULT: BinaryExpr._Op.ValueType
         "A shrinking multiply operation for two Range types. Not commutative.\n        See the documentation for shrink_multiply in the Python core HDL code for details.\n        "
         AND: BinaryExpr._Op.ValueType
@@ -249,8 +251,10 @@ class BinaryExpr(_message.Message):
     UNDEFINED: BinaryExpr.Op.ValueType
     ADD: BinaryExpr.Op.ValueType
     "* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    "
+    SHRINK_SUB: BinaryExpr.Op.ValueType
+    "* Sub :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n\n    SUB = 11; // Use ADD and NEGATE instead\n    A span-shrinking subtract operation for two Range types.\n    See the documentation for shrink_sub in the Python core HDL code for details.\n    "
     MULT: BinaryExpr.Op.ValueType
-    "SUB = 11; // Use ADD and NEGATE instead\n\n    * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    "
+    "* Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    "
     SHRINK_MULT: BinaryExpr.Op.ValueType
     "A shrinking multiply operation for two Range types. Not commutative.\n    See the documentation for shrink_multiply in the Python core HDL code for details.\n    "
     AND: BinaryExpr.Op.ValueType

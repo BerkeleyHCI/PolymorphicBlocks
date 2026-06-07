@@ -21,6 +21,9 @@ class ControlSubboard(SubboardBlock):
         self.drv = self.Port(DigitalSource.empty())
         self.pwm = self.Port(DigitalSource.empty())
         self.tach = self.Port(DigitalBidir.empty())
+        self.enc_a = self.Port(DigitalBidir.empty())
+        self.enc_b = self.Port(DigitalBidir.empty())
+        self.enc_sw = self.Port(DigitalBidir.empty())
 
     def contents(self) -> None:
         super().contents()
@@ -40,6 +43,9 @@ class ControlSubboard(SubboardBlock):
             self.connect(self.mcu.gpio.request("drv"), self.drv)
             self.connect(self.mcu.gpio.request("tach"), self.tach)
             self.connect(self.mcu.gpio.request("pwm"), self.pwm)
+            self.connect(self.mcu.gpio.request("enc_a"), self.enc_a)
+            self.connect(self.mcu.gpio.request("enc_b"), self.enc_b)
+            self.connect(self.mcu.gpio.request("enc_sw"), self.enc_sw)
             self.connect(self.i2c, self.mcu.i2c.request("i2c"))
             # 2.2kOhm as mandated by the VL53L5CX datasheet
             (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
@@ -63,7 +69,7 @@ class ControlSubboard(SubboardBlock):
                 imp.Block(NeopixelArray(6)),
             )
 
-        self.conn = self.Block(PinSocket254Pair(8), external=True)
+        self.conn = self.Block(PinSocket254Pair(9), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.v3v3.net, self.conn.pins.request("2"))
         self.export_tap(self.v5.net, self.conn.pins.request("3"))
@@ -73,6 +79,9 @@ class ControlSubboard(SubboardBlock):
         self.export_tap(self.drv.net, self.conn.pins.request("7"))
         self.export_tap(self.pwm.net, self.conn.pins.request("8"))
         self.export_tap(self.tach.net, self.conn.pins.request("9"))
+        self.export_tap(self.enc_a.net, self.conn.pins.request("10"))
+        self.export_tap(self.enc_b.net, self.conn.pins.request("11"))
+        self.export_tap(self.enc_sw.net, self.conn.pins.request("12"))
 
 
 class IotFan(JlcBoardTop):
@@ -116,22 +125,26 @@ class IotFan(JlcBoardTop):
 
         self.control = self.Block(ControlSubboard())
         self.connect(self.control.gnd, self.gnd)
+        self.connect(self.control.v3v3, self.v3v3)
+        self.connect(self.control.v5, self.v5)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v3v3, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            self.mcu = imp.Block(IoController())
-            self.mcu.with_mixin(IoControllerWifi())
-
             self.enc = imp.Block(DigitalRotaryEncoder())
-            self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
-            self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
-            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
+            self.connect(self.enc.a, self.control.enc_a)
+            self.connect(self.enc.b, self.control.enc_b)
+            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.control.enc_sw)
 
             self.connect(self.vin_sense.i2c, self.control.i2c)
 
+        # 5V DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.v5, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
             (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
                 self.control.spk,
                 imp.Block(LowPassRcDac(1 * kOhm(tol=0.05), 20 * kHertz(tol=0.5))),
@@ -161,14 +174,13 @@ class IotFan(JlcBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
-                (["mcu"], Esp32s3_Wroom_1),
                 (["reg_5v"], Tps54202h),
                 (["reg_3v3"], Ap7215),
             ],
             instance_values=[
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
                 (
-                    ["mcu", "control", "pin_assigns"],
+                    ["control", "mcu", "pin_assigns"],
                     [
                         # "v12_sense=4",
                         # "rgb=_GPIO2_STRAP_EXT_PU",  # force using the strapping pin, since we're out of IOs
@@ -184,7 +196,6 @@ class IotFan(JlcBoardTop):
                         # "enc_a=26",
                     ],
                 ),
-                (["mcu", "programming"], "uart-auto"),
                 (["reg_5v", "power_path", "inductor", "manual_frequency_rating"], Range(0, 9e6)),
                 (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
                 # gate voltage limit parsing is very unreliable
@@ -193,6 +204,7 @@ class IotFan(JlcBoardTop):
                 (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.10)),  # restrict current draw for sizing
             ],
             class_refinements=[
+                (IoController, Esp32s3_Wroom_1),
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (PowerBarrelJack, Pj_036ah),
                 (Neopixel, Sk6805_Ec15),
@@ -201,6 +213,7 @@ class IotFan(JlcBoardTop):
                 (PassiveConnector, JstPhKVertical),
             ],
             class_values=[
+                (Esp32s3_Wroom_1, ["programming"], "uart-auto"),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
             ],
         )

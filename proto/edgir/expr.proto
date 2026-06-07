@@ -168,6 +168,9 @@ message BinaryExpr {
             :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
      */
     // SUB = 11; // Use ADD and NEGATE instead
+    // A span-shrinking subtract operation for two Range types.
+    // See the documentation for shrink_sub in the Python core HDL code for details.
+    SHRINK_SUB = 56;
 
     /** Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a
              :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
