@@ -177,7 +177,7 @@ class IotFan(JlcBoardTop):
                 imp.Block(L74Ahct1g125()),
                 imp.Block(DigitalSeriesResistor(100 * Ohm(tol=0.05))),
             )
-            self.connect(self.control.npx_en, self.npx_shift.output_enable)
+            self.connect(self.control.npx_en, self.npx_shift.disable)
 
         # 12V DOMAIN
         with self.implicit_connect(

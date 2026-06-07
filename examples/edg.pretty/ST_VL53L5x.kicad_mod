@@ -389,15 +389,4 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "dda41fc5-48a6-467c-82d3-916ae06f9b43")
 	)
-	(model "${KICAD8_3DMODEL_DIR}/OptoDevice.3dshapes/ST_VL53L0X.wrl"
-		(offset
-			(xyz 0 0 0)
-		)
-		(scale
-			(xyz 1 1 1)
-		)
-		(rotate
-			(xyz 0 0 0)
-		)
-	)
 )

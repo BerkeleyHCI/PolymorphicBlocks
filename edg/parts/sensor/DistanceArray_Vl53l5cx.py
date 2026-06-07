@@ -90,7 +90,7 @@ class Vl53l5cx(DistanceSensor, Resettable, GeneratorBlock):
     Exposed pad must be thermally connected to GND.
 
     According to the datasheet, I2C pins require a 2.2k pullup to IOVDD, and int requires a 47k pullup to IOVDD.
-    The int pullup is auto-generated if not connected.."""
+    The int pullup is auto-generated if not connected."""
 
     def __init__(self) -> None:
         super().__init__()

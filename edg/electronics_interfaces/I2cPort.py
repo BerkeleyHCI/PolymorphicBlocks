@@ -78,7 +78,7 @@ class I2cControllerBridge(PortBridge):
             )
         )
 
-        self.scl_bridge = self.Block(DigitalBidirBridge())
+        self.scl_bridge = self.Block(DigitalBidirBridge())  # TODO: technically should be a source bridge
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
         self.connect(self.scl_bridge.inner_link, self.inner_link.scl)
 

@@ -63,16 +63,16 @@ class L74Ahct1g125(Interface, GeneratorBlock):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.input = self.Export(self.ic.a, [Input])
         self.output = self.Export(self.ic.y, [Output])
-        self.output_enable = self.Port(DigitalSink.empty(), optional=True)
+        self.disable = self.Port(DigitalSink.empty(), optional=True, doc="active-low output enable")
 
-        self.generator_param(self.output_enable.is_connected())
+        self.generator_param(self.disable.is_connected())
 
     @override
     def generate(self) -> None:
         super().generate()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
-        if self.get(self.output_enable.is_connected()):
-            self.connect(self.output_enable, self.ic.oe)
+        if self.get(self.disable.is_connected()):
+            self.connect(self.disable, self.ic.oe)
         else:
             self.connect(self.ic.oe, self.gnd.as_digital_source())
