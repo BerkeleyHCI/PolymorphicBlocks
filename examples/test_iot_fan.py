@@ -6,6 +6,75 @@ from edg import *
 from .util import run_test_board
 
 
+class ControlSubboard(SubboardBlock):
+    """Top sub-board with microcontroller and some UI components."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.v3v3 = self.Port(VoltageSink.empty())
+        self.v5 = self.Port(VoltageSink.empty())
+
+        self.i2c = self.Port(I2cController.empty())
+        self.spk = self.Port(DigitalSource.empty())
+        self.drv = self.Port(DigitalSource.empty())
+        self.pwm = self.Port(DigitalSource.empty())
+        self.tach = self.Port(DigitalBidir.empty())
+
+    def contents(self) -> None:
+        super().contents()
+
+        # 3V3 DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.v3v3, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.mcu.with_mixin(IoControllerWifi())
+
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
+
+            self.connect(self.mcu.gpio.request("spk"), self.spk)
+            self.connect(self.mcu.gpio.request("drv"), self.drv)
+            self.connect(self.mcu.gpio.request("tach"), self.tach)
+            self.connect(self.mcu.gpio.request("pwm"), self.pwm)
+            self.connect(self.i2c, self.mcu.i2c.request("i2c"))
+            # 2.2kOhm as mandated by the VL53L5CX datasheet
+            (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
+            self.tp_i2c = self.Block(I2cTestPoint()).connected(self.i2c)
+
+            self.dist = imp.Block(Vl53l5cx())
+            self.connect(self.i2c, self.dist.i2c)
+
+            self.als = imp.Block(Bh1750())
+            self.connect(self.i2c, self.als.i2c)
+
+        # 5V DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.v5, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            (self.npx_shift, self.npx_tp, self.npx), _ = self.chain(
+                self.mcu.gpio.request("npx"),
+                imp.Block(L74Ahct1g125()),
+                imp.Block(DigitalTestPoint()),
+                imp.Block(NeopixelArray(6)),
+            )
+
+        self.conn = self.Block(PinSocket254Pair(8), external=True)
+        self.export_tap(self.gnd.net, self.conn.pins.request("1"))
+        self.export_tap(self.v3v3.net, self.conn.pins.request("2"))
+        self.export_tap(self.v5.net, self.conn.pins.request("3"))
+        self.export_tap(self.i2c.scl.net, self.conn.pins.request("4"))
+        self.export_tap(self.i2c.sda.net, self.conn.pins.request("5"))
+        self.export_tap(self.spk.net, self.conn.pins.request("6"))
+        self.export_tap(self.drv.net, self.conn.pins.request("7"))
+        self.export_tap(self.pwm.net, self.conn.pins.request("8"))
+        self.export_tap(self.tach.net, self.conn.pins.request("9"))
+
+
 class IotFan(JlcBoardTop):
     """IoT fan controller with a 12v barrel jack input and a CPU fan connector."""
 
@@ -43,6 +112,10 @@ class IotFan(JlcBoardTop):
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+            self.connect(self.vin_sense.pwr, self.v3v3)
+
+        self.control = self.Block(ControlSubboard())
+        self.connect(self.control.gnd, self.gnd)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
@@ -52,41 +125,15 @@ class IotFan(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
-            # debugging LEDs
-            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
-
             self.enc = imp.Block(DigitalRotaryEncoder())
             self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
             self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
             self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
 
-            mcu_i2c = self.mcu.i2c.request("i2c")
-            # 2.2kOhm as mandated by the VL53L5CX datasheet
-            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
-            self.tp_i2c = self.Block(I2cTestPoint()).connected(mcu_i2c)
-            self.connect(self.vin_sense.pwr, self.v3v3)
-            self.connect(self.vin_sense.i2c, mcu_i2c)
-
-            self.dist = imp.Block(Vl53l5cx())
-            self.connect(mcu_i2c, self.dist.i2c)
-
-            self.als = imp.Block(Bh1750())
-            self.connect(mcu_i2c, self.als.i2c)
-
-        # 5V DOMAIN
-        with self.implicit_connect(
-            ImplicitConnect(self.v5, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
-            (self.npx_shift, self.npx_tp, self.npx), _ = self.chain(
-                self.mcu.gpio.request("npx"),
-                imp.Block(L74Ahct1g125()),
-                imp.Block(DigitalTestPoint()),
-                imp.Block(NeopixelArray(6)),
-            )
+            self.connect(self.vin_sense.i2c, self.control.i2c)
 
             (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
-                self.mcu.gpio.request("spk"),
+                self.control.spk,
                 imp.Block(LowPassRcDac(1 * kOhm(tol=0.05), 20 * kHertz(tol=0.5))),
                 self.Block(AnalogTestPoint()),
                 imp.Block(Pam8302a()),
@@ -101,11 +148,11 @@ class IotFan(JlcBoardTop):
             self.fan_drv = imp.Block(HighSideSwitch(pull_resistance=4.7 * kOhm(tol=0.05), max_rds=0.3 * Ohm))
             self.connect(self.fan_drv.pwr, self.vin)
             self.connect(self.fan.pwr, self.fan_drv.output)
-            self.connect(self.mcu.gpio.request(f"fan_drv"), self.fan_drv.control)
+            self.connect(self.control.drv, self.fan_drv.control)
 
-            self.connect(self.fan.sense, self.mcu.gpio.request(f"fan_tach"))
+            self.connect(self.fan.sense, self.control.tach)
             (self.fan_ctl,), _ = self.chain(
-                self.mcu.gpio.request(f"fan_pwm"),
+                self.control.pwm,
                 imp.Block(OpenDrainDriver()),
                 self.fan.with_mixin(CpuFanPwmControl()).control,
             )
@@ -121,7 +168,7 @@ class IotFan(JlcBoardTop):
             instance_values=[
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
                 (
-                    ["mcu", "pin_assigns"],
+                    ["mcu", "control", "pin_assigns"],
                     [
                         # "v12_sense=4",
                         # "rgb=_GPIO2_STRAP_EXT_PU",  # force using the strapping pin, since we're out of IOs
@@ -143,7 +190,7 @@ class IotFan(JlcBoardTop):
                 # gate voltage limit parsing is very unreliable
                 (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
                 (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
-                (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.25)),  # restrict current draw for sizing
+                (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.10)),  # restrict current draw for sizing
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
