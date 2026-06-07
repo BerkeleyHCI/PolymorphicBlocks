@@ -32,6 +32,8 @@ class I2cLink(Link):
         super().contents()
         self.require(self.pull.any_connected() | self.controller.has_pullup)
         self.require(self.pull.length() <= 1, "at most one pullup")
+        self.require(self.controller.has_pullup.implies(self.pull.length() == 0), "redundant pullup with controller")
+
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),

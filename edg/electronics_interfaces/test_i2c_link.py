@@ -74,6 +74,15 @@ class I2cNestedTest(DesignTop):
         # also checks that we don't need a pullup if there is a nested one
 
 
+class I2cNestedExtraPullTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerNestedBlock())
+        self.pull = self.Block(I2cPullupBlock())  # redundant with pullup in controller
+        self.device = self.Block(I2cTargetBlock(2))
+        self.link = self.connect(self.controller.port, self.pull.port, self.device.port)
+
+
 class I2cTestCase(unittest.TestCase):
     def test_i2c(self) -> None:
         ScalaCompiler.compile(I2cTest)
@@ -87,5 +96,8 @@ class I2cTestCase(unittest.TestCase):
             ScalaCompiler.compile(I2cConflictTest)
 
     def test_i2c_nested(self) -> None:
+        ScalaCompiler.compile(I2cNestedTest)
+
+    def test_i2c_nested_extrapull(self) -> None:
         with self.assertRaises(CompilerCheckError):
-            ScalaCompiler.compile(I2cNestedTest)
+            ScalaCompiler.compile(I2cNestedExtraPullTest)
