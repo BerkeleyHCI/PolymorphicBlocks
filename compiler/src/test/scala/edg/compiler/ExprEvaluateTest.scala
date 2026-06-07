@@ -52,8 +52,22 @@ class ExprEvaluateTest extends AnyFlatSpec {
     ) should equal(FloatValue(2.0))
   }
 
-  it should "handle shrink multiply" in {
+  it should "handle shrink range ops" in {
     import edgir.expr.expr.BinaryExpr.Op
+
+    evalTest.map( // test x - x = 0 property
+      ValueExpr.BinOp(
+        Op.SHRINK_SUB,
+        ValueExpr.Literal(10.0, 20.0),
+        ValueExpr.Literal(10.0, 20.0)
+      )) should equal(RangeValue(0.0, 0.0))
+    evalTest.map( // ... and with negative numbers
+      ValueExpr.BinOp(
+        Op.SHRINK_SUB,
+        ValueExpr.Literal(-20.0, -10.0),
+        ValueExpr.Literal(-20.0, -10.0)
+      )) should equal(RangeValue(0.0, 0.0))
+
     evalTest.map( // test x * 1/x = 1 property
       ValueExpr.BinOp(
         Op.SHRINK_MULT,
@@ -297,17 +311,56 @@ class ExprEvaluateTest extends AnyFlatSpec {
     ) should equal(IntValue(3))
   }
 
+  it should "handle array binary ops" in {
+    import edgir.expr.expr.BinaryExpr.Op
+    evalTest.map(
+      ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq()),
+        ValueExpr.Literal(Seq())
+      )
+    ) should equal(ArrayValue(Seq()))
+
+    evalTest.map(
+      ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Integer(0), Literal.Integer(1))),
+        ValueExpr.Literal(Seq())
+      )
+    ) should equal(ArrayValue(Seq(IntValue(0), IntValue(1))))
+
+    evalTest.map(
+      ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Integer(0), Literal.Integer(1))),
+        ValueExpr.Literal(Seq(Literal.Integer(3), Literal.Integer(4), Literal.Integer(5)))
+      )
+    ) should equal(ArrayValue(Seq(IntValue(0), IntValue(1), IntValue(3), IntValue(4), IntValue(5))))
+
+    evalTest.map(
+      ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Text("A"), Literal.Text("B"))),
+        ValueExpr.Literal(Seq(Literal.Text("D"), Literal.Text("E"), Literal.Text("F")))
+      )
+    ) should equal(ArrayValue(Seq(TextValue("A"), TextValue("B"), TextValue("D"), TextValue("E"), TextValue("F"))))
+
+    assertThrows[ExprEvaluateException] { // can't mix and match types
+      evalTest.map(ValueExpr.BinOp(
+        Op.ADD,
+        ValueExpr.Literal(Seq(Literal.Text("A"))),
+        ValueExpr.Literal(Seq(Literal.Integer(0)))
+      ))
+    }
+  }
+
   it should "handle array unary set ops" in {
     import edg.ExprBuilder.Literal
     import edgir.expr.expr.UnarySetExpr.Op
     evalTest.map(
       ValueExpr.UnarySetOp(
         Op.NEGATE,
-        ValueExpr.Literal(Seq(
-          Literal.Boolean(false),
-          Literal.Boolean(true),
-          Literal.Boolean(false),
-        )),
+        ValueExpr.Literal(Seq(Literal.Boolean(false), Literal.Boolean(true), Literal.Boolean(false))),
         ValueExpr.Array(Seq())
       )
     ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false), BooleanValue(true))))

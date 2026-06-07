@@ -37,9 +37,23 @@ object ExprEvaluate {
           case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs + rhs)
           case (IntValue(lhs), IntValue(rhs)) => IntValue(lhs + rhs)
           case (TextValue(lhs), TextValue(rhs)) => TextValue(lhs + rhs)
+          case (ArrayValue(lhss), ArrayValue(rhss)) =>
+            if ((lhss.map(_.getClass) ++ rhss.map(_.getClass)).distinct.size > 1) {
+              throw new ExprEvaluateException(s"Attempt to concat array of differing types $lhss, $rhss")
+            }
+            ArrayValue(lhss ++ rhss)
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
         }
+      case Op.SHRINK_SUB => (lhs, rhs) match {
+          case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) => RangeValue(lhsMin - rhsMin, lhsMax - rhsMax)
+          case (RangeEmpty, RangeEmpty) => RangeEmpty
+          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
+          case _ =>
+            throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+        }
+
       case Op.MULT => (lhs, rhs) match {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)

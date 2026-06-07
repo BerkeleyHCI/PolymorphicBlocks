@@ -21,7 +21,9 @@ class I2cLink(Link):
         # so this structurally allows multiple pullups, but an assertion checks that there aren't multiple
         self.pull = self.Port(Vector(I2cPullupPort().empty()), optional=True)
 
-        self.addresses = self.Parameter(ArrayIntExpr(self.targets.flatten(lambda x: x.addresses)))
+        self.addresses = self.Parameter(
+            ArrayIntExpr(self.targets.flatten(lambda x: x.addresses).concat(self.controller.addresses))
+        )
 
         self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
@@ -30,6 +32,8 @@ class I2cLink(Link):
         super().contents()
         self.require(self.pull.any_connected() | self.controller.has_pullup)
         self.require(self.pull.length() <= 1, "at most one pullup")
+        self.require(self.controller.has_pullup.implies(self.pull.length() == 0), "redundant pullup with controller")
+
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),
@@ -54,16 +58,49 @@ class I2cPullupPort(Port[I2cLink]):
         self.sda = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
 
 
+class I2cControllerBridge(PortBridge):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.outer_port = self.Port(I2cController.empty())
+        self.inner_link = self.Port(I2cTarget(DigitalBidir.empty()))
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        # propagate addresses outward, appearing ideal inwards
+        self.outer_port.init_from(
+            I2cController(
+                DigitalBidir.empty(),
+                has_pullup=self.inner_link.link().has_pull,
+                addresses=self.inner_link.link().addresses,
+            )
+        )
+
+        self.scl_bridge = self.Block(DigitalBidirBridge())  # TODO: technically should be a source bridge
+        self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
+        self.connect(self.scl_bridge.inner_link, self.inner_link.scl)
+
+        self.sda_bridge = self.Block(DigitalBidirBridge())
+        self.connect(self.outer_port.sda, self.sda_bridge.outer_port)
+        self.connect(self.sda_bridge.inner_link, self.inner_link.sda)
+
+
 class I2cController(Port[I2cLink]):
     link_type = I2cLink
+    bridge_type = I2cControllerBridge
 
-    def __init__(self, model: Optional[DigitalBidir] = None, has_pullup: BoolLike = False) -> None:
+    def __init__(
+        self, model: Optional[DigitalBidir] = None, *, has_pullup: BoolLike = False, addresses: ArrayIntLike = []
+    ) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
         self.scl = self.Port(DigitalSource.from_bidir(model))
         self.sda = self.Port(model)
 
+        self.addresses = self.Parameter(ArrayIntExpr(addresses))
         self.frequency = self.Parameter(RangeExpr(RangeExpr.ZERO))
         self.has_pullup = self.Parameter(BoolExpr(has_pullup))
 
@@ -73,7 +110,7 @@ class I2cTargetBridge(PortBridge):
         super().__init__()
 
         self.outer_port = self.Port(I2cTarget.empty())
-        self.inner_link = self.Port(I2cController(DigitalBidir.empty(), self.outer_port.link().has_pull))
+        self.inner_link = self.Port(I2cController(DigitalBidir.empty(), has_pullup=self.outer_port.link().has_pull))
 
     @override
     def contents(self) -> None:
@@ -81,7 +118,6 @@ class I2cTargetBridge(PortBridge):
 
         self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), self.inner_link.link().addresses))
 
-        # this duplicates DigitalBidirBridge but mixing in the pullup
         self.scl_bridge = self.Block(DigitalSinkBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
         self.connect(self.scl_bridge.inner_link, self.inner_link.scl)

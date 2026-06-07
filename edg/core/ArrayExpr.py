@@ -4,7 +4,7 @@ from typing import Generic, Any, Type, Optional, Union, Iterable, Sequence, List
 
 from typing_extensions import TypeVar, override
 
-from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
+from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding, BinaryOpBinding
 from .ConstraintExpr import (
     ConstraintExpr,
     IntLike,
@@ -109,6 +109,9 @@ class ArrayExpr(
 
     def all_equal(self) -> BoolExpr:
         return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_equal, BoolExpr._to_expr_type(True)))
+
+    def concat(self: SelfType, other: ArrayCastableType) -> SelfType:
+        return self._new_bind(BinaryOpBinding(self, self._to_expr_type(other), NumericOp.add))
 
 
 ArrayBoolLike = Union["ArrayBoolExpr", Sequence[BoolLike]]

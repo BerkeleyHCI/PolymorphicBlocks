@@ -2,528 +2,318 @@ const board = new PCB();
 
 // jlc_th.th1
 const FH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.990, 1.943), rotate: 0,
+  translate: pt(1.475, 1.908), rotate: 0,
   id: 'FH1'
 })
 // jlc_th.th2
 const FH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(1.029, 1.943), rotate: 0,
+  translate: pt(1.514, 1.908), rotate: 0,
   id: 'FH2'
 })
 // jlc_th.th3
 const FH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.990, 1.982), rotate: 0,
+  translate: pt(1.475, 1.947), rotate: 0,
   id: 'FH3'
 })
 // pwr
 const FJ1 = board.add(BarrelJack_CUI_PJ_036AH_SMT_Horizontal, {
-  translate: pt(1.256, 0.413), rotate: 0,
+  translate: pt(1.514, 0.413), rotate: 0,
   id: 'FJ1'
 })
-// tp_pwr.tp
+// usb.conn
+const FJ2 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
+  translate: pt(1.439, 0.972), rotate: 0,
+  id: 'FJ2'
+})
+// tp_vin.tp
 const FTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.418, 1.568), rotate: 0,
+  translate: pt(2.106, 1.596), rotate: 0,
   id: 'FTP1'
 })
 // tp_gnd.tp
 const FTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.668, 1.568), rotate: 0,
+  translate: pt(2.357, 1.596), rotate: 0,
   id: 'FTP2'
 })
-// reg_5v.ic
-const FU1 = board.add(SOT_23_6, {
-  translate: pt(1.325, 0.874), rotate: 0,
+// vin_sense.ic
+const FU1 = board.add(SOT_23_8, {
+  translate: pt(0.081, 1.626), rotate: 0,
   id: 'FU1'
 })
-// reg_5v.fb.div.top_res
-const FR1 = board.add(R_0603_1608Metric, {
-  translate: pt(1.523, 1.053), rotate: 0,
-  id: 'FR1'
-})
-// reg_5v.fb.div.bottom_res
-const FR2 = board.add(R_0603_1608Metric, {
-  translate: pt(1.082, 1.183), rotate: 0,
-  id: 'FR2'
-})
-// reg_5v.hf_in_cap.cap
+// vin_sense.vs_cap.cap
 const FC1 = board.add(C_0603_1608Metric, {
-  translate: pt(1.238, 1.183), rotate: 0,
+  translate: pt(0.058, 1.761), rotate: 0,
   id: 'FC1'
 })
-// reg_5v.boot_cap.cap
+// vin_sense.Rs.res.res
+const FR1 = board.add(R_0603_1608Metric, {
+  translate: pt(0.214, 1.761), rotate: 0,
+  id: 'FR1'
+})
+// reg_5v.ic
+const FU2 = board.add(SOT_23_6, {
+  translate: pt(0.520, 0.874), rotate: 0,
+  id: 'FU2'
+})
+// reg_5v.fb.div.top_res
+const FR2 = board.add(R_0603_1608Metric, {
+  translate: pt(0.316, 1.144), rotate: 0,
+  id: 'FR2'
+})
+// reg_5v.fb.div.bottom_res
+const FR3 = board.add(R_0603_1608Metric, {
+  translate: pt(0.472, 1.144), rotate: 0,
+  id: 'FR3'
+})
+// reg_5v.hf_in_cap.cap
 const FC2 = board.add(C_0603_1608Metric, {
-  translate: pt(1.394, 1.183), rotate: 0,
+  translate: pt(0.628, 1.144), rotate: 0,
   id: 'FC2'
 })
+// reg_5v.boot_cap.cap
+const FC3 = board.add(C_0603_1608Metric, {
+  translate: pt(0.316, 1.241), rotate: 0,
+  id: 'FC3'
+})
 // reg_5v.power_path.inductor
-const FL1 = board.add(L_Sunlord_SWPA4030S, {
-  translate: pt(1.114, 0.896), rotate: 0,
+const FL1 = board.add(L_Sunlord_SWPA3015S, {
+  translate: pt(0.329, 0.876), rotate: 0,
   id: 'FL1'
 })
 // reg_5v.power_path.in_cap.cap
-const FC3 = board.add(C_1206_3216Metric, {
-  translate: pt(1.114, 1.070), rotate: 0,
-  id: 'FC3'
-})
-// reg_5v.power_path.out_cap.cap
 const FC4 = board.add(C_1206_3216Metric, {
-  translate: pt(1.335, 1.070), rotate: 0,
+  translate: pt(0.348, 1.030), rotate: 0,
   id: 'FC4'
 })
+// reg_5v.power_path.out_cap.cap
+const FC5 = board.add(C_1206_3216Metric, {
+  translate: pt(0.569, 1.030), rotate: 0,
+  id: 'FC5'
+})
 // reg_5v.en_res.res
-const FR3 = board.add(R_0603_1608Metric, {
-  translate: pt(1.082, 1.280), rotate: 0,
-  id: 'FR3'
+const FR4 = board.add(R_0603_1608Metric, {
+  translate: pt(0.472, 1.241), rotate: 0,
+  id: 'FR4'
 })
 // tp_5v.tp
 const FTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.066, 1.980), rotate: 0,
+  translate: pt(0.066, 1.945), rotate: 0,
   id: 'FTP3'
 })
 // prot_5v.diode
 const FD1 = board.add(D_SOD_323, {
-  translate: pt(0.314, 1.980), rotate: 0,
+  translate: pt(0.314, 1.945), rotate: 0,
   id: 'FD1'
 })
 // reg_3v3.ic
-const FU2 = board.add(SOT_89_3, {
-  translate: pt(0.112, 1.629), rotate: 0,
-  id: 'FU2'
+const FU3 = board.add(SOT_23_6, {
+  translate: pt(2.205, 0.067), rotate: 0,
+  id: 'FU3'
 })
-// reg_3v3.in_cap.cap
-const FC5 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 1.796), rotate: 0,
-  id: 'FC5'
+// reg_3v3.fb.div.top_res
+const FR5 = board.add(R_0603_1608Metric, {
+  translate: pt(2.403, 0.246), rotate: 0,
+  id: 'FR5'
 })
-// reg_3v3.out_cap.cap
+// reg_3v3.fb.div.bottom_res
+const FR6 = board.add(R_0603_1608Metric, {
+  translate: pt(1.962, 0.376), rotate: 0,
+  id: 'FR6'
+})
+// reg_3v3.hf_in_cap.cap
 const FC6 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 1.796), rotate: 0,
+  translate: pt(2.118, 0.376), rotate: 0,
   id: 'FC6'
+})
+// reg_3v3.boot_cap.cap
+const FC7 = board.add(C_0603_1608Metric, {
+  translate: pt(2.274, 0.376), rotate: 0,
+  id: 'FC7'
+})
+// reg_3v3.power_path.inductor
+const FL2 = board.add(L_Sunlord_SWPA4030S, {
+  translate: pt(1.994, 0.089), rotate: 0,
+  id: 'FL2'
+})
+// reg_3v3.power_path.in_cap.cap
+const FC8 = board.add(C_1206_3216Metric, {
+  translate: pt(1.994, 0.263), rotate: 0,
+  id: 'FC8'
+})
+// reg_3v3.power_path.out_cap.cap
+const FC9 = board.add(C_1206_3216Metric, {
+  translate: pt(2.215, 0.263), rotate: 0,
+  id: 'FC9'
+})
+// reg_3v3.en_res.res
+const FR7 = board.add(R_0603_1608Metric, {
+  translate: pt(1.962, 0.473), rotate: 0,
+  id: 'FR7'
 })
 // tp_3v3.tp
 const FTP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.561, 1.980), rotate: 0,
+  translate: pt(0.561, 1.945), rotate: 0,
   id: 'FTP4'
 })
 // prot_3v3.diode
 const FD2 = board.add(D_SOD_323, {
-  translate: pt(0.809, 1.980), rotate: 0,
+  translate: pt(0.809, 1.945), rotate: 0,
   id: 'FD2'
 })
-// mcu.crystal.package
-const FX1 = board.add(Crystal_SMD_2520_4Pin_2_5x2_0mm, {
-  translate: pt(2.311, 0.059), rotate: 0,
-  id: 'FX1'
-})
-// mcu.crystal.cap_a
-const FC7 = board.add(C_0603_1608Metric, {
-  translate: pt(2.096, 0.312), rotate: 0,
-  id: 'FC7'
-})
-// mcu.crystal.cap_b
-const FC8 = board.add(C_0603_1608Metric, {
-  translate: pt(2.252, 0.312), rotate: 0,
-  id: 'FC8'
-})
-// mcu.prog.conn
-const FJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
-  translate: pt(2.067, 0.079), rotate: 0,
-  id: 'FJ2'
-})
-// mcu.ic
-const FU3 = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_65x3_65mm, {
-  translate: pt(1.768, 0.122), rotate: 0,
-  id: 'FU3'
-})
-// mcu.vdd_bulk_cap.cap
-const FC9 = board.add(C_0805_2012Metric, {
-  translate: pt(1.932, 0.322), rotate: 0,
-  id: 'FC9'
-})
-// mcu.vdda_cap0.cap
-const FC10 = board.add(C_0603_1608Metric, {
-  translate: pt(2.408, 0.312), rotate: 0,
-  id: 'FC10'
-})
-// mcu.vdda_cap1.cap
-const FC11 = board.add(C_0603_1608Metric, {
-  translate: pt(1.704, 0.441), rotate: 0,
-  id: 'FC11'
-})
-// mcu.vddrtc_cap.cap
-const FC12 = board.add(C_0603_1608Metric, {
-  translate: pt(1.860, 0.441), rotate: 0,
-  id: 'FC12'
-})
-// mcu.vddcpu_cap.cap
-const FC13 = board.add(C_0603_1608Metric, {
-  translate: pt(2.016, 0.441), rotate: 0,
-  id: 'FC13'
-})
-// mcu.vddspi_cap.cap
-const FC14 = board.add(C_0603_1608Metric, {
-  translate: pt(2.172, 0.441), rotate: 0,
-  id: 'FC14'
-})
-// mcu.ant
-const FANT1 = board.add(D_1206_3216Metric, {
-  translate: pt(1.736, 0.328), rotate: 0,
-  id: 'FANT1'
-})
-// mcu.pi.c1
-const FC15 = board.add(C_0603_1608Metric, {
-  translate: pt(2.328, 0.441), rotate: 0,
-  id: 'FC15'
-})
-// mcu.pi.c2
-const FC16 = board.add(C_0603_1608Metric, {
-  translate: pt(1.704, 0.538), rotate: 0,
-  id: 'FC16'
-})
-// mcu.pi.l
-const FL2 = board.add(L_0603_1608Metric, {
-  translate: pt(1.860, 0.538), rotate: 0,
-  id: 'FL2'
-})
-// mcu.vdd3p3_l_cap.cap
-const FC17 = board.add(C_0603_1608Metric, {
-  translate: pt(2.016, 0.538), rotate: 0,
-  id: 'FC17'
-})
-// mcu.vdd3p3_cap.cap
-const FC18 = board.add(C_0603_1608Metric, {
-  translate: pt(2.172, 0.538), rotate: 0,
-  id: 'FC18'
-})
-// mcu.vdd3p3_l.ind
-const FL3 = board.add(L_0603_1608Metric, {
-  translate: pt(2.328, 0.538), rotate: 0,
-  id: 'FL3'
-})
-// mcu.en_pull.rc.r
-const FR4 = board.add(R_0603_1608Metric, {
-  translate: pt(1.704, 0.635), rotate: 0,
-  id: 'FR4'
-})
-// mcu.en_pull.rc.c
-const FC19 = board.add(C_0603_1608Metric, {
-  translate: pt(1.860, 0.635), rotate: 0,
-  id: 'FC19'
-})
-// ledr.package
-const FD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.402, 1.560), rotate: 0,
-  id: 'FD3'
-})
-// ledr.res
-const FR5 = board.add(R_0603_1608Metric, {
-  translate: pt(1.402, 1.657), rotate: 0,
-  id: 'FR5'
+// control.conn.ext
+const FJ5 = board.add(PinSocket_1x14_P2_54mm_Vertical, {
+  translate: pt(0.071, 1.370), rotate: 0,
+  id: 'FJ5'
 })
 // enc.package
 const FSW1 = board.add(RotaryEncoder_Alps_EC11J15_Switch, {
-  translate: pt(0.394, 0.344), rotate: 0,
+  translate: pt(0.652, 0.344), rotate: 0,
   id: 'FSW1'
 })
-// v12_sense.div.top_res
-const FR6 = board.add(R_0603_1608Metric, {
-  translate: pt(1.636, 1.559), rotate: 0,
-  id: 'FR6'
+// pd.ic
+const FU8 = board.add(WQFN_14_1EP_2_5x2_5mm_P0_5mm_EP1_45x1_45mm, {
+  translate: pt(2.247, 0.880), rotate: 0,
+  id: 'FU8'
 })
-// v12_sense.div.bottom_res
-const FR7 = board.add(R_0603_1608Metric, {
-  translate: pt(1.636, 1.656), rotate: 0,
-  id: 'FR7'
-})
-// rgb_ring.led[0].device
-const FD4 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.039, 0.846), rotate: 0,
-  id: 'FD4'
-})
-// rgb_ring.led[0].cap.cap
-const FC20 = board.add(C_0603_1608Metric, {
-  translate: pt(0.294, 1.072), rotate: 0,
-  id: 'FC20'
-})
-// rgb_ring.led[1].device
-const FD5 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.157, 0.846), rotate: 0,
-  id: 'FD5'
-})
-// rgb_ring.led[1].cap.cap
-const FC21 = board.add(C_0603_1608Metric, {
-  translate: pt(0.450, 1.072), rotate: 0,
-  id: 'FC21'
-})
-// rgb_ring.led[2].device
-const FD6 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.276, 0.846), rotate: 0,
-  id: 'FD6'
-})
-// rgb_ring.led[2].cap.cap
-const FC22 = board.add(C_0603_1608Metric, {
-  translate: pt(0.606, 1.072), rotate: 0,
-  id: 'FC22'
-})
-// rgb_ring.led[3].device
-const FD7 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.394, 0.846), rotate: 0,
-  id: 'FD7'
-})
-// rgb_ring.led[3].cap.cap
-const FC23 = board.add(C_0603_1608Metric, {
-  translate: pt(0.762, 1.072), rotate: 0,
-  id: 'FC23'
-})
-// rgb_ring.led[4].device
-const FD8 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.512, 0.846), rotate: 0,
-  id: 'FD8'
-})
-// rgb_ring.led[4].cap.cap
+// pd.vdd_cap[0].cap
 const FC24 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 1.190), rotate: 0,
+  translate: pt(2.406, 1.021), rotate: 0,
   id: 'FC24'
 })
-// rgb_ring.led[5].device
-const FD9 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.630, 0.846), rotate: 0,
-  id: 'FD9'
-})
-// rgb_ring.led[5].cap.cap
-const FC25 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 1.190), rotate: 0,
+// pd.vdd_cap[1].cap
+const FC25 = board.add(C_0805_2012Metric, {
+  translate: pt(2.241, 1.031), rotate: 0,
   id: 'FC25'
 })
-// rgb_ring.led[6].device
-const FD10 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.748, 0.846), rotate: 0,
-  id: 'FD10'
+// spk_dac.rc.r
+const FR17 = board.add(R_0603_1608Metric, {
+  translate: pt(1.594, 1.588), rotate: 0,
+  id: 'FR17'
 })
-// rgb_ring.led[6].cap.cap
+// spk_dac.rc.c
 const FC26 = board.add(C_0603_1608Metric, {
-  translate: pt(0.370, 1.190), rotate: 0,
+  translate: pt(1.594, 1.685), rotate: 0,
   id: 'FC26'
 })
-// rgb_ring.led[7].device
-const FD11 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.866, 0.846), rotate: 0,
-  id: 'FD11'
+// spk_tp.tp
+const FTP8 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(1.056, 1.945), rotate: 0,
+  id: 'FTP8'
 })
-// rgb_ring.led[7].cap.cap
+// spk_drv.ic
+const FU9 = board.add(MSOP_8_3x3mm_P0_65mm, {
+  translate: pt(1.892, 0.876), rotate: 0,
+  id: 'FU9'
+})
+// spk_drv.pwr_cap0.cap
 const FC27 = board.add(C_0603_1608Metric, {
-  translate: pt(0.526, 1.190), rotate: 0,
+  translate: pt(1.998, 1.013), rotate: 0,
   id: 'FC27'
 })
-// rgb_ring.led[8].device
-const FD12 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.039, 0.965), rotate: 0,
-  id: 'FD12'
-})
-// rgb_ring.led[8].cap.cap
-const FC28 = board.add(C_0603_1608Metric, {
-  translate: pt(0.682, 1.190), rotate: 0,
+// spk_drv.pwr_cap1.cap
+const FC28 = board.add(C_0805_2012Metric, {
+  translate: pt(1.833, 1.023), rotate: 0,
   id: 'FC28'
 })
-// rgb_ring.led[9].device
-const FD13 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.157, 0.965), rotate: 0,
-  id: 'FD13'
-})
-// rgb_ring.led[9].cap.cap
+// spk_drv.inp_cap.cap
 const FC29 = board.add(C_0603_1608Metric, {
-  translate: pt(0.838, 1.190), rotate: 0,
+  translate: pt(1.825, 1.130), rotate: 0,
   id: 'FC29'
 })
-// rgb_ring.led[10].device
-const FD14 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.276, 0.965), rotate: 0,
-  id: 'FD14'
-})
-// rgb_ring.led[10].cap.cap
+// spk_drv.inn_cap.cap
 const FC30 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 1.287), rotate: 0,
+  translate: pt(1.981, 1.130), rotate: 0,
   id: 'FC30'
 })
-// rgb_ring.led[11].device
-const FD15 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.394, 0.965), rotate: 0,
-  id: 'FD15'
+// spk.conn
+const FJ7 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
+  translate: pt(0.767, 1.689), rotate: 0,
+  id: 'FJ7'
 })
-// rgb_ring.led[11].cap.cap
+// npx_shift.ic
+const FU10 = board.add(SOT_23_5, {
+  translate: pt(0.471, 1.626), rotate: 0,
+  id: 'FU10'
+})
+// npx_shift.vdd_cap.cap
 const FC31 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 1.287), rotate: 0,
+  translate: pt(0.449, 1.761), rotate: 0,
   id: 'FC31'
 })
-// rgb_ring.led[12].device
-const FD16 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.512, 0.965), rotate: 0,
-  id: 'FD16'
+// npx_res.res
+const FR18 = board.add(R_0603_1608Metric, {
+  translate: pt(1.298, 1.937), rotate: 0,
+  id: 'FR18'
 })
-// rgb_ring.led[12].cap.cap
-const FC32 = board.add(C_0603_1608Metric, {
-  translate: pt(0.370, 1.287), rotate: 0,
-  id: 'FC32'
+// fan
+const FJ8 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
+  translate: pt(1.129, 1.709), rotate: 0,
+  id: 'FJ8'
 })
-// rgb_ring.led[13].device
-const FD17 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.630, 0.965), rotate: 0,
-  id: 'FD17'
-})
-// rgb_ring.led[13].cap.cap
-const FC33 = board.add(C_0603_1608Metric, {
-  translate: pt(0.526, 1.287), rotate: 0,
-  id: 'FC33'
-})
-// rgb_ring.led[14].device
-const FD18 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.748, 0.965), rotate: 0,
-  id: 'FD18'
-})
-// rgb_ring.led[14].cap.cap
-const FC34 = board.add(C_0603_1608Metric, {
-  translate: pt(0.682, 1.287), rotate: 0,
-  id: 'FC34'
-})
-// rgb_ring.led[15].device
-const FD19 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.866, 0.965), rotate: 0,
-  id: 'FD19'
-})
-// rgb_ring.led[15].cap.cap
-const FC35 = board.add(C_0603_1608Metric, {
-  translate: pt(0.838, 1.287), rotate: 0,
-  id: 'FC35'
-})
-// rgb_ring.led[16].device
-const FD20 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.039, 1.083), rotate: 0,
-  id: 'FD20'
-})
-// rgb_ring.led[16].cap.cap
-const FC36 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 1.384), rotate: 0,
-  id: 'FC36'
-})
-// rgb_ring.led[17].device
-const FD21 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.157, 1.083), rotate: 0,
-  id: 'FD21'
-})
-// rgb_ring.led[17].cap.cap
-const FC37 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 1.384), rotate: 0,
-  id: 'FC37'
-})
-// fan[0]
-const FJ3 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.459, 1.680), rotate: 0,
-  id: 'FJ3'
-})
-// fan_drv[0].pre
+// fan_drv.pre
 const FQ1 = board.add(SOT_23, {
-  translate: pt(1.775, 1.126), rotate: 0,
+  translate: pt(0.880, 1.130), rotate: 0,
   id: 'FQ1'
 })
-// fan_drv[0].pull
-const FR8 = board.add(R_0603_1608Metric, {
-  translate: pt(1.948, 1.088), rotate: 0,
-  id: 'FR8'
+// fan_drv.pull
+const FR19 = board.add(R_0603_1608Metric, {
+  translate: pt(1.053, 1.092), rotate: 0,
+  id: 'FR19'
 })
-// fan_drv[0].drv
-const FQ2 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(1.845, 0.913), rotate: 0,
+// fan_drv.drv
+const FQ2 = board.add(PQFN_8_EP_6x5mm_P1_27mm_Generic, {
+  translate: pt(0.934, 0.915), rotate: 0,
   id: 'FQ2'
 })
-// fan_ctl[0].drv
+// fan_ctl.drv
 const FQ3 = board.add(SOT_23, {
-  translate: pt(1.888, 1.598), rotate: 0,
+  translate: pt(1.846, 1.626), rotate: 0,
   id: 'FQ3'
-})
-// fan[1]
-const FJ4 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.936, 1.680), rotate: 0,
-  id: 'FJ4'
-})
-// fan_drv[1].pre
-const FQ4 = board.add(SOT_23, {
-  translate: pt(2.200, 1.126), rotate: 0,
-  id: 'FQ4'
-})
-// fan_drv[1].pull
-const FR9 = board.add(R_0603_1608Metric, {
-  translate: pt(2.373, 1.088), rotate: 0,
-  id: 'FR9'
-})
-// fan_drv[1].drv
-const FQ5 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(2.270, 0.913), rotate: 0,
-  id: 'FQ5'
-})
-// fan_ctl[1].drv
-const FQ6 = board.add(SOT_23, {
-  translate: pt(2.158, 1.598), rotate: 0,
-  id: 'FQ6'
 })
 
 board.setNetlist([
-  {name: "Fv12", pads: [["FJ1", "1"], ["FTP1", "1"], ["FU1", "3"], ["FC1", "1"], ["FC3", "1"], ["FR3", "1"], ["FR6", "1"], ["FR8", "1"], ["FQ2", "1"], ["FQ2", "2"], ["FQ2", "3"], ["FR9", "1"], ["FQ5", "1"], ["FQ5", "2"], ["FQ5", "3"]]},
-  {name: "Fgnd", pads: [["FJ1", "2"], ["FTP2", "1"], ["FU1", "1"], ["FR2", "2"], ["FC1", "2"], ["FC3", "2"], ["FC4", "2"], ["FD1", "2"], ["FU2", "1"], ["FC5", "2"], ["FC6", "2"], ["FD2", "2"], ["FX1", "2"], ["FX1", "4"], ["FC7", "2"], ["FC8", "2"], ["FJ2", "5"], ["FU3", "33"], ["FC9", "2"], ["FC10", "2"], ["FC11", "2"], ["FC12", "2"], ["FC13", "2"], ["FC14", "2"], ["FC15", "2"], ["FC16", "2"], ["FC17", "2"], ["FC18", "2"], ["FC19", "2"], ["FSW1", "C"], ["FSW1", "S2"], ["FR7", "2"], ["FD4", "4"], ["FC20", "2"], ["FD5", "4"], ["FC21", "2"], ["FD6", "4"], ["FC22", "2"], ["FD7", "4"], ["FC23", "2"], ["FD8", "4"], ["FC24", "2"], ["FD9", "4"], ["FC25", "2"], ["FD10", "4"], ["FC26", "2"], ["FD11", "4"], ["FC27", "2"], ["FD12", "4"], ["FC28", "2"], ["FD13", "4"], ["FC29", "2"], ["FD14", "4"], ["FC30", "2"], ["FD15", "4"], ["FC31", "2"], ["FD16", "4"], ["FC32", "2"], ["FD17", "4"], ["FC33", "2"], ["FD18", "4"], ["FC34", "2"], ["FD19", "4"], ["FC35", "2"], ["FD20", "4"], ["FC36", "2"], ["FD21", "4"], ["FC37", "2"], ["FJ3", "1"], ["FQ1", "2"], ["FQ3", "2"], ["FJ4", "1"], ["FQ4", "2"], ["FQ6", "2"]]},
-  {name: "Fv5", pads: [["FR1", "1"], ["FL1", "2"], ["FC4", "1"], ["FTP3", "1"], ["FD1", "1"], ["FU2", "2"], ["FC5", "1"], ["FD4", "2"], ["FC20", "1"], ["FD5", "2"], ["FC21", "1"], ["FD6", "2"], ["FC22", "1"], ["FD7", "2"], ["FC23", "1"], ["FD8", "2"], ["FC24", "1"], ["FD9", "2"], ["FC25", "1"], ["FD10", "2"], ["FC26", "1"], ["FD11", "2"], ["FC27", "1"], ["FD12", "2"], ["FC28", "1"], ["FD13", "2"], ["FC29", "1"], ["FD14", "2"], ["FC30", "1"], ["FD15", "2"], ["FC31", "1"], ["FD16", "2"], ["FC32", "1"], ["FD17", "2"], ["FC33", "1"], ["FD18", "2"], ["FC34", "1"], ["FD19", "2"], ["FC35", "1"], ["FD20", "2"], ["FC36", "1"], ["FD21", "2"], ["FC37", "1"]]},
-  {name: "Fv3v3", pads: [["FU2", "3"], ["FC6", "1"], ["FTP4", "1"], ["FD2", "1"], ["FJ2", "1"], ["FU3", "11"], ["FU3", "14"], ["FU3", "17"], ["FU3", "18"], ["FU3", "31"], ["FU3", "32"], ["FC9", "1"], ["FC10", "1"], ["FC11", "1"], ["FC12", "1"], ["FC13", "1"], ["FC14", "1"], ["FC17", "1"], ["FL3", "1"], ["FR4", "1"], ["FD3", "2"]]},
-  {name: "Freg_5v.ic.sw", pads: [["FU1", "2"], ["FC2", "2"], ["FL1", "1"]]},
-  {name: "Freg_5v.ic.fb", pads: [["FU1", "4"], ["FR1", "2"], ["FR2", "1"]]},
-  {name: "Freg_5v.ic.boot", pads: [["FU1", "6"], ["FC2", "1"]]},
-  {name: "Freg_5v.ic.en", pads: [["FU1", "5"], ["FR3", "2"]]},
-  {name: "Fmcu.xtal_node.xi", pads: [["FX1", "1"], ["FC7", "1"], ["FU3", "30"]]},
-  {name: "Fmcu.xtal_node.xo", pads: [["FX1", "3"], ["FC8", "1"], ["FU3", "29"]]},
-  {name: "Fmcu.program_uart_node.a_tx", pads: [["FJ2", "4"], ["FU3", "27"]]},
-  {name: "Fmcu.program_uart_node.b_tx", pads: [["FJ2", "3"], ["FU3", "28"]]},
-  {name: "Fmcu.program_en_node", pads: [["FJ2", "6"], ["FU3", "7"], ["FR4", "2"], ["FC19", "1"]]},
-  {name: "Fmcu.program_boot_node", pads: [["FJ2", "2"], ["FU3", "15"], ["FR5", "2"]]},
-  {name: "Fmcu.ic.vdd3p3", pads: [["FU3", "2"], ["FU3", "3"], ["FC18", "1"], ["FL3", "2"]]},
-  {name: "Fmcu.ic.lna_in", pads: [["FU3", "1"], ["FC15", "1"], ["FL2", "1"]]},
-  {name: "Fmcu.ant.a", pads: [["FANT1", "1"], ["FC16", "1"], ["FL2", "2"]]},
-  {name: "Fledr.package.k", pads: [["FD3", "1"], ["FR5", "1"]]},
-  {name: "Fenc.a", pads: [["FU3", "26"], ["FSW1", "A"]]},
-  {name: "Fenc.b", pads: [["FU3", "16"], ["FSW1", "B"]]},
-  {name: "Fenc.sw", pads: [["FU3", "25"], ["FSW1", "S1"]]},
-  {name: "Fv12_sense.output", pads: [["FU3", "4"], ["FR6", "2"], ["FR7", "1"]]},
-  {name: "Frgb_ring.din", pads: [["FU3", "6"], ["FD4", "1"]]},
-  {name: "Frgb_ring.dout", pads: [["FD21", "3"]]},
-  {name: "Frgb_ring.led[0].dout", pads: [["FD4", "3"], ["FD5", "1"]]},
-  {name: "Frgb_ring.led[1].dout", pads: [["FD5", "3"], ["FD6", "1"]]},
-  {name: "Frgb_ring.led[2].dout", pads: [["FD6", "3"], ["FD7", "1"]]},
-  {name: "Frgb_ring.led[3].dout", pads: [["FD7", "3"], ["FD8", "1"]]},
-  {name: "Frgb_ring.led[4].dout", pads: [["FD8", "3"], ["FD9", "1"]]},
-  {name: "Frgb_ring.led[5].dout", pads: [["FD9", "3"], ["FD10", "1"]]},
-  {name: "Frgb_ring.led[6].dout", pads: [["FD10", "3"], ["FD11", "1"]]},
-  {name: "Frgb_ring.led[7].dout", pads: [["FD11", "3"], ["FD12", "1"]]},
-  {name: "Frgb_ring.led[8].dout", pads: [["FD12", "3"], ["FD13", "1"]]},
-  {name: "Frgb_ring.led[9].dout", pads: [["FD13", "3"], ["FD14", "1"]]},
-  {name: "Frgb_ring.led[10].dout", pads: [["FD14", "3"], ["FD15", "1"]]},
-  {name: "Frgb_ring.led[11].dout", pads: [["FD15", "3"], ["FD16", "1"]]},
-  {name: "Frgb_ring.led[12].dout", pads: [["FD16", "3"], ["FD17", "1"]]},
-  {name: "Frgb_ring.led[13].dout", pads: [["FD17", "3"], ["FD18", "1"]]},
-  {name: "Frgb_ring.led[14].dout", pads: [["FD18", "3"], ["FD19", "1"]]},
-  {name: "Frgb_ring.led[15].dout", pads: [["FD19", "3"], ["FD20", "1"]]},
-  {name: "Frgb_ring.led[16].dout", pads: [["FD20", "3"], ["FD21", "1"]]},
-  {name: "Ffan[0].control", pads: [["FJ3", "4"], ["FQ3", "3"]]},
-  {name: "Ffan[0].pwr", pads: [["FJ3", "2"], ["FQ2", "5"], ["FQ2", "6"], ["FQ2", "7"], ["FQ2", "8"]]},
-  {name: "Ffan[0].sense", pads: [["FU3", "9"], ["FJ3", "3"]]},
-  {name: "Ffan_drv[0].control", pads: [["FU3", "5"], ["FQ1", "1"]]},
-  {name: "Ffan_drv[0].pre.drain", pads: [["FQ1", "3"], ["FR8", "2"], ["FQ2", "4"]]},
-  {name: "Ffan_ctl[0].control", pads: [["FU3", "8"], ["FQ3", "1"]]},
-  {name: "Ffan[1].control", pads: [["FJ4", "4"], ["FQ6", "3"]]},
-  {name: "Ffan[1].pwr", pads: [["FJ4", "2"], ["FQ5", "5"], ["FQ5", "6"], ["FQ5", "7"], ["FQ5", "8"]]},
-  {name: "Ffan[1].sense", pads: [["FU3", "12"], ["FJ4", "3"]]},
-  {name: "Ffan_drv[1].control", pads: [["FU3", "10"], ["FQ4", "1"]]},
-  {name: "Ffan_drv[1].pre.drain", pads: [["FQ4", "3"], ["FR9", "2"], ["FQ5", "4"]]},
-  {name: "Ffan_ctl[1].control", pads: [["FU3", "13"], ["FQ6", "1"]]}
+  {name: "Fgnd", pads: [["FJ1", "2"], ["FJ2", "A1"], ["FJ2", "A12"], ["FJ2", "B1"], ["FJ2", "B12"], ["FJ2", "S1"], ["FTP2", "1"], ["FU1", "3"], ["FU1", "7"], ["FU1", "8"], ["FC1", "2"], ["FU2", "1"], ["FR3", "2"], ["FC2", "2"], ["FC4", "2"], ["FC5", "2"], ["FD1", "2"], ["FU3", "1"], ["FR6", "2"], ["FC6", "2"], ["FC8", "2"], ["FC9", "2"], ["FD2", "2"], ["FJ5", "1"], ["FSW1", "C"], ["FSW1", "S2"], ["FU8", "15"], ["FU8", "8"], ["FU8", "9"], ["FC24", "2"], ["FC25", "2"], ["FC26", "2"], ["FU9", "7"], ["FC27", "2"], ["FC28", "2"], ["FC30", "2"], ["FU10", "3"], ["FC31", "2"], ["FJ8", "1"], ["FQ1", "2"], ["FQ3", "2"]]},
+  {name: "Fvin", pads: [["FU1", "2"], ["FR1", "2"], ["FU2", "3"], ["FC2", "1"], ["FC4", "1"], ["FR4", "1"], ["FU3", "3"], ["FC6", "1"], ["FC8", "1"], ["FR7", "1"], ["FR19", "1"], ["FQ2", "1"], ["FQ2", "2"], ["FQ2", "3"]]},
+  {name: "Fv5", pads: [["FR2", "1"], ["FL1", "2"], ["FC5", "1"], ["FTP3", "1"], ["FD1", "1"], ["FJ5", "3"], ["FU9", "1"], ["FU9", "6"], ["FC27", "1"], ["FC28", "1"], ["FU10", "5"], ["FC31", "1"]]},
+  {name: "Fv3v3", pads: [["FU1", "4"], ["FC1", "1"], ["FR5", "1"], ["FL2", "2"], ["FC9", "1"], ["FTP4", "1"], ["FD2", "1"], ["FJ5", "2"], ["FU8", "3"], ["FU8", "4"], ["FC24", "1"], ["FC25", "1"]]},
+  {name: "Fpwr.pwr", pads: [["FJ1", "1"], ["FJ2", "A4"], ["FJ2", "A9"], ["FJ2", "B4"], ["FJ2", "B9"], ["FTP1", "1"], ["FU1", "1"], ["FR1", "1"], ["FU8", "2"]]},
+  {name: "Fusb.usb.dp", pads: [["FJ2", "A6"], ["FJ2", "B6"]]},
+  {name: "Fusb.usb.dm", pads: [["FJ2", "A7"], ["FJ2", "B7"]]},
+  {name: "Fusb.cc.cc1", pads: [["FJ2", "A5"], ["FU8", "10"], ["FU8", "11"]]},
+  {name: "Fusb.cc.cc2", pads: [["FJ2", "B5"], ["FU8", "1"], ["FU8", "14"]]},
+  {name: "Fvin_sense.i2c.scl", pads: [["FU1", "5"], ["FJ5", "4"], ["FU8", "6"]]},
+  {name: "Fvin_sense.i2c.sda", pads: [["FU1", "6"], ["FJ5", "5"], ["FU8", "7"]]},
+  {name: "Freg_5v.ic.sw", pads: [["FU2", "2"], ["FC3", "2"], ["FL1", "1"]]},
+  {name: "Freg_5v.ic.fb", pads: [["FU2", "4"], ["FR2", "2"], ["FR3", "1"]]},
+  {name: "Freg_5v.ic.boot", pads: [["FU2", "6"], ["FC3", "1"]]},
+  {name: "Freg_5v.ic.en", pads: [["FU2", "5"], ["FR4", "2"]]},
+  {name: "Freg_3v3.ic.sw", pads: [["FU3", "2"], ["FC7", "2"], ["FL2", "1"]]},
+  {name: "Freg_3v3.ic.fb", pads: [["FU3", "4"], ["FR5", "2"], ["FR6", "1"]]},
+  {name: "Freg_3v3.ic.boot", pads: [["FU3", "6"], ["FC7", "1"]]},
+  {name: "Freg_3v3.ic.en", pads: [["FU3", "5"], ["FR7", "2"]]},
+  {name: "Fcontrol.pd_int", pads: [["FJ5", "6"], ["FU8", "5"]]},
+  {name: "Fcontrol.spk", pads: [["FJ5", "7"], ["FR17", "1"]]},
+  {name: "Fcontrol.drv", pads: [["FJ5", "8"], ["FQ1", "1"]]},
+  {name: "Fcontrol.tach", pads: [["FJ5", "11"], ["FJ8", "3"]]},
+  {name: "Fcontrol.pwm", pads: [["FJ5", "9"], ["FU10", "2"], ["FQ3", "1"]]},
+  {name: "Fcontrol.npx_en", pads: [["FJ5", "10"], ["FU10", "1"]]},
+  {name: "Fcontrol.enc_a", pads: [["FJ5", "12"], ["FSW1", "A"]]},
+  {name: "Fcontrol.enc_b", pads: [["FJ5", "13"], ["FSW1", "B"]]},
+  {name: "Fcontrol.enc_sw", pads: [["FJ5", "14"], ["FSW1", "S1"]]},
+  {name: "Fpd.ic.vconn", pads: [["FU8", "12"], ["FU8", "13"]]},
+  {name: "Fspk_dac.output", pads: [["FR17", "2"], ["FC26", "1"], ["FTP8", "1"], ["FC29", "2"]]},
+  {name: "Fspk_drv.spk.a", pads: [["FU9", "5"], ["FJ7", "1"]]},
+  {name: "Fspk_drv.spk.b", pads: [["FU9", "8"], ["FJ7", "2"]]},
+  {name: "Fspk_drv.ic.inp", pads: [["FU9", "3"], ["FC29", "1"]]},
+  {name: "Fspk_drv.ic.inn", pads: [["FU9", "4"], ["FC30", "1"]]},
+  {name: "Fnpx_shift.output", pads: [["FU10", "4"], ["FR18", "1"]]},
+  {name: "Fnpx_res.output", pads: [["FR18", "2"], ["FJ8", "4"], ["FQ3", "3"]]},
+  {name: "Ffan.pwr", pads: [["FJ8", "2"], ["FQ2", "5"]]},
+  {name: "Ffan_drv.pre.drain", pads: [["FQ1", "3"], ["FR19", "2"], ["FQ2", "4"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(2.8521653543307086, 2.1354330708661418);
+const limit1 = pt(2.5822834645669293, 2.100787401574803);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

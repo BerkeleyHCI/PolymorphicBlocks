@@ -8,7 +8,7 @@ class I2cControllerBitBang(BitBangAdapter, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.i2c = self.Port(I2cController.empty(), [Output])
+        self.i2c = self.Port(I2cController(DigitalBidir.empty()), [Output])
         self.scl = self.Port(DigitalBidir.empty())
         self.sda = self.Port(DigitalBidir.empty())
 
