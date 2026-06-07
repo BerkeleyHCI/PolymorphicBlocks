@@ -101,10 +101,9 @@ class IotFan(JlcBoardTop):
         self.pwr = self.Block(PowerBarrelJack(voltage_out=12 * Volt(tol=0.05), current_limits=(0, 5) * Amp))
         self.usb = self.Block(UsbCReceptacle(voltage_out=12 * Volt(tol=0.05), current_limits=(0, 5) * Amp))
         self.pwr_merge = self.Block(MergedVoltageSource()).connected_from(self.pwr.pwr, self.usb.pwr)
-        self.vin = self.connect(self.pwr_merge.pwr_out)
         self.gnd = self.connect(self.pwr.gnd, self.usb.gnd)
 
-        self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
+        self.tp_vin = self.Block(VoltageTestPoint()).connected(self.pwr_merge.pwr_out)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
         # POWER
@@ -112,10 +111,11 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.vin_sense = imp.Block(Ina219(10 * mOhm(tol=0.01)))
-            self.connect(self.vin_sense.sense_pos, self.vin)
+            self.connect(self.pwr_merge.pwr_out, self.vin_sense.sense_pos)
+            self.vin = self.connect(self.vin_sense.sense_neg)
 
             (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
-                self.vin_sense.sense_neg,
+                self.vin,
                 imp.Block(VoltageRegulator(output_voltage=5.0 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8) * Volt)),
@@ -123,7 +123,7 @@ class IotFan(JlcBoardTop):
             self.v5 = self.connect(self.reg_5v.pwr_out)
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.vin_sense.sense_neg,
+                self.vin,
                 imp.Block(VoltageRegulator(output_voltage=3.3 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
@@ -167,7 +167,7 @@ class IotFan(JlcBoardTop):
                 self.Block(Speaker()),
             )
 
-            # optional jumper to allow strong signal drive for external neopixels
+            # optional solder-jumper to allow strong signal drive for external neopixels
             (self.npx_shift, self.npx_jmp), _ = self.chain(
                 self.control.pwm, imp.Block(L74Ahct1g125()), imp.Block(DigitalJumper())
             )
@@ -194,7 +194,7 @@ class IotFan(JlcBoardTop):
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
                 (
                     ["control", "mcu", "pin_assigns"],
-                    [
+                    [  # for compatibility with esp32-c6 wroom: pins 15-26, 34 unavailable
                         # "v12_sense=4",
                         # "rgb=_GPIO2_STRAP_EXT_PU",  # force using the strapping pin, since we're out of IOs
                         # "led=_GPIO9_STRAP",  # force using the strapping / boot mode pin
