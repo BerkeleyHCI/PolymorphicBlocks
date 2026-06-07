@@ -77,21 +77,25 @@ class ControlSubboard(SubboardBlock):
                 imp.Block(NeopixelArray(6)),
             )
 
-        self.conn = self.Block(PinSocket254Pair(14), external=True)
-        self.export_tap(self.gnd.net, self.conn.pins.request("1"))
-        self.export_tap(self.v3v3.net, self.conn.pins.request("2"))
-        self.export_tap(self.v5.net, self.conn.pins.request("3"))
-        self.export_tap(self.i2c.scl.net, self.conn.pins.request("4"))
-        self.export_tap(self.i2c.sda.net, self.conn.pins.request("5"))
-        self.export_tap(self.pd_int.net, self.conn.pins.request("6"))
-        self.export_tap(self.spk.net, self.conn.pins.request("7"))
-        self.export_tap(self.drv.net, self.conn.pins.request("8"))
-        self.export_tap(self.pwm.net, self.conn.pins.request("9"))
-        self.export_tap(self.npx_en.net, self.conn.pins.request("10"))
-        self.export_tap(self.tach.net, self.conn.pins.request("11"))
-        self.export_tap(self.enc_a.net, self.conn.pins.request("12"))
-        self.export_tap(self.enc_b.net, self.conn.pins.request("13"))
-        self.export_tap(self.enc_sw.net, self.conn.pins.request("14"))
+        # left connector
+        self.conn1 = self.Block(PinSocket254Pair(7), external=True)
+        self.export_tap(self.tach.net, self.conn1.pins.request("1"))
+        self.export_tap(self.npx_en.net, self.conn1.pins.request("2"))
+        self.export_tap(self.pwm.net, self.conn1.pins.request("3"))
+        self.export_tap(self.spk.net, self.conn1.pins.request("4"))
+        self.export_tap(self.pd_int.net, self.conn1.pins.request("5"))
+        self.export_tap(self.i2c.scl.net, self.conn1.pins.request("6"))
+        self.export_tap(self.i2c.sda.net, self.conn1.pins.request("7"))
+
+        # right connector
+        self.conn2 = self.Block(PinSocket254Pair(7), external=True)
+        self.export_tap(self.v5.net, self.conn2.pins.request("1"))
+        self.export_tap(self.v3v3.net, self.conn2.pins.request("2"))
+        self.export_tap(self.drv.net, self.conn2.pins.request("3"))
+        self.export_tap(self.enc_a.net, self.conn2.pins.request("4"))
+        self.export_tap(self.enc_b.net, self.conn2.pins.request("5"))
+        self.export_tap(self.enc_sw.net, self.conn2.pins.request("6"))
+        self.export_tap(self.gnd.net, self.conn2.pins.request("7"))
 
 
 class IotFan(JlcBoardTop):
