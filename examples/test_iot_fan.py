@@ -70,6 +70,9 @@ class IotFan(JlcBoardTop):
             self.dist = imp.Block(Vl53l5cx())
             self.connect(mcu_i2c, self.dist.i2c)
 
+            self.als = imp.Block(Bh1750())
+            self.connect(self.i2c, self.als.i2c)
+
         # 5V DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v5, [Power]),
@@ -80,6 +83,14 @@ class IotFan(JlcBoardTop):
                 imp.Block(L74Ahct1g125()),
                 imp.Block(DigitalTestPoint()),
                 imp.Block(NeopixelArray(6)),
+            )
+
+            (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
+                self.mcu.gpio.request("spk"),
+                imp.Block(LowPassRcDac(1 * kOhm(tol=0.05), 20 * kHertz(tol=0.5))),
+                self.Block(AnalogTestPoint()),
+                imp.Block(Pam8302a()),
+                self.Block(Speaker()),
             )
 
         # 12V DOMAIN
