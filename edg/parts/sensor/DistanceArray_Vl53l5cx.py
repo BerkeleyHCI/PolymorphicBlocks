@@ -79,7 +79,6 @@ class Vl53l5cx_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="STMicroelectronics",
             part="VL53L5CXV0GC/1",
             datasheet="https://www.st.com/resource/en/datasheet/vl53l5cx.pdf",
-            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C3178303")
         self.assign(self.actual_basic_part, False)

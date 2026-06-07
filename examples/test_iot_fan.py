@@ -30,7 +30,7 @@ class IotFan(JlcBoardTop):
 
             (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
                 self.vin_sense.sense_neg,
-                imp.Block(VoltageRegulator(output_voltage=4.5 * Volt(tol=0.05))),
+                imp.Block(VoltageRegulator(output_voltage=5.0 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8) * Volt)),
             )
@@ -61,6 +61,9 @@ class IotFan(JlcBoardTop):
             self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
 
             mcu_i2c = self.mcu.i2c.request("i2c")
+            # 2.2kOhm as mandated by the VL53L5CX datasheet
+            (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
+            self.tp_i2c = self.Block(I2cTestPoint()).connected(mcu_i2c)
             self.connect(self.vin_sense.pwr, self.v3v3)
             self.connect(self.vin_sense.i2c, mcu_i2c)
 
@@ -72,7 +75,12 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.rgb_ring,), _ = self.chain(self.mcu.gpio.request("rgb"), imp.Block(NeopixelArray(6)))
+            (self.npx_shift, self.npx_tp, self.npx), _ = self.chain(
+                self.mcu.gpio.request("npx"),
+                imp.Block(L74Ahct1g125()),
+                imp.Block(DigitalTestPoint()),
+                imp.Block(NeopixelArray(6)),
+            )
 
         # 12V DOMAIN
         with self.implicit_connect(
@@ -123,6 +131,7 @@ class IotFan(JlcBoardTop):
                 (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
                 # gate voltage limit parsing is very unreliable
                 (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
+                (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
