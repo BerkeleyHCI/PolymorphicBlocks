@@ -59,9 +59,7 @@ class Keyboard(SimpleBoardTop):
             sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels())
             self.connect(self.usb.gnd, sw_npx.npx_gnd)
             self.connect(self.usb.pwr, sw_npx.npx_pwr)
-            (self.npx_shift, self.npx_tp), _ = self.chain(
-                self.mcu.gpio.request("npx"), imp.Block(L74Ahct1g125()), imp.Block(DigitalTestPoint()), sw_npx.npx_din
-            )
+            (self.npx_shift,), _ = self.chain(self.mcu.gpio.request("npx"), imp.Block(L74Ahct1g125()), sw_npx.npx_din)
 
     @override
     def refinements(self) -> Refinements:
