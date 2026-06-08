@@ -97,24 +97,24 @@ class ControlSubboard(SubboardBlock):
         # left connector
         self.conn1 = self.Block(PinSocket2mmPair(8), external=True)
         self.export_tap(self.v5.net, self.conn1.pins.request("1"))
-        self.export_tap(self.gnd.net, self.conn1.pins.request("2"))
-        self.export_tap(self.npx_en.net, self.conn1.pins.request("3"))
-        self.export_tap(self.pwm.net, self.conn1.pins.request("4"))
-        self.export_tap(self.spk.net, self.conn1.pins.request("5"))
-        self.export_tap(self.pd_int.net, self.conn1.pins.request("6"))
-        self.export_tap(self.i2c.scl.net, self.conn1.pins.request("7"))
-        self.export_tap(self.i2c.sda.net, self.conn1.pins.request("8"))
+        self.export_tap(self.npx_en.net, self.conn1.pins.request("2"))
+        self.export_tap(self.pwm.net, self.conn1.pins.request("3"))
+        self.export_tap(self.spk.net, self.conn1.pins.request("4"))
+        self.export_tap(self.pd_int.net, self.conn1.pins.request("5"))
+        self.export_tap(self.i2c.scl.net, self.conn1.pins.request("6"))
+        self.export_tap(self.i2c.sda.net, self.conn1.pins.request("7"))
+        self.export_tap(self.gnd.net, self.conn1.pins.request("8"))
 
         # right connector
         self.conn2 = self.Block(PinSocket2mmPair(8), external=True)
         self.export_tap(self.v3v3.net, self.conn2.pins.request("1"))
-        self.export_tap(self.gnd.net, self.conn2.pins.request("2"))
-        self.export_tap(self.drv.net, self.conn2.pins.request("3"))
-        self.export_tap(self.tach.net, self.conn2.pins.request("4"))
-        self.export_tap(self.extra1.net, self.conn2.pins.request("5"))
-        self.export_tap(self.enc_a.net, self.conn2.pins.request("6"))
-        self.export_tap(self.enc_b.net, self.conn2.pins.request("7"))
-        self.export_tap(self.enc_sw.net, self.conn2.pins.request("8"))
+        self.export_tap(self.drv.net, self.conn2.pins.request("2"))
+        self.export_tap(self.tach.net, self.conn2.pins.request("3"))
+        self.export_tap(self.extra1.net, self.conn2.pins.request("4"))
+        self.export_tap(self.enc_a.net, self.conn2.pins.request("5"))
+        self.export_tap(self.enc_b.net, self.conn2.pins.request("6"))
+        self.export_tap(self.enc_sw.net, self.conn2.pins.request("7"))
+        self.export_tap(self.gnd.net, self.conn2.pins.request("8"))
 
 
 class IotFan(JlcBoardTop):
@@ -189,10 +189,9 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
+            (self.spk_dac, self.spk_drv, self.spk), _ = self.chain(
                 self.control.spk,
                 imp.Block(LowPassRcDac(1 * kOhm(tol=0.05), 20 * kHertz(tol=0.5))),
-                self.Block(AnalogTestPoint()),
                 imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()),
             )
@@ -267,7 +266,7 @@ class IotFan(JlcBoardTop):
                 (Neopixel, Sk6805_Ec15),
                 (TestPoint, CompactKeystone5015),
                 (TagConnect, TagConnectNonLegged),
-                (PassiveConnector, JstPhKVertical),
+                (PassiveConnector, PinHeader2mm),
             ],
             class_values=[
                 (Esp32s3_Wroom_1, ["programming"], "uart-auto"),
