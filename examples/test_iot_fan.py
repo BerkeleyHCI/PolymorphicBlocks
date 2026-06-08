@@ -27,7 +27,7 @@ class ControlSubboard(SubboardBlock):
         self.enc_b = self.Port(DigitalBidir.empty())
         self.enc_sw = self.Port(DigitalBidir.empty())
 
-        self.extra1 = self.Port(DigitalBidir.empty(), optional=True)
+        self.extra1 = self.Port(DigitalBidir.empty())
 
     @override
     def contents(self) -> None:
@@ -67,7 +67,18 @@ class ControlSubboard(SubboardBlock):
             self.als = imp.Block(Bh1750())
             self.connect(self.i2c, self.als.i2c)
 
+        # QWIIC DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            (self.reg_qwiic, self.prot_qwiid), _ = self.chain(
+                self.v5,
+                imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05))),
+                imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
+            )
+
             self.qwiic = imp.Block(QwiicTarget())
+            self.connect(self.qwiic.pwr, self.reg_qwiic.pwr_out)
             self.connect(self.i2c, self.qwiic.i2c)
 
         # 5V DOMAIN
@@ -138,8 +149,8 @@ class IotFan(JlcBoardTop):
             self.v5 = self.connect(self.reg_5v.pwr_out)
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.vin,
-                imp.Block(VoltageRegulator(output_voltage=3.3 * Volt(tol=0.05))),
+                self.v5,
+                imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
@@ -209,7 +220,11 @@ class IotFan(JlcBoardTop):
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
-            instance_refinements=[],
+            instance_refinements=[
+                (["reg_5v"], Tps54202h),
+                (["reg_3v3"], Ap7215),
+                (["control", "reg_qwiic"], Ap7215),
+            ],
             instance_values=[
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
                 (
@@ -238,7 +253,6 @@ class IotFan(JlcBoardTop):
             ],
             class_refinements=[
                 (IoController, Esp32s3_Wroom_1),
-                (VoltageRegulator, Tps54202h),
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (PowerBarrelJack, Pj_036ah),
                 (Neopixel, Sk6805_Ec15),
