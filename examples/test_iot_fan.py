@@ -66,19 +66,7 @@ class ControlSubboard(SubboardBlock):
             self.als = imp.Block(Bh1750())
             self.connect(self.i2c, self.als.i2c)
 
-        # QWIIC DOMAIN
-        with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
-            # need another regulator since the main one isn't able to supply enough current
-            (self.reg_qwiic, self.prot_qwiid), _ = self.chain(
-                self.v5,
-                imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05))),
-                imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
-            )
-
             self.qwiic = imp.Block(QwiicTarget())
-            self.connect(self.qwiic.pwr, self.reg_qwiic.pwr_out)
             self.connect(self.i2c, self.qwiic.i2c)
 
         # 5V DOMAIN
@@ -150,7 +138,7 @@ class IotFan(JlcBoardTop):
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.v5,
-                imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05))),
+                imp.Block(VoltageRegulator(output_voltage=3.3 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
@@ -223,8 +211,7 @@ class IotFan(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (["reg_5v"], Tps54202h),
-                (["reg_3v3"], Ap7215),
-                (["control", "reg_qwiic"], Ap7215),
+                (["reg_3v3"], Tps54202h),
             ],
             instance_values=[
                 (["refdes_prefix"], "F"),  # unique refdes for panelization
