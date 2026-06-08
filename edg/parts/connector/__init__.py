@@ -1,5 +1,10 @@
 # PassiveConnector generators
 from .Headers import (
+    PinHeader2mm,
+    PinHeader2mmVertical,
+    PinHeader2mmHorizontal,
+    PinSocket2mm,
+    PinSocket2mmPair,
     PinHeader254,
     PinHeader254Vertical,
     PinHeader254Horizontal,

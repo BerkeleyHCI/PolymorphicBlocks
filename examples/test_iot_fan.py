@@ -27,6 +27,8 @@ class ControlSubboard(SubboardBlock):
         self.enc_b = self.Port(DigitalBidir.empty())
         self.enc_sw = self.Port(DigitalBidir.empty())
 
+        self.extra1 = self.Port(DigitalBidir.empty(), optional=True)
+
     @override
     def contents(self) -> None:
         super().contents()
@@ -51,6 +53,9 @@ class ControlSubboard(SubboardBlock):
             self.connect(self.mcu.gpio.request("enc_a"), self.enc_a)
             self.connect(self.mcu.gpio.request("enc_b"), self.enc_b)
             self.connect(self.mcu.gpio.request("enc_sw"), self.enc_sw)
+
+            self.connect(self.mcu.gpio.request("extra1"), self.extra1)
+
             self.connect(self.i2c, self.mcu.i2c.request("i2c"))
             # 2.2kOhm as mandated by the VL53L5CX datasheet
             (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
@@ -78,24 +83,26 @@ class ControlSubboard(SubboardBlock):
             )
 
         # left connector
-        self.conn1 = self.Block(PinSocket254Pair(7), external=True)
-        self.export_tap(self.tach.net, self.conn1.pins.request("1"))
-        self.export_tap(self.npx_en.net, self.conn1.pins.request("2"))
-        self.export_tap(self.pwm.net, self.conn1.pins.request("3"))
-        self.export_tap(self.spk.net, self.conn1.pins.request("4"))
-        self.export_tap(self.pd_int.net, self.conn1.pins.request("5"))
-        self.export_tap(self.i2c.scl.net, self.conn1.pins.request("6"))
-        self.export_tap(self.i2c.sda.net, self.conn1.pins.request("7"))
+        self.conn1 = self.Block(PinSocket2mmPair(8), external=True)
+        self.export_tap(self.v5.net, self.conn1.pins.request("1"))
+        self.export_tap(self.gnd.net, self.conn1.pins.request("2"))
+        self.export_tap(self.npx_en.net, self.conn1.pins.request("3"))
+        self.export_tap(self.pwm.net, self.conn1.pins.request("4"))
+        self.export_tap(self.spk.net, self.conn1.pins.request("5"))
+        self.export_tap(self.pd_int.net, self.conn1.pins.request("6"))
+        self.export_tap(self.i2c.scl.net, self.conn1.pins.request("7"))
+        self.export_tap(self.i2c.sda.net, self.conn1.pins.request("8"))
 
         # right connector
-        self.conn2 = self.Block(PinSocket254Pair(7), external=True)
-        self.export_tap(self.v5.net, self.conn2.pins.request("1"))
-        self.export_tap(self.v3v3.net, self.conn2.pins.request("2"))
+        self.conn2 = self.Block(PinSocket2mmPair(8), external=True)
+        self.export_tap(self.v3v3.net, self.conn2.pins.request("1"))
+        self.export_tap(self.gnd.net, self.conn2.pins.request("2"))
         self.export_tap(self.drv.net, self.conn2.pins.request("3"))
-        self.export_tap(self.enc_a.net, self.conn2.pins.request("4"))
-        self.export_tap(self.enc_b.net, self.conn2.pins.request("5"))
-        self.export_tap(self.enc_sw.net, self.conn2.pins.request("6"))
-        self.export_tap(self.gnd.net, self.conn2.pins.request("7"))
+        self.export_tap(self.tach.net, self.conn2.pins.request("4"))
+        self.export_tap(self.extra1.net, self.conn2.pins.request("5"))
+        self.export_tap(self.enc_a.net, self.conn2.pins.request("6"))
+        self.export_tap(self.enc_b.net, self.conn2.pins.request("7"))
+        self.export_tap(self.enc_sw.net, self.conn2.pins.request("8"))
 
 
 class IotFan(JlcBoardTop):
@@ -143,6 +150,8 @@ class IotFan(JlcBoardTop):
         self.connect(self.control.gnd, self.gnd)
         self.connect(self.control.v3v3, self.v3v3)
         self.connect(self.control.v5, self.v5)
+
+        self.extra1_sink = self.Block(DummyDigitalSink()).connected(self.control.extra1)
 
         # 3V3 DOMAIN
         with self.implicit_connect(

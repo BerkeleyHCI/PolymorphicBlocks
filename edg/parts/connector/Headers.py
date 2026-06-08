@@ -6,6 +6,80 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
+@abstract_block_default(lambda: PinHeader2mmVertical)
+class PinHeader2mm(PassiveConnector):
+    """Abstract base class for all 2.0mm pin headers."""
+
+
+class PinHeader2mmVertical(PinHeader2mm, FootprintPassiveConnector):
+    """Generic 2.0mm pin header in vertical through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinHeader_2.00mm:PinHeader_1x{length:02d}_P2.00mm_Vertical",
+            "Generic",
+            f"PinHeader2.00 1x{length}",
+        )
+
+
+class PinHeader2mmHorizontal(PinHeader2mm, FootprintPassiveConnector):
+    """Generic 2.0mm pin header in horizontal (right-angle) through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinHeader_2.00mm:PinHeader_1x{length:02d}_P2.00mm_Horizontal",
+            "Generic",
+            f"PinHeader2.00 1x{length} Horizontal",
+        )
+
+
+class PinSocket2mm(FootprintPassiveConnector):
+    """Generic 2.00mm pin socket in vertical through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinSocket_2.00mm:PinSocket_1x{length:02d}_P2.00mm_Vertical",
+            "Generic",
+            f"PinSocket2.00 1x{length}",
+        )
+
+
+class PinSocket2mmPair(SubboardConnectorPair, GeneratorBlock):
+    """2.00mm pin socket (external) - header (internal) pair for sub-board connectors,
+    matching same pin-number to pin-number.
+
+    Optionally can be reversed, with the header being on the external side and the socket being on the internal side."""
+
+    def __init__(self, length: IntLike = 0, *, reverse: BoolLike = False) -> None:
+        super().__init__()
+        self.length = self.ArgParameter(length)
+        self.reverse = self.ArgParameter(reverse)
+        self.generator_param(self.reverse)
+
+        self.pins = self.Port(Vector(Passive.empty()))
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if not self.get(self.reverse):
+            self.ext: PassiveConnector = self.Block(PinSocket2mm(self.length), external=True)
+            self.int: PassiveConnector = self.Block(PinHeader2mm(self.length))
+        else:
+            self.ext = self.Block(PinHeader2mm(self.length), external=True)
+            self.int = self.Block(PinSocket2mm(self.length))
+        self.connect(self.pins, self.int.pins)
+        self.export_tap(self.pins, self.ext.pins)
+
+
 @abstract_block_default(lambda: PinHeader254Vertical)
 class PinHeader254(PassiveConnector):
     """Abstract base class for all 2.54mm pin headers."""

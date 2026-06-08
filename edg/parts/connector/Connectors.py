@@ -4,7 +4,7 @@ from typing import Any
 from typing_extensions import override
 
 from ...circuits import *
-from .Headers import JstShSmHorizontal
+from .Jst import JstShSmHorizontal
 
 
 @abstract_block
