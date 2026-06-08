@@ -59,7 +59,6 @@ class ControlSubboard(SubboardBlock):
             self.connect(self.i2c, self.mcu.i2c.request("i2c"))
             # 2.2kOhm as mandated by the VL53L5CX datasheet
             (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
-            self.tp_i2c = self.Block(I2cTestPoint()).connected(self.i2c)
 
             self.dist = imp.Block(Vl53l5cx())
             self.connect(self.i2c, self.dist.i2c)
@@ -87,10 +86,9 @@ class ControlSubboard(SubboardBlock):
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.npx_shift, self.npx_tp, self.npx), _ = self.chain(
+            (self.npx_shift, self.npx), _ = self.chain(
                 self.mcu.gpio.request("npx"),
                 imp.Block(L74Ahct1g125()),
-                imp.Block(DigitalTestPoint()),
                 imp.Block(NeopixelArray(6)),
             )
 
