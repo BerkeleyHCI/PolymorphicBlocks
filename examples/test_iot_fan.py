@@ -71,6 +71,7 @@ class ControlSubboard(SubboardBlock):
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            # need another regulator since the main one isn't able to supply enough current
             (self.reg_qwiic, self.prot_qwiid), _ = self.chain(
                 self.v5,
                 imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05))),
@@ -117,15 +118,16 @@ class ControlSubboard(SubboardBlock):
 
 
 class IotFan(JlcBoardTop):
-    """IoT fan controller with a 12v barrel jack input and a CPU fan connector."""
+    """IoT controller with a 4-pin output that can either control / read a CPU fan or control a neopixel string.
+    5 / 12 / 24v capable."""
 
     @override
     def contents(self) -> None:
         super().contents()
 
         # only populate ONE of these
-        self.pwr = self.Block(PowerBarrelJack(voltage_out=12 * Volt(tol=0.05), current_limits=(0, 5) * Amp))
-        self.usb = self.Block(UsbCReceptacle(voltage_out=12 * Volt(tol=0.05), current_limits=(0, 5) * Amp))
+        self.pwr = self.Block(PowerBarrelJack(voltage_out=(10, 24) * Volt, current_limits=(0, 5) * Amp))
+        self.usb = self.Block(UsbCReceptacle(voltage_out=(5, 20) * Volt, current_limits=(0, 5) * Amp))
         self.pwr_merge = self.Block(MergedVoltageSource()).connected_from(self.pwr.pwr, self.usb.pwr)
         self.gnd = self.connect(self.pwr.gnd, self.usb.gnd)
 
@@ -209,7 +211,9 @@ class IotFan(JlcBoardTop):
         ) as imp:
             self.fan = imp.Block(CpuFanConnector())
             self.fan_drv = imp.Block(HighSideSwitch(pull_resistance=4.7 * kOhm(tol=0.05), max_rds=0.3 * Ohm))
-            self.connect(self.fan_drv.pwr, self.vin)
+            (self._fan_forced,), _ = self.chain(  # fan is only to be used with 12v input
+                self.vin, self.Block(ForcedVoltage(12 * Volt(tol=0.05))), self.fan_drv.pwr
+            )
             self.connect(self.fan.pwr, self.fan_drv.output)
             self.connect(self.control.drv, self.fan_drv.control)
 
@@ -250,6 +254,11 @@ class IotFan(JlcBoardTop):
                 (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
                 (["spk_drv", "pwr", "current_draw"], Range(6.0e-7, 0.25)),  # restrict current draw for sizing
                 (["npx_res", "output", "high_driver"], False),  # waive the driver conflict ERC
+                # allow the regulator to track if needed
+                (["reg_5v", "power_path", "dutycycle_limit"], Range(float("-inf"), float("inf"))),
+                # ignore capacitance derating and lower margin on 24v input line
+                (["reg_5v", "power_path", "in_cap", "cap", "exact_capacitance"], False),
+                (["reg_5v", "power_path", "in_cap", "cap", "voltage_margin"], 1.25),
             ],
             class_refinements=[
                 (IoController, Esp32s3_Wroom_1),
@@ -265,6 +274,7 @@ class IotFan(JlcBoardTop):
                 (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
                 (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
+                (Fusb302b, ["ic", "vbus", "voltage_limits"], Range(4.0, 28.0)),  # abs max ratings
             ],
         )
 
