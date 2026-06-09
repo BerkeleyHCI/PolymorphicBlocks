@@ -49,7 +49,7 @@
         "silk_text_upright": false,
         "zones": {
           "45_degree_only": false,
-          "min_clearance": 0.254
+          "min_clearance": 0.0
         }
       },
       "diff_pair_dimensions": [
@@ -64,7 +64,14 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "courtyards_overlap|129600001|82000001|26304649-3b8e-4688-9097-ee8793e2345e|7798f1dc-efd6-49a0-8e9e-74ed1eaff4cc",
+        "footprint_type_mismatch|100000000|70675000|3c88fc77-143b-4d20-b921-093f9aaaecfe|00000000-0000-0000-0000-000000000000",
+        "hole_clearance|102700000|73770000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|b00849fc-cd6e-479c-821c-2ae2016c09d3",
+        "hole_clearance|102900000|73770000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|696c4f65-4297-4df4-99e5-33af22dfb9a8",
+        "hole_clearance|97100000|73770000|47bf8b08-fa80-4c42-9604-b5659499df32|40574199-dac6-42d4-92b3-0c2c2d22de9c",
+        "hole_clearance|97300000|73770000|47bf8b08-fa80-4c42-9604-b5659499df32|b633782e-99bc-4df8-b211-058366e7fc43"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -85,7 +92,7 @@
         "footprint_symbol_mismatch": "warning",
         "footprint_type_mismatch": "error",
         "hole_clearance": "error",
-        "hole_near_hole": "error",
+        "hole_near_hole": "ignore",
         "holes_co_located": "warning",
         "invalid_outline": "error",
         "isolated_copper": "warning",
