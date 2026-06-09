@@ -80,12 +80,12 @@ class DiodeSwitchCellNeopixel(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock
 @abstract_block_default(lambda: SwitchDiodeMatrix)
 class SwitchMatrix(InternalBlock, Block):
 
-    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
+    def __init__(self, ncols: IntLike, nrows: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
         super().__init__()
 
         self.voltage_drop = self.ArgParameter(voltage_drop)
-        self.nrows = self.ArgParameter(nrows)
         self.ncols = self.ArgParameter(ncols)
+        self.nrows = self.ArgParameter(nrows)
 
         self.rows = self.Port(Vector(DigitalSink.empty()))
         self.cols = self.Port(Vector(DigitalSource.empty()))
@@ -213,16 +213,16 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     def generate(self) -> None:
         super().generate()
 
-        for row in range(self.get(self.nrows)):
-            self.rows.append_elt(DigitalSink.empty(), str(row))
+        for col in range(self.get(self.ncols)):
+            self.cols.append_elt(DigitalSource.empty(), str(col))
 
         self.sw = ElementDict[SwitchCell]()
-        for col in range(self.get(self.ncols)):
-            col_port = self.cols.append_elt(DigitalSource.empty(), str(col))
-            for row in range(self.get(self.nrows)):
+        for row in range(self.get(self.nrows)):
+            row_port = self.rows.append_elt(DigitalSink.empty(), str(row))
+            for col in range(self.get(self.ncols)):
                 cell = self.sw[f"{col},{row}"] = self.Block(SwitchCell(voltage_drop=self.voltage_drop))
-                self.connect(cell.col, col_port)
-                self.connect(cell.row, self.rows[str(row)])
+                self.connect(cell.col, self.cols[str(col)])
+                self.connect(cell.row, row_port)
 
         self.rows.defined()
         self.cols.defined()

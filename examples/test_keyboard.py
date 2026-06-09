@@ -36,7 +36,7 @@ class Keyboard(SimpleBoardTop):
             # debugging LEDs
             (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
 
-            self.sw = self.Block(SwitchMatrix(nrows=3, ncols=4))
+            self.sw = self.Block(SwitchMatrix(ncols=3, nrows=4))
             self.connect(self.sw.cols, self.mcu.gpio.request_vector())
             self.connect(self.sw.rows, self.mcu.gpio.request_vector())
 
@@ -66,7 +66,7 @@ class Keyboard(SimpleBoardTop):
         return super().refinements() + Refinements(
             class_refinements=[
                 (IoController, Ch32v203),
-                (LinearRegulator, Ldl1117),
+                (LinearRegulator, Ap7215),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
                 (RotaryEncoder, Pec11s),
