@@ -94,8 +94,8 @@ class ControlSubboard(SubboardBlock):
         # right connector
         self.conn2 = self.Block(PinSocket2mmPair(8), external=True)
         self.export_tap(self.v5.net, self.conn2.pins.request("1"))
-        self.export_tap(self.drv.net, self.conn2.pins.request("2"))
-        self.export_tap(self.tach.net, self.conn2.pins.request("3"))
+        self.export_tap(self.tach.net, self.conn2.pins.request("2"))
+        self.export_tap(self.drv.net, self.conn2.pins.request("3"))
         self.export_tap(self.extra1.net, self.conn2.pins.request("4"))
         self.export_tap(self.enc_a.net, self.conn2.pins.request("5"))
         self.export_tap(self.enc_b.net, self.conn2.pins.request("6"))
