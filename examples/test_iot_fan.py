@@ -259,7 +259,7 @@ class IotFan(JlcBoardTop):
                 (IoController, Esp32s3_Wroom_1),
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (PowerBarrelJack, Pj_036ah),
-                (Neopixel, Sk6805_Ec15),
+                (Neopixel, Ws2812c_2020),
                 (TestPoint, CompactKeystone5015),
                 (TagConnect, TagConnectNonLegged),
                 (PassiveConnector, PinHeader2mm),

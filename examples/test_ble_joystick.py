@@ -193,6 +193,7 @@ class BleJoystick(JlcBoardTop):
                 (["mcu"], Holyiot_18010),
                 (["btns", "ioe"], Ch32v003),
                 (["reg_3v3"], Ap7215),
+                (["btns", "bumper_sw", "sw"], SmtSwitchRa),
             ],
             instance_values=[
                 (["refdes_prefix"], "J"),  # unique refdes for panelization
@@ -218,6 +219,7 @@ class BleJoystick(JlcBoardTop):
                 (TestPoint, CompactKeystone5015),
                 (PassiveConnector, JstPhKVertical),
                 (Neopixel, Ws2812c_2020),
+                (TactileSwitch, SmtSwitch),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
