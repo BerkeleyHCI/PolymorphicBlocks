@@ -69,6 +69,11 @@ class ControlSubboard(SubboardBlock):
             self.qwiic = imp.Block(QwiicTarget())
             self.connect(self.i2c, self.qwiic.i2c)
 
+            # second qwiic port is on a seprate I2C bus
+            (self.i2c2_pull, self.qwiic2), _ = self.chain(
+                self.mcu.i2c.request("i2c2"), imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))), imp.Block(QwiicTarget())
+            )
+
         # 5V DOMAIN
         with self.implicit_connect(
             ImplicitConnect(self.v5, [Power]),
@@ -232,6 +237,8 @@ class IotFan(JlcBoardTop):
                         "tach=39",
                         "npx=4",
                         "led=_GPIO0_STRAP",
+                        "i2c2.scl=5",
+                        "i2c2.sda=6",
                     ],
                 ),
                 (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
@@ -245,6 +252,7 @@ class IotFan(JlcBoardTop):
                 # ignore capacitance derating and lower margin on 24v input line
                 (["reg_5v", "power_path", "in_cap", "cap", "exact_capacitance"], False),
                 (["reg_5v", "power_path", "in_cap", "cap", "voltage_margin"], 1.25),
+                (["control", "qwiic2", "pwr", "current_draw"], Range(0, 0)),
             ],
             class_refinements=[
                 (IoController, Esp32s3_Wroom_1),
