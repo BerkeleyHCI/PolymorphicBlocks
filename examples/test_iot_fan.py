@@ -223,7 +223,7 @@ class IotFan(JlcBoardTop):
                 (
                     ["control", "mcu", "pin_assigns"],
                     [  # for compatibility with esp32-c6 wroom: pins 15-26, 34 unavailable
-                        "npx_en=7",
+                        "npx_en=5",
                         "pwm=8",
                         "spk=9",
                         "pd_int=10",
@@ -237,8 +237,8 @@ class IotFan(JlcBoardTop):
                         "tach=39",
                         "npx=4",
                         "led=_GPIO0_STRAP",
-                        "i2c2.scl=5",
-                        "i2c2.sda=6",
+                        "i2c2.scl=7",  # LP_I2C_SCL on -C6
+                        "i2c2.sda=6",  # LP_I2C_SDA on -C6
                     ],
                 ),
                 (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
