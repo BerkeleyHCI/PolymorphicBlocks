@@ -637,7 +637,7 @@
 		(at 96 65)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "FR20"
+		(property "Reference" "FR22"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
 			(uuid "9c2ba89b-6649-42de-b6ea-85104470ab9d")
@@ -6163,7 +6163,7 @@
 		(pad "9" thru_hole circle
 			(at -0.55 -0.65)
 			(size 0.5 0.5)
-			(drill 0.2)
+			(drill 0.3)
 			(property pad_prop_heatsink)
 			(layers "*.Cu")
 			(remove_unused_layers no)
@@ -6173,7 +6173,7 @@
 		(pad "9" thru_hole circle
 			(at -0.55 0.65)
 			(size 0.5 0.5)
-			(drill 0.2)
+			(drill 0.3)
 			(property pad_prop_heatsink)
 			(layers "*.Cu")
 			(remove_unused_layers no)
@@ -6201,7 +6201,7 @@
 		(pad "9" thru_hole circle
 			(at 0.55 -0.65)
 			(size 0.5 0.5)
-			(drill 0.2)
+			(drill 0.3)
 			(property pad_prop_heatsink)
 			(layers "*.Cu")
 			(remove_unused_layers no)
@@ -6211,7 +6211,7 @@
 		(pad "9" thru_hole circle
 			(at 0.55 0.65)
 			(size 0.5 0.5)
-			(drill 0.2)
+			(drill 0.3)
 			(property pad_prop_heatsink)
 			(layers "*.Cu")
 			(remove_unused_layers no)
@@ -6236,7 +6236,7 @@
 		(at 96 73)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "FR18"
+		(property "Reference" "FR20"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
 			(uuid "aa3ce369-be1c-48c9-b9dd-a6796618146d")
@@ -6656,7 +6656,7 @@
 		(at 108 69)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "FR21"
+		(property "Reference" "FR23"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
 			(uuid "c0a5b064-924d-4399-8e10-c8e7d2e454d1")
@@ -8588,7 +8588,7 @@
 		(at 89 76)
 		(descr "Through hole straight socket strip, 1x08, 2.00mm pitch, single row (from Kicad 4.0.7), script generated")
 		(tags "Through hole socket strip THT 1x08 2.00mm single row")
-		(property "Reference" "FJ5"
+		(property "Reference" "FJ6"
 			(at 0 -2.5 0)
 			(layer "F.SilkS")
 			(uuid "f31ef52d-7ede-4071-a3e9-d6b6c14fefba")
@@ -10733,7 +10733,7 @@
 		(at 111 76)
 		(descr "Through hole straight socket strip, 1x08, 2.00mm pitch, single row (from Kicad 4.0.7), script generated")
 		(tags "Through hole socket strip THT 1x08 2.00mm single row")
-		(property "Reference" "FJ7"
+		(property "Reference" "FJ8"
 			(at 0 -2.5 0)
 			(layer "F.SilkS")
 			(uuid "b4fe9f72-adf4-49eb-a208-8e20c7226a30")
@@ -11991,7 +11991,7 @@
 		(at 106 72)
 		(descr "Through hole straight pin header, 1x02, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x02 2.00mm single row")
-		(property "Reference" "FJ9"
+		(property "Reference" "FJ10"
 			(at 0 -2.06 0)
 			(layer "F.SilkS")
 			(uuid "7b0d3706-9c5a-4106-ae47-13d0d80cdfc2")
@@ -12461,7 +12461,7 @@
 		(at 93 75)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "FR17"
+		(property "Reference" "FR19"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
 			(uuid "b707c792-c3e1-4e2e-9cc3-b8de0f6d51df")
@@ -13825,7 +13825,7 @@
 		(at 103.8 60.3 180)
 		(descr "4-pin CPU fan Through hole pin header, e.g. for Wieson part number 2366C888-007 Molex 47053-1000, Foxconn HF27040-M1, Tyco 1470947-1 or equivalent, see http://www.formfactors.org/developer%5Cspecs%5Crev1_2_public.pdf")
 		(tags "pin header 4-pin CPU fan")
-		(property "Reference" "FJ10"
+		(property "Reference" "FJ11"
 			(at 4 -3.55 0)
 			(layer "F.SilkS")
 			(uuid "bdc009d1-be46-4308-8817-721361977f10")
@@ -14537,7 +14537,7 @@
 		(at 96 71)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "FR19"
+		(property "Reference" "FR21"
 			(at 0 -1.43 0)
 			(layer "F.SilkS")
 			(uuid "1dbece24-7732-43dc-8e89-361073bcb24c")
