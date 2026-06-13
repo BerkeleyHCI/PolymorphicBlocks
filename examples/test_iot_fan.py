@@ -230,7 +230,7 @@ class IotFan(JlcBoardTop):
                         "extra1=35",
                         "drv=38",
                         "tach=39",
-                        "npx=6",
+                        "npx=4",
                         "led=_GPIO0_STRAP",
                     ],
                 ),
