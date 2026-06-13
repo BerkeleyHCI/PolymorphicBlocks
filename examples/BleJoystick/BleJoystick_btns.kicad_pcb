@@ -359,11 +359,11 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "053c6388-da5f-4894-8ca0-1a9d3403fe95")
-		(at 76 120.1)
+		(at 104.011695 114.97185 -165)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP10"
-			(at 0 -1.65 0)
+			(at 0.000001 -1.65 15)
 			(layer "F.SilkS")
 			(uuid "c71a7841-726f-4802-bcf0-5b4742e02fe3")
 			(effects
@@ -374,7 +374,7 @@
 			)
 		)
 		(property "Value" "vbat"
-			(at 0 1.65 0)
+			(at -0.000001 1.65 15)
 			(layer "F.Fab")
 			(uuid "bfbc08fe-28d9-442a-99c8-a23d117effdd")
 			(effects
@@ -385,7 +385,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 15)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cea3c586-d913-4bfa-bc9d-8343ff9925e7")
@@ -397,7 +397,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 15)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d8f29c4a-b1e9-496f-a595-eb5cbcd5f858")
@@ -409,7 +409,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 15)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3f60f8b7-1a01-4120-be43-e68c4cd9cbb8")
@@ -425,38 +425,8 @@
 		(sheetfile "examples.test_ble_joystick.ButtonSubboard")
 		(attr smd)
 		(fp_line
-			(start -1.68 -0.95)
-			(end 1.68 -0.95)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "d7f09353-7234-4e57-b697-a09182941740")
-		)
-		(fp_line
-			(start -1.68 0.95)
-			(end -1.68 -0.95)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "8b811eee-61fa-4900-b6d8-311971b6997c")
-		)
-		(fp_line
-			(start 1.68 -0.95)
-			(end 1.68 0.95)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "f219f29a-c19b-45fd-a34c-9f41f120b161")
-		)
-		(fp_line
-			(start 1.68 0.95)
-			(end -1.68 0.95)
+			(start 1.679999 0.95)
+			(end -1.68 0.950001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -465,24 +435,44 @@
 			(uuid "450d2b22-81d7-488f-96e9-2cda93d29b38")
 		)
 		(fp_line
-			(start -1 -0.625)
-			(end 1 -0.625)
+			(start 1.68 -0.950001)
+			(end 1.679999 0.95)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "59654841-989e-4318-b0c8-bb4157431192")
+			(layer "F.CrtYd")
+			(uuid "f219f29a-c19b-45fd-a34c-9f41f120b161")
 		)
 		(fp_line
-			(start -1 0.625)
-			(end -1 -0.625)
+			(start -1.68 0.950001)
+			(end -1.679999 -0.95)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "8b811eee-61fa-4900-b6d8-311971b6997c")
+		)
+		(fp_line
+			(start -1.679999 -0.95)
+			(end 1.68 -0.950001)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "d7f09353-7234-4e57-b697-a09182941740")
+		)
+		(fp_line
+			(start 1 0.625)
+			(end -1 0.625)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "b99843f2-855a-4275-b14c-214350d1f029")
+			(uuid "452fb168-6c4a-4175-9d5f-f330f85385e1")
 		)
 		(fp_line
 			(start 1 -0.625)
@@ -495,17 +485,27 @@
 			(uuid "08ac0864-68ac-4a94-8fa7-922cad684778")
 		)
 		(fp_line
-			(start 1 0.625)
-			(end -1 0.625)
+			(start -1 0.625)
+			(end -1 -0.625)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "452fb168-6c4a-4175-9d5f-f330f85385e1")
+			(uuid "b99843f2-855a-4275-b14c-214350d1f029")
+		)
+		(fp_line
+			(start -1 -0.625)
+			(end 1 -0.625)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "59654841-989e-4318-b0c8-bb4157431192")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 15)
 			(layer "F.Fab")
 			(uuid "a43b326f-a8d5-452e-b9b6-0a7e09a21930")
 			(effects
@@ -516,7 +516,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at 0 0)
+			(at 0 0 195)
 			(size 2.85 1.4)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.1785714286)
@@ -538,7 +538,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "08cd6189-67f2-4ed6-a7d8-713a010b4d63")
-		(at 119 125)
+		(at 89 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP12"
@@ -2399,7 +2399,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "29a35b00-2181-4803-a793-83a3025160c4")
-		(at 119 122.05)
+		(at 89 117)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP11"
@@ -3445,7 +3445,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "36b0d66c-85bc-4169-a354-be95c7c26399")
-		(at 76 126)
+		(at 93 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP14"
@@ -5104,7 +5104,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "68950fe5-1394-4277-9365-29b8736ffde2")
-		(at 76 114.2)
+		(at 107 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP8"
@@ -6230,7 +6230,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "81b1acc4-83b6-4b34-86ba-f496bf2cc970")
-		(at 76 123.05)
+		(at 93 117)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP13"
@@ -11396,7 +11396,7 @@
 	(footprint "edg:TestPoint_TE_RCT_0805"
 		(layer "F.Cu")
 		(uuid "e438b1a2-cf99-45e8-99e1-9f5e28c5c36f")
-		(at 76 117.15)
+		(at 107 117)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "JTP9"
