@@ -69,14 +69,14 @@ class ButtonSubboard(SubboardBlock):
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.vbat, [Power]),
         ) as imp:
-            (self.npx_tp, self.npx_js, self.npx_dpad), _ = self.chain(
+            (self.npx_tp, self.npx_dpad, self.npx_js), _ = self.chain(
                 self.ioe.gpio.request("npx"),
                 imp.Block(DigitalTestPoint()),
                 imp.Block(NeopixelArray(8)),
-                imp.Block(NeopixelArray(8)),
+                imp.Block(NeopixelArray(6)),
             )
 
-        self.conn = self.Block(Fpc050Pair(8, cable="opposite"), external=True)
+        self.conn = self.Block(Fpc050Pair(8, cable="same"), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.pwr.net, self.conn.pins.request("2"))
         self.export_tap(self.i2c.scl.net, self.conn.pins.request("3"))
@@ -217,8 +217,7 @@ class BleJoystick(JlcBoardTop):
                     [
                         "i2c.scl=12",
                         "i2c.sda=11",
-                        # TODO pin the rest
-                        # TODO: NPX pin must be routed to MOSI
+                        "npx=16",  # pinned to MOSI
                     ],
                 ),
             ],
