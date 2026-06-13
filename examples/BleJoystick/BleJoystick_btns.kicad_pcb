@@ -1188,7 +1188,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "0f76d9e6-0881-460b-b4dd-1a86ac03be26")
-		(at 110.606602 89.393398 -45)
+		(at 110.797944 88.931458 -45)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD16"
@@ -1454,11 +1454,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "0fe09cd1-a7e0-4b4a-a427-515450051960")
-		(at 92 87 45)
+		(at 92.103323 86.705238 30)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC29"
-			(at 0 -1.43 45)
+			(at 0 -1.430001 30)
 			(layer "F.SilkS")
 			(uuid "ccfd08d9-8a12-413e-9fc5-5569cc11233c")
 			(effects
@@ -1469,7 +1469,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[5].cap"
-			(at 0 1.43 45)
+			(at 0 1.430001 30)
 			(layer "F.Fab")
 			(uuid "c69ac590-c793-4c78-a959-eb8db03fdad5")
 			(effects
@@ -1480,7 +1480,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 45)
+			(at 0 0 30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -1493,7 +1493,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 45)
+			(at 0 0 30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -1506,7 +1506,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 45)
+			(at 0 0 30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -1523,8 +1523,8 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 -0.51)
-			(end 0.140581 -0.51)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -1533,8 +1533,8 @@
 			(uuid "ae6d98ec-a502-4347-bac9-7f4395842d87")
 		)
 		(fp_line
-			(start -0.140581 0.51)
-			(end 0.140581 0.51)
+			(start -0.14058 0.51)
+			(end 0.14058 0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -1543,8 +1543,8 @@
 			(uuid "60c00987-7007-4a2e-82cc-26f659ed8759")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -1.48 -0.730001)
+			(end 1.480001 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -1553,8 +1553,8 @@
 			(uuid "4417c9ee-57ae-4b30-9362-257a2fb77d55")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start -1.480001 0.73)
+			(end -1.48 -0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -1563,8 +1563,8 @@
 			(uuid "ed151440-b5db-454a-97fa-8031894e4bf3")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start 1.480001 -0.73)
+			(end 1.48 0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -1573,8 +1573,8 @@
 			(uuid "b7cffc0d-c4de-4235-b50b-8b8c2ba82898")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start 1.48 0.730001)
+			(end -1.480001 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -1584,7 +1584,7 @@
 		)
 		(fp_line
 			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(end 0.800001 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -1593,7 +1593,7 @@
 			(uuid "50c83ab6-de2b-4c4e-8a3e-b5ddef194f4b")
 		)
 		(fp_line
-			(start -0.8 0.4)
+			(start -0.800001 0.4)
 			(end -0.8 -0.4)
 			(stroke
 				(width 0.1)
@@ -1603,7 +1603,7 @@
 			(uuid "c441e465-a806-47d0-b780-219e22933e9d")
 		)
 		(fp_line
-			(start 0.8 -0.4)
+			(start 0.800001 -0.4)
 			(end 0.8 0.4)
 			(stroke
 				(width 0.1)
@@ -1614,7 +1614,7 @@
 		)
 		(fp_line
 			(start 0.8 0.4)
-			(end -0.8 0.4)
+			(end -0.800001 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -1623,7 +1623,7 @@
 			(uuid "89e5e066-1f33-452c-aafd-c7141b111805")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 45)
+			(at 0 0 30)
 			(layer "F.Fab")
 			(uuid "0420e073-0a26-423c-879c-f7a3fc006398")
 			(effects
@@ -1634,7 +1634,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0 45)
+			(at -0.775 0 30)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -1642,7 +1642,7 @@
 			(uuid "f9cadfd7-b273-4908-a22f-a3a85c83a505")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0 45)
+			(at 0.775 0 30)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -2839,11 +2839,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "2d6dd0a9-f95a-480c-aeea-b95a2e2870e7")
-		(at 104 115 180)
+		(at 95.988305 114.97185 165)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC25"
-			(at 0 -1.43 180)
+			(at 0 -1.43 165)
 			(layer "F.SilkS")
 			(uuid "c047223f-ad08-4501-bfe6-fb930e44f79a")
 			(effects
@@ -2854,7 +2854,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[1].cap"
-			(at 0 1.43 180)
+			(at 0 1.43 165)
 			(layer "F.Fab")
 			(uuid "5270ec0a-bd68-44a9-997f-43329af6e920")
 			(effects
@@ -2865,7 +2865,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 180)
+			(at 0 0 165)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -2878,7 +2878,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 180)
+			(at 0 0 165)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -2891,7 +2891,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 180)
+			(at 0 0 165)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -2908,16 +2908,6 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 0.51)
-			(end 0.140581 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "9339586a-a89b-432c-a2e0-0e4ba966a655")
-		)
-		(fp_line
 			(start -0.140581 -0.51)
 			(end 0.140581 -0.51)
 			(stroke
@@ -2928,14 +2918,14 @@
 			(uuid "16bd625b-1e99-4b92-8369-adba7bc673ed")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start -0.140581 0.51)
+			(end 0.140581 0.51)
 			(stroke
-				(width 0.05)
+				(width 0.12)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "24ac9892-da1f-4b67-bdb4-36daa1f94222")
+			(layer "F.SilkS")
+			(uuid "9339586a-a89b-432c-a2e0-0e4ba966a655")
 		)
 		(fp_line
 			(start 1.48 -0.73)
@@ -2948,14 +2938,14 @@
 			(uuid "047b3cce-1d25-445a-a555-8071d33c617d")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start 1.48 0.73)
+			(end -1.48 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "d92762eb-17ff-4e7b-9553-2eb7dc634ce5")
+			(uuid "24ac9892-da1f-4b67-bdb4-36daa1f94222")
 		)
 		(fp_line
 			(start -1.48 -0.73)
@@ -2968,14 +2958,14 @@
 			(uuid "80976310-25e3-44d1-ab7f-e29a929a5955")
 		)
 		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "20ed53d0-f018-4ddf-9625-9fce59ef2cc2")
+			(layer "F.CrtYd")
+			(uuid "d92762eb-17ff-4e7b-9553-2eb7dc634ce5")
 		)
 		(fp_line
 			(start 0.8 -0.4)
@@ -2988,14 +2978,14 @@
 			(uuid "0c1f1fe7-45fe-4524-98d2-4a6f6c3468a9")
 		)
 		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
+			(start 0.8 0.4)
+			(end -0.8 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "fe00e3bb-bd3d-4e8d-9dd0-851f10dc698b")
+			(uuid "20ed53d0-f018-4ddf-9625-9fce59ef2cc2")
 		)
 		(fp_line
 			(start -0.8 -0.4)
@@ -3007,8 +2997,18 @@
 			(layer "F.Fab")
 			(uuid "1b61b451-e0d8-4f80-ba32-d894f1f70bf0")
 		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "fe00e3bb-bd3d-4e8d-9dd0-851f10dc698b")
+		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 180)
+			(at 0 0 165)
 			(layer "F.Fab")
 			(uuid "51d65adf-bca1-4d8a-99f1-583d0e5b9d01")
 			(effects
@@ -3019,7 +3019,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0 180)
+			(at -0.775001 0 165)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -3027,7 +3027,7 @@
 			(uuid "5c4f66a6-3448-4d9b-8f9c-e848b843668e")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0 180)
+			(at 0.775001 0 165)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -5544,7 +5544,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "6a4de2d6-57ce-4a5e-b9ca-2ef66f6909b2")
-		(at 100 85)
+		(at 100 84.5)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD17"
@@ -6409,11 +6409,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "821fb1df-26c5-4bfd-9f08-9574c58c1e72")
-		(at 96 85)
+		(at 104.011695 85.02815 -15)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC28"
-			(at 0 -1.43 0)
+			(at 0 -1.43 165)
 			(layer "F.SilkS")
 			(uuid "4397fb19-5011-4aa8-b8b2-ceb329aa30cf")
 			(effects
@@ -6424,7 +6424,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[4].cap"
-			(at 0 1.43 0)
+			(at 0 1.43 165)
 			(layer "F.Fab")
 			(uuid "19aad142-c505-4125-85ce-223be553910d")
 			(effects
@@ -6435,7 +6435,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 -15)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -6448,7 +6448,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 -15)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -6461,7 +6461,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 -15)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -6478,16 +6478,6 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 -0.51)
-			(end 0.140581 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "b051f2d9-a5f5-4839-9dd0-32904a81c9ff")
-		)
-		(fp_line
 			(start -0.140581 0.51)
 			(end 0.140581 0.51)
 			(stroke
@@ -6498,14 +6488,14 @@
 			(uuid "271a3415-3d60-4190-9712-bee8a088f036")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -0.140581 -0.51)
+			(end 0.140581 -0.51)
 			(stroke
-				(width 0.05)
+				(width 0.12)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "dae17058-0470-4f95-9be2-13e6a3d81837")
+			(layer "F.SilkS")
+			(uuid "b051f2d9-a5f5-4839-9dd0-32904a81c9ff")
 		)
 		(fp_line
 			(start -1.48 0.73)
@@ -6518,14 +6508,14 @@
 			(uuid "2512af91-3695-4fc3-a31e-e39743844fdf")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "e2015477-9f6b-4dcb-a7b2-cafe625c6ce6")
+			(uuid "dae17058-0470-4f95-9be2-13e6a3d81837")
 		)
 		(fp_line
 			(start 1.48 0.73)
@@ -6538,14 +6528,14 @@
 			(uuid "2758bdc9-f7ba-49a4-b081-7943230c50c9")
 		)
 		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "5e6f84e3-63d1-4804-8e10-80d4c3fae99a")
+			(layer "F.CrtYd")
+			(uuid "e2015477-9f6b-4dcb-a7b2-cafe625c6ce6")
 		)
 		(fp_line
 			(start -0.8 0.4)
@@ -6558,14 +6548,14 @@
 			(uuid "a3045ea9-50a2-4f59-800f-fc43e11e885f")
 		)
 		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "ab65ec95-e1fe-4ced-b010-9eebfb1d1644")
+			(uuid "5e6f84e3-63d1-4804-8e10-80d4c3fae99a")
 		)
 		(fp_line
 			(start 0.8 0.4)
@@ -6577,8 +6567,18 @@
 			(layer "F.Fab")
 			(uuid "91a676de-de27-4752-981a-9cf0940223af")
 		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "ab65ec95-e1fe-4ced-b010-9eebfb1d1644")
+		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 165)
 			(layer "F.Fab")
 			(uuid "bd965fe4-3cea-4db5-9553-88cfc8a6e067")
 			(effects
@@ -6589,7 +6589,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0)
+			(at -0.775001 0 345)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -6597,7 +6597,7 @@
 			(uuid "4a898201-6c9a-4e99-a257-9867b5dd7254")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0)
+			(at 0.775001 0 345)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -7123,7 +7123,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "8e5c1675-f183-4589-8d2a-20f6db327420")
-		(at 89.393398 89.393398 45)
+		(at 88.931458 89.202056 45)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD18"
@@ -8123,7 +8123,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "9d7a6037-537a-4af5-b23b-9a85af8a52df")
-		(at 89.393398 110.606602 135)
+		(at 89.202056 111.068542 135)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD13"
@@ -9126,11 +9126,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "b0cf502f-32a2-49f9-b338-cb134f134c7a")
-		(at 92 113 135)
+		(at 92.434736 113.486104 150)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC24"
-			(at 0 -1.43 135)
+			(at 0 -1.430001 150)
 			(layer "F.SilkS")
 			(uuid "a45cecb3-ffa5-4e09-a8e1-ff7a63abd18f")
 			(effects
@@ -9141,7 +9141,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[0].cap"
-			(at 0 1.43 135)
+			(at 0 1.430001 150)
 			(layer "F.Fab")
 			(uuid "0d3868c8-3806-443e-9745-1de4cdf8669e")
 			(effects
@@ -9152,7 +9152,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 135)
+			(at 0 0 150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9165,7 +9165,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 135)
+			(at 0 0 150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9178,7 +9178,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 135)
+			(at 0 0 150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9195,8 +9195,8 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 -0.51)
-			(end 0.140581 -0.51)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -9205,8 +9205,8 @@
 			(uuid "71062214-93ee-44ef-86ad-ca00ef94e16f")
 		)
 		(fp_line
-			(start -0.140581 0.51)
-			(end 0.140581 0.51)
+			(start -0.14058 0.51)
+			(end 0.14058 0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -9215,8 +9215,8 @@
 			(uuid "cafa527e-f573-4439-9963-bb68afa97edb")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start 1.48 -0.730001)
+			(end 1.480001 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -9225,8 +9225,8 @@
 			(uuid "795db6a0-7611-4e80-abca-775a6c7283c2")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start 1.480001 0.73)
+			(end -1.48 0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -9235,8 +9235,8 @@
 			(uuid "7ec989dd-761a-4944-b9be-05675deaeb05")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -1.480001 -0.73)
+			(end 1.48 -0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -9245,8 +9245,8 @@
 			(uuid "2803ca90-af25-4f69-9f55-d20212d14e19")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start -1.48 0.730001)
+			(end -1.480001 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -9256,7 +9256,7 @@
 		)
 		(fp_line
 			(start 0.8 -0.4)
-			(end 0.8 0.4)
+			(end 0.800001 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -9265,7 +9265,7 @@
 			(uuid "bbe2d5ea-f6d3-4f59-845d-36347934c4d0")
 		)
 		(fp_line
-			(start 0.8 0.4)
+			(start 0.800001 0.4)
 			(end -0.8 0.4)
 			(stroke
 				(width 0.1)
@@ -9275,7 +9275,7 @@
 			(uuid "13f43182-45dc-4362-b568-cbd950e03de7")
 		)
 		(fp_line
-			(start -0.8 -0.4)
+			(start -0.800001 -0.4)
 			(end 0.8 -0.4)
 			(stroke
 				(width 0.1)
@@ -9286,7 +9286,7 @@
 		)
 		(fp_line
 			(start -0.8 0.4)
-			(end -0.8 -0.4)
+			(end -0.800001 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -9295,7 +9295,7 @@
 			(uuid "47cd7640-b7df-4090-8831-e262fb977f22")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 135)
+			(at 0 0 150)
 			(layer "F.Fab")
 			(uuid "954253fa-8f3b-4faa-a5ff-a62a4c0e3863")
 			(effects
@@ -9306,7 +9306,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0 135)
+			(at -0.775 0 150)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -9314,7 +9314,7 @@
 			(uuid "23251045-5980-4a55-8d01-b0b23e7a64bd")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0 135)
+			(at 0.775 0 150)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -9597,7 +9597,7 @@
 	(footprint "Button_Switch_SMD:SW_SPST_EVQP7C"
 		(layer "F.Cu")
 		(uuid "c4ba087a-b554-4104-a673-bcec2afeac2b")
-		(at 100 82 180)
+		(at 100 81.5 180)
 		(descr "Light Touch Switch, 2.2 N, https://www3.panasonic.biz/ac/e_download/control/switch/light-touch/catalog/sw_lt_eng_3529s_side.pdf?f_cd=402906")
 		(tags "tactile switch")
 		(property "Reference" "JSW9"
@@ -9917,7 +9917,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "ccd9c9a4-b8e0-4f72-ad5f-8eef0de1d7df")
-		(at 100 115 180)
+		(at 100 115.5 180)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD14"
@@ -10449,11 +10449,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "d8ff653c-4eca-4ba7-9cd6-630e94e8a9e5")
-		(at 108 87 -45)
+		(at 107.565264 86.513896 -30)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC27"
-			(at 0 -1.43 -45)
+			(at 0 -1.430001 150)
 			(layer "F.SilkS")
 			(uuid "59ba7a76-7c61-4a6f-9525-3472b8626d32")
 			(effects
@@ -10464,7 +10464,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[3].cap"
-			(at 0 1.43 -45)
+			(at 0 1.430001 150)
 			(layer "F.Fab")
 			(uuid "e3e26d1f-0b88-4966-9d2a-546cc2580553")
 			(effects
@@ -10475,7 +10475,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 -45)
+			(at 0 0 -30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -10488,7 +10488,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 -45)
+			(at 0 0 -30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -10501,7 +10501,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 -45)
+			(at 0 0 -30)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -10518,8 +10518,8 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 0.51)
-			(end 0.140581 0.51)
+			(start -0.14058 0.51)
+			(end 0.14058 0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -10528,8 +10528,8 @@
 			(uuid "71e17c2d-a48c-475d-b32f-160b7433a5ce")
 		)
 		(fp_line
-			(start -0.140581 -0.51)
-			(end 0.140581 -0.51)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -10538,8 +10538,8 @@
 			(uuid "4ce28cd9-7d82-4966-9379-55ff23bc8d9d")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start -1.48 0.730001)
+			(end -1.480001 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -10548,8 +10548,8 @@
 			(uuid "6c408be2-03f6-40a0-8695-7166e35e13ac")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -1.480001 -0.73)
+			(end 1.48 -0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -10558,8 +10558,8 @@
 			(uuid "f7bce67f-7b2e-402d-ac82-64bde73e7cd1")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start 1.480001 0.73)
+			(end -1.48 0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -10568,8 +10568,8 @@
 			(uuid "1cd7f0b6-c621-4bf9-951a-4d1d73562e4b")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start 1.48 -0.730001)
+			(end 1.480001 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -10579,7 +10579,7 @@
 		)
 		(fp_line
 			(start -0.8 0.4)
-			(end -0.8 -0.4)
+			(end -0.800001 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -10588,7 +10588,7 @@
 			(uuid "6503a902-95a3-4f08-bbc2-a6018423254e")
 		)
 		(fp_line
-			(start -0.8 -0.4)
+			(start -0.800001 -0.4)
 			(end 0.8 -0.4)
 			(stroke
 				(width 0.1)
@@ -10598,7 +10598,7 @@
 			(uuid "76edf8ae-95ae-4e60-a7ef-6a0be7102a3c")
 		)
 		(fp_line
-			(start 0.8 0.4)
+			(start 0.800001 0.4)
 			(end -0.8 0.4)
 			(stroke
 				(width 0.1)
@@ -10609,7 +10609,7 @@
 		)
 		(fp_line
 			(start 0.8 -0.4)
-			(end 0.8 0.4)
+			(end 0.800001 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -10618,7 +10618,7 @@
 			(uuid "8791e588-1659-4942-99b0-8f4b2dbbbbf5")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 -45)
+			(at 0 0 150)
 			(layer "F.Fab")
 			(uuid "e936d07c-44ea-4228-a23a-dc981c4f251c")
 			(effects
@@ -10629,7 +10629,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0 315)
+			(at -0.775 0 330)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -10637,7 +10637,7 @@
 			(uuid "57a0ad86-44ea-486d-8696-e34e03f4f5dd")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0 315)
+			(at 0.775 0 330)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -10920,7 +10920,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "dc1b0b00-33f2-4ac0-8c84-49aa6c85fc4a")
-		(at 110.606602 110.606602 -135)
+		(at 111.068542 110.797944 -135)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD15"
@@ -11186,11 +11186,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "e3c56bfb-0425-46cb-a5d9-db7fcc40aeb5")
-		(at 108 113 -135)
+		(at 107.896677 113.294762 -150)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC26"
-			(at 0 -1.43 45)
+			(at 0 -1.430001 30)
 			(layer "F.SilkS")
 			(uuid "29e4519d-91fc-48e0-a6ea-9a3f873a9e6d")
 			(effects
@@ -11201,7 +11201,7 @@
 			)
 		)
 		(property "Value" "btns.npx_js.led[2].cap"
-			(at 0 1.43 45)
+			(at 0 1.430001 30)
 			(layer "F.Fab")
 			(uuid "a25fac12-e37a-445c-a001-7d031248d4d6")
 			(effects
@@ -11212,7 +11212,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 -135)
+			(at 0 0 -150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -11225,7 +11225,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 -135)
+			(at 0 0 -150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -11238,7 +11238,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 -135)
+			(at 0 0 -150)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -11255,8 +11255,8 @@
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.140581 0.51)
-			(end 0.140581 0.51)
+			(start -0.14058 0.51)
+			(end 0.14058 0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -11265,8 +11265,8 @@
 			(uuid "0ac9818c-00af-4268-a11f-156ed70a52de")
 		)
 		(fp_line
-			(start -0.140581 -0.51)
-			(end 0.140581 -0.51)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -11275,8 +11275,8 @@
 			(uuid "730e05ee-ef58-4ea1-8fe4-a75bcb5f61fa")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start 1.48 0.730001)
+			(end -1.480001 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -11285,8 +11285,8 @@
 			(uuid "0e195998-d6c9-4d3a-a31e-3e6fade7135b")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start 1.480001 -0.73)
+			(end 1.48 0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -11295,8 +11295,8 @@
 			(uuid "cb3b3585-dd57-4748-900a-2c8f0357dab4")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start -1.480001 0.73)
+			(end -1.48 -0.730001)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -11305,8 +11305,8 @@
 			(uuid "70ff4e14-70e0-4444-af2c-fd5e4244cbf2")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -1.48 -0.730001)
+			(end 1.480001 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -11316,7 +11316,7 @@
 		)
 		(fp_line
 			(start 0.8 0.4)
-			(end -0.8 0.4)
+			(end -0.800001 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -11325,7 +11325,7 @@
 			(uuid "e840e9b1-2166-4a09-b14b-e46eac4b4285")
 		)
 		(fp_line
-			(start 0.8 -0.4)
+			(start 0.800001 -0.4)
 			(end 0.8 0.4)
 			(stroke
 				(width 0.1)
@@ -11335,7 +11335,7 @@
 			(uuid "a6e885f3-f1a5-4902-8db5-3bd2bf142403")
 		)
 		(fp_line
-			(start -0.8 0.4)
+			(start -0.800001 0.4)
 			(end -0.8 -0.4)
 			(stroke
 				(width 0.1)
@@ -11346,7 +11346,7 @@
 		)
 		(fp_line
 			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(end 0.800001 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -11355,7 +11355,7 @@
 			(uuid "d1ea5bcc-1f5d-4634-910e-15802044224c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 45)
+			(at 0 0 30)
 			(layer "F.Fab")
 			(uuid "c772ef56-1ba4-4ac8-905b-71e2283a4c9b")
 			(effects
@@ -11366,7 +11366,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0 225)
+			(at -0.775 0 210)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -11374,7 +11374,7 @@
 			(uuid "7c09c7fe-3d63-45cd-a094-e4735a41de4d")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0 225)
+			(at 0.775 0 210)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -11995,7 +11995,7 @@
 	(footprint "edg:Symbol_Duckling"
 		(layer "B.Cu")
 		(uuid "343e8029-de4e-491d-b6ca-9fc629d9872f")
-		(at 121 107 180)
+		(at 100 132 180)
 		(descr "Duckling")
 		(property "Reference" "duck"
 			(at 0 4 0)
@@ -12437,7 +12437,7 @@
 	(footprint "edg:Indicator_IdDots_4"
 		(layer "B.Cu")
 		(uuid "39a5d60c-104e-40d0-a6a1-556627a452c3")
-		(at 150 85 180)
+		(at 100 141 180)
 		(property "Reference" "REF**"
 			(at 0 -2 0)
 			(layer "B.SilkS")
