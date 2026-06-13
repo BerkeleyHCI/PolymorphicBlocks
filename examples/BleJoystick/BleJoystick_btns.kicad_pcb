@@ -1031,6 +1031,482 @@
 			)
 		)
 	)
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+		(layer "F.Cu")
+		(uuid "0f76d9e6-0881-460b-b4dd-1a86ac03be26")
+		(at 89.393398 110.606602 135)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD8"
+			(at 0 -2.000001 135)
+			(layer "F.SilkS")
+			(uuid "1c5415b2-5996-42d3-8093-420a6b235e8b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[3].device"
+			(at 0 2.2 135)
+			(layer "F.Fab")
+			(uuid "23b130b7-57c9-40e0-8719-a0866121e403")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "107a8efb-5136-4906-80bd-d231a9199103")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4c32e847-8edf-4189-a9db-92741bf39c2b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2fdf81e2-ed8a-4ac3-8e6f-b2029d41bd3b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007eb0221/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[3]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "8c12fa3e-0652-4203-80ca-3d9db9454041")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "d8302b01-23ff-4185-b1b9-130b02a97032")
+		)
+		(fp_line
+			(start -1.42 1.15)
+			(end 1.42 1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "05acf561-1a3e-449a-8f14-1652fdd9695e")
+		)
+		(fp_line
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "1895d494-6e95-44fb-90f4-d3f976e00e32")
+		)
+		(fp_line
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "16ee9b68-d0c5-4b0a-81c8-c42026f37123")
+		)
+		(fp_line
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "70b60764-bf35-44d3-aed5-540399374482")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "fe23bd03-0ff0-4f7a-900f-9fc0375b0bfa")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "4037fb75-3929-4f99-a84f-eecd2d8e3d66")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "eb2b7dae-de1e-4005-b607-f249aa9a2759")
+		)
+		(fp_line
+			(start -0.55 -1)
+			(end -1.1 -0.450001)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "8639a697-4241-4a04-871e-c7825ce33419")
+		)
+		(fp_line
+			(start -1.1 -0.450001)
+			(end -1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "569be4a3-2f7d-4e5e-b543-d7a22938d1df")
+		)
+		(fp_line
+			(start -1.1 1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "acf93c95-01aa-4a7e-938e-2a3761074180")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 -1) (xy -0.05 -1) (xy -0.05 -0.45) (xy -0.499999 -0.45)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "e5319ce7-da79-4d96-9e24-33ed9ef09c5c")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 0.4) (xy -0.05 0.4) (xy -0.05 1) (xy -0.5 1)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "b4032e75-810a-4c0a-8928-7d01a26b7079")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 135)
+			(layer "F.Fab")
+			(uuid "66801ac1-967d-45e6-889a-485cf44b7e23")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.075)
+				)
+			)
+		)
+		(pad "1" smd rect
+			(at -0.915 -0.55 135)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 28 "Jbtns.npx_js.led[3].dout")
+			(uuid "e354410b-8f1a-42a1-a321-fbc04c3485d0")
+		)
+		(pad "2" smd rect
+			(at -0.915 0.55 135)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 2 "Jbtns.gnd")
+			(uuid "e2a7ca58-0bf2-449b-80dd-c1dce65257fe")
+		)
+		(pad "3" smd rect
+			(at 0.915 0.55 135)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 24 "Jbtns.npx_js.led[2].dout")
+			(uuid "fb61f125-86b0-46a9-a54b-388a7619959d")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 135)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 4 "Jbtns.vbat")
+			(uuid "e92bfd61-e794-4c11-a586-59c43bdbf8a8")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "Capacitor_SMD:C_0603_1608Metric"
+		(layer "F.Cu")
+		(uuid "0fe09cd1-a7e0-4b4a-a427-515450051960")
+		(at 113.435029 107.778175 -135)
+		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "capacitor")
+		(property "Reference" "JC21"
+			(at 0 -1.43 -135)
+			(layer "F.SilkS")
+			(uuid "ccfd08d9-8a12-413e-9fc5-5569cc11233c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[5].cap"
+			(at 0 1.43 -135)
+			(layer "F.Fab")
+			(uuid "c69ac590-c793-4c78-a959-eb8db03fdad5")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "39a57dad-d62b-4158-8688-931812ef7c85")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0913da58-0964-405a-bd5d-b6f1bf37f9f2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d5d63fc2-30a0-4f57-a5cd-c27102fa25d5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ef0223/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[5]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -0.140581 0.51)
+			(end 0.140581 0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "60c00987-7007-4a2e-82cc-26f659ed8759")
+		)
+		(fp_line
+			(start -0.140581 -0.51)
+			(end 0.140581 -0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "ae6d98ec-a502-4347-bac9-7f4395842d87")
+		)
+		(fp_line
+			(start 1.48 0.73)
+			(end -1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "4566efa9-72de-4953-8381-191a8f9ade64")
+		)
+		(fp_line
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "b7cffc0d-c4de-4235-b50b-8b8c2ba82898")
+		)
+		(fp_line
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "ed151440-b5db-454a-97fa-8031894e4bf3")
+		)
+		(fp_line
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "4417c9ee-57ae-4b30-9362-257a2fb77d55")
+		)
+		(fp_line
+			(start 0.8 0.4)
+			(end -0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "89e5e066-1f33-452c-aafd-c7141b111805")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "fcb26e17-a7ed-4906-bbf6-0b19644e5304")
+		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "c441e465-a806-47d0-b780-219e22933e9d")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "50c83ab6-de2b-4c4e-8a3e-b5ddef194f4b")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 -135)
+			(layer "F.Fab")
+			(uuid "0420e073-0a26-423c-879c-f7a3fc006398")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.775 0 225)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 4 "Jbtns.vbat")
+			(uuid "f9cadfd7-b273-4908-a22f-a3a85c83a505")
+		)
+		(pad "2" smd roundrect
+			(at 0.775 0 225)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 2 "Jbtns.gnd")
+			(uuid "4fb714bf-cb65-446a-9a89-c23bc2788522")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
 	(footprint "Button_Switch_SMD:SW_Push_SPST_NO_Alps_SKRK"
 		(layer "F.Cu")
 		(uuid "16dbf66e-4c36-4e3d-b1ad-3b9df0eaa499")
@@ -1460,6 +1936,216 @@
 			(uuid "e27bde4a-e4c2-4102-8133-6a080c51911c")
 		)
 		(model "${KICAD6_3DMODEL_DIR}/Resistor_SMD.3dshapes/R_0805_2012Metric.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "Capacitor_SMD:C_0603_1608Metric"
+		(layer "F.Cu")
+		(uuid "2d6dd0a9-f95a-480c-aeea-b95a2e2870e7")
+		(at 86.564971 92.221825 45)
+		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "capacitor")
+		(property "Reference" "JC17"
+			(at 0 -1.43 45)
+			(layer "F.SilkS")
+			(uuid "c047223f-ad08-4501-bfe6-fb930e44f79a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[1].cap"
+			(at 0 1.43 45)
+			(layer "F.Fab")
+			(uuid "5270ec0a-bd68-44a9-997f-43329af6e920")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5071af16-ff3e-4516-95c4-565575fdd32e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "36c7bf4b-497e-4d84-a77e-b01ef5ebc50d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dabfeb08-4764-476b-859b-a288a90e5c36")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e7021f/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[1]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -0.140581 -0.51)
+			(end 0.140581 -0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "16bd625b-1e99-4b92-8369-adba7bc673ed")
+		)
+		(fp_line
+			(start -0.140581 0.51)
+			(end 0.140581 0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "9339586a-a89b-432c-a2e0-0e4ba966a655")
+		)
+		(fp_line
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "80976310-25e3-44d1-ab7f-e29a929a5955")
+		)
+		(fp_line
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "d92762eb-17ff-4e7b-9553-2eb7dc634ce5")
+		)
+		(fp_line
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "047b3cce-1d25-445a-a555-8071d33c617d")
+		)
+		(fp_line
+			(start 1.48 0.73)
+			(end -1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "24ac9892-da1f-4b67-bdb4-36daa1f94222")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "1b61b451-e0d8-4f80-ba32-d894f1f70bf0")
+		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "fe00e3bb-bd3d-4e8d-9dd0-851f10dc698b")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "0c1f1fe7-45fe-4524-98d2-4a6f6c3468a9")
+		)
+		(fp_line
+			(start 0.8 0.4)
+			(end -0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "20ed53d0-f018-4ddf-9625-9fce59ef2cc2")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 45)
+			(layer "F.Fab")
+			(uuid "51d65adf-bca1-4d8a-99f1-583d0e5b9d01")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.775 0 45)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 4 "Jbtns.vbat")
+			(uuid "5c4f66a6-3448-4d9b-8f9c-e848b843668e")
+		)
+		(pad "2" smd roundrect
+			(at 0.775 0 45)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 2 "Jbtns.gnd")
+			(uuid "350974a4-e343-4c7e-95e1-89139f62beea")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -2678,216 +3364,6 @@
 	)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
-		(uuid "3e20df60-f724-41a3-8519-7db4407e7d4c")
-		(at 81.69 74.09)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "JC20"
-			(at 0 -1.43 0)
-			(layer "F.SilkS")
-			(uuid "e178b215-e75e-4fb2-a8a0-1f61f30be9ad")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[4].cap"
-			(at 0 1.43 0)
-			(layer "F.Fab")
-			(uuid "f6524ccf-aa3d-4dd0-a830-443d52a22969")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7c985966-ecc0-48c8-b072-1e2ee523fd07")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5d19be72-7b3c-4d7e-8088-740c407fe8e0")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ccbb1a01-4343-4e37-8841-fdc44de7863e")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ed0222/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[4]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "b024aca6-5329-481b-aace-97f6e9fcce60")
-		)
-		(fp_line
-			(start -0.14058 0.51)
-			(end 0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "46b34ef0-6fc0-48b1-937a-3634bfbdf0cb")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "c9e366c2-6716-4999-a76d-60af97081b30")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "533e4524-677b-495e-9df2-82b8aacfafef")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "695ff2f7-cf8c-4c3c-89e4-0d0958c45704")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "2809f298-60cb-44e2-a5c8-86427e9ae470")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "3d630025-2b91-4bdc-99fe-ebe08341a979")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "5d4c219e-fe44-4655-9dfc-68ad8e193274")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "6b965453-7ef4-4ce3-a08f-a74ab2034671")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "841a54c9-b44b-447f-9a85-a147c7830751")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "82d442e7-9b8a-441a-ba26-bd52462f477c")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 4 "Jbtns.vbat")
-			(uuid "be74875f-a031-4b15-94fa-113ada5997d5")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Jbtns.gnd")
-			(uuid "d193a558-0390-4c16-9b9f-8a372c6440ae")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "F.Cu")
 		(uuid "450896c3-d991-4f09-ac11-f08c06ac20d0")
 		(at 100 137)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
@@ -3085,534 +3561,6 @@
 			(uuid "8972b0b3-ad37-4d8a-8e1b-dc65110800f9")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
-		(layer "F.Cu")
-		(uuid "462c60c2-7153-40d6-8726-5e6026577b22")
-		(at 93.91 63)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD12"
-			(at 0 -2 0)
-			(layer "F.SilkS")
-			(uuid "fe9a170e-a0f7-4e79-97b3-7e449b5a08b6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[7].device"
-			(at 0 2.2 0)
-			(layer "F.Fab")
-			(uuid "3e2b5203-9567-4789-ad3d-5fda0a515e4d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5cdd87a3-9f8b-4b7d-820b-12da890a52b8")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "606b6c1b-32a8-4054-a377-4e90cbcce130")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a936e2a4-94b4-4559-9625-56eae2d7d79d")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f30225/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[7]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "1d300479-2b05-4a97-98d2-b70cf3614dc2")
-		)
-		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "0bc0d34a-91c4-4ca8-b893-7089044ec515")
-		)
-		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "08b96175-b094-4f20-9834-93d2edf49779")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "dbadd73b-5ce6-47e0-8b90-553ab5d42f6b")
-		)
-		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "d5c281b8-8f80-485a-81b7-23c00eed9a67")
-		)
-		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "cd1c6eab-16d4-49e8-8dd1-d2e07c640d07")
-		)
-		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "6fcee6c6-ef9f-415f-a0eb-9cd3bb9c378b")
-		)
-		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "3ac26bc2-974f-4bee-a5b2-12c2b3a03bdd")
-		)
-		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "92750488-7b32-47f4-bfba-69005f039ed0")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "371cadb6-e4b9-4181-b6e1-d41a43a4dff4")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "e3e4f0a5-7cf0-4ea7-9926-16b070ae5f23")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "8c206230-58e2-4e85-bea2-18fbb1a68b5e")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "4bb061c2-09c0-4ab7-bc85-618263b0db53")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "d8dffefc-e258-4493-8955-dd6061442efe")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "aa547a04-f678-4b2d-8471-2231235471fe")
-			(effects
-				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
-				)
-			)
-		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 32 "Jbtns.npx_js.dout")
-			(uuid "dcb227d6-a4c7-47ec-b014-02372eb404b8")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "75352ac9-7d77-4517-b326-4f89dce61f5c")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 31 "Jbtns.npx_js.led[6].dout")
-			(uuid "599d727d-3ead-4d8b-8ee3-0ca7bb24a854")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 4 "Jbtns.vbat")
-			(uuid "d53fda3e-d561-4b20-9009-0487267679a7")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
-		(layer "F.Cu")
-		(uuid "4814a151-4883-49ee-b580-05752fe78865")
-		(at 75.64 71.06)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD7"
-			(at 0 -2 0)
-			(layer "F.SilkS")
-			(uuid "746d032b-24d0-4193-b2cf-a3f461bee1cb")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[2].device"
-			(at 0 2.2 0)
-			(layer "F.Fab")
-			(uuid "13657926-67c6-4649-a89b-7f8cfb98fe9e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ef509509-592d-4e76-ab79-debcd93f1179")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "8cc945fc-7d16-43ff-ab3c-28db514dfc08")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c799bd3f-f9a3-43da-8cd9-fe9ec5f1008f")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e90220/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[2]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "7525b632-e0da-4e22-a417-acf9099d3f4c")
-		)
-		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "4f9ff73c-3f96-4566-b63e-81e43e61f2d7")
-		)
-		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "c71bc440-4c80-49c7-bf80-084aa386d3f9")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "0258dcb9-c7a0-4702-b7b6-917a9c09156e")
-		)
-		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "a2df7054-c21e-43c0-b8b5-e6953be3f6f5")
-		)
-		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "6badfd79-7ff0-4f73-ba0c-d45e6779eea1")
-		)
-		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "4d7c0cbd-5874-4fe0-8a9e-ea15185b2c41")
-		)
-		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "4b4bbac4-ef27-4582-8502-c154b329ee10")
-		)
-		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "c7d2da67-2e38-4910-a725-1dc96685f938")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "278ada74-1867-4733-9f02-272a7dd1c1b7")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "2c61671b-d2ed-4838-bed5-824c1f1c4cc7")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "743d9a4a-d360-476b-9385-5a0a56a2da67")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "1aaf3fcf-4836-4b42-a626-ca24ae2dbbb4")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "c8f835e3-6f45-4961-850f-aadaa0bf0d0c")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "26e55c4e-2b0a-4e4c-9d4a-8865a05bf1e9")
-			(effects
-				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
-				)
-			)
-		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 24 "Jbtns.npx_js.led[2].dout")
-			(uuid "46c7d395-e979-4fc7-b7a4-0c812cebe0c0")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "870ceba8-f456-43b4-994b-dfc38d61f58c")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 25 "Jbtns.npx_js.led[1].dout")
-			(uuid "edf8eb48-fb06-469c-829e-cf266f9246c8")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 4 "Jbtns.vbat")
-			(uuid "23440fe0-bcdd-40b4-a47e-a1bed5c56169")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4069,14 +4017,14 @@
 	)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
-		(uuid "63e51d16-7a48-4635-b9cc-f35cd6bda360")
-		(at 93.87 66.03)
+		(uuid "5d1cd047-2bfb-4411-a49a-030907a6224b")
+		(at 115 96 -90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC23"
-			(at 0 -1.43 0)
+		(property "Reference" "JC22"
+			(at 0 -1.43 -90)
 			(layer "F.SilkS")
-			(uuid "be8e38bd-abf6-4940-9edf-30df1105edae")
+			(uuid "f0b6dadf-69a6-46ed-9811-8362b48df491")
 			(effects
 				(font
 					(size 1 1)
@@ -4084,10 +4032,10 @@
 				)
 			)
 		)
-		(property "Value" "btns.npx_js.led[7].cap"
-			(at 0 1.43 0)
+		(property "Value" "btns.npx_js.led[6].cap"
+			(at 0 1.43 -90)
 			(layer "F.Fab")
-			(uuid "69e84f0f-9573-4831-854f-9f571cc63782")
+			(uuid "601e2e0b-7530-426d-8ad9-e5c74aa901bb")
 			(effects
 				(font
 					(size 1 1)
@@ -4096,11 +4044,11 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "89e5963e-ff95-4a7c-aee9-ab848baa7d35")
+			(uuid "2b939784-438b-44ff-ace0-15e2c5987f8b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4109,11 +4057,11 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "39b2ab53-080b-4375-a39f-a575c9dfb6b6")
+			(uuid "ca86de52-6a99-44a7-8836-05b5d57fb053")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4122,11 +4070,11 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "0ae34594-c552-4519-a34f-15df11c37744")
+			(uuid "bcc9c0b0-59f9-4af8-b0b6-b1a3ef4251bc")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4134,20 +4082,10 @@
 				)
 			)
 		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f30225/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[7]")
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f10224/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[6]")
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "35a27210-61d0-47ff-9551-a43f86df2f26")
-		)
 		(fp_line
 			(start -0.14058 0.51)
 			(end 0.14058 0.51)
@@ -4156,17 +4094,17 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "ba1f1534-0e42-4065-9489-3c6d81271da6")
+			(uuid "2454f97f-3030-49c2-a346-ad381d9c79b3")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
-				(width 0.05)
+				(width 0.12)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "7e2316c8-1d98-4404-8b82-b2dd76106421")
+			(layer "F.SilkS")
+			(uuid "81cefcec-fdb8-4a5c-a856-6c493f991278")
 		)
 		(fp_line
 			(start -1.48 0.73)
@@ -4176,17 +4114,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "6ff8dc0c-440b-43eb-8a90-425aa0951226")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "b1eb65a2-886d-4e0b-8f3b-8600dd2a65e3")
+			(uuid "baa1b80e-bfc9-4b63-8a39-f20d70c258f1")
 		)
 		(fp_line
 			(start 1.48 0.73)
@@ -4196,17 +4124,27 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "41448e1d-e37a-4de2-afe4-230560e849eb")
+			(uuid "a5b1ae2d-1986-4ad5-8b93-b6c4e9b8ad56")
 		)
 		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "0151b7e1-3188-44a2-ae11-71bfcc5e5871")
+			(layer "F.CrtYd")
+			(uuid "d3504634-e4f6-4190-8a05-2c7d66c58403")
+		)
+		(fp_line
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "54ce60cd-4cc3-4d45-b582-1a24b9c13ca7")
 		)
 		(fp_line
 			(start -0.8 0.4)
@@ -4216,17 +4154,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "504a23c6-2bb9-4ca4-953e-2de21560737f")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "1104cb4c-b837-4d9a-b08b-05613b4a3220")
+			(uuid "6c23373a-4366-4d66-8b04-7529a9629838")
 		)
 		(fp_line
 			(start 0.8 0.4)
@@ -4236,12 +4164,32 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "d9ec34f9-c94d-4d19-ab60-37ca4289e210")
+			(uuid "295f93e4-c02b-48b0-ac23-1f85c2f379bd")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "b77b98d8-5c2e-4a02-8535-eeb7a7385704")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "4e495f82-d56c-4625-9d5f-de04caab2883")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 -90)
 			(layer "F.Fab")
-			(uuid "a47b7c99-cdb2-4c2e-a4da-c008f5c847c5")
+			(uuid "95556696-7a3f-422b-a171-fe29bd12c495")
 			(effects
 				(font
 					(size 0.4 0.4)
@@ -4250,20 +4198,20 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0)
+			(at -0.775 0 270)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
 			(net 4 "Jbtns.vbat")
-			(uuid "4c248c06-749d-4d66-b2b5-eb34c193eebf")
+			(uuid "8a61c767-5098-475d-a20d-eddce9c955cf")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0)
+			(at 0.775 0 270)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
 			(net 2 "Jbtns.gnd")
-			(uuid "26215b87-9b3c-4a78-880f-8f7563ed7f09")
+			(uuid "f9f3f24f-5d40-486a-9832-aeefd6d18a1b")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
@@ -4474,216 +4422,6 @@
 			(roundrect_rratio 0.25)
 			(net 2 "Jbtns.gnd")
 			(uuid "70c3f1c2-a96c-4376-9d8b-673edc370af1")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "F.Cu")
-		(uuid "65f9b8f0-a6f7-4439-91e4-33d98a8d4179")
-		(at 87.78 66.03)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "JC21"
-			(at 0 -1.43 0)
-			(layer "F.SilkS")
-			(uuid "3c2cba62-2e3f-4df6-9fef-11999507de22")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[5].cap"
-			(at 0 1.43 0)
-			(layer "F.Fab")
-			(uuid "43bc6b65-1aaa-41cc-a3d3-0253d1447b33")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "3c4293e0-c10e-4eae-afd7-a448560437dd")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e3fbc25d-e5fc-432d-ad0a-7afbc31c7d69")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ae338c7d-6a4c-44a5-b99d-b05bc11cd528")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ef0223/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[5]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "7b24247f-7159-4171-9268-4d19b36429a2")
-		)
-		(fp_line
-			(start -0.14058 0.51)
-			(end 0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "6a3b179e-5648-47e7-a8c7-bfb2b2113512")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "75eaee62-d876-429f-a221-b475ee63a17c")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "ad3ced83-9621-4fe2-ace9-987b3112336e")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "889e74b1-724f-4543-9a1c-eec0aa486cc3")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "db67958a-7c1c-45b4-b08d-e1c1ddc1ff31")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "3aca9685-a3c2-46b5-bf1b-14ce5595823f")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "c22bbf76-97ba-48d9-95e8-813d19bd6e90")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "829ec33d-1676-42f1-a595-a4f4b22b433b")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "f2cf9b1d-f946-49b6-9091-fb9a60ea32f5")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "222bfe30-73ce-40ca-8ef9-1d18f73c1aa7")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 4 "Jbtns.vbat")
-			(uuid "eab811cc-dd2a-475c-a3b3-7f0c17f60ade")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Jbtns.gnd")
-			(uuid "09d52816-c241-4bac-a743-649eca3c9e89")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
@@ -5126,6 +4864,270 @@
 			(uuid "f49e0fe5-4c7e-457c-844d-e2b1caaa4c8b")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_Push_SPST_NO_Alps_SKRK.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+		(layer "F.Cu")
+		(uuid "6a4de2d6-57ce-4a5e-b9ca-2ef66f6909b2")
+		(at 100 115 180)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD9"
+			(at 0 -2 0)
+			(layer "F.SilkS")
+			(uuid "568f07fd-22cf-48c6-b051-f7ccc8a7cd9b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[4].device"
+			(at 0 2.2 0)
+			(layer "F.Fab")
+			(uuid "11e27660-6fcd-458a-83bd-81d6de354dd7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71a45c5e-4c55-4354-bc0b-17e777d37046")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c7ebdd95-2da0-4b1d-9a4f-ff149b613f4b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "56dfe220-b2f8-4cf8-b805-fb03572b404b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ed0222/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[4]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -1.42 1.15)
+			(end 1.42 1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "e34f217f-feb2-4ad3-8f35-55b1e0827a15")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "7ec915d2-afd2-418f-9e92-28c59ebe6aa1")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "e66bbbbb-9ddd-4433-9d6e-58fc38ecbff3")
+		)
+		(fp_line
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "ea210892-ae68-4e15-8fda-df709900592f")
+		)
+		(fp_line
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "0c25cc7a-0826-43da-bb3e-c4d3790997e1")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "1a9662f2-d4e8-4ccf-9b39-e142a0bcf1a2")
+		)
+		(fp_line
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "5c15f86d-a4d1-493f-8a7f-4ab08035b511")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "94889103-3567-4820-96a2-64e0c69d8888")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "22a27d82-58e0-4c51-bd31-18a1c1372436")
+		)
+		(fp_line
+			(start -0.55 -1)
+			(end -1.1 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "a9be2cc7-03f1-4add-9683-cbd100a5dde2")
+		)
+		(fp_line
+			(start -1.1 1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "2115350f-13b2-4ee7-95fc-c1241fa19274")
+		)
+		(fp_line
+			(start -1.1 -0.45)
+			(end -1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "e4f51dd1-0a1c-4e7f-b121-17e22897f2f0")
+		)
+		(fp_rect
+			(start -0.5 0.4)
+			(end -0.05 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "acc3be1d-40f8-402f-8303-d818a4f41b45")
+		)
+		(fp_rect
+			(start -0.5 -1)
+			(end -0.05 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "e78cf76d-7731-4905-b561-857d636d0ea6")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "81816596-5caa-42ae-9d98-ee843c241e8d")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.075)
+				)
+			)
+		)
+		(pad "1" smd rect
+			(at -0.915 -0.55 180)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 29 "Jbtns.npx_js.led[4].dout")
+			(uuid "1d669eff-9c9c-4788-9963-af4f8de505d2")
+		)
+		(pad "2" smd rect
+			(at -0.915 0.55 180)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 2 "Jbtns.gnd")
+			(uuid "53bc4ab6-e284-4f5d-b8ec-529056c73079")
+		)
+		(pad "3" smd rect
+			(at 0.915 0.55 180)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 28 "Jbtns.npx_js.led[3].dout")
+			(uuid "2698aec8-43db-4901-baf9-f52d7aa0de0c")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 180)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 4 "Jbtns.vbat")
+			(uuid "b858f81f-42e8-4bd4-a91c-223d2c6fc2be")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -5598,480 +5600,6 @@
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 4 "Jbtns.vbat")
 			(uuid "debf7914-a4c3-42fd-8318-457a9ef9cf27")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "F.Cu")
-		(uuid "772db522-44f0-4dad-a79a-17922552a13f")
-		(at 81.69 66.03)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "JC19"
-			(at 0 -1.43 0)
-			(layer "F.SilkS")
-			(uuid "61e1fe20-b9ff-40b6-b500-0231b0599337")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[3].cap"
-			(at 0 1.43 0)
-			(layer "F.Fab")
-			(uuid "6b547809-0121-4bb0-9fef-c1ce89f05d60")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "96f8f012-8f49-4271-9153-344c4668224a")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "69e34e22-27d6-439e-9e39-6fdbf5b0846b")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "dade61ab-3f3e-4c58-9e82-c43a9b88d6fd")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007eb0221/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[3]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "8f5398e8-5f46-4699-b6e1-362a02ddce0e")
-		)
-		(fp_line
-			(start -0.14058 0.51)
-			(end 0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "2f961ad4-d23f-4ae6-945b-0706bc7af2d7")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "501da030-a838-4abb-bd67-849eff8adff9")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "f9aad763-65ec-4590-a009-65985bc8c581")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "55d3b6c7-9de6-4cbe-82b3-1a25f3c5bd06")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "a50e9c95-c4f1-4208-b056-7568f71e47de")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "25901d8a-55e8-45d6-bd5a-a891098cf96c")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "ac7df820-aba8-41bb-8b87-383db1fbf155")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "2896f903-151e-48fd-bd17-049751cc5552")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "332cd974-5016-4d66-9477-53db31490254")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "ba1a727e-ce20-4d74-9558-71ad058b8152")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 4 "Jbtns.vbat")
-			(uuid "f6e7d089-2f7b-4b58-86bd-d0432bed7b9d")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Jbtns.gnd")
-			(uuid "8cd006fa-ee12-47a2-978a-9a9c7bbbfd30")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
-		(layer "F.Cu")
-		(uuid "78631844-13d8-4f20-bf53-9818c1fd57da")
-		(at 87.82 71.06)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD11"
-			(at 0 -2 0)
-			(layer "F.SilkS")
-			(uuid "952e7485-50f7-4d18-a975-46e77ba08e91")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[6].device"
-			(at 0 2.2 0)
-			(layer "F.Fab")
-			(uuid "0183d01f-998c-4394-8984-82d6cee4e608")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c4e365fc-e116-4b3c-9967-1a231a21266e")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4db674d3-501e-4e4f-9b51-b83a10ef2196")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ca04ba7f-1ac4-471b-a251-4e4c8e0a52ce")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f10224/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[6]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "879afe53-1169-4674-a19f-0aed79696bda")
-		)
-		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "dbc0db0f-3b37-4ac1-a564-d05179cfd3cd")
-		)
-		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "ef249a20-b548-49fb-8bfd-9479c7845703")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "ad95f351-baa3-48d3-b3bc-95224e3b9d4b")
-		)
-		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "b5d14aca-149d-49c8-a826-3e0b47dce92b")
-		)
-		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "4f029ec4-f03d-4ead-bdd4-69e0d04e06fb")
-		)
-		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "5567bee6-e562-40a8-969f-13ffc176ae7d")
-		)
-		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "e666721f-80c1-4062-a4ab-3910f670b750")
-		)
-		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "430d34c7-47de-48fd-993d-59ad37c453ee")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "6e6b4f5b-3464-43d3-b36c-45b4275dfd8d")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "b4fc3fbb-552e-41c6-9746-76c0ac377ba5")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "34585387-09ba-4692-a1c5-4f1fd2b2437b")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "b4123962-529f-4cfd-9665-199f6f0360ae")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "7a4b38a1-77e6-49eb-89c4-2b5001ed960a")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "c285b769-89a6-464b-9c6a-2286522ed1b5")
-			(effects
-				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
-				)
-			)
-		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 31 "Jbtns.npx_js.led[6].dout")
-			(uuid "1d025049-a0b2-4408-8d5e-4a791708e927")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "209420c5-9fe9-4964-9ec2-4bbb71bad5a9")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 30 "Jbtns.npx_js.led[5].dout")
-			(uuid "d0336c4b-8a07-4422-adf1-01e9b08a005a")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 4 "Jbtns.vbat")
-			(uuid "7008e354-56c6-4f42-b66a-137623e87f16")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
 			(offset
@@ -6796,14 +6324,14 @@
 	)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
-		(uuid "8a723da3-7ef8-4322-aba6-df88411c465b")
-		(at 87.78 74.09)
+		(uuid "821fb1df-26c5-4bfd-9f08-9574c58c1e72")
+		(at 104 115 180)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC22"
-			(at 0 -1.43 0)
+		(property "Reference" "JC20"
+			(at 0 -1.43 180)
 			(layer "F.SilkS")
-			(uuid "04dfe6ed-4e31-4ff4-ad3f-64e605b1a3c1")
+			(uuid "4397fb19-5011-4aa8-b8b2-ceb329aa30cf")
 			(effects
 				(font
 					(size 1 1)
@@ -6811,10 +6339,10 @@
 				)
 			)
 		)
-		(property "Value" "btns.npx_js.led[6].cap"
-			(at 0 1.43 0)
+		(property "Value" "btns.npx_js.led[4].cap"
+			(at 0 1.43 180)
 			(layer "F.Fab")
-			(uuid "d8dd16f4-8fca-4fb6-86a6-381ccc21298c")
+			(uuid "19aad142-c505-4125-85ce-223be553910d")
 			(effects
 				(font
 					(size 1 1)
@@ -6823,11 +6351,11 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "61b19928-3e56-4291-a163-19d986a55186")
+			(uuid "359eb43f-f4cf-4790-a2b1-bdc9bf17dcd9")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6836,11 +6364,11 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "30ed9d8b-e486-4212-a65d-bd297124d0dc")
+			(uuid "c603520f-f3e0-4305-96d9-c3ab83510728")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6849,11 +6377,11 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "cad8e794-cae0-40b5-93f9-191087b711b8")
+			(uuid "ccc668ae-6de3-4b2d-a2c2-7b2613fb3bdf")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6861,20 +6389,10 @@
 				)
 			)
 		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f10224/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[6]")
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ed0222/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[4]")
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "82ea2f66-ba4d-4a59-8734-ff255c3f2edf")
-		)
 		(fp_line
 			(start -0.14058 0.51)
 			(end 0.14058 0.51)
@@ -6883,37 +6401,17 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "833d7a9f-6d2d-47a1-b5be-0159d2a3db30")
+			(uuid "271a3415-3d60-4190-9712-bee8a088f036")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
-				(width 0.05)
+				(width 0.12)
 				(type solid)
 			)
-			(layer "F.CrtYd")
-			(uuid "42aba257-3d7f-4efc-9dc4-57bfc5f3746a")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "0981d4dd-eb9f-4808-a3af-d08c85be6b35")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "8e8f7a07-ca53-49f2-aeef-380a69cd2531")
+			(layer "F.SilkS")
+			(uuid "b051f2d9-a5f5-4839-9dd0-32904a81c9ff")
 		)
 		(fp_line
 			(start 1.48 0.73)
@@ -6923,37 +6421,37 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "08bd69dc-3e2f-494a-9bca-edcb0897c5e2")
+			(uuid "2758bdc9-f7ba-49a4-b081-7943230c50c9")
 		)
 		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "77af8969-cc4e-41c4-9187-7e05ecd8d3bd")
+			(layer "F.CrtYd")
+			(uuid "e2015477-9f6b-4dcb-a7b2-cafe625c6ce6")
 		)
 		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "73780a13-2bf9-4fe0-972d-fd4af2cfb73a")
+			(layer "F.CrtYd")
+			(uuid "2512af91-3695-4fc3-a31e-e39743844fdf")
 		)
 		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "ec22f3e7-cc46-4866-b367-8cf90ad907be")
+			(layer "F.CrtYd")
+			(uuid "dae17058-0470-4f95-9be2-13e6a3d81837")
 		)
 		(fp_line
 			(start 0.8 0.4)
@@ -6963,12 +6461,42 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "a4575b35-c963-48f8-b33b-5f59284da3b1")
+			(uuid "91a676de-de27-4752-981a-9cf0940223af")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "ab65ec95-e1fe-4ced-b010-9eebfb1d1644")
+		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "a3045ea9-50a2-4f59-800f-fc43e11e885f")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "5e6f84e3-63d1-4804-8e10-80d4c3fae99a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 180)
 			(layer "F.Fab")
-			(uuid "9c72ce8b-1e52-47b5-a8b7-843eb6873197")
+			(uuid "bd965fe4-3cea-4db5-9553-88cfc8a6e067")
 			(effects
 				(font
 					(size 0.4 0.4)
@@ -6977,20 +6505,20 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0)
+			(at -0.775 0 180)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
 			(net 4 "Jbtns.vbat")
-			(uuid "eae14791-5895-4a8b-af47-0c32db0dd700")
+			(uuid "4a898201-6c9a-4e99-a257-9867b5dd7254")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0)
+			(at 0.775 0 180)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
 			(net 2 "Jbtns.gnd")
-			(uuid "8861ca3d-9419-40a8-8ac7-93a2cdf1a7f8")
+			(uuid "42827daf-bee6-407a-bd3d-670a2d352d5d")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
@@ -7247,10 +6775,276 @@
 			)
 		)
 	)
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+		(layer "F.Cu")
+		(uuid "8e5c1675-f183-4589-8d2a-20f6db327420")
+		(at 110.606602 110.606602 -135)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD10"
+			(at 0 -2.000001 45)
+			(layer "F.SilkS")
+			(uuid "2f804939-4a8e-4ff5-97d4-02c5a7389dfe")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[5].device"
+			(at 0 2.2 45)
+			(layer "F.Fab")
+			(uuid "86c3a747-116c-441b-a7b2-946d9d35da55")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "03ac5251-f127-4736-aac5-4c944d22afeb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc160ed2-cd07-407d-bb58-9fe0ead38d20")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 -135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "59e79009-4ef0-4504-988c-fef119d01cf8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ef0223/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[5]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -1.42 1.15)
+			(end 1.42 1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "1046befc-3470-4cbf-8904-7566d52ffdf4")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "641dc6bd-f60c-4857-9e1e-817a3a3b6ed5")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "46bb99af-f74e-4134-8e50-2cb455131e60")
+		)
+		(fp_line
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "55ff8322-a623-451e-988c-9bb7a577c61c")
+		)
+		(fp_line
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "386bc177-90d5-44ce-9948-f3da6bfbbc52")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "dfb9f07d-138e-402d-a71b-f6be58af9dc7")
+		)
+		(fp_line
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "1991cd27-3482-493a-8a7f-e8d1dcd552ce")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "1d5bf6f1-4b23-4868-a110-fb3fe09b6f61")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "ef49bbfe-88b9-418e-a1c8-fba0786d8045")
+		)
+		(fp_line
+			(start -1.1 1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "e7715a02-e9d9-42fb-a166-2b66d99241e5")
+		)
+		(fp_line
+			(start -1.1 -0.450001)
+			(end -1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "a2f00fa2-cbd7-42a8-87c9-cf6b326f72a6")
+		)
+		(fp_line
+			(start -0.55 -1)
+			(end -1.1 -0.450001)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "ce3173ad-b40a-4e3e-9dcf-958051e45c45")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 0.4) (xy -0.05 0.4) (xy -0.05 1) (xy -0.5 1)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "25942927-82e4-4b8d-bd48-c89ad0cfedcd")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 -1) (xy -0.05 -1) (xy -0.05 -0.45) (xy -0.499999 -0.45)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "6544c68e-0cb9-4f37-a9da-5addd38ffc6e")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 45)
+			(layer "F.Fab")
+			(uuid "54d99bd4-bf22-484b-a4d8-b7fb6c2543d7")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.075)
+				)
+			)
+		)
+		(pad "1" smd rect
+			(at -0.915 -0.55 225)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 30 "Jbtns.npx_js.led[5].dout")
+			(uuid "22c5f98d-4f01-4b65-8d4e-51c0cbc947e0")
+		)
+		(pad "2" smd rect
+			(at -0.915 0.55 225)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 2 "Jbtns.gnd")
+			(uuid "5503dd70-ce09-440f-ba4f-8c4184b13eff")
+		)
+		(pad "3" smd rect
+			(at 0.915 0.55 225)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 29 "Jbtns.npx_js.led[4].dout")
+			(uuid "6c355700-c1cf-4a61-8aaa-7d0e3b1272db")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 225)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 4 "Jbtns.vbat")
+			(uuid "0ef8167a-7c29-48cb-922e-44fe46d71e67")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "8f511882-bcb8-4261-9f56-175b5806f7a4")
-		(at 100 91 90)
+		(at 95 82 90)
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "JU10"
@@ -7771,16 +7565,16 @@
 			)
 		)
 	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
-		(uuid "9aa3cf0c-f7fe-422d-8e8f-dbfa2f0ca79a")
-		(at 75.6 66.03)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "JC17"
-			(at 0 -1.43 0)
+		(uuid "95c039c4-7fc2-4764-8a9c-509ef6cf2716")
+		(at 110.606602 89.393398 -45)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD12"
+			(at 0 -2.000001 135)
 			(layer "F.SilkS")
-			(uuid "95ad0548-2f5c-438d-b560-1dfa9f218746")
+			(uuid "44830c22-1bd3-427d-bf51-4d267d0000dc")
 			(effects
 				(font
 					(size 1 1)
@@ -7788,10 +7582,10 @@
 				)
 			)
 		)
-		(property "Value" "btns.npx_js.led[1].cap"
-			(at 0 1.43 0)
+		(property "Value" "btns.npx_js.led[7].device"
+			(at 0 2.2 135)
 			(layer "F.Fab")
-			(uuid "74ebff7c-1e57-4f45-81ad-8e36661e6c6b")
+			(uuid "f37c6425-1b7b-44b3-8ad3-4c5690e8c72f")
 			(effects
 				(font
 					(size 1 1)
@@ -7800,11 +7594,11 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 -45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e60f1b37-939b-4d96-888f-9fcc3b12e105")
+			(uuid "bcb02bb5-40e7-4111-bf5b-6fa4636931c3")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7813,11 +7607,11 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 -45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "7a0d4694-bbff-4d63-9c35-90d9db8c8d24")
+			(uuid "da3fd771-af1b-4bde-811c-33c139360960")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7826,11 +7620,11 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 -45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "cec5af26-8edc-4d69-9336-a3d404dc3e96")
+			(uuid "f139cb3c-feb1-4c84-8565-94e9df0fec44")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7838,348 +7632,194 @@
 				)
 			)
 		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e7021f/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[1]")
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f30225/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[7]")
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
+			(start -1.42 1.15)
+			(end 1.42 1.15)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "c46d19f0-ae9c-4960-bddc-06e8c58f3a67")
+			(uuid "4644771b-80cb-4f8f-aac1-b0428f983c80")
 		)
 		(fp_line
-			(start -0.14058 0.51)
-			(end 0.14058 0.51)
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "2631f6bf-105c-4ef7-8056-3599c74e4e44")
+			(uuid "ccb45f06-71d4-49f1-bd15-cb53ee9ab00c")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "b071e8a9-ef9c-460b-bdc4-786c3ff3a705")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "bfa5ce8b-43f8-4ae8-9a73-dc595fcdb09b")
+			(uuid "7af2d537-daef-44bb-bdf9-80aa080765ce")
 		)
 		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "0b8bdaf8-ed96-4b3c-94e5-63fcf12bdc48")
+			(uuid "5cb80126-91aa-48e0-a029-cf2e4882d1d7")
 		)
 		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "dd8c124e-9ab8-435c-b7f0-35c665f9a63c")
+			(uuid "54a012a9-f98d-4696-afd0-1465ffea73b2")
 		)
 		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "83733d49-76d8-4df6-8c56-0cb6356fd5c8")
+			(uuid "e3f90567-7738-46cb-bf53-f8361cb92ce6")
 		)
 		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(start -1.1 1)
+			(end 1.1 1)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "b35ad5f9-7e7b-4e18-9945-975d5206b1be")
+			(uuid "a37f84af-0077-4179-a4a1-20afaac9c97d")
 		)
 		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
+			(start -1.1 -0.450001)
+			(end -1.1 1)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "a172a22c-45ef-4ca9-a7e2-a98eb1975555")
+			(uuid "7edad3b9-545d-4dad-b26a-5c7ec8153dab")
 		)
 		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
+			(start -0.55 -1)
+			(end -1.1 -0.450001)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "feba3ac0-cd8e-4abb-a73d-3f31b0fc1661")
+			(uuid "5d5894b5-e084-45f1-93b6-a96bbf4b6212")
 		)
 		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
+			(start 1.1 -1)
+			(end 1.1 1)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "2533ef2b-f2eb-43ad-a59d-c7a86e40cd25")
+			(uuid "140be04c-1297-49bd-94db-cca4de293dbe")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "8b16a7d4-764b-49b5-bfd3-84286a80cb29")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 0.4) (xy -0.05 0.4) (xy -0.05 1) (xy -0.5 1)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "075f4d05-6d44-4a45-a1bc-36cbc2e1affe")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 -1) (xy -0.05 -1) (xy -0.05 -0.45) (xy -0.499999 -0.45)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "6424a209-603b-4f4c-9d0f-340f3bd2f52c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 135)
 			(layer "F.Fab")
-			(uuid "1a19fd1f-85ee-44fb-8f09-8d851455021f")
+			(uuid "0ede392e-aa3e-4421-8682-adbd610774fe")
 			(effects
 				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
+					(size 0.5 0.5)
+					(thickness 0.075)
 				)
 			)
 		)
-		(pad "1" smd roundrect
-			(at -0.775 0)
-			(size 0.9 0.95)
+		(pad "1" smd rect
+			(at -0.915 -0.55 315)
+			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 4 "Jbtns.vbat")
-			(uuid "65aa8e9a-270b-4787-aa5b-1cbf1f753834")
+			(net 32 "Jbtns.npx_js.dout")
+			(uuid "cd6124e8-cf13-48d5-8f20-bb9399d49772")
 		)
-		(pad "2" smd roundrect
-			(at 0.775 0)
-			(size 0.9 0.95)
+		(pad "2" smd rect
+			(at -0.915 0.55 315)
+			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
 			(net 2 "Jbtns.gnd")
-			(uuid "c7dc4638-a1ec-4c2d-8bca-650d88f1c1d5")
+			(uuid "69cf2ca4-a987-408b-8fcd-54cf8b0f7c3b")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "F.Cu")
-		(uuid "9b8347df-11a5-4448-b346-61982c7f5036")
-		(at 75.6 74.09)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "JC18"
-			(at 0 -1.43 0)
-			(layer "F.SilkS")
-			(uuid "44fe2ca4-759f-423c-940a-3afd25ebc867")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[2].cap"
-			(at 0 1.43 0)
-			(layer "F.Fab")
-			(uuid "fe0f6a6b-c3ad-4936-828f-fcd2ef48d2d9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1fa7bb2f-fc15-4ad2-9a0e-08d4211e3b9e")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "45e0fdf3-a081-4de7-bbbe-3329ce4edea3")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "21b1a71e-b0a9-4f09-9ec6-06ccb276a0f6")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e90220/00000000-0000-0000-0000-0000025e0135")
-		(sheetname "led[2]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -0.14058 -0.51)
-			(end 0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "5ca317a6-0510-4069-a829-68bd71c42009")
-		)
-		(fp_line
-			(start -0.14058 0.51)
-			(end 0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "6401e5f6-d7a2-42ae-afd4-fd14330fe7c8")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "cd6d1429-2b23-4b44-8a57-aa410873a1c4")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "2562506c-fbc3-4058-b8b7-d36ef15c4598")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "c504e010-d785-45a9-8ce8-23b3f2b5885e")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "e5ae9663-ace2-48bc-98f1-58dd25f1cc2c")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "32a645d8-debe-476d-ac9f-47c1a0b1b3fe")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "da28f659-eca5-4c02-9490-8dd2afcd52f3")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "c954d0b6-e23a-4876-94f5-2cf63edeb6e3")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "94ceb3ce-7e7c-4faa-85ad-680f3338d410")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "590b93ac-11a8-48b5-816f-18a2182ee3bd")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0)
-			(size 0.9 0.95)
+		(pad "3" smd rect
+			(at 0.915 0.55 315)
+			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
+			(net 31 "Jbtns.npx_js.led[6].dout")
+			(uuid "e19caa6b-4e02-4264-b083-4bdaad02368f")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 315)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 4 "Jbtns.vbat")
-			(uuid "35c4ac22-4995-40c2-980a-62b243fc5211")
+			(uuid "2c7c7454-293f-4575-9d94-4a48c87dba08")
 		)
-		(pad "2" smd roundrect
-			(at 0.775 0)
-			(size 0.9 0.95)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Jbtns.gnd")
-			(uuid "aa3ed010-95ad-4f5d-ab48-bd1642053ab1")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -8404,7 +8044,7 @@
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "9d7a6037-537a-4af5-b23b-9a85af8a52df")
-		(at 65.915 67.55)
+		(at 100 85)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "JD5"
@@ -9187,6 +8827,216 @@
 			)
 		)
 	)
+	(footprint "Capacitor_SMD:C_0603_1608Metric"
+		(layer "F.Cu")
+		(uuid "a6f5b496-1518-42c7-b758-df7fdb1603f2")
+		(at 107.778175 86.564971 -45)
+		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "capacitor")
+		(property "Reference" "JC23"
+			(at 0 -1.43 -45)
+			(layer "F.SilkS")
+			(uuid "1dfcde4f-ec1d-4e67-a260-2a5982022ee8")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[7].cap"
+			(at 0 1.43 -45)
+			(layer "F.Fab")
+			(uuid "bd5de79e-4875-487d-838d-4190d4197f2f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 -45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b768d92c-baff-4361-83dc-38cc9c119e4e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 -45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1993458e-d10e-42e0-a1ae-a707d5d81f96")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 -45)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "721cd68b-fba2-4c94-a0da-7d6fbf00e405")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f30225/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[7]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -0.140581 0.51)
+			(end 0.140581 0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "a757e8bc-e8b5-42ce-8542-8387b460d67b")
+		)
+		(fp_line
+			(start -0.140581 -0.51)
+			(end 0.140581 -0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "180317c3-c1dc-411e-b140-a27db4fc4f5d")
+		)
+		(fp_line
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "3bb0a898-b57b-4b7c-bca0-ad37f2d147b3")
+		)
+		(fp_line
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "5205e31a-2f1d-4feb-b772-aeb02ae3d03a")
+		)
+		(fp_line
+			(start 1.48 0.73)
+			(end -1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "aeb1a03a-3d75-4b2d-949a-6c931d00bb09")
+		)
+		(fp_line
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "24649a2b-4698-4792-9de4-1f39b6ad17b8")
+		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "1dee3a0a-c045-446b-9b0f-4fd6a1b2e469")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "5c711f69-48bf-4612-9792-3640a57e2f7a")
+		)
+		(fp_line
+			(start 0.8 0.4)
+			(end -0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "55ce7b28-ad8e-46e1-8ebd-1d423b3407a3")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "eae41339-5189-47c1-914b-48f09005c3f4")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 -45)
+			(layer "F.Fab")
+			(uuid "0dfe32c5-ff08-4685-8c0d-7e2f5af85194")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.775 0 315)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 4 "Jbtns.vbat")
+			(uuid "1ad1bbdf-0114-4d0e-beff-84a061824f44")
+		)
+		(pad "2" smd roundrect
+			(at 0.775 0 315)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 2 "Jbtns.gnd")
+			(uuid "1a090a79-abb0-493a-b472-1e2c99be332e")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
 		(uuid "aaee200e-1577-4a47-962b-662359ef8784")
@@ -9456,11 +9306,11 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "ae83c2b3-d4e6-40ed-a3ba-61bcf8e04b25")
-		(at 100 95)
+		(at 104 82 90)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC15"
-			(at 0 -1.43 0)
+			(at 0 -1.43 90)
 			(layer "F.SilkS")
 			(uuid "440c8993-1510-4370-b3de-f2bbcfcc382c")
 			(effects
@@ -9471,7 +9321,7 @@
 			)
 		)
 		(property "Value" "btns.trig.cbyp"
-			(at 0 1.43 0)
+			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "22c406d3-2d2e-4638-a630-2b07a58e0582")
 			(effects
@@ -9482,7 +9332,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9495,7 +9345,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9508,7 +9358,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -9545,26 +9395,6 @@
 			(uuid "47c0ee52-d95d-4502-a833-bf998090c834")
 		)
 		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "e4796e7b-f40a-4fe6-8436-f0b0f72177b4")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "ebc92e3d-e3b9-4ffe-ad3b-f9de3e1d592d")
-		)
-		(fp_line
 			(start 1.48 -0.73)
 			(end 1.48 0.73)
 			(stroke
@@ -9573,6 +9403,16 @@
 			)
 			(layer "F.CrtYd")
 			(uuid "51219983-2a0e-4343-a202-4fb454c2ca94")
+		)
+		(fp_line
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "e4796e7b-f40a-4fe6-8436-f0b0f72177b4")
 		)
 		(fp_line
 			(start 1.48 0.73)
@@ -9585,24 +9425,14 @@
 			(uuid "ac36e4cf-78e0-4ad3-a6ac-8487ae0fa166")
 		)
 		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
 			(stroke
-				(width 0.1)
+				(width 0.05)
 				(type solid)
 			)
-			(layer "F.Fab")
-			(uuid "c9623d81-cb29-44cc-88af-ad73fdda8174")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "0dece1c8-6ccb-40bc-97c9-85a100826114")
+			(layer "F.CrtYd")
+			(uuid "ebc92e3d-e3b9-4ffe-ad3b-f9de3e1d592d")
 		)
 		(fp_line
 			(start 0.8 -0.4)
@@ -9615,6 +9445,16 @@
 			(uuid "feb0e9c5-df56-42d3-97d0-726d6eddef0f")
 		)
 		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "c9623d81-cb29-44cc-88af-ad73fdda8174")
+		)
+		(fp_line
 			(start 0.8 0.4)
 			(end -0.8 0.4)
 			(stroke
@@ -9624,8 +9464,18 @@
 			(layer "F.Fab")
 			(uuid "32c2753c-f745-4c29-91e5-a1869720d2da")
 		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "0dece1c8-6ccb-40bc-97c9-85a100826114")
+		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(uuid "cf9041ae-a96c-4266-85dc-7e73953276bc")
 			(effects
@@ -9636,7 +9486,7 @@
 			)
 		)
 		(pad "1" smd roundrect
-			(at -0.775 0)
+			(at -0.775 0 90)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -9644,7 +9494,7 @@
 			(uuid "93bf42e4-9578-407f-bb01-7e860e48d811")
 		)
 		(pad "2" smd roundrect
-			(at 0.775 0)
+			(at 0.775 0 90)
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(roundrect_rratio 0.25)
@@ -9666,7 +9516,7 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "b0cf502f-32a2-49f9-b338-cb134f134c7a")
-		(at 65.875 70.58)
+		(at 96 85)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC16"
@@ -10661,534 +10511,6 @@
 			)
 		)
 	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
-		(layer "F.Cu")
-		(uuid "b99071bb-447a-4ab3-a0b8-793f4b9b7d1e")
-		(at 81.73 63)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD8"
-			(at 0 -2 0)
-			(layer "F.SilkS")
-			(uuid "9b8fa47a-09f8-439b-a6a7-7fd9fc762a88")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[3].device"
-			(at 0 2.2 0)
-			(layer "F.Fab")
-			(uuid "cf818354-547f-48ec-90fb-d3d514b818eb")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c60826c5-8638-4489-9954-0ee2a1efe501")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "47dd317c-f0d2-447c-a96e-6d4fe8fd896d")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "537341f4-bd8c-4aec-86c7-2084b34fcca9")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007eb0221/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[3]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "717e516f-5358-4190-a8c1-836492508fc5")
-		)
-		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "72ad0209-9d0a-4c18-a3b6-dbeca61b94b3")
-		)
-		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "003e315a-1c59-4a1f-a0cf-f4f531dc8da6")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "66294fef-6859-4e21-b43d-fb8b89121562")
-		)
-		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "bc3fcfa0-ecec-4dd9-ab41-5c7f6e8db4cf")
-		)
-		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "498fc705-aa89-4288-aab8-b17fb96ff70e")
-		)
-		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "7cbdc4e5-71f7-4fa6-9fec-4a255aaec479")
-		)
-		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "03b56e06-a357-4e0d-b2f8-01d6fc856391")
-		)
-		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "1fd1c4c4-e32b-459c-8820-b0dd64f9b2ae")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "d23a62c5-b570-47d0-9ced-8923e1270b04")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "41a8fadd-b09c-4778-a003-61f91762e42d")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "61e7b0f8-8c86-4585-8159-9b8a7945e248")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "fa359488-a2a7-43c4-9d33-fc13d6298ef2")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "bfcceca5-2b31-4f0f-9575-38f2c4a1b3f5")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "4ea2bb33-2136-44ca-8a30-cc45e902e00f")
-			(effects
-				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
-				)
-			)
-		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 28 "Jbtns.npx_js.led[3].dout")
-			(uuid "b2fda702-5568-464c-a1fe-b7d4d0902695")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "c2929fb8-b540-4893-af1e-75c0aa3dc80a")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 24 "Jbtns.npx_js.led[2].dout")
-			(uuid "dc7b060c-6a63-4e92-93cc-243bbe33c7d6")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 4 "Jbtns.vbat")
-			(uuid "811d6485-b5a4-4d39-b924-4a4589c871b1")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
-		(layer "F.Cu")
-		(uuid "bc2777df-6eed-4d62-86f7-09a0dbb68b28")
-		(at 75.64 63)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD6"
-			(at 0 -2 0)
-			(layer "F.SilkS")
-			(uuid "6462b422-b5d2-4f80-8e53-af431d567df8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Value" "btns.npx_js.led[1].device"
-			(at 0 2.2 0)
-			(layer "F.Fab")
-			(uuid "5a090790-ed9e-4857-b3c3-31248d99c1ca")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9266ab68-5db9-4120-ad07-49301dae6806")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a9d78b85-71ef-4468-bacd-87b0b827efa8")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d8802a36-8bcd-403e-abe0-439da139b7c2")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e7021f/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[1]")
-		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
-		(attr smd)
-		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "85280400-534a-4852-b439-fb9ce46ce522")
-		)
-		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "6402c2e8-5d5c-4904-a644-c037c8156ce3")
-		)
-		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "c51054ea-3c73-453a-871b-eb0c044c559e")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "5ba664d5-6465-4689-8dee-0ab445d8ee49")
-		)
-		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "6db0a29a-d505-48e4-bfd5-4e40b4e43189")
-		)
-		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "255eee7d-2bd6-478b-91d7-a0bd70cd925e")
-		)
-		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "F.CrtYd")
-			(uuid "18d0ad3d-f32b-4aa0-a16b-7ec1085cef19")
-		)
-		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "20960407-9b64-4cf4-8b94-26f4f54be745")
-		)
-		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "40c39b7d-79c4-4919-9bd0-fc4e77c2c8c4")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "92f9fa53-c4fa-42af-a740-b53035bb03a5")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "784100c2-2d44-4d31-aeea-e1867bb2c285")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "01a33315-7c4a-4f74-afcb-0e6a3f81c247")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "4e63d720-f3b7-4cb5-8dfa-fac98db91de8")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "6758e881-0066-4247-80c2-375dba696ac0")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(uuid "d8d9094a-8ddd-44da-976b-53404820f9fe")
-			(effects
-				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
-				)
-			)
-		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 25 "Jbtns.npx_js.led[1].dout")
-			(uuid "a20061a2-87fd-4fa5-84fd-fa36228c9ef6")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "6dea7d95-3fe5-4270-9398-782b90fd41bd")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 37 "Jbtns.npx_js.led[0].dout")
-			(uuid "31b53e35-1c22-41d1-b2ee-7114e772aa6e")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 4 "Jbtns.vbat")
-			(uuid "8f4afc94-8fbd-4ad2-b58e-35a65cf5e92f")
-		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
 	(footprint "Button_Switch_SMD:SW_Push_SPST_NO_Alps_SKRK"
 		(layer "F.Cu")
 		(uuid "bec32825-735e-4506-ae11-61629fabcd95")
@@ -11663,7 +10985,7 @@
 	(footprint "Button_Switch_SMD:SW_SPST_EVQP7C"
 		(layer "F.Cu")
 		(uuid "c4ba087a-b554-4104-a673-bcec2afeac2b")
-		(at 100 86 180)
+		(at 100 82 180)
 		(descr "Light Touch Switch, 2.2 N, https://www3.panasonic.biz/ac/e_download/control/switch/light-touch/catalog/sw_lt_eng_3529s_side.pdf?f_cd=402906")
 		(tags "tactile switch")
 		(property "Reference" "JSW9"
@@ -12458,14 +11780,14 @@
 	)
 	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
 		(layer "F.Cu")
-		(uuid "d6218a91-1433-45b7-8701-64b3e2045638")
-		(at 81.73 71.06)
+		(uuid "ccd9c9a4-b8e0-4f72-ad5f-8eef0de1d7df")
+		(at 89.393398 89.393398 45)
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD9"
-			(at 0 -2 0)
+		(property "Reference" "JD6"
+			(at 0 -2.000001 45)
 			(layer "F.SilkS")
-			(uuid "91aaba7c-e1ac-4533-8c34-ce95cf5f0ba3")
+			(uuid "20584857-483f-40d1-ab22-a2ffc01fb8b5")
 			(effects
 				(font
 					(size 1 1)
@@ -12473,10 +11795,10 @@
 				)
 			)
 		)
-		(property "Value" "btns.npx_js.led[4].device"
-			(at 0 2.2 0)
+		(property "Value" "btns.npx_js.led[1].device"
+			(at 0 2.2 45)
 			(layer "F.Fab")
-			(uuid "8bae3099-042a-4450-9c18-9df5e8e3f949")
+			(uuid "e1e433ff-78af-43e7-8087-0994e73a4253")
 			(effects
 				(font
 					(size 1 1)
@@ -12485,11 +11807,11 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "ba647e1e-b212-4f4b-8395-34659017aa2e")
+			(uuid "34dc5b52-2841-4bee-88ff-01b3dd8705a7")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12498,11 +11820,11 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "7c19533b-23d9-4248-94cb-7c78664a810c")
+			(uuid "0817d6da-4dd7-406a-a0bc-8fc7316779fb")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12511,11 +11833,11 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 45)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "df5d7de8-c448-4fb6-97c2-6d698c89667b")
+			(uuid "62198890-ca28-4797-a958-c0e814596430")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12523,8 +11845,8 @@
 				)
 			)
 		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ed0222/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[4]")
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e7021f/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[1]")
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
@@ -12535,7 +11857,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "e2c8abaa-0b84-42da-8888-e454f949098d")
+			(uuid "816d3771-2606-4ed1-8cbd-5c7a3d47b5f1")
 		)
 		(fp_line
 			(start -1.42 -1.15)
@@ -12545,7 +11867,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "8a581dab-212e-4d9f-9876-988a00c61c2e")
+			(uuid "3a6561cb-bcfd-4b8c-b5c7-4a9a1dd40cf1")
 		)
 		(fp_line
 			(start -1.42 1.15)
@@ -12555,7 +11877,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "d4e44b16-4e3c-4880-b176-f2867e791235")
+			(uuid "d41b73e8-02d7-4c88-802f-b1bbb9c030fa")
 		)
 		(fp_line
 			(start -1.52 -1.25)
@@ -12565,7 +11887,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "2aeddf79-4e52-4d88-9ef4-dd4ac15faaeb")
+			(uuid "4817005a-abd5-4451-aadb-54ab5379b112")
 		)
 		(fp_line
 			(start -1.52 1.25)
@@ -12575,7 +11897,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "e7e1ed74-96a1-4be1-b097-cad1a46e7028")
+			(uuid "7d0325b9-9cbf-4971-8dfb-57a49347f294")
 		)
 		(fp_line
 			(start 1.52 -1.25)
@@ -12585,7 +11907,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "11e67729-4d20-4215-9bbb-532484a81b58")
+			(uuid "28f9c8a2-8bf7-422d-aeed-d10ea126f3fb")
 		)
 		(fp_line
 			(start 1.52 1.25)
@@ -12595,17 +11917,27 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "e9c9e1ec-6846-43c4-877c-e3bdc5b3fe28")
+			(uuid "ab14406a-dae8-4efa-b992-f62e8af86376")
 		)
 		(fp_line
-			(start -1.1 -0.45)
+			(start -0.55 -1)
+			(end -1.1 -0.450001)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "d656c2e3-3e78-48d4-a6a8-beb905c43502")
+		)
+		(fp_line
+			(start -1.1 -0.450001)
 			(end -1.1 1)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "79de3890-36f4-4961-9396-c7016e961534")
+			(uuid "824f6ba0-5e52-40f1-a386-7db88eb2caf9")
 		)
 		(fp_line
 			(start -1.1 1)
@@ -12615,17 +11947,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "6b09bf43-9fcd-4bcb-a8ec-a34e12fe9dd2")
-		)
-		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "de6dd136-c6d4-40d3-93c3-f88052adcbc7")
+			(uuid "edca2613-8b42-444e-a948-e117c3b3da86")
 		)
 		(fp_line
 			(start 1.1 -1)
@@ -12635,7 +11957,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "f59f3e85-7f48-45c6-bece-72f06292b1bc")
+			(uuid "6dd70417-9d05-49b4-89ec-e48f31a0347f")
 		)
 		(fp_line
 			(start 1.1 -1)
@@ -12645,18 +11967,273 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "d747d0ce-9d4c-4f60-8291-55bc8d1b4962")
+			(uuid "be2fcb68-a345-452b-9ca5-0f8ca0a86690")
 		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
+		(fp_poly
+			(pts
+				(xy -0.5 -1) (xy -0.05 -1) (xy -0.05 -0.45) (xy -0.499999 -0.45)
+			)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(fill solid)
 			(layer "F.Fab")
-			(uuid "e78072d7-b0f1-410e-b3ee-59479e236374")
+			(uuid "8b16dadd-fac8-40c6-a7cb-28e79feac4f2")
+		)
+		(fp_poly
+			(pts
+				(xy -0.5 0.4) (xy -0.05 0.4) (xy -0.05 1) (xy -0.5 1)
+			)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "c46e3656-172c-4290-ab2e-1d1db88c273e")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 45)
+			(layer "F.Fab")
+			(uuid "5f904fb2-38f9-4f74-bc9b-8336d00f83c4")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.075)
+				)
+			)
+		)
+		(pad "1" smd rect
+			(at -0.915 -0.55 45)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 25 "Jbtns.npx_js.led[1].dout")
+			(uuid "8ee6ef07-4dd9-49bf-87dd-21fee1e30839")
+		)
+		(pad "2" smd rect
+			(at -0.915 0.55 45)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 2 "Jbtns.gnd")
+			(uuid "6214bf25-b466-42b0-8977-41863496d3a3")
+		)
+		(pad "3" smd rect
+			(at 0.915 0.55 45)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 37 "Jbtns.npx_js.led[0].dout")
+			(uuid "55c0a809-c4d4-4291-80d4-1ff51264c8ae")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 45)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 4 "Jbtns.vbat")
+			(uuid "35555bcb-f72e-448d-8dd3-07c9c9ff0ccb")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+		(layer "F.Cu")
+		(uuid "cdaf6062-7739-43ba-8bc8-e80939df241d")
+		(at 115 100 -90)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD11"
+			(at 0 -2 90)
+			(layer "F.SilkS")
+			(uuid "993079e3-4915-4292-8f06-e1fa6ab96337")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[6].device"
+			(at 0 2.2 90)
+			(layer "F.Fab")
+			(uuid "3846b12f-979f-4b71-828c-1ea367772efd")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "08402039-1100-470f-a8b7-158ba6e3b2aa")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "198b790c-cad7-4066-932f-8652a8963657")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "43dc7784-4d9b-4b76-9f19-cc948fadd9dc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007f10224/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[6]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -1.42 1.15)
+			(end 1.42 1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "38f96e4c-ccd0-45e9-b1f0-d6aafde34c25")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "c7d13ef0-04f8-4735-84d0-7a520719b3a1")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "aac6f68a-4c23-4d7d-a8f8-ca9ce0a2965e")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "a4b7c9c1-496b-4c48-872b-2b68ab21ff24")
+		)
+		(fp_line
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "37fb8960-0d4a-46b6-b7a5-86102767addb")
+		)
+		(fp_line
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "f08d6be4-8844-4336-8921-bd433b673bfc")
+		)
+		(fp_line
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "982fa879-9d96-4cde-8979-f9d82f8b8963")
+		)
+		(fp_line
+			(start -1.1 1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "92a10124-f464-45de-93e6-b72ee1225843")
+		)
+		(fp_line
+			(start -1.1 -0.45)
+			(end -1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "3733f713-df01-4c04-bc86-4a21104d1096")
+		)
+		(fp_line
+			(start -0.55 -1)
+			(end -1.1 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "1ee3857c-19a7-4da4-bb4e-b6f3fdeeb493")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "8313d782-37a7-4763-a74f-ef923b9d6709")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "758d4e1f-a4fe-47da-bf23-0cae46a44d30")
 		)
 		(fp_rect
 			(start -0.5 0.4)
@@ -12667,12 +12244,23 @@
 			)
 			(fill solid)
 			(layer "F.Fab")
-			(uuid "085d6e58-0e31-4fc1-b582-2b9c63e3aa28")
+			(uuid "bbe739ee-cf13-45aa-a1f5-cb354d5d5b15")
+		)
+		(fp_rect
+			(start -0.5 -1)
+			(end -0.05 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "7116b5f5-e42e-4ec2-9d05-be77857ee83e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
-			(uuid "60dfc26c-c578-4332-96e3-10c09ed14f8a")
+			(uuid "f7b17066-f7c1-4403-a443-9f9a0bc9323a")
 			(effects
 				(font
 					(size 0.5 0.5)
@@ -12681,32 +12269,506 @@
 			)
 		)
 		(pad "1" smd rect
-			(at -0.915 -0.55)
+			(at -0.915 -0.55 270)
 			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 29 "Jbtns.npx_js.led[4].dout")
-			(uuid "84695857-77aa-4c59-97fa-fabcbe7492d8")
+			(net 31 "Jbtns.npx_js.led[6].dout")
+			(uuid "08d1e81b-cb27-445c-8985-a54b43ceee11")
 		)
 		(pad "2" smd rect
-			(at -0.915 0.55)
+			(at -0.915 0.55 270)
 			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 2 "Jbtns.gnd")
-			(uuid "fad3bb2d-d3bc-4f63-87a2-4154ac612f15")
+			(uuid "9740b000-5e26-4364-a806-85cc667f2f19")
 		)
 		(pad "3" smd rect
-			(at 0.915 0.55)
+			(at 0.915 0.55 270)
 			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 28 "Jbtns.npx_js.led[3].dout")
-			(uuid "a1f846d4-d202-472e-9001-6dd4a7023f4e")
+			(net 30 "Jbtns.npx_js.led[5].dout")
+			(uuid "b504887a-248d-432b-b472-8b2fe57659fd")
 		)
 		(pad "4" smd rect
-			(at 0.915 -0.55)
+			(at 0.915 -0.55 270)
 			(size 0.7 0.7)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 4 "Jbtns.vbat")
-			(uuid "73f5d033-70c3-46a9-a159-ff9c9fe78695")
+			(uuid "fffa47c5-a56b-4af9-ab8d-48375f92a952")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "Capacitor_SMD:C_0603_1608Metric"
+		(layer "F.Cu")
+		(uuid "d8ff653c-4eca-4ba7-9cd6-630e94e8a9e5")
+		(at 92.221825 113.435029 135)
+		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "capacitor")
+		(property "Reference" "JC19"
+			(at 0 -1.43 135)
+			(layer "F.SilkS")
+			(uuid "59ba7a76-7c61-4a6f-9525-3472b8626d32")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[3].cap"
+			(at 0 1.43 135)
+			(layer "F.Fab")
+			(uuid "e3e26d1f-0b88-4966-9d2a-546cc2580553")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6c5c8825-a3eb-40d3-9db7-38db2f6ec820")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0b4355ce-04fe-4e68-894a-3a791f1d3402")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 135)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5baa35f8-2795-4ee2-af23-1ba88e33f717")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007eb0221/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[3]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -0.140581 -0.51)
+			(end 0.140581 -0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "4ce28cd9-7d82-4966-9379-55ff23bc8d9d")
+		)
+		(fp_line
+			(start -0.140581 0.51)
+			(end 0.140581 0.51)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "71e17c2d-a48c-475d-b32f-160b7433a5ce")
+		)
+		(fp_line
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "e03c2f73-09ac-4053-b06f-b95e866254d8")
+		)
+		(fp_line
+			(start 1.48 0.73)
+			(end -1.48 0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "1cd7f0b6-c621-4bf9-951a-4d1d73562e4b")
+		)
+		(fp_line
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "f7bce67f-7b2e-402d-ac82-64bde73e7cd1")
+		)
+		(fp_line
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "6c408be2-03f6-40a0-8695-7166e35e13ac")
+		)
+		(fp_line
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "8791e588-1659-4942-99b0-8f4b2dbbbbf5")
+		)
+		(fp_line
+			(start 0.8 0.4)
+			(end -0.8 0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "55f31134-d747-477f-8b26-d23e76f12ffb")
+		)
+		(fp_line
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "76edf8ae-95ae-4e60-a7ef-6a0be7102a3c")
+		)
+		(fp_line
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "6503a902-95a3-4f08-bbc2-a6018423254e")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 135)
+			(layer "F.Fab")
+			(uuid "e936d07c-44ea-4228-a23a-dc981c4f251c")
+			(effects
+				(font
+					(size 0.4 0.4)
+					(thickness 0.06)
+				)
+			)
+		)
+		(pad "1" smd roundrect
+			(at -0.775 0 135)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 4 "Jbtns.vbat")
+			(uuid "57a0ad86-44ea-486d-8696-e34e03f4f5dd")
+		)
+		(pad "2" smd roundrect
+			(at 0.775 0 135)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 2 "Jbtns.gnd")
+			(uuid "7e777640-94a8-4ba7-99d7-bef2ed314473")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
+	)
+	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+		(layer "F.Cu")
+		(uuid "dc1b0b00-33f2-4ac0-8c84-49aa6c85fc4a")
+		(at 85 100 90)
+		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
+		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
+		(property "Reference" "JD7"
+			(at 0 -2 90)
+			(layer "F.SilkS")
+			(uuid "291140e2-5163-4f24-b75b-d20511634a8e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "btns.npx_js.led[2].device"
+			(at 0 2.2 90)
+			(layer "F.Fab")
+			(uuid "c9d3635d-daae-438e-9af4-a140075e4e24")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1c6d8e18-6fac-4aac-b0c8-eff261eaab8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "439b20f9-5f10-4068-8f54-2141441a62d3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4b9a2416-4ac0-4e9c-a764-d6cd888cc658")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e90220/00000000-0000-0000-0000-000008950271")
+		(sheetname "led[2]")
+		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
+		(attr smd)
+		(fp_line
+			(start -1.42 -1.15)
+			(end 1.42 -1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "6848b328-b7c6-4ec3-beb4-d9e6a61774f5")
+		)
+		(fp_line
+			(start -1.42 -1.15)
+			(end -1.42 -0.5)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "faef88e5-36ac-43e4-8a4e-ce64d8444fdc")
+		)
+		(fp_line
+			(start -1.42 1.15)
+			(end 1.42 1.15)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "2502e3cb-bd6a-4e4f-bc62-2e563cf64cdc")
+		)
+		(fp_line
+			(start 1.52 -1.25)
+			(end -1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "19f37dd9-fa81-4041-8e52-f4df4ee6e1e1")
+		)
+		(fp_line
+			(start -1.52 -1.25)
+			(end -1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "fb1dc451-2c90-420d-8558-c4a64647fd13")
+		)
+		(fp_line
+			(start 1.52 1.25)
+			(end 1.52 -1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "96143766-076a-4d55-9816-7149ec0c0629")
+		)
+		(fp_line
+			(start -1.52 1.25)
+			(end 1.52 1.25)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(layer "F.CrtYd")
+			(uuid "77499b91-4aa7-4fb5-9fe4-cb32b2f36621")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end -0.55 -1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "47e71018-2126-4e7d-a4cc-18460bce54d7")
+		)
+		(fp_line
+			(start 1.1 -1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "d78b6724-1486-40a6-b94b-d353619b4c7f")
+		)
+		(fp_line
+			(start -0.55 -1)
+			(end -1.1 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "a8072dc3-2a7a-4049-a5dc-3690e4f9692e")
+		)
+		(fp_line
+			(start -1.1 -0.45)
+			(end -1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "540f687d-b5f7-41e6-9aad-699f016702b1")
+		)
+		(fp_line
+			(start -1.1 1)
+			(end 1.1 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(layer "F.Fab")
+			(uuid "d23d610a-9456-44b9-9496-1f04d9a0a4d8")
+		)
+		(fp_rect
+			(start -0.5 -1)
+			(end -0.05 -0.45)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "9820b2de-04b1-4392-b7f1-d10c9b3ba493")
+		)
+		(fp_rect
+			(start -0.5 0.4)
+			(end -0.05 1)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill solid)
+			(layer "F.Fab")
+			(uuid "89e264fc-b39c-439e-b565-510f24376b66")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 90)
+			(layer "F.Fab")
+			(uuid "b98fe603-cb72-4969-9bb3-7bb623f9aec8")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.075)
+				)
+			)
+		)
+		(pad "1" smd rect
+			(at -0.915 -0.55 90)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 24 "Jbtns.npx_js.led[2].dout")
+			(uuid "5db987a9-34f1-41e8-8fc3-84de71ea99db")
+		)
+		(pad "2" smd rect
+			(at -0.915 0.55 90)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 2 "Jbtns.gnd")
+			(uuid "7a0f0d0e-8171-4f64-ba03-e69505986774")
+		)
+		(pad "3" smd rect
+			(at 0.915 0.55 90)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 25 "Jbtns.npx_js.led[1].dout")
+			(uuid "7adc046b-3340-4e93-a192-f35a518094e8")
+		)
+		(pad "4" smd rect
+			(at 0.915 -0.55 90)
+			(size 0.7 0.7)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(net 4 "Jbtns.vbat")
+			(uuid "b01f8d5d-08f3-4356-bd5b-752dbccefc3c")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
 			(offset
@@ -12899,16 +12961,16 @@
 			)
 		)
 	)
-	(footprint "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm"
+	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
-		(uuid "f059ce53-64c6-48d7-8a0c-30a819de2a09")
-		(at 87.82 63)
-		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
-		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
-		(property "Reference" "JD10"
-			(at 0 -2 0)
+		(uuid "fbea281f-315c-4683-a29b-82cfac8180e7")
+		(at 85 104 90)
+		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
+		(tags "capacitor")
+		(property "Reference" "JC18"
+			(at 0 -1.43 90)
 			(layer "F.SilkS")
-			(uuid "ba35274f-e7b7-407f-a6af-d1f3d8b738c2")
+			(uuid "1df38b91-91dd-4c54-bd4e-ab2ca0a163b3")
 			(effects
 				(font
 					(size 1 1)
@@ -12916,10 +12978,10 @@
 				)
 			)
 		)
-		(property "Value" "btns.npx_js.led[5].device"
-			(at 0 2.2 0)
+		(property "Value" "btns.npx_js.led[2].cap"
+			(at 0 1.43 90)
 			(layer "F.Fab")
-			(uuid "3c5f8ea3-1671-4d84-ab01-4deaacce1317")
+			(uuid "28d28f13-1da8-4ba8-8730-8b84a7c8bb43")
 			(effects
 				(font
 					(size 1 1)
@@ -12928,11 +12990,11 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "69b502ff-45f9-4434-9bcf-2a1cc79648f2")
+			(uuid "94daedfe-7854-40d9-b021-c214d0dd2199")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12941,11 +13003,11 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "49e60458-42c8-4e1f-8d9d-1e5e230c2598")
+			(uuid "fd8b4146-e065-4f21-9799-71da1289863b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12954,11 +13016,11 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "64378e4c-9149-4991-afc7-934eadab96f1")
+			(uuid "fc2d45ea-49e1-46bc-b9fb-4040ac1ca257")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12966,192 +13028,138 @@
 				)
 			)
 		)
-		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007ef0223/00000000-0000-0000-0000-000008950271")
-		(sheetname "led[5]")
+		(path "/00000000-0000-0000-0000-0000043701b8/00000000-0000-0000-0000-0000090e0293/00000000-0000-0000-0000-000007e90220/00000000-0000-0000-0000-0000025e0135")
+		(sheetname "led[2]")
 		(sheetfile "edg.parts.human_interface.Neopixel.Ws2812c_2020")
 		(attr smd)
 		(fp_line
-			(start -1.42 -1.15)
-			(end -1.42 -0.5)
+			(start -0.14058 -0.51)
+			(end 0.14058 -0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "0685566c-ecd2-4a43-bab5-57831bb2b16e")
+			(uuid "00597854-3bb6-496f-b883-b292686a657b")
 		)
 		(fp_line
-			(start -1.42 -1.15)
-			(end 1.42 -1.15)
+			(start -0.14058 0.51)
+			(end 0.14058 0.51)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "4346c24f-060d-41f4-8240-50c0bfb28947")
+			(uuid "b163f499-5f21-4162-ade3-60c6c8909bb3")
 		)
 		(fp_line
-			(start -1.42 1.15)
-			(end 1.42 1.15)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "a43c68ac-6822-466f-a99f-3edf87503fc7")
-		)
-		(fp_line
-			(start -1.52 -1.25)
-			(end -1.52 1.25)
+			(start 1.48 -0.73)
+			(end 1.48 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "1659eb6f-33df-49b9-a009-a17660ad1378")
+			(uuid "7d483f35-b415-4827-8b19-3ea5731eebf1")
 		)
 		(fp_line
-			(start -1.52 1.25)
-			(end 1.52 1.25)
+			(start -1.48 -0.73)
+			(end 1.48 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "ab16c3fc-e03c-40b8-96a0-8039775d78ce")
+			(uuid "bc3603df-0d93-4c5d-8255-6a1c1dbd37af")
 		)
 		(fp_line
-			(start 1.52 -1.25)
-			(end -1.52 -1.25)
+			(start 1.48 0.73)
+			(end -1.48 0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "ffb51f3f-7d94-4c5d-a1c8-49764f84e695")
+			(uuid "a5a02f8f-b892-4c48-9498-f6c812e256a7")
 		)
 		(fp_line
-			(start 1.52 1.25)
-			(end 1.52 -1.25)
+			(start -1.48 0.73)
+			(end -1.48 -0.73)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "72ef03fb-4d52-4e93-a741-eeae264243bb")
+			(uuid "8d008eb3-1268-4bf4-b0fc-d1c7c8f40588")
 		)
 		(fp_line
-			(start -1.1 -0.45)
-			(end -1.1 1)
+			(start 0.8 -0.4)
+			(end 0.8 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "91779d09-37b4-4511-8d9f-7c1a64666548")
+			(uuid "ce6a2a08-3bf6-404f-a5c9-ca097b436455")
 		)
 		(fp_line
-			(start -1.1 1)
-			(end 1.1 1)
+			(start -0.8 -0.4)
+			(end 0.8 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "012b9c95-2907-4d1c-bf1b-b0e472edbfff")
+			(uuid "cf06b690-f502-438a-9a26-79e960544160")
 		)
 		(fp_line
-			(start -0.55 -1)
-			(end -1.1 -0.45)
+			(start 0.8 0.4)
+			(end -0.8 0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "c81c6762-ff4c-441b-adcb-9282df22f225")
+			(uuid "95f23a57-cf53-4776-a70b-2db831e0b5f3")
 		)
 		(fp_line
-			(start 1.1 -1)
-			(end -0.55 -1)
+			(start -0.8 0.4)
+			(end -0.8 -0.4)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "1ae6afb0-126b-4426-b83a-48883de26b56")
-		)
-		(fp_line
-			(start 1.1 -1)
-			(end 1.1 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "F.Fab")
-			(uuid "79f9f482-1e71-46aa-906e-77db6c1f08b3")
-		)
-		(fp_rect
-			(start -0.5 -1)
-			(end -0.05 -0.45)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "2c8e9c37-479c-4086-833c-62216a40c276")
-		)
-		(fp_rect
-			(start -0.5 0.4)
-			(end -0.05 1)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill solid)
-			(layer "F.Fab")
-			(uuid "8af7e1db-f68e-4a0a-90c1-833c00ed323d")
+			(uuid "e1399994-1621-4fd4-9906-ac5b0bdd6877")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
-			(uuid "c5386cb4-0c0d-46c4-bc99-78c2029b9e52")
+			(uuid "bfad304f-cb0e-49d3-956f-dfad307b5f30")
 			(effects
 				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
+					(size 0.4 0.4)
+					(thickness 0.06)
 				)
 			)
 		)
-		(pad "1" smd rect
-			(at -0.915 -0.55)
-			(size 0.7 0.7)
+		(pad "1" smd roundrect
+			(at -0.775 0 90)
+			(size 0.9 0.95)
 			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 30 "Jbtns.npx_js.led[5].dout")
-			(uuid "3a95598a-b78f-4495-aca5-d3dcc081cfce")
-		)
-		(pad "2" smd rect
-			(at -0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 2 "Jbtns.gnd")
-			(uuid "42a78cf9-83c1-43d1-a200-a335e64fac17")
-		)
-		(pad "3" smd rect
-			(at 0.915 0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
-			(net 29 "Jbtns.npx_js.led[4].dout")
-			(uuid "312480ae-223c-4e8e-b116-111a80b799bf")
-		)
-		(pad "4" smd rect
-			(at 0.915 -0.55)
-			(size 0.7 0.7)
-			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
 			(net 4 "Jbtns.vbat")
-			(uuid "5373b858-89d9-4542-830a-60b70e69048c")
+			(uuid "ea7f64cf-c405-4db0-a4d2-ce8e68be60f8")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.wrl"
+		(pad "2" smd roundrect
+			(at 0.775 0 90)
+			(size 0.9 0.95)
+			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.25)
+			(net 2 "Jbtns.gnd")
+			(uuid "74391ccd-94ca-4c34-a2f5-eeac9abd5044")
+		)
+		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -14354,6 +14362,17 @@
 		)
 	)
 	(gr_circle
+		(center 100 100)
+		(end 100 113.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "1889a963-6504-4ede-9263-e3931f41acbb")
+	)
+	(gr_circle
 		(center 100 132)
 		(end 100 119.5)
 		(stroke
@@ -14539,16 +14558,48 @@
 		(members "6599c501-6621-40c2-bf9d-6bd0b99c368d" "79d4898c-8253-41e0-865a-6946c4284363")
 	)
 	(group ""
+		(uuid "3a46fd4b-7126-456c-a6a9-facc365dbdd9")
+		(members "dc1b0b00-33f2-4ac0-8c84-49aa6c85fc4a" "fbea281f-315c-4683-a29b-82cfac8180e7")
+	)
+	(group ""
+		(uuid "5deb3a2d-af9f-4b98-a794-5c213ae5fc5e")
+		(members "0fe09cd1-a7e0-4b4a-a427-515450051960" "8e5c1675-f183-4589-8d2a-20f6db327420")
+	)
+	(group ""
 		(uuid "5e4e8aa1-14ee-4c2a-ae56-028d63c3565d")
 		(members "3745fe85-97bf-4d89-8425-d41f6d7466bb" "b8034a62-337f-4124-8c03-ac52564c6ca7")
+	)
+	(group ""
+		(uuid "6b85bafc-5d4b-420e-a325-b0a35e334a02")
+		(members "95c039c4-7fc2-4764-8a9c-509ef6cf2716" "a6f5b496-1518-42c7-b758-df7fdb1603f2")
+	)
+	(group ""
+		(uuid "74e698e7-3b51-4a47-a8e2-b3d76e04bd1e")
+		(members "5d1cd047-2bfb-4411-a49a-030907a6224b" "cdaf6062-7739-43ba-8bc8-e80939df241d")
+	)
+	(group ""
+		(uuid "9078f847-3ca6-4d57-a515-8d0c92347170")
+		(members "2d6dd0a9-f95a-480c-aeea-b95a2e2870e7" "ccd9c9a4-b8e0-4f72-ad5f-8eef0de1d7df")
 	)
 	(group ""
 		(uuid "94739292-1d83-4c7f-8518-a689ccc964b8")
 		(members "6f4c2a32-58d1-4c18-a4a7-6ef1e3f80eb9" "c3d52b6d-45d8-491f-9f87-572a16ba9bc2")
 	)
 	(group ""
+		(uuid "b2a974dc-e9d6-40df-b0cb-978414789498")
+		(members "0f76d9e6-0881-460b-b4dd-1a86ac03be26" "d8ff653c-4eca-4ba7-9cd6-630e94e8a9e5")
+	)
+	(group ""
 		(uuid "c5ab09c1-0a49-4c45-9a35-1000bf241c88")
 		(members "8fc288f7-0a7d-43ec-b7be-e64aa13d4c7b" "fea9575d-9c19-4ca7-8d58-b03406b264ee")
+	)
+	(group ""
+		(uuid "c8fc0215-396a-4d60-9f30-38e70f8dc041")
+		(members "9d7a6037-537a-4af5-b23b-9a85af8a52df" "b0cf502f-32a2-49f9-b338-cb134f134c7a")
+	)
+	(group ""
+		(uuid "d803f0e0-49a0-4b09-bce0-b30eb6fde7fa")
+		(members "6a4de2d6-57ce-4a5e-b9ca-2ef66f6909b2" "821fb1df-26c5-4bfd-9f08-9574c58c1e72")
 	)
 	(group ""
 		(uuid "f8b5f6eb-3e7c-4059-9980-4afda5491464")
