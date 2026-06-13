@@ -15,6 +15,7 @@ class ControlSubboard(SubboardBlock):
         self.gnd = self.Port(Ground.empty(), [Common])
         self.v3v3 = self.Port(VoltageSink.empty())
         self.v5 = self.Port(VoltageSink.empty())
+        self.tp_gnd = self.Block(GroundTestPoint("gnd")).connected(self.gnd)
 
         self.i2c = self.Port(I2cController.empty())
         self.pd_int = self.Port(DigitalBidir.empty())
