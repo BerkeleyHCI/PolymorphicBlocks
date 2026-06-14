@@ -233,7 +233,7 @@ class BleJoystick(JlcBoardTop):
                 (Ch32vSdiHeader, Ch32vSdiTc2030),
                 (TestPoint, CompactKeystone5015),
                 (TagConnect, TagConnectNonLegged),
-                (PassiveConnector, JstPhKVertical),
+                (PassiveConnector, PinHeader2mm),
                 (Neopixel, Ws2812c_2020),
                 (TactileSwitch, SmtSwitch),
             ],
