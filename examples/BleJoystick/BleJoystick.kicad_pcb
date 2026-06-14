@@ -3394,7 +3394,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC3"
-			(at 0 -1.85 360)
+			(at 0 -1.85 0)
 			(layer "F.SilkS")
 			(uuid "bc0ea49b-1886-4829-8d5c-c2a991fc88e1")
 			(effects
@@ -3405,7 +3405,7 @@
 			)
 		)
 		(property "Value" "mp2722.batt_cap"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "F.Fab")
 			(uuid "de13a082-6aa5-4030-a536-42122f5f3d6b")
 			(effects
@@ -3559,7 +3559,7 @@
 			(uuid "0cd49dcc-b43b-4447-922d-32e057e976ab")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "a55686b1-d7b2-41b3-ae3a-91f0fa8b849e")
 			(effects
@@ -4438,7 +4438,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC5"
-			(at -2.5 0 360)
+			(at -2.5 0 0)
 			(layer "F.SilkS")
 			(uuid "4ed586b3-aee8-41ba-889b-cdedc7c773a6")
 			(effects
@@ -4449,7 +4449,7 @@
 			)
 		)
 		(property "Value" "mp2722.power_path.in_cap"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "d295d886-af2e-49d3-8138-feb9f9a8ecbf")
 			(effects
@@ -4603,7 +4603,7 @@
 			(uuid "bcee0125-448c-4a1e-ae91-3b7ef326eaff")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "cde4412a-95e7-43e8-9db7-7ebcca52a171")
 			(effects
@@ -6093,7 +6093,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC2"
-			(at 0 -1.5 360)
+			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "872d6197-6439-417a-b4f9-a2952a08acdf")
 			(effects
@@ -6104,7 +6104,7 @@
 			)
 		)
 		(property "Value" "mp2722.pmid_cap"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "4a604ddd-52c5-496c-822a-a66724d0c3dd")
 			(effects
@@ -6258,7 +6258,7 @@
 			(uuid "c2fd695c-cd94-4c17-a61c-8bff063dbb3e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "17315557-8b4d-416a-81b4-1eb33730827f")
 			(effects
@@ -10076,7 +10076,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003685)
+			(mid 1.000175 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
@@ -10186,7 +10186,7 @@
 		)
 		(fp_arc
 			(start -0.013396 0.243068)
-			(mid -0.465727 -0.276786)
+			(mid -0.46573 -0.276785)
 			(end -0.573838 -0.957346)
 			(stroke
 				(width 0.16)
@@ -11702,7 +11702,6 @@
 		)
 	)
 	(footprint "edg:Joystick_XboxElite2"
-		(locked yes)
 		(layer "B.Cu")
 		(uuid "c5fcdedf-2fe9-41d0-bd4d-543619417cd4")
 		(at 150 70 180)
@@ -12453,6 +12452,27 @@
 		(net 30)
 		(uuid "fdb02d05-4621-4cb3-98ab-0953b4629bbf")
 	)
+	(gr_arc
+		(start 105 80)
+		(mid 106.414214 80.585786)
+		(end 107 82)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "03b7c1c9-36ad-4fce-8252-6eb4b40aea08")
+	)
+	(gr_line
+		(start 89.7 95.2)
+		(end 89.7 104.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "0640b54d-a666-48b2-b9a5-b1227f760dc8")
+	)
 	(gr_line
 		(start 145 50)
 		(end 145 52)
@@ -12464,6 +12484,16 @@
 		(uuid "09c21f67-0bf7-4814-920a-90c8f94b7f84")
 	)
 	(gr_line
+		(start 110.3 104.8)
+		(end 110.3 95.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "0e16c1d7-4464-44d9-b6f9-5a39d9cb0f4a")
+	)
+	(gr_line
 		(start 138 112)
 		(end 162 112)
 		(stroke
@@ -12472,6 +12502,111 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "11123d7c-a7ce-4241-ad24-7d6629eb768f")
+	)
+	(gr_arc
+		(start 104.8 89.7)
+		(mid 105.507107 89.992893)
+		(end 105.8 90.7)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "1898d5fd-acc4-4973-a14b-c4c987bd7a44")
+	)
+	(gr_line
+		(start 109.3 105.8)
+		(end 107.8 105.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "2337d32b-0067-40bd-8f39-a526ba66deaa")
+	)
+	(gr_line
+		(start 93 82)
+		(end 93 84.5)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "263795ec-56bd-4271-9e7c-c35e55535d31")
+	)
+	(gr_arc
+		(start 93 82)
+		(mid 93.585786 80.585786)
+		(end 95 80)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "2b227613-f616-443d-b57c-c241cf1ce6be")
+	)
+	(gr_line
+		(start 94.2 90.7)
+		(end 94.2 92.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "2b3c93a0-cdec-489e-b3c1-c26d2c0daa24")
+	)
+	(gr_line
+		(start 90.7 105.8)
+		(end 92.2 105.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "390e3d22-5278-4605-97f4-6d39b8185a1f")
+	)
+	(gr_arc
+		(start 105.8 109.3)
+		(mid 105.507107 110.007107)
+		(end 104.8 110.3)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "3c2bb97d-79ba-422f-99ab-38458fd0cd95")
+	)
+	(gr_arc
+		(start 107.8 105.8)
+		(mid 107.507107 106.507107)
+		(end 106.8 106.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "4477a461-b0dd-4d91-a30e-aecd3d04fd4b")
+	)
+	(gr_arc
+		(start 110.3 104.8)
+		(mid 110.007107 105.507107)
+		(end 109.3 105.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "4ceac479-3476-44ba-8315-b53e34632f6c")
+	)
+	(gr_line
+		(start 94.2 109.3)
+		(end 94.2 107.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "4f3fa0d2-ebc7-40e4-a3a6-56da13d36c90")
 	)
 	(gr_line
 		(start 137 60)
@@ -12515,6 +12650,49 @@
 		(uuid "5d731a19-3841-4862-bba4-5d4e7a134da8")
 	)
 	(gr_arc
+		(start 94.2 107.8)
+		(mid 93.492893 107.507107)
+		(end 93.2 106.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6ac2ac64-f701-4929-9689-e729e8c8c28c")
+	)
+	(gr_arc
+		(start 93.2 106.8)
+		(mid 92.492893 106.507107)
+		(end 92.2 105.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6bc0c692-61ac-4ffb-a1e1-c04316d62b7e")
+	)
+	(gr_arc
+		(start 94.2 90.7)
+		(mid 94.492893 89.992893)
+		(end 95.2 89.7)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6d35b005-2b84-41a5-85db-6bd7447263d0")
+	)
+	(gr_line
+		(start 95 80)
+		(end 105 80)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6f47f645-e0a3-4841-9212-7d3a66a2aaf2")
+	)
+	(gr_arc
 		(start 163 111)
 		(mid 162.707107 111.707107)
 		(end 162 112)
@@ -12525,6 +12703,59 @@
 		(layer "Edge.Cuts")
 		(uuid "71351c5a-fb5a-482a-8cd2-be026e60add5")
 	)
+	(gr_arc
+		(start 106.8 106.8)
+		(mid 106.507107 107.507107)
+		(end 105.8 107.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "7a285aa5-2e54-4e72-bf95-e77d8041c822")
+	)
+	(gr_arc
+		(start 105.8 92.2)
+		(mid 106.507107 92.492893)
+		(end 106.8 93.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "7c32d2de-c658-4bb3-b4cc-a1fb73ead951")
+	)
+	(gr_line
+		(start 113 132)
+		(end 113 89)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "8432c647-41d0-4174-9bbe-f3959bdda876")
+	)
+	(gr_arc
+		(start 113 132)
+		(mid 100 145)
+		(end 87 132)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "85d8b1cd-a515-4a41-978d-4f83b4e29e63")
+	)
+	(gr_line
+		(start 105.8 90.7)
+		(end 105.8 92.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "9024a2ff-6f86-4acd-9e1b-98402d44a62d")
+	)
 	(gr_line
 		(start 163 60)
 		(end 163 111)
@@ -12534,6 +12765,17 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "995cc37a-de40-47fd-bb3f-be07777b248b")
+	)
+	(gr_arc
+		(start 89.7 95.2)
+		(mid 89.992893 94.492893)
+		(end 90.7 94.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "9961b498-eaac-40fe-ab85-7b649ea0761f")
 	)
 	(gr_line
 		(start 155 52)
@@ -12546,6 +12788,110 @@
 		(uuid "a8180181-bb79-465c-bd8a-b364685b9cfc")
 	)
 	(gr_line
+		(start 104.8 89.7)
+		(end 95.2 89.7)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "af0f91a6-fb3a-481b-9191-b8721b42d0a9")
+	)
+	(gr_arc
+		(start 90.7 105.8)
+		(mid 89.992893 105.507107)
+		(end 89.7 104.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "bbf3ac82-b794-47ba-bc62-fd8c30a5df72")
+	)
+	(gr_arc
+		(start 87 89)
+		(mid 89.753051 86.420735)
+		(end 93 84.5)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "be7416f1-6cb2-44dd-9bd9-882fc011cf6d")
+	)
+	(gr_arc
+		(start 93.2 93.2)
+		(mid 93.492893 92.492893)
+		(end 94.2 92.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "bede86ce-a8e6-4d73-a5b7-73ef21df813a")
+	)
+	(gr_line
+		(start 87 132)
+		(end 87 89)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "c1b46f7d-61fd-4846-9dd5-548b5dd9685f")
+	)
+	(gr_line
+		(start 105.8 109.3)
+		(end 105.8 107.8)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "c5c82881-9abf-43a2-9b2a-3a24e6cc5361")
+	)
+	(gr_line
+		(start 90.7 94.2)
+		(end 92.2 94.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "c70cf8ee-6b5e-4d32-aa57-bbaef36a2923")
+	)
+	(gr_arc
+		(start 109.3 94.2)
+		(mid 110.007107 94.492893)
+		(end 110.3 95.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "cd232232-d744-429e-8ae3-13af64c34853")
+	)
+	(gr_line
+		(start 107 82)
+		(end 107 84.5)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "cf04bd75-0537-4c81-83bb-c958db6cf093")
+	)
+	(gr_line
+		(start 109.3 94.2)
+		(end 107.8 94.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "d01a76a6-d753-4187-9efe-ae4f3882e42c")
+	)
+	(gr_line
 		(start 155 50)
 		(end 155 52)
 		(stroke
@@ -12554,6 +12900,71 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "df390ee3-6cc5-459a-b564-b5fd68d74558")
+	)
+	(gr_arc
+		(start 107 84.5)
+		(mid 110.246949 86.420735)
+		(end 113 89)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "dfa7c348-2d6d-49c7-a7c0-a25e0e8d5abe")
+	)
+	(gr_arc
+		(start 106.8 93.2)
+		(mid 107.507107 93.492893)
+		(end 107.8 94.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "e28cf30a-b474-410f-99bf-6db1c1a0813f")
+	)
+	(gr_line
+		(start 95.2 110.3)
+		(end 104.8 110.3)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "ef7ff962-39f3-44c6-8de2-d6e231cbb24e")
+	)
+	(gr_arc
+		(start 95.2 110.3)
+		(mid 94.492893 110.007107)
+		(end 94.2 109.3)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "f029df0d-751d-4b94-b63d-5f9c5cc074c4")
+	)
+	(gr_arc
+		(start 92.2 94.2)
+		(mid 92.492893 93.492893)
+		(end 93.2 93.2)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "f91ba6ca-5900-4e7d-b757-7e1c87c29736")
+	)
+	(gr_circle
+		(center 100 100)
+		(end 100 99)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.Fab")
+		(uuid "b9165e4e-549f-4f4c-80af-89ca430d47db")
 	)
 	(gr_text "BLE Joystick\nApr '25  rv1"
 		(at 150 105.5 0)
