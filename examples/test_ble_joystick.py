@@ -206,7 +206,9 @@ class BleJoystick(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        # TODO pin this
+                        # "i2c.scl=28",
+                        # "i2c.sda=27",
+                        "trig=6",
                     ],
                 ),
                 (
@@ -236,6 +238,7 @@ class BleJoystick(JlcBoardTop):
                 (TactileSwitch, SmtSwitch),
             ],
             class_values=[
+                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
             ],
         )
