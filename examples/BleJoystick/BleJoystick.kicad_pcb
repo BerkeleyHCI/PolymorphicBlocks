@@ -14847,7 +14847,7 @@
 		(uuid "7c32d2de-c658-4bb3-b4cc-a1fb73ead951")
 	)
 	(gr_line
-		(start 113 132)
+		(start 113 137)
 		(end 113 89)
 		(stroke
 			(width 0.0381)
@@ -14857,9 +14857,9 @@
 		(uuid "8432c647-41d0-4174-9bbe-f3959bdda876")
 	)
 	(gr_arc
-		(start 113 132)
-		(mid 100 145)
-		(end 87 132)
+		(start 113 137)
+		(mid 100 150)
+		(end 87 137)
 		(stroke
 			(width 0.0381)
 			(type default)
@@ -14952,7 +14952,7 @@
 		(uuid "bede86ce-a8e6-4d73-a5b7-73ef21df813a")
 	)
 	(gr_line
-		(start 87 132)
+		(start 87 137)
 		(end 87 89)
 		(stroke
 			(width 0.0381)
@@ -15076,7 +15076,7 @@
 		(layer "Edge.Cuts")
 		(uuid "f91ba6ca-5900-4e7d-b757-7e1c87c29736")
 	)
-	(gr_text "BLE Joystick\nApr '25  rv1"
+	(gr_text "BLE Joystick\nJun'26  rv2"
 		(at 150 105.5 0)
 		(layer "B.SilkS")
 		(uuid "e7b98193-c64e-43ef-ad97-c4ac515bd08f")
