@@ -44,7 +44,6 @@ class ButtonSubboard(SubboardBlock):
         self.tp_pwr = self.Block(VoltageTestPoint("v3v3")).connected(self.pwr)
         self.tp_vbat = self.Block(VoltageTestPoint("vbat")).connected(self.vbat)
         self.tp_i2c = self.Block(I2cTestPoint("i2c")).connected(self.i2c)
-        self.tp_io0 = self.Block(DigitalTestPoint("io0")).connected(self.io0)
 
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
@@ -60,11 +59,6 @@ class ButtonSubboard(SubboardBlock):
                 sw = self.sw[i] = imp.Block(DigitalSwitch())
                 self.connect(sw.out, self.ioe.gpio.request(f"dpad_{i}"))
 
-            self.bumper_sw = imp.Block(DigitalSwitch())
-            self.connect(self.bumper_sw.out, self.ioe.gpio.request(f"bumper"))
-
-            (self.trig,), _ = self.chain(imp.Block(A1304()), self.ioe.adc.request("trig"))
-
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.vbat, [Power]),
@@ -73,7 +67,7 @@ class ButtonSubboard(SubboardBlock):
                 self.ioe.gpio.request("npx"),
                 imp.Block(DigitalTestPoint()),
                 imp.Block(NeopixelArray(8)),
-                imp.Block(NeopixelArray(6)),
+                imp.Block(NeopixelArray(3)),  # only the bottom arc
             )
 
         self.conn = self.Block(Fpc050Pair(8, cable="same"), external=True)
@@ -143,6 +137,11 @@ class BleJoystick(JlcBoardTop):
 
             self.connect(self.gate.btn_out, self.mcu.gpio.request("sw"))
             self.connect(self.mcu.gpio.request("gate_ctl"), self.gate.control)
+
+            self.bumper_sw = imp.Block(DigitalSwitch())
+            self.connect(self.bumper_sw.out, self.mcu.gpio.request(f"bumper"))
+
+            (self.trig,), _ = self.chain(imp.Block(A1304()), self.mcu.adc.request("trig"))
 
             mcu_i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
@@ -226,8 +225,6 @@ class BleJoystick(JlcBoardTop):
                         "dpad_5=13",
                         "dpad_6=14",
                         "dpad_7=15",
-                        "bumper=19",
-                        "trig=20",
                     ],
                 ),
             ],
