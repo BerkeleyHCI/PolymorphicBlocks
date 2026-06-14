@@ -65,7 +65,7 @@ class ButtonSubboard(SubboardBlock):
         ) as imp:
             (self.npx_tp, self.npx_dpad, self.npx_js), _ = self.chain(
                 self.ioe.gpio.request("npx"),
-                imp.Block(DigitalTestPoint()),
+                imp.Block(DigitalTestPoint("npx")),
                 imp.Block(NeopixelArray(8)),
                 imp.Block(NeopixelArray(3)),  # only the bottom arc
             )
