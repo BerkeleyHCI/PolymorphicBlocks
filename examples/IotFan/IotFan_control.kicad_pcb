@@ -147,7 +147,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC13"
-			(at 0 -1.68 0)
+			(at -3 0 0)
 			(layer "F.SilkS")
 			(uuid "3108b172-38fe-4105-aeac-9e269f508c09")
 			(effects
@@ -357,7 +357,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR10"
-			(at 0 -1.43 0)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "bd7317d2-03d9-4ef3-ae1d-dd99c4b7fdb7")
 			(effects
@@ -567,7 +567,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR12"
-			(at 0 -1.43 90)
+			(at -2 0 180)
 			(layer "F.SilkS")
 			(uuid "16ab75e3-00ed-4d9d-8f33-26a955fc6dc1")
 			(effects
@@ -777,13 +777,13 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD5"
-			(at 0 -2 0)
+			(at 0 2 0)
 			(layer "F.SilkS")
 			(uuid "b17107f1-96e6-4928-8b8f-6f02cc7fd4d4")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -793,8 +793,8 @@
 			(uuid "9c3f16b3-03b3-4218-96ee-fef34361d616")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -1271,7 +1271,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR15"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "c716ab60-11a8-4e90-b86d-442e299a3d44")
 			(effects
@@ -1481,13 +1481,13 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD9"
-			(at 0 -2 120)
+			(at 0.080127 1.861216 120)
 			(layer "F.SilkS")
 			(uuid "b5b4acf0-0e8b-4229-9afc-ae54c82b2f01")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -1497,8 +1497,8 @@
 			(uuid "58c5373a-c27c-4408-8f9f-6b69dd93e90b")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -1747,7 +1747,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC20"
-			(at 0 -1.43 120)
+			(at -0.165063 1.285898 120)
 			(layer "F.SilkS")
 			(uuid "7a3eff8f-4c4a-4f6e-9217-c1abc73bee89")
 			(effects
@@ -1957,7 +1957,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC19"
-			(at 0 -1.43 0)
+			(at 0 1.25 0)
 			(layer "F.SilkS")
 			(uuid "a23b766a-d708-4b71-958a-9d88c95e66c1")
 			(effects
@@ -2167,7 +2167,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC10"
-			(at 0 -1.85 360)
+			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "bae87abf-6ed9-4a64-8388-f99f73809c27")
 			(effects
@@ -2178,7 +2178,7 @@
 			)
 		)
 		(property "Value" "control.mcu.vcc_cap0"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "F.Fab")
 			(uuid "c79dff42-f0de-43fa-ab7f-1e2257406f7a")
 			(effects
@@ -2332,7 +2332,7 @@
 			(uuid "fc09dfd5-e8b4-4760-a442-022140438655")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "cf2114c9-3f95-46d6-96ac-f5748e066eb6")
 			(effects
@@ -2488,7 +2488,7 @@
 		(descr "2.4 GHz Wi-Fi and Bluetooth module  https://www.espressif.com/sites/default/files/documentation/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf")
 		(tags "2.4 GHz Wi-Fi and Bluetooth module")
 		(property "Reference" "FU4"
-			(at -10.5 11.4 90)
+			(at -8.5 13.5 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "755bfae2-ca17-4f9d-acda-4c3928b50042")
@@ -3218,7 +3218,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC22"
-			(at 0 -1.43 360)
+			(at 0 1.25 0)
 			(layer "F.SilkS")
 			(uuid "5e22a28e-7329-4c89-b269-821e95806acd")
 			(effects
@@ -3229,7 +3229,7 @@
 			)
 		)
 		(property "Value" "control.npx.led[4].cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "5e2bd1e2-63cf-40f6-b11b-97f7e9213ead")
 			(effects
@@ -3383,7 +3383,7 @@
 			(uuid "a9ec8ef0-d259-41d0-a3a0-fd700357c84c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "8922db0b-6c99-4377-9d74-712515fd6c7e")
 			(effects
@@ -3428,7 +3428,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR9"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "1d38eb97-66e3-4ab3-9cb8-6baecbb3e7dc")
 			(effects
@@ -3638,7 +3638,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC12"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "560698c3-64a1-4e61-badd-28e97d5e3994")
 			(effects
@@ -3848,7 +3848,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC16"
-			(at 0 -1.43 -90)
+			(at -2 0 0)
 			(layer "F.SilkS")
 			(uuid "9045fb35-ad60-40d0-8c85-8401dc999cfe")
 			(effects
@@ -4058,7 +4058,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR8"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "85978be0-1fd1-4958-b89d-eadbfadf3c84")
 			(effects
@@ -4268,13 +4268,13 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD4"
-			(at 0 -2 60)
+			(at -2.196152 0.196153 150)
 			(layer "F.SilkS")
 			(uuid "48f4be63-eb74-436e-9b53-0889371cc293")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -4284,8 +4284,8 @@
 			(uuid "a0e4c2e1-54a2-4aee-999b-427e76688ced")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -4534,7 +4534,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC21"
-			(at 0 -1.43 -120)
+			(at 0.165063 1.285898 -120)
 			(layer "F.SilkS")
 			(uuid "11bc0683-f864-49fd-a898-56e2705f53ad")
 			(effects
@@ -4744,7 +4744,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC11"
-			(at 0 -1.43 90)
+			(at -2 0 180)
 			(layer "F.SilkS")
 			(uuid "b7fda8f3-d392-42da-9afb-f56c301e855a")
 			(effects
@@ -4954,7 +4954,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR16"
-			(at 0 -1.43 180)
+			(at 0 -1 180)
 			(layer "F.SilkS")
 			(uuid "c60c7fb5-8c79-4c49-aaea-e99e5abea9bc")
 			(effects
@@ -5164,7 +5164,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC23"
-			(at 0 -1.43 120)
+			(at -0.165063 1.285898 120)
 			(layer "F.SilkS")
 			(uuid "78f898e8-1ab6-4f76-a0d2-905f3f170d5d")
 			(effects
@@ -5650,13 +5650,13 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR17"
-			(at 0 -1.43 0)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "8693425f-fd88-4296-9de8-1b5b3f0850d2")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -5666,8 +5666,8 @@
 			(uuid "f5a8a943-da3f-44d8-8a76-5b5d39e5965f")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -5860,24 +5860,24 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD8"
-			(at 0 -2 360)
+			(at 0 1.75 0)
 			(layer "F.SilkS")
 			(uuid "ceb8c0db-3908-4e5d-a5d1-4f5916849c1d")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
 		(property "Value" "control.npx.led[4].device"
-			(at 0 2.2 360)
+			(at 0 2.2 0)
 			(layer "F.Fab")
 			(uuid "ad62607a-86cd-4c54-8a98-417a467fb064")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -6067,7 +6067,7 @@
 			(uuid "62739649-80bf-4ac5-a3f4-8a85602d042a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "f1252ca4-5777-4dd8-872c-9bf96576dfa7")
 			(effects
@@ -6235,7 +6235,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC17"
-			(at 0 -1.43 0)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "c92e0cea-10a8-4cb4-915c-aaf67847d2b6")
 			(effects
@@ -6445,13 +6445,13 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD7"
-			(at 0 -2 60)
+			(at -0.080127 1.861216 60)
 			(layer "F.SilkS")
 			(uuid "9d565274-5a6a-4daa-8d58-6529f5653c78")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -6461,8 +6461,8 @@
 			(uuid "b36ffb09-69cc-4613-9f97-a716b90759ff")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -6711,13 +6711,13 @@
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FTP5"
-			(at 0 -1.65 90)
+			(at -2.5 0 180)
 			(layer "F.SilkS")
 			(uuid "2b82f4c9-3a68-4714-b610-cdc09cb8e846")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -6727,8 +6727,8 @@
 			(uuid "6bb6c609-9325-4cda-8806-c13c6eaeb2a5")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -6890,7 +6890,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC15"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "8bd2054e-62d9-4a8c-ab4c-ff67d5f41068")
 			(effects
@@ -7100,13 +7100,13 @@
 		(descr "JST SH series connector, SM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH horizontal")
 		(property "Reference" "FJ5"
-			(at 0 -3.98 90)
+			(at -2.75 -2.75 180)
 			(layer "F.SilkS")
 			(uuid "c3858fe2-955f-4d8b-a958-9c588a92c545")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -7116,8 +7116,8 @@
 			(uuid "69a6b8a0-192e-4017-b2e9-f33197a74b34")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -7400,7 +7400,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR11"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "52bd9ccc-a325-4968-bfa4-99af21a7c086")
 			(effects
@@ -7610,13 +7610,13 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR18"
-			(at 0 -1.43 0)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "5185efd0-cefc-4f6b-b5dc-cd756d2e0ce5")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -7626,8 +7626,8 @@
 			(uuid "1cfa36a5-f925-432f-953b-112bc0819af7")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -7820,7 +7820,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC18"
-			(at 0 -1.43 -120)
+			(at 0.165063 1.285898 -120)
 			(layer "F.SilkS")
 			(uuid "d06ca00f-8d4d-4ea5-831e-ac88177c7d1e")
 			(effects
@@ -8030,13 +8030,13 @@
 		(descr "2.0mm x 2.0mm Addressable RGB LED NeoPixel Nano, 12 mA, https://cdn-shop.adafruit.com/product-files/4684/4684_WS2812B-2020_V1.3_EN.pdf")
 		(tags "LED RGB NeoPixel Nano PLCC-4 2020")
 		(property "Reference" "FD6"
-			(at 0 -2 120)
+			(at 0.080127 1.861216 120)
 			(layer "F.SilkS")
 			(uuid "91716911-36ae-47a2-8653-81ec7e1da873")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -8046,8 +8046,8 @@
 			(uuid "e8066219-8ef3-4746-a44a-70057689bf10")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.6)
+					(thickness 0.1)
 				)
 			)
 		)
@@ -8518,7 +8518,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR14"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "20ede8a2-9a45-4ee6-bf5f-8312de7bf442")
 			(effects
@@ -8728,7 +8728,7 @@
 		(descr "JST SH series connector, SM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH horizontal")
 		(property "Reference" "FJ4"
-			(at 0 -3.98 90)
+			(at -2.75 -2.75 180)
 			(layer "F.SilkS")
 			(uuid "818f5daf-958a-4bad-b754-24e0d2901596")
 			(effects
@@ -9028,7 +9028,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "FC14"
-			(at 0 -1.43 90)
+			(at 2 0 180)
 			(layer "F.SilkS")
 			(uuid "0fecda0b-e2ef-410f-81dd-68d39e423398")
 			(effects
@@ -9237,7 +9237,7 @@
 		(at 91 119 -90)
 		(tags "laser-ranging sensor")
 		(property "Reference" "FU5"
-			(at 0 -2.6 90)
+			(at 4 2 180)
 			(layer "F.SilkS")
 			(uuid "cfa6905f-b9ac-40e1-ba36-133dbd9c86e2")
 			(effects
@@ -9649,7 +9649,7 @@
 		(descr "HVSOF6, http://rohmfs.rohm.com/en/techdata_basic/ic/package/hvsof6_1-e.pdf, http://rohmfs.rohm.com/en/products/databook/datasheet/ic/audio_video/video_amplifier/bh76106hfv-e.pdf")
 		(tags "HVSOF6")
 		(property "Reference" "FU6"
-			(at 0 -2 0)
+			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "12999610-bff6-4c95-b5a3-1f8eac7dd50a")
 			(effects
@@ -9919,7 +9919,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "FR13"
-			(at 0 -1.43 0)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "4deeef35-a865-4b1d-a0ad-2dc1f9d5e4e6")
 			(effects
@@ -10129,7 +10129,7 @@
 		(descr "Tag-Connect programming header; http://www.tag-connect.com/Materials/TC2030-IDC-NL.pdf")
 		(tags "tag connect programming header pogo pins")
 		(property "Reference" "FJ3"
-			(at 0 2.7 90)
+			(at 3.5 -1 180)
 			(layer "F.SilkS")
 			(uuid "07e0f1ec-b643-42c0-bea2-a20ff0dd0da7")
 			(effects
@@ -10650,7 +10650,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003686)
+			(mid 1.000176 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
@@ -10865,7 +10865,7 @@
 		(descr "Through hole straight pin header, 1x08, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x08 2.00mm single row")
 		(property "Reference" "FJ7"
-			(at 0 2.06 0)
+			(at 0 2 0)
 			(layer "B.SilkS")
 			(uuid "d6b4b3c1-bde8-4ff4-8ae0-f49627b6638d")
 			(effects
@@ -11187,7 +11187,7 @@
 		(descr "Through hole straight pin header, 1x08, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x08 2.00mm single row")
 		(property "Reference" "FJ9"
-			(at 0 2.06 0)
+			(at 0 2 0)
 			(layer "B.SilkS")
 			(uuid "6b6092fa-8b0b-40ed-a9de-9165452093d7")
 			(effects
