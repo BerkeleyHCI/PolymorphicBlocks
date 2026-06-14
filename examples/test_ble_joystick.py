@@ -115,7 +115,6 @@ class BleJoystick(JlcBoardTop):
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
-            self.tp_vgate = self.Block(VoltageTestPoint()).connected(self.gate.pwr_out)
             self.v3v3 = self.connect(self.reg_3v3.pwr_out, self.vbat_sense.pwr)
 
             self.chg = imp.Block(Mcp73831(charging_current=100 * mAmp(tol=0.2)))
