@@ -192,7 +192,7 @@ class BleJoystick(JlcBoardTop):
                 (["mcu"], Holyiot_18010),
                 (["btns", "ioe"], Ch32v003),
                 (["reg_3v3"], Ap7215),
-                (["btns", "bumper_sw", "package"], SmtSwitchRa),
+                (["bumper_sw", "package"], SmtSwitchRa),
                 # TODO debug why class refinements not working
                 (["btns", "sw[0]", "package"], SmtSwitch),
                 (["btns", "sw[1]", "package"], SmtSwitch),
