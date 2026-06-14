@@ -98,7 +98,6 @@ class BleJoystick(JlcBoardTop):
         self.vusb = self.connect(self.usb.pwr)
         self.gnd = self.connect(self.bat.gnd, self.usb.gnd)
 
-        self.tp_bat = self.Block(VoltageTestPoint()).connected(self.bat.pwr)
         self.tp_usb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.bat.gnd)
 
@@ -108,14 +107,14 @@ class BleJoystick(JlcBoardTop):
         ) as imp:
             self.vbat_sense = imp.Block(Ina219(100 * mOhm(tol=0.01)))
             (self.gate,), _ = self.chain(self.vbat, imp.Block(SoftPowerGate()), self.vbat_sense.sense_pos)
+            self.vbat_gated = self.connect(self.vbat_sense.sense_neg)
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.vbat_sense.sense_neg,
+                self.vbat_gated,
                 imp.Block(VoltageRegulator(output_voltage=3.3 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
             )
-            self.vbat_gated = self.connect(self.gate.pwr_out)
             self.tp_vgate = self.Block(VoltageTestPoint()).connected(self.gate.pwr_out)
             self.v3v3 = self.connect(self.reg_3v3.pwr_out, self.vbat_sense.pwr)
 
