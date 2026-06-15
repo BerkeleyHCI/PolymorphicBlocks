@@ -139,8 +139,6 @@ class BleJoystick(JlcBoardTop):
             self.bumper_sw = imp.Block(DigitalSwitch())
             self.connect(self.bumper_sw.out, self.mcu.gpio.request(f"bumper"))
 
-            (self.trig,), _ = self.chain(imp.Block(A1304()), self.mcu.adc.request("trig"))
-
             mcu_i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
             self.tp_i2c = self.Block(I2cTestPoint()).connected(mcu_i2c)
@@ -160,6 +158,9 @@ class BleJoystick(JlcBoardTop):
             self.connect(self.stick.ax1, self.mcu.adc.request("ax1"))
             self.connect(self.stick.ax2, self.mcu.adc.request("ax2"))
             self.connect(self.stick.sw, self.gate.btn_in)
+
+            (self.trig,), _ = self.chain(imp.Block(A1304()), self.mcu.adc.request("trig"))
+            self.connect(self.mcu.gpio.request("trig_pwr_gate").as_voltage_source(), self.trig.pwr)
 
         # MIXED POWER DOMAINS
         with self.implicit_connect(
@@ -181,7 +182,7 @@ class BleJoystick(JlcBoardTop):
             self.connect(self.btns.pwr, self.v3v3)
             self.connect(self.btns.vbat, self.vbat_gated)
             self.connect(self.btns.i2c, mcu_i2c)
-            self.connect(self.btns.io0, self.mcu.gpio.request("btn_io0"))
+            self.connect(self.btns.io0, self.mcu.gpio.request("btns_io0"))
 
     @override
     def refinements(self) -> Refinements:
@@ -215,8 +216,10 @@ class BleJoystick(JlcBoardTop):
                         "stick_pwr_gate=9",
                         "led=10",
                         "bumper=11",
+                        "trig_pwr_gate=12",
                         "sw=13",
                         "gate_ctl=15",
+                        "btns_io0=20",
                     ],
                 ),
                 (
@@ -235,6 +238,7 @@ class BleJoystick(JlcBoardTop):
                         "dpad_7=15",
                     ],
                 ),
+                (["mcu", "gpio", "trig_pwr_gate", "current_limits"], Range(-0.010, 0.009)),  # use typ ratings
             ],
             class_refinements=[
                 (SwdCortexTargetConnector, SwdCortexTargetTagConnect),
