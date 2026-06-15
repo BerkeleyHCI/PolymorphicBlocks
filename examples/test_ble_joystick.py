@@ -141,7 +141,7 @@ class BleJoystick(JlcBoardTop):
 
             mcu_i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull,), _ = self.chain(mcu_i2c, imp.Block(I2cPullup()))
-            self.tp_i2c = self.Block(I2cTestPoint()).connected(mcu_i2c)
+            self.tp_i2c = self.Block(I2cTestPoint("i2c")).connected(mcu_i2c)
 
             self.connect(mcu_i2c, self.vbat_sense.i2c)
             self.imu = imp.Block(Lsm6ds3trc())
