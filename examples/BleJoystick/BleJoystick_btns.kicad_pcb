@@ -357,7 +357,7 @@
 		(at 104.011695 114.97185 -165)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP10"
+		(property "Reference" "JTP8"
 			(at 0.90676 -1.407035 15)
 			(layer "F.SilkS")
 			(uuid "c71a7841-726f-4802-bcf0-5b4742e02fe3")
@@ -536,7 +536,7 @@
 		(at 89 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP12"
+		(property "Reference" "JTP10"
 			(at 0 1.5 0)
 			(layer "F.SilkS")
 			(uuid "7933685c-ff02-473f-8f37-c606f20ebaea")
@@ -1921,7 +1921,7 @@
 		(at 89 117)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP11"
+		(property "Reference" "JTP9"
 			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "0b33a07d-568b-44e9-971a-04c6dc0311a5")
@@ -2965,7 +2965,7 @@
 		(at 93 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP13"
+		(property "Reference" "JTP11"
 			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "aad9b4e9-73b3-4d2d-bacf-60483fcedd36")
@@ -4624,7 +4624,7 @@
 		(at 107 119)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP8"
+		(property "Reference" "JTP6"
 			(at -3 0 0)
 			(layer "F.SilkS")
 			(uuid "1172640f-9a28-4fd8-b36e-fdfe40afbf1d")
@@ -8993,7 +8993,7 @@
 		(at 107 117)
 		(descr "Adapted from Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
-		(property "Reference" "JTP9"
+		(property "Reference" "JTP7"
 			(at -3 1 0)
 			(layer "F.SilkS")
 			(uuid "3faa2ec5-9b4a-4697-afa4-ff732184e906")
