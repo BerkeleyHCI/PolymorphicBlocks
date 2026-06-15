@@ -1,0 +1,181 @@
+(footprint "FpcTab_1x08_P0.50mm"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "FPC tab pattern, top side, based on pattern specified by Hirose FH12 datasheet")
+	(tags "FPC tab")
+	(property "Reference" "REF**"
+		(at -4.5 0 0)
+		(layer "F.SilkS")
+		(uuid "30cc7018-f7a4-4885-8bb3-1a3ec5268951")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "FpcTab_1x08_P0.50mm"
+		(at -2 4.5 0)
+		(layer "F.Fab")
+		(uuid "32f5c503-00a3-4b68-9f1e-d0f2fdd8c451")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 90)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9392ab30-f201-444d-92d0-9df0331508b0")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 90)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "14cd24b0-7c7c-4739-81f5-41b37d7d1d72")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 90)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5fedabdf-120d-4687-9afb-ccbf294159c1")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd exclude_from_pos_files exclude_from_bom)
+	(fp_line
+		(start -3.5 2.25)
+		(end -0.25 2.25)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "d99a789f-cb79-48d0-bdcc-1e9ba0e974f8")
+	)
+	(fp_line
+		(start -0.25 -2.25)
+		(end -3.5 -2.25)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "993cae8f-621f-4c89-a06b-e20eba26e7ee")
+	)
+	(fp_line
+		(start 0 2)
+		(end 0 -2)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "6763ea91-0b2d-4aff-aaf1-de8875ac6846")
+	)
+	(fp_arc
+		(start -0.25 -2.25)
+		(mid -0.073223 -2.176777)
+		(end 0 -2)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "fa66ef5f-021c-4f7d-8d8f-ae845a0ad9c2")
+	)
+	(fp_arc
+		(start 0 2)
+		(mid -0.073223 2.176777)
+		(end -0.25 2.25)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "f1137c94-723d-41a3-bdee-fc0c3f318661")
+	)
+	(fp_text user "${REFERENCE}"
+		(at -2 3 0)
+		(layer "F.Fab")
+		(uuid "9fdcc772-8d7a-45dc-be07-3d16ac168fd7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -1.75 -1.75 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "acce8645-4e38-477e-baa1-4aafe0bab663")
+	)
+	(pad "2" smd rect
+		(at -1.75 -1.25 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "c9afca63-8bcf-4e4a-8e59-b08bee8f4cd2")
+	)
+	(pad "3" smd rect
+		(at -1.75 -0.75 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "36a34559-9dc2-4ae5-af31-aebad34b170e")
+	)
+	(pad "4" smd rect
+		(at -1.75 -0.25 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "d42d563e-4521-4d95-85bd-56d98aac12d1")
+	)
+	(pad "5" smd rect
+		(at -1.75 0.25 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "e626a223-1779-4ab8-bd2c-a60fa05761ba")
+	)
+	(pad "6" smd rect
+		(at -1.75 0.75 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "9f15c7d1-20ac-4171-8505-e899de53fa07")
+	)
+	(pad "7" smd rect
+		(at -1.75 1.25 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "175a3d50-fe75-4d79-8849-3c1c3cc9be85")
+	)
+	(pad "8" smd rect
+		(at -1.75 1.75 90)
+		(size 0.35 3.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "200ddacc-7190-4039-ab2f-d6856f607d59")
+	)
+)

@@ -1,9 +1,69 @@
 import unittest
+from typing import Tuple
 
 from typing_extensions import override
 
 from edg import *
 from .util import run_test_board
+
+
+class Fpc050Tab(FootprintPassiveConnector):
+    """0.5mm FPC tab pattern.
+    This pattern has the contacts facing up, numbered top to bottom, tab edge towards right.
+
+    This is reversed pin order if using a bottom entry connector."""
+
+    allowed_pins = [8]  # only 8-pin footprint exists, for now
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (f"edg:FpcTab_1x{length:02d}_P0.50mm", "", "")
+
+
+class Fpc050SocketTabPair(SubboardConnectorPair, GeneratorBlock):
+    """A FPC socket on the external side and a matching tab pattern on the internal side.
+
+    Parameters:
+        socket = "top" | "bottom": the contact side for the socket.
+    """
+
+    def __init__(
+        self,
+        length: IntLike = 0,
+        socket: StringLike = "bot",
+    ) -> None:
+        super().__init__()
+        self.length = self.ArgParameter(length)
+        self.socket = self.ArgParameter(socket)
+        self.pins = self.Port(Vector(Passive.empty()))
+        self.generator_param(self.length, self.pins.requested(), self.socket)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        socket = self.get(self.socket)
+        if socket == "top":
+            self.ext: Fpc050 = self.Block(Fpc050Top(self.length), external=True)
+            mirror = False
+        elif socket == "bot":
+            self.ext = self.Block(Fpc050Bottom(self.length), external=True)
+            mirror = True
+        else:
+            raise ValueError(f"invalid ext_contact")
+
+        self.int = self.Block(Fpc050Tab(self.length))
+
+        length = self.get(self.length)
+        assert length > 0, "explicit length required"
+
+        self.pins.defined()
+        for pin_num in self.get(self.pins.requested()):
+            pin = self.pins.append_elt(Passive.empty(), pin_num)
+            self.export_tap(pin, self.ext.pins.request(pin_num))
+            if mirror:
+                self.connect(pin, self.int.pins.request(str(length - (int(pin_num) - 1))))
+            else:
+                self.connect(pin, self.int.pins.request(pin_num))
 
 
 class JoystickSubboard(SubboardBlock):
@@ -19,12 +79,13 @@ class JoystickSubboard(SubboardBlock):
         self.ax1 = self.Export(self.stick.ax1)
         self.ax2 = self.Export(self.stick.ax2)
 
-        self.conn = self.Block(Fpc050Pair(8), external=True)
+        self.conn = self.Block(Fpc050SocketTabPair(8), external=True)
         self.export_tap(self.gnd.net, self.conn.pins.request("1"))
         self.export_tap(self.pwr.net, self.conn.pins.request("2"))
-        self.export_tap(self.sw.net, self.conn.pins.request("4"))
-        self.export_tap(self.ax1.net, self.conn.pins.request("5"))
-        self.export_tap(self.ax2.net, self.conn.pins.request("6"))
+        self.export_tap(self.ax2.net, self.conn.pins.request("3"))
+        self.export_tap(self.ax1.net, self.conn.pins.request("4"))
+        self.export_tap(self.sw.net, self.conn.pins.request("6"))
+        self.export_tap(self.gnd.net, self.conn.pins.request("8"))
 
 
 class ButtonSubboard(SubboardBlock):
@@ -211,8 +272,8 @@ class BleJoystick(JlcBoardTop):
                         "i2c.sda=26",
                         "chg=2",
                         "trig=6",
-                        "ax2=7",
-                        "ax1=8",
+                        "ax1=7",
+                        "ax2=8",
                         "stick_pwr_gate=9",
                         "led=10",
                         "bumper=11",
