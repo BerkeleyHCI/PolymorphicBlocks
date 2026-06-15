@@ -143,7 +143,7 @@ class ButtonSubboard(SubboardBlock):
 
 
 class BleJoystick(JlcBoardTop):
-    """BLE joystick with d-pad, trigger, and RGBs."""
+    """BLE combination air-mouse and joystick with d-pad, trigger, and RGBs."""
 
     @override
     def contents(self) -> None:
