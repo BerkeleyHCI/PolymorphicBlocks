@@ -131,7 +131,7 @@ class BleJoystick(JlcBoardTop):
             (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
             # debugging LEDs
-            (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request("led"))
 
             self.connect(self.gate.btn_out, self.mcu.gpio.request("sw"))
             self.connect(self.mcu.gpio.request("gate_ctl"), self.gate.control)
@@ -206,9 +206,17 @@ class BleJoystick(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        # "i2c.scl=28",
-                        # "i2c.sda=27",
+                        "i2c.scl=27",
+                        "i2c.sda=26",
+                        "chg=2",
+                        "led=4",
+                        "bumper=5",
                         "trig=6",
+                        "ax2=7",
+                        "ax1=8",
+                        "sw=10",
+                        "stick_pwr_gate=9",
+                        "gate_ctl=13",
                     ],
                 ),
                 (
