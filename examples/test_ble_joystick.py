@@ -297,6 +297,7 @@ class BleJoystick(JlcBoardTop):
                         "dpad_5=13",
                         "dpad_6=14",
                         "dpad_7=15",
+                        "io0=17",
                     ],
                 ),
                 (["mcu", "gpio", "trig_pwr_gate", "current_limits"], Range(-0.010, 0.009)),  # use typ ratings
