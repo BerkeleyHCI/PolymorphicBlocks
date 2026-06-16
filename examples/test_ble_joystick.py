@@ -269,8 +269,8 @@ class BleJoystick(JlcBoardTop):
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        "i2c.scl=27",
-                        "i2c.sda=26",
+                        "i2c.scl=26",
+                        "i2c.sda=27",
                         "chg=2",
                         "trig=6",
                         "ax1=8",
