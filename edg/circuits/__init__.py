@@ -23,7 +23,7 @@ from .SwitchMatrix import SwitchMatrix, SwitchMatrixNeopixels
 from .ResistiveSensor import ConnectorResistiveSensor
 
 from .ControlCircuits import CompensatorType2
-from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
+from .DigitalAmplifiers import LoadSwitch, HighSideSwitch, OpenDrainDriver
 
 from .I2cBitBang import I2cControllerBitBang
 from .I2cPullup import I2cPullup

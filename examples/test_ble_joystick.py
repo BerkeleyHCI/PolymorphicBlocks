@@ -163,9 +163,7 @@ class BleJoystick(JlcBoardTop):
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.bat.gnd)
 
         # POWER
-        with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
+        with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             self.vbat_sense = imp.Block(Ina219(100 * mOhm(tol=0.01)))
             (self.gate,), _ = self.chain(self.vbat, imp.Block(SoftPowerGate()), self.vbat_sense.sense_pos)
             self.vbat_gated = self.connect(self.vbat_sense.sense_neg)
@@ -211,22 +209,25 @@ class BleJoystick(JlcBoardTop):
             self.connect(mcu_i2c, self.mag.i2c)
 
         # POWER GATED DOMAIN
-        with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
+        with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             self.stick = imp.Block(JoystickSubboard())
-            self.connect(self.mcu.gpio.request("stick_pwr_gate").as_voltage_source(), self.stick.pwr)
+            (self.stick_gate,), _ = self.chain(
+                self.mcu.gpio.request("stick_pwr_gate"), imp.Block(LoadSwitch()), self.stick.pwr
+            )
             self.connect(self.stick.ax1, self.mcu.adc.request("ax1"))
             self.connect(self.stick.ax2, self.mcu.adc.request("ax2"))
             self.connect(self.stick.sw, self.gate.btn_in)
 
+            # use a load switch since the GPIO pin voltage drop may interfere with readings
             (self.trig,), _ = self.chain(imp.Block(A1304()), self.mcu.adc.request("trig"))
-            self.connect(self.mcu.gpio.request("trig_pwr_gate").as_voltage_source(), self.trig.pwr)
+            (self.trig_gate,), _ = self.chain(
+                self.mcu.gpio.request("trig_pwr_gate"), imp.Block(LoadSwitch()), self.trig.pwr
+            )
+
+            self.connect(self.v3v3, self.stick_gate.pwr_in, self.trig_gate.pwr_in)
 
         # MIXED POWER DOMAINS
-        with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
+        with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             # alternative implementation instead of the INA219
             # self.vbat_sense_gate = imp.Block(HighSideSwitch())
             # self.connect(self.vbat_sense_gate.pwr, self.vbat_gated)
