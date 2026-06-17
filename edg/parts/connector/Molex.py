@@ -34,7 +34,7 @@ class Picoblade53261(Picoblade):
     @override
     def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
         return (
-            f"Connector_Molex:Molex_PicoBlade_53261-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Vertical",
+            f"Connector_Molex:Molex_PicoBlade_53261-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Horizontal",
             "Molex",
             f"53261{length:02d}71",
         )

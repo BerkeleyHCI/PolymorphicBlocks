@@ -24,7 +24,7 @@ class Fpc050SocketTabPair(SubboardConnectorPair, GeneratorBlock):
     """A FPC socket on the external side and a matching tab pattern on the internal side.
 
     Parameters:
-        socket = "top" | "bottom": the contact side for the socket.
+        socket = "top" | "bot": the contact side for the socket.
     """
 
     def __init__(
@@ -49,7 +49,7 @@ class Fpc050SocketTabPair(SubboardConnectorPair, GeneratorBlock):
             self.ext = self.Block(Fpc050Bottom(self.length), external=True)
             mirror = True
         else:
-            raise ValueError(f"invalid ext_contact")
+            raise ValueError(f"invalid socket")
 
         self.int = self.Block(Fpc050Tab(self.length))
 
@@ -165,7 +165,7 @@ class BleJoystick(JlcBoardTop):
         # POWER
         with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             self.vbat_sense = imp.Block(Ina219(100 * mOhm(tol=0.01)))
-            (self.gate,), _ = self.chain(self.vbat, imp.Block(SoftPowerGate()), self.vbat_sense.sense_pos)
+            (self.gate,), _ = self.chain(self.vbat, imp.Block(SoftPowerGate()), self.vbat_sense.sense_pwr_in)
             self.vbat_gated = self.connect(self.vbat_sense.sense_pwr_out)
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(

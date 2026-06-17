@@ -70,7 +70,7 @@ class ControlSubboard(SubboardBlock):
             self.qwiic = imp.Block(QwiicTarget())
             self.connect(self.i2c, self.qwiic.i2c)
 
-            # second qwiic port is on a seprate I2C bus
+            # second qwiic port is on a separate I2C bus
             (self.i2c2_pull, self.qwiic2), _ = self.chain(
                 self.mcu.i2c.request("i2c2"), imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))), imp.Block(QwiicTarget())
             )
@@ -131,7 +131,7 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.vin_sense = imp.Block(Ina219(10 * mOhm(tol=0.01)))
-            self.connect(self.pwr_merge.pwr_out, self.vin_sense.sense_pos)
+            self.connect(self.pwr_merge.pwr_out, self.vin_sense.sense_pwr_in)
             self.vin = self.connect(self.vin_sense.sense_pwr_out)
 
             (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(

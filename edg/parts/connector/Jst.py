@@ -28,7 +28,7 @@ class JstXhAHorizontal(JstXh):
 
     @override
     def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (f"Connector_JST:JST_XH_S{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical", "JST", f"S{length}B-XH-A")
+        return (f"Connector_JST:JST_XH_S{length}B-XH-A_1x{length:02d}_P2.50mm_Horizontal", "JST", f"S{length}B-XH-A")
 
 
 @abstract_block_default(lambda: JstPhKVertical)
