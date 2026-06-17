@@ -6,10 +6,7 @@ from edg import *
 from .util import run_test_board
 
 
-class Hy931147c(Connector, FootprintBlock, JlcPart):
-    """Commonly available RJ45 magjack with PoE support.
-    Footprint and pin-compatible with Wuerth 7499211121A"""
-
+class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
 
@@ -22,6 +19,10 @@ class Hy931147c(Connector, FootprintBlock, JlcPart):
     @override
     def contents(self):
         super().contents()
+
+        self.require(self.led_grn_anode.is_connected() == self.led_grn_cathode.is_connected())
+        self.require(self.led_yel_anode.is_connected() == self.led_yel_cathode.is_connected())
+
         self.footprint(
             "J",
             "Connector_RJ:RJ45_Wuerth_7499111446_Horizontal",
@@ -44,6 +45,24 @@ class Hy931147c(Connector, FootprintBlock, JlcPart):
         )
         self.assign(self.lcsc_part, "C91754")
         self.assign(self.actual_basic_part, False)
+
+
+class Hy931147c(Connector, GeneratorBlock):
+    """Commonly available RJ45 magjack with PoE support.
+    Footprint and pin-compatible with Wuerth 7499211121A"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.conn = self.Block(Hy931147c_Device())
+
+        self.rx = self.Export(self.conn.rx)
+        self.tx = self.Export(self.conn.tx)
+        self.poe = self.Export(self.conn.poe)
+
+        self.gnd = self.Port(Ground())  # for LEDs only
+        self.led_yel = self.Port(DigitalSink.empty(), optional=True)
+        self.led_grn = self.Port(DigitalSink.empty(), optional=True)
 
 
 class IotThermalCamera(JlcBoardTop):
