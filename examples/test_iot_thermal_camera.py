@@ -147,8 +147,12 @@ class Hy931147c(Connector, GeneratorBlock):
 
         self.gnd = self.Port(Ground())  # for termination
         self.pwr_led = self.Port(VoltageSink(), optional=True)  # for LED power
-        self.led_yel_sink = self.Port(DigitalSink.empty(), optional=True, doc="Yellow LED cathode connection")
-        self.led_grn_sink = self.Port(DigitalSink.empty(), optional=True, doc="Green LED cathode connection")
+        self.led_yel_sink = self.Port(
+            DigitalSink(current_draw=RangeExpr()), optional=True, doc="Yellow LED cathode connection"
+        )
+        self.led_grn_sink = self.Port(
+            DigitalSink(current_draw=RangeExpr()), optional=True, doc="Green LED cathode connection"
+        )
         self.generator_param(self.led_yel_sink.is_connected(), self.led_grn_sink.is_connected())
 
     @override
@@ -167,6 +171,9 @@ class Hy931147c(Connector, GeneratorBlock):
             self.connect(self.pwr_led.net, self.conn.led_yel_anode)
             self.connect(self.conn.led_yel_cathode, self.led_yel_res.a)
             self.connect(self.led_yel_res.a, self.led_yel_sink.net)
+            self.assign(
+                self.led_yel_sink.current_draw, -self.pwr_led.link().voltage / self.led_yel_res.actual_resistance
+            )
 
         if self.get(self.led_grn_sink.is_connected()):
             self.led_grn_res = self.Block(
@@ -179,6 +186,9 @@ class Hy931147c(Connector, GeneratorBlock):
             self.connect(self.pwr_led.net, self.conn.led_grn_anode)
             self.connect(self.conn.led_grn_cathode, self.led_grn_res.a)
             self.connect(self.led_grn_res.a, self.led_grn_sink.net)
+            self.assign(
+                self.led_grn_sink.current_draw, -self.pwr_led.link().voltage / self.led_grn_res.actual_resistance
+            )
 
         self.cap = self.Block(Capacitor(1 * nFarad(tol=0.2), voltage=(0, 1000) * Volt))  # termination
         self.connect(self.cap.neg, self.gnd.net)
@@ -307,12 +317,32 @@ class W5500(Resettable, Interface, Block):
         self.connect(self.gnd, self.ic.agnd)
         self.l = self.Block(SeriesPowerFerriteBead()).connected(self.pwr, self.ic.avdd)
 
+        self.crystal = self.Block(OscillatorReference(frequency=25 * MHertz(tol=30e-6)))
+        self.connect(self.crystal.gnd, self.gnd)
+        self.connect(self.crystal.crystal, self.ic.crystal)
+
         with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             self.exres1 = imp.Block(AnalogSetpointResistor(12.4 * kOhm(tol=0.01))).connected(io=self.ic.exres1)
             self.c1v20 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2))).connected(pwr=self.ic.v1v20)
             self.tocap = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(pwr=self.ic.tocap)
 
-        # TODO all the caps, ethernet circuits
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.ic.vdd, [Power]),
+        ) as imp:
+            self.vdd_cap0 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+            self.vdd_cap1 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.ic.avdd, [Power]),
+        ) as imp:
+            self.avdd_caps = ElementDict[DecouplingCapacitor]()
+            for i in range(6):
+                self.avdd_caps[str(i)] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+            self.avdd_caps[6] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+        # TODO ethernet circuits
 
 
 class IotThermalCamera(JlcBoardTop):
