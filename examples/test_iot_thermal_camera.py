@@ -87,6 +87,8 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.led_yel_anode = self.Port(Passive(), optional=True)
         self.led_yel_cathode = self.Port(Passive(), optional=True)
 
+        self.shield = self.Port(Passive())
+
     @override
     def contents(self):
         super().contents()
@@ -110,6 +112,7 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "12": self.led_yel_cathode,
                 "13": self.led_grn_anode,
                 "14": self.led_grn_cathode,
+                "SH": self.shield,
             },
             "Hanrun",
             "HY931147C",
@@ -124,10 +127,17 @@ class Hy931147c(Connector, GeneratorBlock):
 
     TODO should define and implement an abstract base class, EthernetConnector, which defines the
     magnetics-side ports and can also be implemented by DiscreteMagneticsEthernetConnector,
-    which has a passive-typed RJ45, discrete magnetics, and optional PoE diode bridge generator."""
+    which has a passive-typed RJ45, discrete magnetics, and optional PoE diode bridge generator.
 
-    def __init__(self) -> None:
+    TODO: allow LEDs to be driven in source mode
+
+    TODO: support LED connection by multipacking"""
+
+    _LED_CURRENT_LIMITS = (0, 20) * mAmp
+
+    def __init__(self, *, led_target_current: RangeLike = (1, 10) * mAmp) -> None:
         super().__init__()
+        self.led_target_current = self.ArgParameter(led_target_current)
 
         self.conn = self.Block(Hy931147c_Device())
 
@@ -135,9 +145,174 @@ class Hy931147c(Connector, GeneratorBlock):
         self.tx = self.Export(self.conn.tx)
         self.poe = self.Export(self.conn.poe)
 
-        self.gnd = self.Port(Ground())  # for LEDs only
-        self.led_yel = self.Port(DigitalSink.empty(), optional=True)
-        self.led_grn = self.Port(DigitalSink.empty(), optional=True)
+        self.gnd = self.Port(Ground())  # for termination
+        self.pwr_led = self.Port(VoltageSink(), optional=True)  # for LED power
+        self.led_yel_sink = self.Port(DigitalSink.empty(), optional=True, doc="Yellow LED cathode connection")
+        self.led_grn_sink = self.Port(DigitalSink.empty(), optional=True, doc="Green LED cathode connection")
+        self.generator_param(self.led_yel_sink.is_connected(), self.led_grn_sink.is_connected())
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        self.require(self.pwr_led.is_connected() == self.led_yel_sink.is_connected() | self.led_grn_sink.is_connected())
+        if self.get(self.led_yel_sink.is_connected()):
+            self.led_yel_res = self.Block(
+                Resistor(
+                    (1 / self.led_target_current).shrink_multiply(
+                        self.pwr_led.link().voltage - self.led_yel_sink.link().output_thresholds.lower()
+                    )
+                )
+            )
+            self.connect(self.pwr_led.net, self.conn.led_yel_anode)
+            self.connect(self.conn.led_yel_cathode, self.led_yel_res.a)
+            self.connect(self.led_yel_res.a, self.led_yel_sink.net)
+
+        if self.get(self.led_grn_sink.is_connected()):
+            self.led_grn_res = self.Block(
+                Resistor(
+                    (1 / self.led_target_current).shrink_multiply(
+                        self.pwr_led.link().voltage - self.led_grn_sink.link().output_thresholds.lower()
+                    )
+                )
+            )
+            self.connect(self.pwr_led.net, self.conn.led_grn_anode)
+            self.connect(self.conn.led_grn_cathode, self.led_grn_res.a)
+            self.connect(self.led_grn_res.a, self.led_grn_sink.net)
+
+        self.cap = self.Block(Capacitor(1 * nFarad(tol=0.2), voltage=(0, 1000) * Volt))  # termination
+        self.connect(self.cap.neg, self.gnd.net)
+        self.connect(self.cap.pos, self.conn.shield)
+
+
+class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.agnd = self.Port(Ground())
+        self.gnd = self.Port(Ground())
+
+        self.avdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.97, 3.63) * Volt,
+                current_draw=(13, 132) * mAmp,  # power down to 100M link
+            )
+        )
+        self.vdd = self.Port(VoltageSink(voltage_limits=(2.97, 3.63) * Volt))
+
+        self.v1v20 = self.Port(VoltageSource(voltage_out=1.2 * Volt(tol=0), current_limits=0 * Amp(tol=0)))
+        self.tocap = self.Port(VoltageSource(voltage_out=self.avdd.link().voltage))  # assumed, not documented
+        self.exres1 = self.Port(AnalogSource.from_supply(self.gnd, self.avdd))  # assumed, not documented
+
+        self.crystal = self.Port(CrystalDriver(frequency_limits=25 * MHertz(tol=30e-6)))  # TODO also support CLKIN
+
+        self.txp = self.Port(Passive())
+        self.txn = self.Port(Passive())
+        self.rxp = self.Port(Passive())
+        self.rxn = self.Port(Passive())
+
+        dio_model = DigitalBidir.from_supply(
+            self.gnd,
+            self.vdd,
+            voltage_limit_abs=(-0.3, 5.5) * Volt,
+            input_threshold_abs=(0.8, 2.0) * Volt,
+            current_limits=(-5, 5) * mAmp,  # absolute max rating for DC input current
+        )
+        dio_pu_model = DigitalSink.from_supply(
+            self.gnd,
+            self.vdd,
+            voltage_limit_abs=(-0.3, 5.5) * Volt,
+            input_threshold_abs=(0.8, 2.0) * Volt,
+            pullup_capable=True,
+        )
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.scsn = self.Port(dio_pu_model)
+        # according to some internet forum posts, a reset pulse is not needed
+        self.rstn = self.Port(dio_pu_model, optional=True)
+        self.intn = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
+
+        # PMODE[0..2] internally pulled up, defaulting to auto-negotiation
+        self.pmode0 = self.Port(dio_pu_model, optional=True)
+        self.pmode1 = self.Port(dio_pu_model, optional=True)
+        self.pmode2 = self.Port(dio_pu_model, optional=True)
+
+        # TODO add LEDs
+
+    @override
+    def contents(self):
+        super().contents()
+
+        self.footprint(
+            "U",
+            "Package_QFP:LQFP-48_7x7mm_P0.5mm",
+            {
+                "1": self.txn,
+                "2": self.txp,
+                ("3", "9", "14", "16", "19", "48"): self.agnd,
+                ("4", "8", "11", "15", "17", "21"): self.avdd,
+                "5": self.rxn,
+                "6": self.rxp,
+                # "7": DNC
+                "10": self.exres1,
+                # ("12", "13"): NC
+                # "18": VBG, "must be left floating"
+                "20": self.tocap,
+                "22": self.v1v20,
+                "23": self.gnd,  # RSVD, "must be tied to GND"
+                # "24": self.spdled,
+                # "25": self.linkled,
+                # "26": self.dupled,
+                # "27": self.actled,
+                "28": self.vdd,
+                "29": self.gnd,
+                "30": self.crystal.xi,
+                "31": self.crystal.xo,
+                "32": self.scsn,
+                "33": self.spi.sck,
+                "34": self.spi.miso,
+                "35": self.spi.mosi,
+                "36": self.intn,
+                "37": self.rstn,
+                # ("38", "39", "40", "41", "42"): NC
+                "43": self.pmode2,
+                "44": self.pmode1,
+                "45": self.pmode0,
+                # ("46", "47"): NC
+            },
+            "Wiznet",
+            "W5500",
+        )
+        self.assign(self.lcsc_part, "C32843")
+        self.assign(self.actual_basic_part, False)
+
+
+class W5500(Resettable, Interface, Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.ic = self.Block(W5500_Device())
+        self.pwr = self.Export(self.ic.vdd)
+        self.gnd = self.Export(self.ic.gnd)
+
+        self.tx = self.Port(EthernetPhyPairPort.empty())
+        self.rx = self.Port(EthernetPhyPairPort.empty())
+        self.spi = self.Export(self.ic.spi)
+        self.cs = self.Export(self.ic.scsn)
+        self.int = self.Export(self.ic.intn, optional=True)
+
+    def contents(self) -> None:
+        super().contents()
+
+        self.connect(self.reset, self.ic.rstn)
+        self.connect(self.gnd, self.ic.agnd)
+        self.l = self.Block(SeriesPowerFerriteBead()).connected(self.pwr, self.ic.avdd)
+
+        with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
+            self.exres1 = imp.Block(AnalogSetpointResistor(12.4 * kOhm(tol=0.01))).connected(io=self.ic.exres1)
+            self.c1v20 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2))).connected(pwr=self.ic.v1v20)
+            self.tocap = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(pwr=self.ic.tocap)
+
+        # TODO all the caps, ethernet circuits
 
 
 class IotThermalCamera(JlcBoardTop):
