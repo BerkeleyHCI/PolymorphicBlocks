@@ -6,9 +6,80 @@ from edg import *
 from .util import run_test_board
 
 
+class EthernetPhyPairLink(Link):
+    """Ethernet connection between the PHY and magnetics."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.phy = self.Port(EthernetPhyPairPort.empty())
+        self.magnetics = self.Port(EthernetPhyPairPort.empty())
+
+    @override
+    def contents(self) -> None:
+        self.connect(self.phy.pos, self.magnetics.pos)
+        self.connect(self.phy.neg, self.magnetics.neg)
+        self.connect(self.phy.center, self.magnetics.center)
+
+
+class EthernetPhyPairPort(Port[EthernetPhyPairLink]):
+    """PHY-side port for an ethernet pair"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.pos = self.Port(Passive())
+        self.neg = self.Port(Passive())
+        self.center = self.Port(Passive())
+
+
+class EthernetMagneticsPairPort(Port[EthernetPhyPairLink]):
+    """Magnetics-side port for an ethernet pair"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.pos = self.Port(Passive())
+        self.neg = self.Port(Passive())
+        self.center = self.Port(Passive())
+
+
+class EthernetPoeLink(Link):
+    """Power over Ethernet connection between the powered device and the magnetics."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.poe = self.Port(EthernetPoeDevicePort.empty())
+        self.magnetics = self.Port(EthernetPoeJackPort.empty())
+
+    @override
+    def contents(self) -> None:
+        self.connect(self.poe.pos, self.magnetics.pos)
+        self.connect(self.poe.neg, self.magnetics.neg)
+
+
+class EthernetPoeDevicePort(Port[EthernetPoeLink]):
+    """Powered device side port for Power over Ethernet. Generally exposed by a PoE controller subcircuit"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.pos = self.Port(Passive())
+        self.neg = self.Port(Passive())
+
+
+class EthernetPoeJackPort(Port[EthernetPoeLink]):
+    """Jack side port for Power over Ethernet, post-rectification."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.pos = self.Port(Passive())
+        self.neg = self.Port(Passive())
+
+
 class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
+
+        self.rx = self.Port(EthernetMagneticsPairPort.empty())
+        self.tx = self.Port(EthernetMagneticsPairPort.empty())
+        self.poe = self.Port(EthernetPoeJackPort.empty())
 
         self.led_grn_anode = self.Port(Passive(), optional=True)
         self.led_grn_cathode = self.Port(Passive(), optional=True)
@@ -27,11 +98,11 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             "J",
             "Connector_RJ:RJ45_Wuerth_7499111446_Horizontal",
             {
-                "1": self.rx.a,
-                "2": self.rx.b,
+                "1": self.rx.pos,
+                "2": self.rx.neg,
                 "3": self.rx.center,
-                "6": self.tx.a,
-                "5": self.tx.b,
+                "6": self.tx.neg,
+                "5": self.tx.pos,
                 "4": self.tx.center,
                 "9": self.poe.pos,
                 "10": self.poe.neg,
@@ -49,7 +120,11 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Hy931147c(Connector, GeneratorBlock):
     """Commonly available RJ45 magjack with PoE support.
-    Footprint and pin-compatible with Wuerth 7499211121A"""
+    Footprint and pin-compatible with Wuerth 7499211121A.
+
+    TODO should define and implement an abstract base class, EthernetConnector, which defines the
+    magnetics-side ports and can also be implemented by DiscreteMagneticsEthernetConnector,
+    which has a passive-typed RJ45, discrete magnetics, and optional PoE diode bridge generator."""
 
     def __init__(self) -> None:
         super().__init__()
