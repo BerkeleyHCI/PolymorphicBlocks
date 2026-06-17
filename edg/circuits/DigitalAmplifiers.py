@@ -5,6 +5,55 @@ from typing_extensions import override
 from ..abstract_parts import *
 
 
+class LoadSwitch(PowerSwitch, Block):
+    """A high-side PMOS load switch, for when Vcontrol = Vout. The switch conducts when the control voltage
+    is low, and blocking when the control voltage is high.
+
+    Blocks in the forward direction only, uncontrolled reverse conduction is possible via the body diode.
+
+    This wraps a single PMOS device and provides higher-level electrical modeling."""
+
+    def __init__(
+        self,
+        max_rds: FloatLike = 1 * Ohm,
+        frequency: RangeLike = RangeExpr.ZERO,
+    ) -> None:
+        super().__init__()
+        self.max_rds = self.ArgParameter(max_rds)
+        self.frequency = self.ArgParameter(frequency)
+
+        self.gnd = self.Port(Ground(), [Common])  # not physically used, only as a standoff voltage reference
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
+
+        self.control = self.Port(DigitalSink(), [Input])
+        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage), [Output])
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.fet = self.Block(
+            SwitchFet.PFet(
+                drain_voltage=self.pwr_in.link().voltage - self.gnd.link().voltage,
+                drain_current=self.pwr_out.link().current_drawn,
+                gate_voltage=self.control.link().voltage - self.gnd.link().voltage,
+                gate_threshold_voltage=(
+                    self.control.link().output_thresholds.lower() - self.gnd.link().voltage.lower(),
+                    self.control.link().output_thresholds.upper() - self.gnd.link().voltage.upper(),
+                ),
+                rds_on=(0, self.max_rds),
+                frequency=self.frequency,
+                drive_current=self.pwr_out.link().current_limits,
+            )
+        )
+
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+        self.connect(self.pwr_in.net, self.fet.source)
+        self.connect(self.control.net, self.fet.gate)
+        self.connect(self.pwr_out.net, self.fet.drain)
+
+
 class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
     """A high-side FET switch, using a two switch architecture, a main pass PFET with a amplifier NFET to drive its gate.
     If clamp_voltage is nonzero, a zener clamp is generated to limit the PFET gate voltage.

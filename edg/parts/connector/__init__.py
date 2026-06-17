@@ -1,5 +1,10 @@
 # PassiveConnector generators
 from .Headers import (
+    PinHeader2mm,
+    PinHeader2mmVertical,
+    PinHeader2mmHorizontal,
+    PinSocket2mm,
+    PinSocket2mmPair,
     PinHeader254,
     PinHeader254Vertical,
     PinHeader254Horizontal,
@@ -8,7 +13,7 @@ from .Headers import (
 )
 from .Headers import PinHeader254DualShroudedInline
 from .Headers import PinHeader127DualShrouded
-from .Headers import (
+from .Jst import (
     JstXh,
     JstXhAHorizontal,
     JstXhAVertical,
@@ -18,6 +23,8 @@ from .Headers import (
     JstPhKHorizontal,
     JstPhSmVerticalJlc,
     JstShSmHorizontal,
+)
+from .Molex import (
     MolexSl,
     Picoblade,
     Picoblade53398,

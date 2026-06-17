@@ -30,15 +30,15 @@ const U1 = board.add(SOT_23_8, {
   translate: pt(0.679, 4.166), rotate: 0,
   id: 'U1'
 })
-// vusb_sense.vs_cap.cap
-const C1 = board.add(C_0603_1608Metric, {
-  translate: pt(0.657, 4.428), rotate: 0,
-  id: 'C1'
-})
 // vusb_sense.Rs.res.res
 const R1 = board.add(R_1206_3216Metric, {
   translate: pt(0.688, 4.316), rotate: 0,
   id: 'R1'
+})
+// vusb_sense.vs_cap.cap
+const C1 = board.add(C_0603_1608Metric, {
+  translate: pt(0.657, 4.428), rotate: 0,
+  id: 'C1'
 })
 // fuse_vusb.fuse
 const F1 = board.add(Fuseholder_Littelfuse_Nano2_154x, {
@@ -250,15 +250,15 @@ const U5 = board.add(SOT_23_8, {
   translate: pt(0.977, 4.166), rotate: 0,
   id: 'U5'
 })
-// convin_sense.vs_cap.cap
-const C17 = board.add(C_0603_1608Metric, {
-  translate: pt(0.954, 4.428), rotate: 0,
-  id: 'C17'
-})
 // convin_sense.Rs.res.res
 const R12 = board.add(R_1206_3216Metric, {
   translate: pt(0.986, 4.316), rotate: 0,
   id: 'R12'
+})
+// convin_sense.vs_cap.cap
+const C17 = board.add(C_0603_1608Metric, {
+  translate: pt(0.954, 4.428), rotate: 0,
+  id: 'C17'
 })
 // conv.power_path.inductor
 const L4 = board.add(L_Bourns_SRP1245A, {
@@ -1622,7 +1622,7 @@ board.setNetlist([
   {name: "usb.cc.cc2", pads: [["J1", "B5"], ["U25", "1"], ["U25", "14"]]},
   {name: "vusb_sense.i2c.scl", pads: [["U1", "5"], ["U5", "5"], ["U25", "6"], ["U26", "8"], ["TP10", "1"], ["R68", "2"], ["J5", "12"], ["U29", "14"], ["U32", "1"], ["U33", "1"], ["U34", "14"], ["U37", "2"]]},
   {name: "vusb_sense.i2c.sda", pads: [["U1", "6"], ["U5", "6"], ["U25", "7"], ["U26", "7"], ["TP11", "1"], ["R69", "2"], ["J5", "10"], ["J5", "11"], ["U29", "15"], ["U32", "6"], ["U33", "6"], ["U34", "15"], ["U37", "3"]]},
-  {name: "vusb_sense.sense_pos", pads: [["U1", "1"], ["R1", "1"], ["FB1", "2"], ["D1", "1"]]},
+  {name: "vusb_sense.sense_pwr_in", pads: [["U1", "1"], ["R1", "1"], ["FB1", "2"], ["D1", "1"]]},
   {name: "fuse_vusb.pwr_out", pads: [["F1", "2"], ["FB1", "1"]]},
   {name: "ramp.control", pads: [["Q2", "1"], ["U29", "4"], ["R72", "2"]]},
   {name: "ramp.drv.gate", pads: [["Q1", "4"], ["C2", "2"], ["C3", "2"], ["R2", "2"], ["R3", "1"]]},

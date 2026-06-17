@@ -541,9 +541,9 @@ class UsbSourceMeasure(JlcBoardTop):
                 self.Block(SeriesPowerFuse(trip_current=(7, 8) * Amp)),
                 self.Block(SeriesPowerFerriteBead()),
                 imp.Block(ProtectionZenerDiode(voltage=(32, 40) * Volt)),  # for parts commonality w/ the Vconv zener
-                self.vusb_sense.sense_pos,
+                self.vusb_sense.sense_pwr_in,
             )
-            self.vusb = self.connect(self.vusb_sense.sense_neg)
+            self.vusb = self.connect(self.vusb_sense.sense_pwr_out)
 
             (self.ramp, self.cap_conv), _ = self.chain(
                 self.vusb,
@@ -581,8 +581,8 @@ class UsbSourceMeasure(JlcBoardTop):
             # output power supplies
             self.convin_sense = imp.Block(Ina219(10 * mOhm(tol=0.01), addr_lsb=4))
             self.connect(self.convin_sense.pwr, self.v3v3)
-            self.connect(self.vusb_ramp, self.convin_sense.sense_pos)
-            self.vconvin = self.connect(self.convin_sense.sense_neg)
+            self.connect(self.vusb_ramp, self.convin_sense.sense_pwr_in)
+            self.vconvin = self.connect(self.convin_sense.sense_pwr_out)
             (self.conv_inforce, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
                 self.vconvin,
                 imp.Block(ForcedVoltage(20 * Volt(tol=0))),  # assumed input voltage to target buck-boost ratios

@@ -6,6 +6,80 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
+@abstract_block_default(lambda: PinHeader2mmVertical)
+class PinHeader2mm(PassiveConnector):
+    """Abstract base class for all 2.0mm pin headers."""
+
+
+class PinHeader2mmVertical(PinHeader2mm, FootprintPassiveConnector):
+    """Generic 2.0mm pin header in vertical through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinHeader_2.00mm:PinHeader_1x{length:02d}_P2.00mm_Vertical",
+            "Generic",
+            f"PinHeader2.00 1x{length}",
+        )
+
+
+class PinHeader2mmHorizontal(PinHeader2mm, FootprintPassiveConnector):
+    """Generic 2.0mm pin header in horizontal (right-angle) through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinHeader_2.00mm:PinHeader_1x{length:02d}_P2.00mm_Horizontal",
+            "Generic",
+            f"PinHeader2.00 1x{length} Horizontal",
+        )
+
+
+class PinSocket2mm(FootprintPassiveConnector):
+    """Generic 2.00mm pin socket in vertical through-hole."""
+
+    allowed_pins = range(1, 40 + 1)
+
+    @override
+    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+        return (
+            f"Connector_PinSocket_2.00mm:PinSocket_1x{length:02d}_P2.00mm_Vertical",
+            "Generic",
+            f"PinSocket2.00 1x{length}",
+        )
+
+
+class PinSocket2mmPair(SubboardConnectorPair, GeneratorBlock):
+    """2.00mm pin socket (external) - header (internal) pair for sub-board connectors,
+    matching same pin-number to pin-number.
+
+    Optionally can be reversed, with the header being on the external side and the socket being on the internal side."""
+
+    def __init__(self, length: IntLike = 0, *, reverse: BoolLike = False) -> None:
+        super().__init__()
+        self.length = self.ArgParameter(length)
+        self.reverse = self.ArgParameter(reverse)
+        self.generator_param(self.reverse)
+
+        self.pins = self.Port(Vector(Passive.empty()))
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if not self.get(self.reverse):
+            self.ext: PassiveConnector = self.Block(PinSocket2mm(self.length), external=True)
+            self.int: PassiveConnector = self.Block(PinHeader2mm(self.length))
+        else:
+            self.ext = self.Block(PinHeader2mm(self.length), external=True)
+            self.int = self.Block(PinSocket2mm(self.length))
+        self.connect(self.pins, self.int.pins)
+        self.export_tap(self.pins, self.ext.pins)
+
+
 @abstract_block_default(lambda: PinHeader254Vertical)
 class PinHeader254(PassiveConnector):
     """Abstract base class for all 2.54mm pin headers."""
@@ -114,199 +188,3 @@ class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
     @override
     def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
         return -90
-
-
-@abstract_block_default(lambda: JstXhAVertical)
-class JstXh(FootprintPassiveConnector):
-    """Abstract base class for JST XH 2.50mm shrouded and polarized headers."""
-
-
-class JstXhAVertical(JstXh):
-    """JST B*B-XH-A series connector: 2.50mm shrouded and polarized, in vertical through-hole."""
-
-    allowed_pins = list(range(2, 16 + 1)) + [20]
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (f"Connector_JST:JST_XH_B{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical", "JST", f"B{length}B-XH-A")
-
-
-class JstXhAHorizontal(JstXh):
-    """JST S*B-XH-A series connector: 2.50mm shrouded and polarized, in horizontal through-hole."""
-
-    allowed_pins = list(range(2, 16 + 1)) + [20]
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (f"Connector_JST:JST_XH_S{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical", "JST", f"S{length}B-XH-A")
-
-
-@abstract_block_default(lambda: JstPhKVertical)
-class JstPh(FootprintPassiveConnector):
-    """Abstract base class for JST PH 2.00mm shrouded and polarized headers."""
-
-
-class JstPhKVertical(JstPh):
-    """JST B*B-PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
-
-    allowed_pins = range(2, 16 + 1)
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (f"Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical", "JST", f"B{length}B-PH-K")
-
-
-class JstPhKHorizontal(JstPh, JlcPart):
-    """JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
-
-    allowed_pins = range(2, 16 + 1)
-    PART_NUMBERS = {  # white colored, -S part suffix
-        2: "C173752",
-        3: "C157929",
-        4: "C157926",
-        5: "C157923",
-        6: "C157920",
-        7: "C157917",
-        8: "C157915",
-        9: "C157912",
-        10: "C157947",
-        11: "C157945",
-        12: "C157943",
-        13: "C157940",
-        14: "C157938",
-        15: "C157936",
-        16: "C157934",
-    }
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        self.assign(self.lcsc_part, self.PART_NUMBERS[length])
-        self.assign(self.actual_basic_part, False)
-        return (f"Connector_JST:JST_PH_S{length}B-PH-K_1x{length:02d}_P2.00mm_Horizontal", "JST", f"S{length}B-PH-K")
-
-    @override
-    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
-        return 180
-
-    @override
-    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
-        return (length - 1.0, 0)
-
-
-class JstPhSmVertical(JstPh):
-    """JST B*B-PH-SM4 series connector: 2.00mm shrouded and polarized, in vertical surface-mount."""
-
-    allowed_pins = range(2, 16 + 1)
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (
-            f"Connector_JST:JST_PH_B{length}B-PH-SM4-TB_1x{length:02d}-1MP_P2.00mm_Vertical",
-            "JST",
-            f"B{length}B-PH-SM4-TB",
-        )
-
-
-class JstPhSmVerticalJlc(JlcPart, JstPhSmVertical):
-    """JST PH connector in SMD, with JLC part numbers for what parts are stocked (JST or clones,
-    since JLC's inventory of PH SMD connectors is pretty spotty)."""
-
-    PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23
-        3: "C146054",
-        2: "C64658",
-        6: "C265088",
-        5: "C273126",
-        4: "C519161",
-        8: "C519165",
-        14: "C278813",
-    }
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        # TODO this isn't the intended hook and uses side effects, but it works for now
-        self.assign(self.lcsc_part, self.PART_NUMBERS[length])
-        self.assign(self.actual_basic_part, False)
-        return super().part_footprint_mfr_name(length)
-
-
-class JstShSmHorizontal(FootprintPassiveConnector, JlcPart):
-    """JST SH connector in SMD, with JLC part numbers for what parts are stocked."""
-
-    PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23
-        2: "C160402",
-        3: "C160403",
-        4: "C160404",
-        5: "C136657",
-        6: "C160405",
-        7: "C160406",
-        8: "C160407",
-        9: "C160408",
-        10: "C160409",
-        11: "C515956",
-        12: "C160411",
-        13: "C160412",
-        14: "C160413",
-        15: "C160414",
-        20: "C160415",
-    }
-    allowed_pins = PART_NUMBERS.keys()
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        # TODO this isn't the intended hook and uses side effects, but it works for now
-        self.assign(self.lcsc_part, self.PART_NUMBERS[length])
-        self.assign(self.actual_basic_part, False)
-        return (
-            f"Connector_JST:JST_SH_SM{length:02d}B-SRSS-TB_1x{length:02d}-1MP_P1.00mm_Horizontal",
-            "JST",
-            f"SM{length:02d}B-SRSS-TB",
-        )
-
-
-@abstract_block_default(lambda: Picoblade53398)
-class Picoblade(FootprintPassiveConnector):
-    """Abstract base class for Molex PicoBlade 1.25mm shrouded and polarized headers.
-    Sometimes generically referred to as JST 1.25mm, even though JST does not make 1.25mm headers."""
-
-
-class Picoblade53398(Picoblade):
-    """Picoblade connector in surface-mount vertical."""
-
-    allowed_pins = list(range(2, 16 + 1)) + [20]
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (
-            f"Connector_Molex:Molex_PicoBlade_53398-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Vertical",
-            "Molex",
-            f"53398{length:02d}71",
-        )
-
-
-class Picoblade53261(Picoblade):
-    """Picoblade connector in surface-mount horizontal."""
-
-    allowed_pins = list(range(2, 16 + 1)) + [20]
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (
-            f"Connector_Molex:Molex_PicoBlade_53261-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Vertical",
-            "Molex",
-            f"53261{length:02d}71",
-        )
-
-
-class MolexSl(FootprintPassiveConnector):
-    """Molex SL series connector: 2.54mm shrouded and polarized, in vertical through-hole.
-    Breadboard wire compatible - especially for debugging in a pinch."""
-
-    allowed_pins = range(2, 25 + 1)
-
-    @override
-    def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
-        return (
-            f"Connector_Molex:Molex_SL_171971-00{length:02d}_1x{length:02d}_P2.54mm_Vertical",
-            "Molex",
-            f"171971-00{length:02d}_1x{length:02d}",
-        )

@@ -1,3 +1,6 @@
+import warnings
+from typing import Any
+
 from typing_extensions import override
 
 from ....circuits import *
@@ -73,17 +76,20 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         self.assign(self.actual_basic_part, False)
 
 
-class Ina219(CurrentSensor, Block):
-    """Current/voltage/power monitor with I2C interface"""
+class Ina219(CurrentSensor, GeneratorBlock):
+    """Bidirectional current/voltage/power monitor with I2C interface"""
 
-    def __init__(self, shunt_resistor: RangeLike = 2.0 * mOhm(tol=0.05), *, addr_lsb: IntLike = 0):
+    def __init__(
+        self, shunt_resistor: RangeLike = 2.0 * mOhm(tol=0.05), *, addr_lsb: IntLike = 0, flip_sense: BoolLike = False
+    ):
         super().__init__()
+        self.flip_sense = self.ArgParameter(flip_sense)
+        self.generator_param(self.flip_sense)
+
         self.ic = self.Block(Ina219_Device(addr_lsb))
         self.pwr = self.Export(self.ic.vs, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
-
-        self.vs_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
         self.Rs = self.Block(
             CurrentSenseResistor(
@@ -91,11 +97,28 @@ class Ina219(CurrentSensor, Block):
             )
         )
 
-        self.sense_pos = self.Export(self.Rs.pwr_in)
-        self.sense_neg = self.Export(self.Rs.pwr_out)
+        self.sense_pwr_in = self.Export(self.Rs.pwr_in)
+        self.sense_pwr_out = self.Export(self.Rs.pwr_out)
 
     @override
-    def contents(self) -> None:
-        super().contents()
-        self.connect(self.Rs.sense_in, self.ic.in_pos)
-        self.connect(self.Rs.sense_out, self.ic.in_neg)
+    def generate(self) -> None:
+        super().generate()
+        self.vs_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+        if not self.get(self.flip_sense):
+            self.connect(self.Rs.sense_in, self.ic.in_pos)
+            self.connect(self.Rs.sense_out, self.ic.in_neg)
+        else:
+            self.connect(self.Rs.sense_in, self.ic.in_neg)
+            self.connect(self.Rs.sense_out, self.ic.in_pos)
+
+    def __getattr__(self, item: str) -> Any:
+        if item == "sense_pos":
+            warnings.warn(f"Use sense_pwr_in instead.", DeprecationWarning, stacklevel=2)
+            return self.sense_pwr_in
+        elif item == "sense_neg":
+            warnings.warn(f"Use sense_pwr_out instead.", DeprecationWarning, stacklevel=2)
+            return self.sense_pwr_out
+        else:
+            # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+            raise AttributeError(item)
