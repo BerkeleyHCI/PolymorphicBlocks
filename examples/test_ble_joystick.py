@@ -166,7 +166,7 @@ class BleJoystick(JlcBoardTop):
         with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
             self.vbat_sense = imp.Block(Ina219(100 * mOhm(tol=0.01)))
             (self.gate,), _ = self.chain(self.vbat, imp.Block(SoftPowerGate()), self.vbat_sense.sense_pos)
-            self.vbat_gated = self.connect(self.vbat_sense.sense_neg)
+            self.vbat_gated = self.connect(self.vbat_sense.sense_pwr_out)
 
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.vbat_gated,

@@ -132,7 +132,7 @@ class IotFan(JlcBoardTop):
         ) as imp:
             self.vin_sense = imp.Block(Ina219(10 * mOhm(tol=0.01)))
             self.connect(self.pwr_merge.pwr_out, self.vin_sense.sense_pos)
-            self.vin = self.connect(self.vin_sense.sense_neg)
+            self.vin = self.connect(self.vin_sense.sense_pwr_out)
 
             (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
                 self.vin,
