@@ -6,6 +6,46 @@ from edg import *
 from .util import run_test_board
 
 
+class Hy931147c(Connector, FootprintBlock, JlcPart):
+    """Commonly available RJ45 magjack with PoE support.
+    Footprint and pin-compatible with Wuerth 7499211121A"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.led_grn_anode = self.Port(Passive(), optional=True)
+        self.led_grn_cathode = self.Port(Passive(), optional=True)
+
+        self.led_yel_anode = self.Port(Passive(), optional=True)
+        self.led_yel_cathode = self.Port(Passive(), optional=True)
+
+    @override
+    def contents(self):
+        super().contents()
+        self.footprint(
+            "J",
+            "Connector_RJ:RJ45_Wuerth_7499111446_Horizontal",
+            {
+                "1": self.rx.a,
+                "2": self.rx.b,
+                "3": self.rx.center,
+                "6": self.tx.a,
+                "5": self.tx.b,
+                "4": self.tx.center,
+                "9": self.poe.pos,
+                "10": self.poe.neg,
+                "11": self.led_yel_anode,
+                "12": self.led_yel_cathode,
+                "13": self.led_grn_anode,
+                "14": self.led_grn_cathode,
+            },
+            "Hanrun",
+            "HY931147C",
+        )
+        self.assign(self.lcsc_part, "C91754")
+        self.assign(self.actual_basic_part, False)
+
+
 class IotThermalCamera(JlcBoardTop):
     """Dual-mode IR and RGB camera board with ESP32"""
 
