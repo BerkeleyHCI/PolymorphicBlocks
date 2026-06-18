@@ -6,38 +6,26 @@ from edg import *
 from .util import run_test_board
 
 
-class EthernetPhyPairLink(Link):
-    """Single pair ethernet connection between the PHY and magnetics."""
+class EthernetMdiPairLink(Link):
+    """Single pair ethernet twisted-pair MDI connection, between the PHY and magnetics."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.phy = self.Port(EthernetPhyPairPort.empty())
-        self.mag = self.Port(EthernetMagneticsPairPort.empty())
+        self.phy = self.Port(EthernetMdiPhyPairPort.empty())
+        self.mag = self.Port(EthernetMdiMagPairPort.empty())
 
     @override
     def contents(self) -> None:
         # KiCad diffpair-friendly naming
-        self.phy_P = self.connect(self.phy.pos, self.mag.pos)
-        self.phy_N = self.connect(self.phy.neg, self.mag.neg)
-        self.phy_C = self.connect(self.phy.center, self.mag.center)
+        self.dp_P = self.connect(self.phy.pos, self.mag.pos)
+        self.dp_N = self.connect(self.phy.neg, self.mag.neg)
+        self.center = self.connect(self.phy.center, self.mag.center)
 
 
-class EthernetPhyPairPort(Port[EthernetPhyPairLink]):
-    """PHY-side port for an ethernet pair"""
+class EthernetMdiPhyPairPort(Port[EthernetMdiPairLink]):
+    """PHY-side port of an ethernet twisted-pair MDI connection"""
 
-    link_type = EthernetPhyPairLink
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.pos = self.Port(Passive())
-        self.neg = self.Port(Passive())
-        self.center = self.Port(Passive())
-
-
-class EthernetMagneticsPairPort(Port[EthernetPhyPairLink]):
-    """Magnetics-side port for an ethernet pair"""
-
-    link_type = EthernetPhyPairLink
+    link_type = EthernetMdiPairLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -46,14 +34,26 @@ class EthernetMagneticsPairPort(Port[EthernetPhyPairLink]):
         self.center = self.Port(Passive())
 
 
-class EthernetPhyLink(Link):
-    """Full ethernet connection between the PHY and the magnetics.
-    Currently supports only 10/100Mbps connections with TX/RX pairs."""
+class EthernetMdiMagPairPort(Port[EthernetMdiPairLink]):
+    """Magnetics-side port of a twisted-pair MDI connection"""
+
+    link_type = EthernetMdiPairLink
 
     def __init__(self) -> None:
         super().__init__()
-        self.phy = self.Port(EthernetPhyPort.empty())
-        self.mag = self.Port(EthernetMagneticsPort.empty())
+        self.pos = self.Port(Passive())
+        self.neg = self.Port(Passive())
+        self.center = self.Port(Passive())
+
+
+class EthernetMdiLink(Link):
+    """Full (multi-pair) connection for ethernet twisted-pair MDI connection, between the PHY and magnetics.
+    Currently supports only 10/100Mbps (100BASE-TX) connections with TX/RX pairs."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.phy = self.Port(EthernetMdi100BaseTxPhyPort.empty())
+        self.mag = self.Port(EthernetMdi100BaseTxMagPort.empty())
 
     @override
     def contents(self) -> None:
@@ -61,35 +61,35 @@ class EthernetPhyLink(Link):
         self.rx = self.connect(self.phy.rx, self.mag.rx)
 
 
-class EthernetPhyPort(Port[EthernetPhyLink]):
-    """PHY-side port for 10/100 ethernet"""
+class EthernetMdi100BaseTxPhyPort(Port[EthernetMdiLink]):
+    """PHY-side MDI port for 100BASE-TX / Fast Ethernet"""
 
-    link_type = EthernetPhyLink
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.tx = self.Port(EthernetPhyPairPort())
-        self.rx = self.Port(EthernetPhyPairPort())
-
-
-class EthernetMagneticsPort(Port[EthernetPhyLink]):
-    """Magnetics-side port for 10/100 ethernet"""
-
-    link_type = EthernetPhyLink
+    link_type = EthernetMdiLink
 
     def __init__(self) -> None:
         super().__init__()
-        self.tx = self.Port(EthernetMagneticsPairPort())
-        self.rx = self.Port(EthernetMagneticsPairPort())
+        self.tx = self.Port(EthernetMdiPhyPairPort())
+        self.rx = self.Port(EthernetMdiPhyPairPort())
 
 
-class EthernetPoeLink(Link):
+class EthernetMdi100BaseTxMagPort(Port[EthernetMdiLink]):
+    """Magnetics-side MDI port for 100BASE-TX / Fast Ethernet"""
+
+    link_type = EthernetMdiLink
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tx = self.Port(EthernetMdiMagPairPort())
+        self.rx = self.Port(EthernetMdiMagPairPort())
+
+
+class PoeLink(Link):
     """Power over Ethernet connection between the powered device and the magnetics."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.poe = self.Port(EthernetPoeDevicePort.empty())
-        self.magnetics = self.Port(EthernetPoeJackPort.empty())
+        self.poe = self.Port(PoeDevicePort.empty())
+        self.magnetics = self.Port(PoePowerPort.empty())
 
     @override
     def contents(self) -> None:
@@ -97,10 +97,10 @@ class EthernetPoeLink(Link):
         self.connect(self.poe.neg, self.magnetics.neg)
 
 
-class EthernetPoeDevicePort(Port[EthernetPoeLink]):
+class PoeDevicePort(Port[PoeLink]):
     """Powered device side port for Power over Ethernet. Generally exposed by a PoE controller subcircuit"""
 
-    link_type = EthernetPoeLink
+    link_type = PoeLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -108,10 +108,10 @@ class EthernetPoeDevicePort(Port[EthernetPoeLink]):
         self.neg = self.Port(Passive())
 
 
-class EthernetPoeJackPort(Port[EthernetPoeLink]):
+class PoePowerPort(Port[PoeLink]):
     """Jack side port for Power over Ethernet, post-rectification."""
 
-    link_type = EthernetPoeLink
+    link_type = PoeLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -123,8 +123,8 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
 
-        self.eth = self.Port(EthernetMagneticsPort.empty(), optional=True)
-        self.poe = self.Port(EthernetPoeJackPort.empty(), optional=True)
+        self.eth = self.Port(EthernetMdi100BaseTxMagPort.empty(), optional=True)
+        self.poe = self.Port(PoePowerPort.empty(), optional=True)
 
         self.led_grn_anode = self.Port(Passive(), optional=True)
         self.led_grn_cathode = self.Port(Passive(), optional=True)
@@ -357,7 +357,7 @@ class W5500(Resettable, Interface, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vdd, [Power])
 
-        self.eth = self.Port(EthernetPhyPort.empty())
+        self.eth = self.Port(EthernetMdi100BaseTxPhyPort.empty())
         self.spi = self.Export(self.ic.spi)
         self.cs = self.Export(self.ic.scsn)
         self.int = self.Export(self.ic.intn, optional=True)
