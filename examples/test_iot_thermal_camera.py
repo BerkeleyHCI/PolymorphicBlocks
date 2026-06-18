@@ -86,9 +86,9 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
 
-        self.rx = self.Port(EthernetMagneticsPairPort.empty())
-        self.tx = self.Port(EthernetMagneticsPairPort.empty())
-        self.poe = self.Port(EthernetPoeJackPort.empty())
+        self.rx = self.Port(EthernetMagneticsPairPort.empty(), optional=True)
+        self.tx = self.Port(EthernetMagneticsPairPort.empty(), optional=True)
+        self.poe = self.Port(EthernetPoeJackPort.empty(), optional=True)
 
         self.led_grn_anode = self.Port(Passive(), optional=True)
         self.led_grn_cathode = self.Port(Passive(), optional=True)
@@ -150,9 +150,9 @@ class Hy931147c(Connector, GeneratorBlock):
 
         self.conn = self.Block(Hy931147c_Device())
 
-        self.rx = self.Export(self.conn.rx)
-        self.tx = self.Export(self.conn.tx)
-        self.poe = self.Export(self.conn.poe)
+        self.rx = self.Export(self.conn.rx, optional=True)
+        self.tx = self.Export(self.conn.tx, optional=True)
+        self.poe = self.Export(self.conn.poe, optional=True)
 
         self.gnd = self.Port(Ground())  # for termination
         self.pwr_led = self.Port(VoltageSink(), optional=True)  # for LED power
@@ -168,7 +168,13 @@ class Hy931147c(Connector, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
 
-        self.require(self.pwr_led.is_connected() == self.led_yel_sink.is_connected() | self.led_grn_sink.is_connected())
+        self.require(self.rx.is_connected() == self.tx.is_connected(), "must use both data pairs")
+        self.require(self.rx.is_connected() | self.poe.is_connected(), "must use ethernet or PoE")
+
+        self.require(
+            (self.led_yel_sink.is_connected() | self.led_grn_sink.is_connected()).implies(self.pwr_led.is_connected()),
+            "power required when LEDs used",
+        )
         if self.get(self.led_yel_sink.is_connected()):
             self.led_yel_res = self.Block(
                 Resistor(
@@ -312,8 +318,8 @@ class W5500(Resettable, Interface, Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(W5500_Device())
-        self.pwr = self.Export(self.ic.vdd)
-        self.gnd = self.Export(self.ic.gnd)
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vdd, [Power])
 
         self.tx = self.Port(EthernetPhyPairPort.empty())
         self.rx = self.Port(EthernetPhyPairPort.empty())
@@ -405,9 +411,6 @@ class IotThermalCamera(JlcBoardTop):
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
         self.eth = self.Block(Hy931147c())
-        self.phy = self.Block(W5500())
-        self.connect(self.eth.rx, self.phy.rx)
-        self.connect(self.eth.tx, self.phy.tx)
 
         with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
@@ -442,9 +445,16 @@ class IotThermalCamera(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
+            reset_line = self.mcu.gpio.request("reset")
+
+            self.connect(self.eth.gnd, self.gnd)
+            self.connect(self.eth.pwr_led, self.v3v3)
+            self.phy = imp.Block(W5500())
+            self.connect(self.eth.rx, self.phy.rx)
+            self.connect(self.eth.tx, self.phy.tx)
             self.connect(self.mcu.spi.request("eth_spi"), self.phy.spi)
             self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
-            self.connect(self.mcu.gpio.request("eth_rst"), self.phy.reset)
+            self.connect(reset_line, self.phy.reset)
             self.connect(self.mcu.gpio.request("eth_int"), self.phy.int)
 
             (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
@@ -467,7 +477,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.cam.pwr_digital, self.v1v2)
             self.connect(self.cam.dvp8, self.mcu.with_mixin(IoControllerDvp8()).dvp8.request("cam"))
             self.connect(self.cam.sio, self.i2c)
-            self.connect(self.cam.reset, self.mcu.gpio.request("cam_rst"))
+            self.connect(self.cam.reset, reset_line)
 
             self.flir = imp.Block(FlirLepton())
             self.connect(self.flir.pwr_io, self.v3v0)
@@ -475,7 +485,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.flir.pwr_core, self.v1v2)
             self.connect(self.flir.spi, self.mcu.spi.request("flir"))
             self.connect(self.flir.cci, self.i2c)
-            self.connect(self.flir.reset, self.mcu.gpio.request("flir_rst"))
+            self.connect(self.flir.reset, reset_line)
             self.connect(self.flir.shutdown, self.mcu.gpio.request("flir_pwrdn"))
             self.connect(self.flir.cs, self.mcu.gpio.request("flir_cs"))
             self.connect(self.flir.vsync, self.mcu.gpio.request("flir_vsync"))
@@ -495,7 +505,6 @@ class IotThermalCamera(JlcBoardTop):
                     [
                         "cam.vsync=25",
                         "cam.href=24",
-                        "cam_rst=23",
                         "cam.y7=22",
                         "cam.xclk=21",
                         "cam.y6=20",
@@ -509,7 +518,6 @@ class IotThermalCamera(JlcBoardTop):
                         "i2c.sda=31",
                         "i2c.scl=32",
                         "flir_pwrdn=33",
-                        "flir_rst=34",
                         "flir_cs=38",
                         "flir.sck=39",
                         "flir.mosi=5",
