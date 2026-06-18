@@ -12,17 +12,20 @@ class EthernetPhyPairLink(Link):
     def __init__(self) -> None:
         super().__init__()
         self.phy = self.Port(EthernetPhyPairPort.empty())
-        self.magnetics = self.Port(EthernetPhyPairPort.empty())
+        self.mag = self.Port(EthernetMagneticsPairPort.empty())
 
     @override
     def contents(self) -> None:
-        self.connect(self.phy.pos, self.magnetics.pos)
-        self.connect(self.phy.neg, self.magnetics.neg)
-        self.connect(self.phy.center, self.magnetics.center)
+        # KiCad diffpair-friendly naming
+        self.phy_P = self.connect(self.phy.pos, self.mag.pos)
+        self.phy_N = self.connect(self.phy.neg, self.mag.neg)
+        self.phy_C = self.connect(self.phy.center, self.mag.center)
 
 
 class EthernetPhyPairPort(Port[EthernetPhyPairLink]):
     """PHY-side port for an ethernet pair"""
+
+    link_type = EthernetPhyPairLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -33,6 +36,8 @@ class EthernetPhyPairPort(Port[EthernetPhyPairLink]):
 
 class EthernetMagneticsPairPort(Port[EthernetPhyPairLink]):
     """Magnetics-side port for an ethernet pair"""
+
+    link_type = EthernetPhyPairLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -58,6 +63,8 @@ class EthernetPoeLink(Link):
 class EthernetPoeDevicePort(Port[EthernetPoeLink]):
     """Powered device side port for Power over Ethernet. Generally exposed by a PoE controller subcircuit"""
 
+    link_type = EthernetPoeLink
+
     def __init__(self) -> None:
         super().__init__()
         self.pos = self.Port(Passive())
@@ -66,6 +73,8 @@ class EthernetPoeDevicePort(Port[EthernetPoeLink]):
 
 class EthernetPoeJackPort(Port[EthernetPoeLink]):
     """Jack side port for Power over Ethernet, post-rectification."""
+
+    link_type = EthernetPoeLink
 
     def __init__(self) -> None:
         super().__init__()
@@ -205,7 +214,7 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.avdd = self.Port(
             VoltageSink(
                 voltage_limits=(2.97, 3.63) * Volt,
-                current_draw=(13, 132) * mAmp,  # power down to 100M link
+                current_draw=(13, 132) * mAmp,  # power down to 100M link, arbitrarily lumped into avdd
             )
         )
         self.vdd = self.Port(VoltageSink(voltage_limits=(2.97, 3.63) * Volt))
@@ -276,8 +285,8 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 # "27": self.actled,
                 "28": self.vdd,
                 "29": self.gnd,
-                "30": self.crystal.xi,
-                "31": self.crystal.xo,
+                "30": self.crystal.xtal_in,
+                "31": self.crystal.xtal_out,
                 "32": self.scsn,
                 "33": self.spi.sck,
                 "34": self.spi.miso,
@@ -298,6 +307,8 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class W5500(Resettable, Interface, Block):
+    """SPI Ethernet controller supporting 10/100Mbps ethernet and onboard TCP/IP stack."""
+
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(W5500_Device())
@@ -315,7 +326,7 @@ class W5500(Resettable, Interface, Block):
 
         self.connect(self.reset, self.ic.rstn)
         self.connect(self.gnd, self.ic.agnd)
-        self.l = self.Block(SeriesPowerFerriteBead()).connected(self.pwr, self.ic.avdd)
+        self.l = self.Block(SeriesPowerFerriteBead(hf_impedance=(100, 2000) * Ohm)).connected(self.pwr, self.ic.avdd)
 
         self.crystal = self.Block(OscillatorReference(frequency=25 * MHertz(tol=30e-6)))
         self.connect(self.crystal.gnd, self.gnd)
@@ -342,7 +353,44 @@ class W5500(Resettable, Interface, Block):
                 self.avdd_caps[str(i)] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
             self.avdd_caps[6] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-        # TODO ethernet circuits
+        # optional damping resistors for EMI reduction
+        damp_resistor_model = Resistor(33 * Ohm(tol=0.05))
+        self.txp_damp = self.Block(damp_resistor_model)
+        self.txn_damp = self.Block(damp_resistor_model)
+        self.connect(self.txp_damp.a, self.ic.txp)
+        self.connect(self.txn_damp.a, self.ic.txn)
+
+        self.rxp_damp = self.Block(damp_resistor_model)
+        self.rxn_damp = self.Block(damp_resistor_model)
+        self.connect(self.rxp_damp.a, self.ic.rxp)
+        self.connect(self.rxn_damp.a, self.ic.rxn)
+
+        # Ethernet termination circuit
+        bias_resistor_model = Resistor(49.9 * Ohm(tol=0.01))
+        self.txp_bias = self.Block(bias_resistor_model)
+        self.txn_bias = self.Block(bias_resistor_model)
+        self.txc_bias = self.Block(Resistor(10 * Ohm(tol=0.01)))
+        self.connect(self.txp_bias.a, self.txn_bias.a, self.txc_bias.a)
+        self.connect(self.txc_bias.a.adapt_to(VoltageSink()), self.ic.avdd)
+        self.connect(self.txp_damp.b, self.txp_bias.b, self.tx.pos)
+        self.connect(self.txn_damp.b, self.txn_bias.b, self.tx.neg)
+        self.connect(self.txc_bias.b, self.tx.center)
+        self.txc_cap = self.Block(Capacitor(22 * nFarad(tol=0.2), voltage=(0, 5) * Volt))
+        self.connect(self.txc_cap.pos, self.tx.center)
+        self.connect(self.txc_cap.neg.adapt_to(Ground()), self.gnd)
+
+        ac_cap_model = Capacitor(6.8 * nFarad(tol=0.2), voltage=(0, 5) * Volt)
+        self.rxp_ac = self.Block(ac_cap_model)
+        self.rxn_ac = self.Block(ac_cap_model)
+        self.connect(self.rxp_ac.pos, self.rx.pos)
+        self.connect(self.rxn_ac.pos, self.rx.neg)
+        self.rxp_bias = self.Block(bias_resistor_model)
+        self.rxn_bias = self.Block(bias_resistor_model)
+        self.connect(self.rxp_damp.b, self.rxp_bias.a, self.rxp_ac.neg)
+        self.connect(self.rxn_damp.b, self.rxn_bias.a, self.rxn_ac.neg)
+        self.rxc_cap = self.Block(Capacitor(10 * nFarad(tol=0.2), voltage=(0, 5) * Volt))
+        self.connect(self.rxc_cap.pos, self.rx.center, self.rxp_bias.b, self.rxn_bias.b)
+        self.connect(self.rxc_cap.neg.adapt_to(Ground()), self.gnd)
 
 
 class IotThermalCamera(JlcBoardTop):
@@ -355,6 +403,11 @@ class IotThermalCamera(JlcBoardTop):
         self.usb = self.Block(UsbCReceptacle())
         self.gnd = self.connect(self.usb.gnd)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
+
+        self.eth = self.Block(Hy931147c())
+        self.phy = self.Block(W5500())
+        self.connect(self.eth.rx, self.phy.rx)
+        self.connect(self.eth.tx, self.phy.tx)
 
         with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
@@ -389,16 +442,16 @@ class IotThermalCamera(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
+            self.connect(self.mcu.spi.request("eth_spi"), self.phy.spi)
+            self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
+            self.connect(self.mcu.gpio.request("eth_rst"), self.phy.reset)
+            self.connect(self.mcu.gpio.request("eth_int"), self.phy.int)
+
             (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
             self.i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
                 self.i2c, imp.Block(I2cPullup()), imp.Block(I2cTestPoint("i2c"))
-            )
-
-            mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
-            (self.touch_duck,), _ = self.chain(
-                mcu_touch.touch.request("touch_duck"), imp.Block(FootprintTouchPad("edg:Symbol_DucklingSolid"))
             )
 
             # debugging LEDs
@@ -463,7 +516,6 @@ class IotThermalCamera(JlcBoardTop):
                         "flir.miso=4",
                         "flir_vsync=7",
                         "ledr=_GPIO0_STRAP",
-                        "touch_duck=6",
                     ],
                 ),
                 (["mcu", "programming"], "uart-auto"),
