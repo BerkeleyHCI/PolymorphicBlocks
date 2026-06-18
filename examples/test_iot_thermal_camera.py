@@ -7,7 +7,7 @@ from .util import run_test_board
 
 
 class EthernetPhyPairLink(Link):
-    """Ethernet connection between the PHY and magnetics."""
+    """Single pair ethernet connection between the PHY and magnetics."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -44,6 +44,43 @@ class EthernetMagneticsPairPort(Port[EthernetPhyPairLink]):
         self.pos = self.Port(Passive())
         self.neg = self.Port(Passive())
         self.center = self.Port(Passive())
+
+
+class EthernetPhyLink(Link):
+    """Full ethernet connection between the PHY and the magnetics.
+    Currently supports only 10/100Mbps connections with TX/RX pairs."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.phy = self.Port(EthernetPhyPort.empty())
+        self.mag = self.Port(EthernetMagneticsPort.empty())
+
+    @override
+    def contents(self) -> None:
+        self.tx = self.connect(self.phy.tx, self.mag.tx)
+        self.rx = self.connect(self.phy.rx, self.mag.rx)
+
+
+class EthernetPhyPort(Port[EthernetPhyLink]):
+    """PHY-side port for 10/100 ethernet"""
+
+    link_type = EthernetPhyLink
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tx = self.Port(EthernetPhyPairPort())
+        self.rx = self.Port(EthernetPhyPairPort())
+
+
+class EthernetMagneticsPort(Port[EthernetPhyLink]):
+    """Magnetics-side port for 10/100 ethernet"""
+
+    link_type = EthernetPhyLink
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tx = self.Port(EthernetMagneticsPairPort())
+        self.rx = self.Port(EthernetMagneticsPairPort())
 
 
 class EthernetPoeLink(Link):
@@ -86,8 +123,7 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
 
-        self.rx = self.Port(EthernetMagneticsPairPort.empty(), optional=True)
-        self.tx = self.Port(EthernetMagneticsPairPort.empty(), optional=True)
+        self.eth = self.Port(EthernetMagneticsPort.empty(), optional=True)
         self.poe = self.Port(EthernetPoeJackPort.empty(), optional=True)
 
         self.led_grn_anode = self.Port(Passive(), optional=True)
@@ -109,12 +145,12 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             "J",
             "Connector_RJ:RJ45_Wuerth_7499111446_Horizontal",
             {
-                "1": self.rx.pos,
-                "2": self.rx.neg,
-                "3": self.rx.center,
-                "6": self.tx.neg,
-                "5": self.tx.pos,
-                "4": self.tx.center,
+                "1": self.eth.rx.pos,
+                "2": self.eth.rx.neg,
+                "3": self.eth.rx.center,
+                "6": self.eth.tx.neg,
+                "5": self.eth.tx.pos,
+                "4": self.eth.tx.center,
                 "9": self.poe.pos,
                 "10": self.poe.neg,
                 "11": self.led_yel_anode,
@@ -150,8 +186,7 @@ class Hy931147c(Connector, GeneratorBlock):
 
         self.conn = self.Block(Hy931147c_Device())
 
-        self.rx = self.Export(self.conn.rx, optional=True)
-        self.tx = self.Export(self.conn.tx, optional=True)
+        self.eth = self.Export(self.conn.eth, optional=True)
         self.poe = self.Export(self.conn.poe, optional=True)
 
         self.gnd = self.Port(Ground())  # for termination
@@ -168,8 +203,7 @@ class Hy931147c(Connector, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
 
-        self.require(self.rx.is_connected() == self.tx.is_connected(), "must use both data pairs")
-        self.require(self.rx.is_connected() | self.poe.is_connected(), "must use ethernet or PoE")
+        self.require(self.eth.is_connected() | self.poe.is_connected(), "must use ethernet or PoE")
 
         self.require(
             (self.led_yel_sink.is_connected() | self.led_grn_sink.is_connected()).implies(self.pwr_led.is_connected()),
@@ -315,14 +349,15 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class W5500(Resettable, Interface, Block):
     """SPI Ethernet controller supporting 10/100Mbps ethernet and onboard TCP/IP stack."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, damping_resistance: RangeLike = 33 * Ohm(tol=0.05)) -> None:
         super().__init__()
+        self.damping_resistance = self.ArgParameter(damping_resistance)
+
         self.ic = self.Block(W5500_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vdd, [Power])
 
-        self.tx = self.Port(EthernetPhyPairPort.empty())
-        self.rx = self.Port(EthernetPhyPairPort.empty())
+        self.eth = self.Port(EthernetPhyPort.empty())
         self.spi = self.Export(self.ic.spi)
         self.cs = self.Export(self.ic.scsn)
         self.int = self.Export(self.ic.intn, optional=True)
@@ -360,12 +395,11 @@ class W5500(Resettable, Interface, Block):
             self.avdd_caps[6] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
         # optional damping resistors for EMI reduction
-        damp_resistor_model = Resistor(33 * Ohm(tol=0.05))
+        damp_resistor_model = Resistor(self.damping_resistance)
         self.txp_damp = self.Block(damp_resistor_model)
         self.txn_damp = self.Block(damp_resistor_model)
         self.connect(self.txp_damp.a, self.ic.txp)
         self.connect(self.txn_damp.a, self.ic.txn)
-
         self.rxp_damp = self.Block(damp_resistor_model)
         self.rxn_damp = self.Block(damp_resistor_model)
         self.connect(self.rxp_damp.a, self.ic.rxp)
@@ -378,24 +412,23 @@ class W5500(Resettable, Interface, Block):
         self.txc_bias = self.Block(Resistor(10 * Ohm(tol=0.01)))
         self.connect(self.txp_bias.a, self.txn_bias.a, self.txc_bias.a)
         self.connect(self.txc_bias.a.adapt_to(VoltageSink()), self.ic.avdd)
-        self.connect(self.txp_damp.b, self.txp_bias.b, self.tx.pos)
-        self.connect(self.txn_damp.b, self.txn_bias.b, self.tx.neg)
-        self.connect(self.txc_bias.b, self.tx.center)
+        self.connect(self.txp_damp.b, self.txp_bias.b, self.eth.tx.pos)
+        self.connect(self.txn_damp.b, self.txn_bias.b, self.eth.tx.neg)
         self.txc_cap = self.Block(Capacitor(22 * nFarad(tol=0.2), voltage=(0, 5) * Volt))
-        self.connect(self.txc_cap.pos, self.tx.center)
+        self.connect(self.txc_bias.b, self.txc_cap.pos, self.eth.tx.center)
         self.connect(self.txc_cap.neg.adapt_to(Ground()), self.gnd)
 
         ac_cap_model = Capacitor(6.8 * nFarad(tol=0.2), voltage=(0, 5) * Volt)
         self.rxp_ac = self.Block(ac_cap_model)
         self.rxn_ac = self.Block(ac_cap_model)
-        self.connect(self.rxp_ac.pos, self.rx.pos)
-        self.connect(self.rxn_ac.pos, self.rx.neg)
+        self.connect(self.rxp_ac.pos, self.eth.rx.pos)
+        self.connect(self.rxn_ac.pos, self.eth.rx.neg)
         self.rxp_bias = self.Block(bias_resistor_model)
         self.rxn_bias = self.Block(bias_resistor_model)
         self.connect(self.rxp_damp.b, self.rxp_bias.a, self.rxp_ac.neg)
         self.connect(self.rxn_damp.b, self.rxn_bias.a, self.rxn_ac.neg)
         self.rxc_cap = self.Block(Capacitor(10 * nFarad(tol=0.2), voltage=(0, 5) * Volt))
-        self.connect(self.rxc_cap.pos, self.rx.center, self.rxp_bias.b, self.rxn_bias.b)
+        self.connect(self.rxc_cap.pos, self.eth.rx.center, self.rxp_bias.b, self.rxn_bias.b)
         self.connect(self.rxc_cap.neg.adapt_to(Ground()), self.gnd)
 
 
@@ -450,8 +483,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.eth.gnd, self.gnd)
             self.connect(self.eth.pwr_led, self.v3v3)
             self.phy = imp.Block(W5500())
-            self.connect(self.eth.rx, self.phy.rx)
-            self.connect(self.eth.tx, self.phy.tx)
+            self.connect(self.eth.eth, self.phy.eth)
             self.connect(self.mcu.spi.request("eth_spi"), self.phy.spi)
             self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
             self.connect(reset_line, self.phy.reset)
@@ -538,7 +570,7 @@ class IotThermalCamera(JlcBoardTop):
                 (LinearRegulator, Tlv757p),  # default type for all LDOs
             ],
             class_values=[
-                (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
+                (CompactKeystone5015, ["lcsc_part"], "C5199798"),
             ],
         )
 
