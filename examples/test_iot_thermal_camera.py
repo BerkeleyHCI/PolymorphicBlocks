@@ -219,7 +219,7 @@ class Hy931147c(Connector, GeneratorBlock):
             )
             self.connect(self.pwr_led.net, self.conn.led_yel_anode)
             self.connect(self.conn.led_yel_cathode, self.led_yel_res.a)
-            self.connect(self.led_yel_res.a, self.led_yel_sink.net)
+            self.connect(self.led_yel_res.b, self.led_yel_sink.net)
             self.assign(
                 self.led_yel_sink.current_draw, -self.pwr_led.link().voltage / self.led_yel_res.actual_resistance
             )
@@ -234,7 +234,7 @@ class Hy931147c(Connector, GeneratorBlock):
             )
             self.connect(self.pwr_led.net, self.conn.led_grn_anode)
             self.connect(self.conn.led_grn_cathode, self.led_grn_res.a)
-            self.connect(self.led_grn_res.a, self.led_grn_sink.net)
+            self.connect(self.led_grn_res.b, self.led_grn_sink.net)
             self.assign(
                 self.led_grn_sink.current_draw, -self.pwr_led.link().voltage / self.led_grn_res.actual_resistance
             )
@@ -394,6 +394,9 @@ class W5500(Resettable, Interface, Block):
                 self.avdd_caps[str(i)] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
             self.avdd_caps[6] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+        # TODO parameterize PMODE configuration
+        self.connect(self.ic.pmode0, self.ic.pmode1, self.ic.pmode2, self.pwr.as_digital_source())
+
         # optional damping resistors for EMI reduction
         damp_resistor_model = Resistor(self.damping_resistance)
         self.txp_damp = self.Block(damp_resistor_model)
@@ -433,7 +436,7 @@ class W5500(Resettable, Interface, Block):
 
 
 class IotThermalCamera(JlcBoardTop):
-    """Dual-mode IR and RGB camera board with ESP32"""
+    """Dual-mode IR and RGB camera board with ESP32 and ethernet PoE"""
 
     @override
     def contents(self) -> None:
@@ -478,6 +481,9 @@ class IotThermalCamera(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
+            # debugging LEDs
+            (self.ledr,), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request("ledr"))
+
             reset_line = self.mcu.gpio.request("reset")
 
             self.connect(self.eth.gnd, self.gnd)
@@ -496,8 +502,17 @@ class IotThermalCamera(JlcBoardTop):
                 self.i2c, imp.Block(I2cPullup()), imp.Block(I2cTestPoint("i2c"))
             )
 
-            # debugging LEDs
-            (self.ledr,), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request("ledr"))
+            # out of IOs on the main ESP32S3
+            self.ioe = imp.Block(IoController())
+            self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request("i2c"), self.i2c)
+            self.connect(self.ioe.gpio.request("eth_grn"), self.eth.led_grn_sink)
+            self.connect(self.ioe.gpio.request("eth_yel"), self.eth.led_yel_sink)
+
+            (self.poe_sense,), _ = self.chain(
+                self.pwr,
+                imp.Block(VoltageSenseDivider(full_scale_voltage=3.0 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
+                self.ioe.adc.request("vusb_sense"),
+            )
 
         # CAMERA MULTI DOMAIN
         with self.implicit_connect(
@@ -527,8 +542,15 @@ class IotThermalCamera(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (["mcu"], Esp32s3_Wroom_1),
+                (["ioe"], Ch32v003),
                 (["reg_3v3"], Tps54202h),
                 (["cam", "device", "conn"], Fpc050BottomFlip),
+            ],
+            class_refinements=[
+                (EspProgrammingHeader, EspProgrammingTc2030),
+                (Ch32vSdiHeader, Ch32vSdiTc2030),
+                (TestPoint, CompactKeystone5015),
+                (LinearRegulator, Tlv757p),  # default type for all LDOs
             ],
             instance_values=[
                 (["refdes_prefix"], "T"),  # unique refdes for panelization
@@ -563,11 +585,6 @@ class IotThermalCamera(JlcBoardTop):
                 (["reg_3v0", "ic", "actual_dropout"], Range(0.0, 0.16)),  # 3.3V @ 400mA
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 21e6)),
                 (["usb", "pwr", "current_limits"], Range(0.0, 0.8)),  # a bit over
-            ],
-            class_refinements=[
-                (EspProgrammingHeader, EspProgrammingTc2030),
-                (TestPoint, CompactKeystone5015),
-                (LinearRegulator, Tlv757p),  # default type for all LDOs
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
