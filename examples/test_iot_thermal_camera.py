@@ -471,8 +471,9 @@ class Tps2378_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "9": self.vss,
                 # ("4", "5", "6", "7", "8"): NC
             },
-            "Texas Instruments",
-            "TPS2378",
+            mfr="Texas Instruments",
+            part="TPS2378",
+            datasheet="https://www.ti.com/lit/ds/symlink/tps2378.pdf",
         )
         self.assign(self.lcsc_part, "C337500")
         self.assign(self.actual_basic_part, False)
@@ -576,8 +577,17 @@ class IotThermalCamera(JlcBoardTop):
         with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            (self.reg_poe, self.tp_v5, self.prot_v5), _ = self.chain(
+                self.poe_pos_jmp.output,
+                imp.Block(BuckConverter(output_voltage=5.0 * Volt(tol=0.05))),
+                self.Block(VoltageTestPoint()),
+                imp.Block(ProtectionZenerDiode(voltage=(5.5, 7) * Volt)),
+            )
+
+            self.v5_merge = self.Block(MergedVoltageSource()).connected_from(self.reg_poe.pwr_out, self.usb.pwr)
+
             (self.choke, self.tp_pwr), _ = self.chain(
-                self.usb.pwr, self.Block(SeriesPowerFerriteBead()), self.Block(VoltageTestPoint())
+                self.v5_merge.pwr_out, self.Block(SeriesPowerFerriteBead()), self.Block(VoltageTestPoint())
             )
             self.pwr = self.connect(self.choke.pwr_out)
 
@@ -632,6 +642,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request("i2c"), self.i2c)
             self.connect(self.ioe.gpio.request("eth_grn"), self.eth.led_grn_sink)
             self.connect(self.ioe.gpio.request("eth_yel"), self.eth.led_yel_sink)
+            self.connect(self.ioe.gpio.request("t2p"), self.poe.t2p)
 
             (self.poe_sense,), _ = self.chain(
                 self.pwr,
@@ -668,6 +679,7 @@ class IotThermalCamera(JlcBoardTop):
             instance_refinements=[
                 (["mcu"], Esp32s3_Wroom_1),
                 (["ioe"], Ch32v003),
+                (["reg_poe"], Lmr39020),
                 (["reg_3v3"], Tps54202h),
                 (["cam", "device", "conn"], Fpc050BottomFlip),
             ],
@@ -709,13 +721,18 @@ class IotThermalCamera(JlcBoardTop):
                 (["reg_2v8", "ic", "actual_dropout"], Range(0.0, 0.05)),  # 3.3V @ 100mA
                 (["reg_3v0", "ic", "actual_dropout"], Range(0.0, 0.16)),  # 3.3V @ 400mA
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 21e6)),
-                (["usb", "pwr", "current_limits"], Range(0.0, 0.8)),  # a bit over
-                (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead
+                (["usb", "pwr", "current_limits"], Range(0.0, 0.9)),  # a bit over
+                (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead to allow basic part
+                (["reg_poe", "frequency"], Range.from_tolerance(800e3, 0.1)),
+                (["reg_poe", "hf_cap", "cap", "voltage_margin"], 1.5),
+                (["reg_poe", "power_path", "in_cap", "cap", "voltage_margin"], 1.5),
                 (["poe", "prot", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
                 (["poe", "den", "resistance"], Range.from_tolerance(25000, 0.05)),  # find a basic part
+                (["phy", "exres1", "res", "require_basic_part"], False),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
+                (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
             ],
         )
 
