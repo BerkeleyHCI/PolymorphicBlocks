@@ -705,7 +705,7 @@ class IotThermalCamera(JlcBoardTop):
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 21e6)),
                 (["usb", "pwr", "current_limits"], Range(0.0, 0.8)),  # a bit over
                 (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead
-                (["poe", "prot", "diode", "footprint"], "Diode_SMD:D_SMA"),
+                (["poe", "prot", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
                 (["poe", "den", "resistance"], Range.from_tolerance(25000, 0.05)),  # find a basic part
             ],
             class_values=[
