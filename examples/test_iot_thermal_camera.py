@@ -720,8 +720,8 @@ class IotThermalCamera(JlcBoardTop):
                 (["mcu", "programming"], "uart-auto"),
                 (["reg_2v8", "ic", "actual_dropout"], Range(0.0, 0.05)),  # 3.3V @ 100mA
                 (["reg_3v0", "ic", "actual_dropout"], Range(0.0, 0.16)),  # 3.3V @ 400mA
-                (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 21e6)),
-                (["usb", "pwr", "current_limits"], Range(0.0, 0.9)),  # a bit over
+                # over USB2 power limits, don't run wifi and ethernet together
+                (["usb", "pwr", "current_limits"], Range(0.0, 0.9)),
                 (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead to allow basic part
                 (["reg_poe", "frequency"], Range.from_tolerance(800e3, 0.1)),
                 (["reg_poe", "hf_cap", "cap", "voltage_margin"], 1.5),
