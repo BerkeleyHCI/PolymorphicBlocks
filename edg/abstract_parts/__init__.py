@@ -120,7 +120,7 @@ from .TestPoint import (
     CanDiffTestPoint,
 )
 from .TestPoint import AnalogCoaxTestPoint
-from .Jumper import Jumper, DigitalJumper
+from .Jumper import Jumper, GroundJumper, VoltageJumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode

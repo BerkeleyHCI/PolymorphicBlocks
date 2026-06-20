@@ -563,7 +563,13 @@ class IotThermalCamera(JlcBoardTop):
         self.poe = self.Block(Tps2378(poe_class=0))
         self.connect(self.eth.poe, self.poe.poe)
 
-        self.gnd = self.connect(self.usb.gnd, self.poe.gnd)
+        # allow using a jumper to disable and isolate PoE while still using ethernet
+        self.poe_pos_jmp = self.Block(VoltageJumper())
+        self.connect(self.poe.pwr_out, self.poe_pos_jmp.input)
+        self.poe_gnd_jmp = self.Block(GroundJumper())
+        self.connect(self.poe.gnd, self.poe_gnd_jmp.input)
+
+        self.gnd = self.connect(self.usb.gnd, self.poe_gnd_jmp.output)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
         self.tp_poe = self.Block(VoltageTestPoint()).connected(self.poe.pwr_out)
 
