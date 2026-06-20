@@ -86,21 +86,21 @@ class EthernetMdi100BaseTxMagPort(Port[EthernetMdiLink]):
 
 
 class PoeLink(Link):
-    """Power over Ethernet connection between the powered device and the magnetics."""
+    """Power over Ethernet connection between the powered device and the post-rectification jack-facing circuit."""
 
     def __init__(self) -> None:
         super().__init__()
+        self.jack = self.Port(PoePowerPort.empty())
         self.poe = self.Port(PoeDevicePort.empty())
-        self.magnetics = self.Port(PoePowerPort.empty())
 
     @override
     def contents(self) -> None:
-        self.connect(self.poe.pos, self.magnetics.pos)
-        self.connect(self.poe.neg, self.magnetics.neg)
+        self.connect(self.jack.pos, self.poe.pos)
+        self.connect(self.jack.neg, self.poe.neg)
 
 
-class PoeDevicePort(Port[PoeLink]):
-    """Powered device side port for Power over Ethernet. Generally exposed by a PoE controller subcircuit"""
+class PoePowerPort(Port[PoeLink]):
+    """Jack side port for Power over Ethernet, post-rectification."""
 
     link_type = PoeLink
 
@@ -110,8 +110,8 @@ class PoeDevicePort(Port[PoeLink]):
         self.neg = self.Port(Passive())
 
 
-class PoePowerPort(Port[PoeLink]):
-    """Jack side port for Power over Ethernet, post-rectification."""
+class PoeDevicePort(Port[PoeLink]):
+    """Powered device side port for Power over Ethernet. Generally exposed by a PoE controller subcircuit"""
 
     link_type = PoeLink
 
@@ -446,7 +446,7 @@ class Tps2378_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             VoltageSink.from_gnd(self.vss, voltage_limits=(0, 57) * Volt, current_draw=(285, 500) * uAmp)
         )
         self.den = self.Port(Passive())  # AnalogSink
-        self.cls = self.Port(Passive())
+        self.cls = self.Port(AnalogSource())
 
         self.rtn = self.Port(Ground())
         self.cdb = self.Port(DigitalSource.low_from_supply(self.rtn), optional=True)  # -0.3 - 100v standoff limit
@@ -486,9 +486,9 @@ class Tps2378(Interface, GeneratorBlock):
 
         self.ic = self.Block(Tps2378_Device())
         self.gnd = self.Export(self.ic.rtn, [Common])
-        self.pwr_out = self.Port(VoltageSource.empty(), [Power])
+        self.pwr_out = self.Port(VoltageSource.empty(), [Output])
 
-        self.poe = self.Port(PoePowerPort.empty(), doc="PoE input")
+        self.poe = self.Port(PoeDevicePort(), [Input], doc="PoE input")
 
         self.cdb = self.Export(
             self.ic.cdb,
@@ -546,7 +546,7 @@ class Tps2378(Interface, GeneratorBlock):
             ImplicitConnect(self.ic.vdd, [Power]),
         ) as imp:
             self.vdd_cap = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.1)))
-            self.prot = imp.Block(ProtectionZenerDiode((58, 65) * Volt))  # based on SMAJ58A as recommended in datasheet
+            self.prot = imp.Block(ProtectionZenerDiode((57, 66) * Volt))  # based on SMAJ58A as recommended in datasheet
 
 
 class IotThermalCamera(JlcBoardTop):
@@ -556,11 +556,16 @@ class IotThermalCamera(JlcBoardTop):
     def contents(self) -> None:
         super().contents()
 
+        # IMPORTANT! use only USB OR PoE, both cannot be used simultaneously since this is a non-isolated converter
         self.usb = self.Block(UsbCReceptacle())
-        self.gnd = self.connect(self.usb.gnd)
-        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
         self.eth = self.Block(Hy931147c())
+        self.poe = self.Block(Tps2378(poe_class=0))
+        self.connect(self.eth.poe, self.poe.poe)
+
+        self.gnd = self.connect(self.usb.gnd, self.poe.gnd)
+        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
+        self.tp_poe = self.Block(VoltageTestPoint()).connected(self.poe.pwr_out)
 
         with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
@@ -699,6 +704,9 @@ class IotThermalCamera(JlcBoardTop):
                 (["reg_3v0", "ic", "actual_dropout"], Range(0.0, 0.16)),  # 3.3V @ 400mA
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 21e6)),
                 (["usb", "pwr", "current_limits"], Range(0.0, 0.8)),  # a bit over
+                (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead
+                (["poe", "prot", "diode", "footprint"], "Diode_SMD:D_SMA"),
+                (["poe", "den", "resistance"], Range.from_tolerance(25000, 0.05)),  # find a basic part
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
