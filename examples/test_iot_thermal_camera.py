@@ -755,6 +755,7 @@ class IotThermalCamera(JlcBoardTop):
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
+                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
                 (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
             ],
         )

@@ -76,6 +76,6 @@ class Fusb302b(Interface, Block):
         # and the bulk capacitor, which we hope will be elsewhere
         self.vdd_cap = ElementDict[DecouplingCapacitor]()
         self.vdd_cap[0] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
-        self.vdd_cap[1] = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+        self.vdd_cap[1] = self.Block(DecouplingCapacitor(1.0 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
         # Crecv is specified in the reference schematic, but doesn't show up on open-source example designs
