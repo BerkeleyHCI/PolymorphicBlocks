@@ -575,7 +575,7 @@ class IotThermalCamera(JlcBoardTop):
         super().contents()
 
         # IMPORTANT! use only USB OR PoE, both cannot be used simultaneously since this is a non-isolated converter
-        self.usb = self.Block(UsbCReceptacle())
+        self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3) * Amp))
 
         self.eth = self.Block(Hy931147c())
         self.poe = self.Block(Tps2378(poe_class=0))
@@ -632,6 +632,7 @@ class IotThermalCamera(JlcBoardTop):
             (self.ledr,), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request("ledr"))
 
             reset_line = self.mcu.gpio.request("reset")
+            int_line = self.mcu.gpio.request("int")
 
             self.connect(self.eth.gnd, self.gnd)
             self.connect(self.eth.pwr_led, self.v3v3)
@@ -640,7 +641,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.mcu.spi.request("eth_spi"), self.phy.spi)
             self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
             self.connect(reset_line, self.phy.reset)
-            self.connect(self.mcu.gpio.request("eth_int"), self.phy.int)
+            self.connect(int_line, self.phy.int)
 
             (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
@@ -648,6 +649,15 @@ class IotThermalCamera(JlcBoardTop):
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
                 self.i2c, imp.Block(I2cPullup()), imp.Block(I2cTestPoint("i2c"))
             )
+
+            self.dist = imp.Block(Vl53l5cx())
+            self.connect(self.i2c, self.dist.i2c)
+
+            self.pd = imp.Block(Fusb302b())
+            self.connect(self.usb.pwr, self.pd.vbus)
+            self.connect(self.usb.cc, self.pd.cc)
+            self.connect(self.i2c, self.pd.i2c)
+            self.connect(int_line, self.pd.int)
 
             # out of IOs on the main ESP32S3
             self.ioe = imp.Block(IoController())
@@ -734,8 +744,6 @@ class IotThermalCamera(JlcBoardTop):
                 (["mcu", "programming"], "uart-auto"),
                 (["reg_2v8", "ic", "actual_dropout"], Range(0.0, 0.05)),  # 3.3V @ 100mA
                 (["reg_3v0", "ic", "actual_dropout"], Range(0.0, 0.16)),  # 3.3V @ 400mA
-                # over USB2 power limits, don't run wifi and ethernet together
-                (["usb", "pwr", "current_limits"], Range(0.0, 0.9)),
                 (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead to allow basic part
                 (["reg_poe", "frequency"], Range.from_tolerance(800e3, 0.1)),
                 (["reg_poe", "hf_cap", "cap", "voltage_margin"], 1.5),
