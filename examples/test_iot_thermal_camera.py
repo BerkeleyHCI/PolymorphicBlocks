@@ -121,6 +121,23 @@ class PoeDevicePort(Port[PoeLink]):
         self.neg = self.Port(Passive())
 
 
+class PoeJumper(TypedJumper, Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.jack = self.Port(PoeDevicePort(), [Input])  # jack-facing, device-presenting port
+        self.device = self.Port(PoePowerPort(), [Output])  # device-facing, power-presenting port
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.pos = self.Block(Jumper())
+        self.connect(self.jack.pos, self.pos.a)
+        self.connect(self.device.pos, self.pos.b)
+        self.neg = self.Block(Jumper())
+        self.connect(self.jack.neg, self.neg.a)
+        self.connect(self.device.neg, self.neg.b)
+
+
 class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
@@ -540,7 +557,7 @@ class Tps2378(Interface, GeneratorBlock):
             self.ic.vdd,
             self.pwr_out,
         )
-        self.connect(self.poe.neg.adapt_to(Ground()), self.ic.vss, self.gnd)
+        self.connect(self.poe.neg.adapt_to(Ground()), self.ic.vss)
 
         with self.implicit_connect(
             ImplicitConnect(self.ic.vss, [Common]),
@@ -562,15 +579,10 @@ class IotThermalCamera(JlcBoardTop):
 
         self.eth = self.Block(Hy931147c())
         self.poe = self.Block(Tps2378(poe_class=0))
-        self.connect(self.eth.poe, self.poe.poe)
-
         # allow using a jumper to disable and isolate PoE while still using ethernet
-        self.poe_pos_jmp = self.Block(VoltageJumper())
-        self.connect(self.poe.pwr_out, self.poe_pos_jmp.input)
-        self.poe_gnd_jmp = self.Block(GroundJumper())
-        self.connect(self.poe.gnd, self.poe_gnd_jmp.input)
+        (self.poe_jmp,), _ = self.chain(self.eth.poe, self.Block(PoeJumper()), self.poe.poe)
 
-        self.gnd = self.connect(self.usb.gnd, self.poe_gnd_jmp.output)
+        self.gnd = self.connect(self.usb.gnd, self.poe.gnd)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
         self.tp_poe = self.Block(VoltageTestPoint()).connected(self.poe.pwr_out)
 
@@ -578,7 +590,7 @@ class IotThermalCamera(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             (self.reg_poe, self.tp_v5, self.prot_v5), _ = self.chain(
-                self.poe_pos_jmp.output,
+                self.poe.pwr_out,
                 imp.Block(BuckConverter(output_voltage=5.0 * Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 7) * Volt)),
@@ -725,6 +737,7 @@ class IotThermalCamera(JlcBoardTop):
                 (["poe", "vdd_cap", "cap", "voltage_margin"], 1.5),  # reduce excessive overhead to allow basic part
                 (["reg_poe", "frequency"], Range.from_tolerance(800e3, 0.1)),
                 (["reg_poe", "hf_cap", "cap", "voltage_margin"], 1.5),
+                (["eth", "cap", "voltage_margin"], 1.0),  # 1kV rated only
                 (["reg_poe", "power_path", "in_cap", "cap", "voltage_margin"], 1.5),
                 (["poe", "prot", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
                 (["poe", "den", "resistance"], Range.from_tolerance(25000, 0.05)),  # find a basic part
