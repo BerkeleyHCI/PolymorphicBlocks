@@ -589,10 +589,9 @@ class IotThermalCamera(JlcBoardTop):
         with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.reg_poe, self.tp_v5, self.prot_v5), _ = self.chain(
+            (self.reg_poe, self.prot_v5), _ = self.chain(
                 self.poe.pwr_out,
                 imp.Block(BuckConverter(output_voltage=5.0 * Volt(tol=0.05))),
-                self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 7) * Volt)),
             )
 
