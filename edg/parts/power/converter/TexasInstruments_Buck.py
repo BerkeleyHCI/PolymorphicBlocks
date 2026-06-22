@@ -225,7 +225,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
             )
 
 
-class Lmr39020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
+class Lmr38020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
@@ -275,7 +275,7 @@ class Lmr39020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Lmr39020(VoltageRegulatorEnableWrapper, DiscreteBuckConverter, GeneratorBlock):
+class Lmr38020(VoltageRegulatorEnableWrapper, DiscreteBuckConverter, GeneratorBlock):
     """4.2-80 V, 2 A synchronous buck converter in SO-8 with thermal pad.
     Adjustable frequency, defaulting to 400kHz per the datasheet example."""
 
@@ -284,7 +284,7 @@ class Lmr39020(VoltageRegulatorEnableWrapper, DiscreteBuckConverter, GeneratorBl
         self.frequency = self.ArgParameter(frequency)
         self.generator_param(self.frequency)
 
-        self.ic = self.Block(Lmr39020_Device())
+        self.ic = self.Block(Lmr38020_Device())
         self.connect(self.pwr_in, self.ic.vin)
         self.connect(self.gnd, self.ic.gnd)
 
@@ -325,7 +325,7 @@ class Lmr39020(VoltageRegulatorEnableWrapper, DiscreteBuckConverter, GeneratorBl
             self.rt = imp.Block(AnalogSetpointResistor(rt_resistance)).connected(io=self.ic.rt)
             self.assign(
                 self.actual_frequency, 30970 / (self.rt.actual_resistance / 1000) * 1000
-            )  # TODO add the exponent
+            )  # TODO add exponent term when the infrastructure supports it
 
             self.power_path = imp.Block(
                 BuckConverterPowerPath(

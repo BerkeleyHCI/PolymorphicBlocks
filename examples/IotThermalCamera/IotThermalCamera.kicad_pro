@@ -64,7 +64,18 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "copper_edge_clearance|114766924|186937005|0cb8f941-8e73-4a82-84d5-47f3ec208738|9b728a6f-2831-4e59-8b12-084de604a041",
+        "courtyards_overlap|103770001|176520001|5be45885-8a6e-4148-8fa4-b9c4589b44f8|9916691d-1dad-4dc6-aedf-1eed32b4f656",
+        "footprint_type_mismatch|110000000|185325000|6d3b4488-738f-4fa8-b9e4-8bec4736c1a8|00000000-0000-0000-0000-000000000000",
+        "hole_clearance|107100000|182230000|ce0e7ac4-82c2-400e-a998-74ddbed02a71|08432f67-b115-46af-bbd0-26ccb896b017",
+        "hole_clearance|107300000|182230000|ce0e7ac4-82c2-400e-a998-74ddbed02a71|a0eff503-b10a-4a7a-aad2-16ce819c826f",
+        "hole_clearance|112700000|182230000|d471c6e2-44fc-4d1e-b8ac-879da363e0d6|619703f0-e01b-467d-8306-48d867324fdf",
+        "hole_clearance|112900000|182230000|d471c6e2-44fc-4d1e-b8ac-879da363e0d6|38916823-2c2e-4d9f-bc1b-5453e824ce40",
+        "lib_footprint_mismatch|100000000|92850000|602af220-6872-4708-847f-bb25639be22f|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|110000000|148935000|3faf78a2-ad36-4126-81c0-0aa17fd225ea|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|110000000|164065000|80dd8749-1294-491f-bce2-b341d45d557d|00000000-0000-0000-0000-000000000000"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2

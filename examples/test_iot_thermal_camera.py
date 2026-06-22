@@ -485,7 +485,7 @@ class Tps2378_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "5": self.rtn,
                 "6": self.cdb,
                 "7": self.t2p,
-                # "8": self.apd,
+                "8": self.rtn,  # APD, connect to RTN if unused
                 "9": self.vss,
                 # ("4", "5", "6", "7", "8"): NC
             },
@@ -699,7 +699,7 @@ class IotThermalCamera(JlcBoardTop):
             instance_refinements=[
                 (["mcu"], Esp32s3_Wroom_1),
                 (["ioe"], Ch32v003),
-                (["reg_poe"], Lmr39020),
+                (["reg_poe"], Lmr38020),
                 (["reg_3v3"], Tps54202h),
                 (["cam", "device", "conn"], Fpc050BottomFlip),
             ],
