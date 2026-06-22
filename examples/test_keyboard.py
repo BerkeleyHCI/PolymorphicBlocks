@@ -65,7 +65,7 @@ class Keyboard(SimpleBoardTop):
         return super().refinements() + Refinements(
             class_refinements=[
                 (IoController, Ch32v203),
-                (LinearRegulator, Ap7215),
+                (LinearRegulator, Ams1117),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
                 (RotaryEncoder, Pec11s),

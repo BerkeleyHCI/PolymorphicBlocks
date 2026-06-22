@@ -135,6 +135,73 @@ class Ldl1117(LinearRegulator):
             self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
+class Ams1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+    def __init__(self, output_voltage: RangeLike):
+        super().__init__()
+
+        # self.assign(self.pwr_in.voltage_limits, (2.6, 18) * Volt)
+        # self.assign(self.pwr_out.current_limits, (0, 1.5) * Amp)  # most conservative estimate, typ up to 2A
+        # self.assign(self.actual_quiescent_current, (0, 500) * uAmp)  # typ is 250uA
+        # self.assign(self.actual_dropout, (0, 0.6) * Volt)  # worst-case, typ is 0.35
+        #
+        # self.output_voltage = self.ArgParameter(output_voltage)
+        # self.generator_param(self.output_voltage)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        # TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
+        # parts = [  # output voltage
+        #     (1.185, "LDL1117S12R", "C2926949"),
+        #     # (1.5, 'LDL1117S15R'),  # not listed at JLC
+        #     (1.8, "LDL1117S18R", "C2926947"),
+        #     (2.5, "LDL1117S25R", "C2926456"),
+        #     (3.0, "LDL1117S30R", "C2798214"),
+        #     (3.3, "LDL1117S33R", "C435835"),
+        #     (5.0, "LDL1117S50R", "C970558"),
+        # ]
+        # suitable_parts = [
+        #     part for part in parts if Range.from_tolerance(part[0], TOLERANCE) in self.get(self.output_voltage)
+        # ]
+        # assert suitable_parts, "no regulator with compatible output"
+        # part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
+        #
+        # self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+        # self.footprint(
+        #     "U",
+        #     "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+        #     {
+        #         "1": self.gnd,
+        #         "2": self.pwr_out,
+        #         "3": self.pwr_in,
+        #     },
+        #     mfr="STMicroelectronics",
+        #     part=part_number,
+        #     datasheet="https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf",
+        #     pnp_rot=180,
+        # )
+        # self.assign(self.lcsc_part, jlc_number)
+        # self.assign(self.actual_basic_part, False)
+
+
+class Ams1117(LinearRegulator):
+    """15Vin, 1A fixed output low dropout linear regulators in SOT-223.
+    3.3 and 5.0v variants are JLC basic parts.
+    """
+
+    # @override
+    # def contents(self) -> None:
+    #     with self.implicit_connect(
+    #         ImplicitConnect(self.gnd, [Common]),
+    #     ) as imp:
+    #         self.ic = imp.Block(Ldl1117_Device(self.output_voltage))
+    #         self.in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
+    #         self.out_cap = imp.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
+    #
+    #         self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+    #         self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+
 class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
     def __init__(self, output_voltage: RangeLike):
         super().__init__()
