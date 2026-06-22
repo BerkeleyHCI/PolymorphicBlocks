@@ -154,7 +154,7 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.shield = self.Port(Passive())
 
     @override
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.require(self.led_grn_anode.is_connected() == self.led_grn_cathode.is_connected())
@@ -318,7 +318,7 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # TODO add LEDs
 
     @override
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.footprint(
@@ -381,6 +381,7 @@ class W5500(Resettable, Interface, Block):
         self.cs = self.Export(self.ic.scsn)
         self.int = self.Export(self.ic.intn, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -470,7 +471,7 @@ class Tps2378_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.t2p = self.Port(DigitalSource.low_from_supply(self.rtn), optional=True)
 
     @override
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.footprint(
