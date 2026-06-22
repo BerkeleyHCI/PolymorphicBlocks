@@ -182,12 +182,12 @@ const FU8 = board.add(WQFN_14_1EP_2_5x2_5mm_P0_5mm_EP1_45x1_45mm, {
 })
 // pd.vdd_cap[0].cap
 const FC24 = board.add(C_0603_1608Metric, {
-  translate: pt(2.366, 1.021), rotate: 0,
+  translate: pt(2.193, 1.021), rotate: 0,
   id: 'FC24'
 })
 // pd.vdd_cap[1].cap
-const FC25 = board.add(C_0805_2012Metric, {
-  translate: pt(2.202, 1.031), rotate: 0,
+const FC25 = board.add(C_0603_1608Metric, {
+  translate: pt(2.349, 1.021), rotate: 0,
   id: 'FC25'
 })
 // spk_dac.rc.r

@@ -215,7 +215,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC42"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "01c55558-c979-4667-a8a7-b8c4000e5626")
 			(effects
@@ -226,7 +226,7 @@
 			)
 		)
 		(property "Value" "ioe.vdd_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "28719b5e-ac5e-4aab-bc5b-e7ea132eae48")
 			(effects
@@ -380,7 +380,7 @@
 			(uuid "52f71d8b-8caf-45ad-a791-f612f52defcc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "4ff4356d-f88f-43ff-8b6c-aa7e326f517f")
 			(effects
@@ -436,7 +436,7 @@
 			)
 		)
 		(property "Value" "reg_1v2.in_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "bcd94c72-0c04-488f-9fb1-7aafe889ed42")
 			(effects
@@ -590,7 +590,7 @@
 			(uuid "2aa5515a-06b8-4b85-8ab0-fdf86e1366b0")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "a6e4b854-fe6d-4eaa-b6a8-edcd3e99af20")
 			(effects
@@ -646,7 +646,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.en_res"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "eab417bd-0ce1-4e1e-8535-5f83aaa2f1e6")
 			(effects
@@ -657,7 +657,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "f4fe5eae-ac8d-4018-beb2-2a7e9290fc35")
@@ -669,7 +669,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a913f9fb-5030-490e-bd94-f4041c550e85")
@@ -681,7 +681,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b1d40116-76e0-4370-874b-034fa55426f0")
@@ -693,7 +693,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF5103T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "75ae2a2a-91b8-41d8-bd13-a9526e266cd6")
@@ -705,7 +705,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.en_res"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "2f55ab7b-8607-4c57-a91a-7638f653a6d2")
@@ -717,7 +717,7 @@
 			)
 		)
 		(property "edg_refdes" "R3"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b0f98953-56ad-4b0b-af0a-151559463ccf")
@@ -729,7 +729,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.en_res"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "809828dd-c21c-447b-aa4b-7fe2d2150176")
@@ -845,7 +845,7 @@
 			(uuid "6b713e9e-b79f-43cb-a24c-877f57be01cc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "1ee090fa-7db0-486c-90af-d389017b9e2a")
 			(effects
@@ -2307,7 +2307,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR30"
-			(at -2.5 0 360)
+			(at -2.5 0 0)
 			(layer "F.SilkS")
 			(uuid "ca1868c3-cb61-4683-abaa-481727b8e1ac")
 			(effects
@@ -2318,7 +2318,7 @@
 			)
 		)
 		(property "Value" "poe_sense.bottom_res"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "784cc09b-e25f-4163-952e-1077240f71bb")
 			(effects
@@ -2472,7 +2472,7 @@
 			(uuid "52144e2c-f84e-4e70-a68d-9716dcfbb2e2")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "2fbd3462-84da-4c75-a77a-4390e37bad47")
 			(effects
@@ -2727,7 +2727,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC49"
-			(at -2.5 0 360)
+			(at -2.5 0 0)
 			(layer "F.SilkS")
 			(uuid "8eda2641-4942-4c73-98f4-ba800c6a6cec")
 			(effects
@@ -2738,7 +2738,7 @@
 			)
 		)
 		(property "Value" "flir.vdd_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "4656a745-1c23-4c1a-897f-4f5a2e580640")
 			(effects
@@ -2892,7 +2892,7 @@
 			(uuid "fdb6222a-1b93-4eef-a958-262919513b98")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "25b0c1f9-776c-4f86-8c44-4939281f831d")
 			(effects
@@ -2937,7 +2937,7 @@
 		(descr "TSSOP, 20 Pin (JEDEC MO-153 Var AC https://www.jedec.org/document_search?search_api_views_fulltext=MO-153), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "TSSOP SO")
 		(property "Reference" "TU12"
-			(at 0 -4 360)
+			(at 0 -4 0)
 			(layer "F.SilkS")
 			(uuid "0aefce52-78ff-4795-95d0-2e7d0829d963")
 			(effects
@@ -2948,7 +2948,7 @@
 			)
 		)
 		(property "Value" "ioe.ic"
-			(at 0 4.2 360)
+			(at 0 4.2 0)
 			(layer "F.Fab")
 			(uuid "afbbd6f1-4d60-4742-8b85-66c1e2592de9")
 			(effects
@@ -3144,7 +3144,7 @@
 			(uuid "133db6a8-47d8-4ef4-9605-5486d59f12da")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "e7382d14-1c07-4450-8a17-589de47aa3c9")
 			(effects
@@ -5753,7 +5753,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.fb.top_res"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "d9ff856d-df69-4dce-be07-f408adbfabcc")
 			(effects
@@ -5764,7 +5764,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3c177245-70aa-4681-b368-477b000ebaef")
@@ -5776,7 +5776,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "41bd5d75-8b8a-4302-8a31-d1e47b658112")
@@ -5788,7 +5788,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ed06432d-587f-4e28-be47-a942b6ddd77c")
@@ -5800,7 +5800,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF1102T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3a116c3a-0f3b-4ae2-b8cf-abe761c44a66")
@@ -5812,7 +5812,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.fb.div.top_res"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c6183538-c80e-4c0b-b5df-e542ee0bd5c2")
@@ -5824,7 +5824,7 @@
 			)
 		)
 		(property "edg_refdes" "R1"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6eb2a447-4d51-467e-bf07-900de8e30f79")
@@ -5836,7 +5836,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.fb.top_res"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "65243085-4146-4620-8e62-1a2c61f3c502")
@@ -5952,7 +5952,7 @@
 			(uuid "9128cf08-7972-490f-ba17-29ce7b21ce97")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "2583dc1b-1fc9-425c-8de5-a0854a4ad27d")
 			(effects
@@ -6008,7 +6008,7 @@
 			)
 		)
 		(property "Value" "reg_1v2.out_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "dbd07c30-a337-4146-9097-c13f19fe8bd6")
 			(effects
@@ -6162,7 +6162,7 @@
 			(uuid "e70f305d-9e81-4af1-aef1-30dc605c3d21")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "f1c9906d-9ccd-4b6a-a792-d6f4ce0b3485")
 			(effects
@@ -6417,7 +6417,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR24"
-			(at 2 0 360)
+			(at 2 0 0)
 			(layer "F.SilkS")
 			(uuid "5cb4d147-b129-41a4-a76b-bca82cf28302")
 			(effects
@@ -6475,7 +6475,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bec7b52a-e8fc-40e4-8424-6839a0985f28")
@@ -6487,7 +6487,7 @@
 			)
 		)
 		(property "edg_path" "i2c_pull.sda_res.res"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "da5fafce-9dad-46cc-8110-28bb2d99e1b6")
@@ -6499,7 +6499,7 @@
 			)
 		)
 		(property "edg_refdes" "IR6"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "69a3fbef-7cf6-4ec7-9f65-97e3866fe78e")
@@ -6511,7 +6511,7 @@
 			)
 		)
 		(property "edg_short_path" "i2c_pull.sda_res"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "aa4b3ded-fe44-453b-a4f6-d69c732752e3")
@@ -6882,7 +6882,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC7"
-			(at 0 -1.25 360)
+			(at 0 -1.25 0)
 			(layer "F.SilkS")
 			(uuid "95c1b94b-0bcd-4be7-8fc3-383cfec648ca")
 			(effects
@@ -6893,7 +6893,7 @@
 			)
 		)
 		(property "Value" "reg_poe.power_path.out_cap"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "dd6b034d-7960-4747-9556-671bea1ab01d")
 			(effects
@@ -7047,7 +7047,7 @@
 			(uuid "78e0f14b-a704-4a20-b0c2-58a7b7ef556f")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "598838ff-8873-4571-bedd-1b1664342aca")
 			(effects
@@ -7582,7 +7582,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR29"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "23059690-eb9f-4dae-ac14-f6ec83cded5d")
 			(effects
@@ -7593,7 +7593,7 @@
 			)
 		)
 		(property "Value" "poe_sense.top_res"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "2eb25584-2f78-418d-a6f5-837b2fcc1316")
 			(effects
@@ -7747,7 +7747,7 @@
 			(uuid "45844df2-1880-4184-903d-d58d66a66223")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "992004f8-870d-4339-af75-4b423f95f11b")
 			(effects
@@ -7792,7 +7792,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC3"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "dcdcd1b2-a209-4665-b4c1-5575339cf29b")
 			(effects
@@ -7803,7 +7803,7 @@
 			)
 		)
 		(property "Value" "reg_poe.hf_cap"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "62ea8cad-31ee-4a44-b71d-9a8e9d3e9ced")
 			(effects
@@ -7957,7 +7957,7 @@
 			(uuid "1950a460-d00b-4b14-bd76-8ae396c14464")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "9cf756a5-d687-46bf-b8ee-81aecbd0938a")
 			(effects
@@ -8002,7 +8002,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC4"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "f83b2400-7d2d-4f5b-85bb-bd3da48cd56d")
 			(effects
@@ -8013,7 +8013,7 @@
 			)
 		)
 		(property "Value" "reg_poe.boot_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "3ab36fe6-2fe8-42dd-9f4b-e5c9c94242c2")
 			(effects
@@ -8167,7 +8167,7 @@
 			(uuid "99428769-463c-49b1-af96-6199dd931c40")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "45793a1f-5c29-40e1-be44-15f362ad99af")
 			(effects
@@ -9996,7 +9996,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.ic"
-			(at 0 2.4 360)
+			(at 0 2.4 0)
 			(layer "F.Fab")
 			(uuid "da630982-0907-4cdb-ad3b-29a1000f3392")
 			(effects
@@ -10007,7 +10007,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b3371a1b-d4f2-44ea-b2d2-69890e7296e4")
@@ -10019,7 +10019,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ef172539-c77f-4c4a-818a-47606703376f")
@@ -10031,7 +10031,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "7cb055eb-65bf-4e21-8dbf-0ac21e64c90a")
@@ -10043,7 +10043,7 @@
 			)
 		)
 		(property "edg_part" "TPS54202H (Texas Instruments)"
-			(at 212 216 360)
+			(at 212 216 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b91f4b27-7cd9-4ced-8e14-c7a1a71fc672")
@@ -10055,7 +10055,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.ic"
-			(at 212 216 360)
+			(at 212 216 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6f05b5fc-b753-4829-845d-63430dd445e4")
@@ -10067,7 +10067,7 @@
 			)
 		)
 		(property "edg_refdes" "U1"
-			(at 212 216 360)
+			(at 212 216 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "fcc1132b-374f-4a21-8cb8-d1fd09dfb6ad")
@@ -10079,7 +10079,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.ic"
-			(at 212 216 360)
+			(at 212 216 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "703c5371-b4ed-4cfd-b140-d575d13007c1")
@@ -10237,7 +10237,7 @@
 			(uuid "9b75ebc7-ae96-4b97-a794-09c478b563f1")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "efee4903-c4e3-4167-bd58-e56627fe0e59")
 			(effects
@@ -10633,7 +10633,7 @@
 		(descr "SOT, 5 Pin (https://www.jedec.org/sites/default/files/docs/Mo-178c.PDF variant AA), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "TU4"
-			(at 0 -2 360)
+			(at 0 -2 0)
 			(layer "F.SilkS")
 			(uuid "547ccaaf-9519-44e6-9238-be58714ae1d9")
 			(effects
@@ -10644,7 +10644,7 @@
 			)
 		)
 		(property "Value" "reg_3v0.ic"
-			(at 0 2.4 360)
+			(at 0 2.4 0)
 			(layer "F.Fab")
 			(uuid "ad55f8b8-ecbf-4875-8f4a-85018d95274c")
 			(effects
@@ -10840,7 +10840,7 @@
 			(uuid "8e14e836-23cc-42c8-a8e3-7fd4bc2e10c8")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "26ca9811-f03d-480d-b23e-f8de269030dd")
 			(effects
@@ -10908,7 +10908,7 @@
 		(descr "SOT, 5 Pin (https://www.jedec.org/sites/default/files/docs/Mo-178c.PDF variant AA), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "TU6"
-			(at 0 -2 360)
+			(at 0 -2 0)
 			(layer "F.SilkS")
 			(uuid "990922cf-8959-49f9-b440-298ee74113c1")
 			(effects
@@ -10919,7 +10919,7 @@
 			)
 		)
 		(property "Value" "reg_1v2.ic"
-			(at 0 2.4 360)
+			(at 0 2.4 0)
 			(layer "F.Fab")
 			(uuid "01d33227-58bf-4e84-a8e7-88755d2c9c4b")
 			(effects
@@ -11115,7 +11115,7 @@
 			(uuid "9397049d-13d9-4560-9545-c46f225a40bf")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "7cefbd1b-9bc6-4e4f-b226-596fb5c9c4e5")
 			(effects
@@ -13265,7 +13265,7 @@
 			)
 		)
 		(property "Value" "reg_3v0.out_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "4507f0a5-5262-4917-923b-2ca4308aa9f9")
 			(effects
@@ -13419,7 +13419,7 @@
 			(uuid "a9fbd28c-22ae-4cae-b5c0-fb9c22a976bf")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "f17cbdd5-073d-4288-bcd8-1b1e9cf53d4b")
 			(effects
@@ -13696,7 +13696,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ae5464f4-7a6b-48ce-9db2-d7e11c7e5027")
@@ -13708,7 +13708,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "71719381-3bd7-4806-a693-c8affb927e00")
@@ -13720,7 +13720,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c5a66bcf-9670-4691-bb0d-686797fb88a2")
@@ -13816,7 +13816,7 @@
 			(uuid "389a9565-bea5-4333-be83-24a08f9e77dc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "74552b70-4572-4030-a485-469aaae45e7a")
 			(effects
@@ -15118,7 +15118,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC5"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "531c3892-a643-4edb-b933-a65442b751ee")
 			(effects
@@ -15129,7 +15129,7 @@
 			)
 		)
 		(property "Value" "reg_poe.power_path.in_cap.c[0]"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "e029c9fe-9bc0-4725-ab2a-18002aaf6108")
 			(effects
@@ -15283,7 +15283,7 @@
 			(uuid "74c88bc8-1d5b-45b3-9ea5-ed9cb60fee0d")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "d66ab295-fbc7-4e58-a90b-57b14262a9a8")
 			(effects
@@ -15538,7 +15538,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR7"
-			(at 0 1 360)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "48ffdba1-0012-41d9-8938-8320cefca85e")
 			(effects
@@ -15549,7 +15549,7 @@
 			)
 		)
 		(property "Value" "reg_poe.rt"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "55ed277b-b447-48f0-8b80-d6adf3c1f7f5")
 			(effects
@@ -15703,7 +15703,7 @@
 			(uuid "acdca2bf-f5af-404b-863c-075d9f8119fc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "5b65c008-275b-4e92-b58e-d418fd26227d")
 			(effects
@@ -15759,7 +15759,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.fb.bottom_res"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "4b2e2500-c65c-4c62-ba25-01378474e56f")
 			(effects
@@ -15770,7 +15770,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9c420777-7ad3-4462-bdf2-f630ae4a7667")
@@ -15782,7 +15782,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "60e46674-cd5f-456c-bea2-257122cce8e4")
@@ -15794,7 +15794,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4c100359-7502-4da3-a66d-020950618618")
@@ -15806,7 +15806,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF1501T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 202 206 360)
+			(at 202 206 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cba95a12-7172-4c5c-8713-23a22486ca36")
@@ -15818,7 +15818,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.fb.div.bottom_res"
-			(at 202 206 360)
+			(at 202 206 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "8b19fbb1-fe58-4048-8fe3-e609a4c31bf8")
@@ -15830,7 +15830,7 @@
 			)
 		)
 		(property "edg_refdes" "R2"
-			(at 202 206 360)
+			(at 202 206 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5e6ff716-fe4b-4f0d-b204-07652a79a5d0")
@@ -15842,7 +15842,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.fb.bottom_res"
-			(at 202 206 360)
+			(at 202 206 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "086a91cd-3bac-4e9c-ba10-eea40cbfd45e")
@@ -15958,7 +15958,7 @@
 			(uuid "594fe6c2-5219-45c2-927c-ae16472f6bf8")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "707089b5-96db-4ebc-9503-0402d405eb48")
 			(effects
@@ -16888,7 +16888,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC6"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "e482f217-eaa5-490c-bc4c-703a4fe0e3e0")
 			(effects
@@ -16899,7 +16899,7 @@
 			)
 		)
 		(property "Value" "reg_poe.power_path.in_cap.c[1]"
-			(at 0 1.68 360)
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "610b2a75-747f-42ad-a4c2-08bfe2befae2")
 			(effects
@@ -17053,7 +17053,7 @@
 			(uuid "c508ade4-75d2-4a55-b140-6eb9af61cd41")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "26ff67e9-b10d-4734-991b-fbff8e0c83d8")
 			(effects
@@ -17596,7 +17596,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC43"
-			(at 0 1 360)
+			(at 0 1 0)
 			(layer "F.SilkS")
 			(uuid "c9839832-22ee-467d-9c54-bd4734a6f931")
 			(effects
@@ -17607,7 +17607,7 @@
 			)
 		)
 		(property "Value" "ioe.reset_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "9d37725b-5b51-40d3-9f70-3cc38a5e89e3")
 			(effects
@@ -17761,7 +17761,7 @@
 			(uuid "0fa1cd8e-50f5-4489-8802-a8d49d7f0c9c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "54b7856f-6e98-45ee-a421-54c76265302b")
 			(effects
@@ -19592,7 +19592,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC18"
-			(at 0 -1.5 360)
+			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "43fca659-ab84-416f-a6ee-8edd86c3b366")
 			(effects
@@ -19603,7 +19603,7 @@
 			)
 		)
 		(property "Value" "mcu.vcc_cap0"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "F.Fab")
 			(uuid "ee453790-925a-4907-afe9-e32410521c2d")
 			(effects
@@ -19614,7 +19614,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b8a48136-b3d9-4839-a4e2-ebc66a632e54")
@@ -19626,7 +19626,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "1f4ab099-b7e1-4424-9f1a-9c37aa461b0e")
@@ -19638,7 +19638,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6d09e567-bba9-42c6-a736-9263ece390b4")
@@ -19650,7 +19650,7 @@
 			)
 		)
 		(property "edg_part" "CL31A226KPHNNNE (Samsung Electro-Mechanics)"
-			(at 354 158 360)
+			(at 354 158 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9abc8e13-6c1c-4a95-80dc-750bc5bdeeb2")
@@ -19662,7 +19662,7 @@
 			)
 		)
 		(property "edg_path" "mcu.vcc_cap0.cap"
-			(at 354 158 360)
+			(at 354 158 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "f6ead9a2-c44b-4f9f-afad-2156973d309d")
@@ -19674,7 +19674,7 @@
 			)
 		)
 		(property "edg_refdes" "IC8"
-			(at 354 158 360)
+			(at 354 158 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6650604d-d72a-42ad-b2aa-ba41d7e3e20a")
@@ -19686,7 +19686,7 @@
 			)
 		)
 		(property "edg_short_path" "mcu.vcc_cap0"
-			(at 354 158 360)
+			(at 354 158 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "89990b28-d0d0-4a45-9ca6-01f3bd16a0a4")
@@ -19802,7 +19802,7 @@
 			(uuid "47ff700f-866e-4358-91ab-8a631d5ccb84")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "820feeda-1262-4479-9fb0-0350cff7643e")
 			(effects
@@ -19847,7 +19847,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC11"
-			(at 0 1.5 360)
+			(at 0 1.5 0)
 			(layer "F.SilkS")
 			(uuid "ef178e1d-6cc0-4c5a-8d15-9e0d4fb7dce8")
 			(effects
@@ -19858,7 +19858,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.power_path.out_cap"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "F.Fab")
 			(uuid "588b7b98-7991-4463-969c-775b7753e774")
 			(effects
@@ -20012,7 +20012,7 @@
 			(uuid "086b5aa8-a7a4-48ca-9405-4c65ff5f2143")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "3c571b29-4a48-4601-bc0c-c402f091fd36")
 			(effects
@@ -21333,7 +21333,7 @@
 			)
 		)
 		(property "Value" "reg_3v0.in_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "0b632ca0-b8f3-43d2-8663-1c6253c4a637")
 			(effects
@@ -21487,7 +21487,7 @@
 			(uuid "f0f88448-2068-4dd5-83eb-31a462acbe0e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "9732f5c1-2ec2-441d-ac6e-a6da4330ee42")
 			(effects
@@ -21742,7 +21742,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC48"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "89e2910f-9cc7-44ca-a107-1221e006f046")
 			(effects
@@ -21753,7 +21753,7 @@
 			)
 		)
 		(property "Value" "flir.vddio_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "e3a045e8-5b0c-482e-919d-4866fabc9ed5")
 			(effects
@@ -21907,7 +21907,7 @@
 			(uuid "d6a5a82c-6761-4460-8a68-aebe14bf9ce8")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "7881b4f2-ba98-4e1d-ac51-fdcb8f4e809c")
 			(effects
@@ -22616,7 +22616,7 @@
 		(at 100 137 180)
 		(tags "laser-ranging sensor")
 		(property "Reference" "TU10"
-			(at 0 -2.6 360)
+			(at 0 -2.6 0)
 			(layer "F.SilkS")
 			(uuid "ed20c60b-000a-4ba8-aa2b-663488801c58")
 			(effects
@@ -22627,7 +22627,7 @@
 			)
 		)
 		(property "Value" "dist.ic"
-			(at 0 2.6 360)
+			(at 0 2.6 0)
 			(layer "F.Fab")
 			(uuid "a25c9b66-fa7b-4a5b-b7e2-b2faff8cf85d")
 			(effects
@@ -22885,7 +22885,7 @@
 			(uuid "6f48607f-ca18-4915-8885-2267c488c54b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "293c6e8e-5c62-4431-8a5e-ca843be6be6a")
 			(effects
@@ -23273,7 +23273,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR11"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "760be43a-b977-4eb4-a44e-3e702ae53f37")
 			(effects
@@ -23284,7 +23284,7 @@
 			)
 		)
 		(property "Value" "mcu.en_pull.r"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "66a8fb54-2f91-4b32-b01c-c6160ff7e8da")
 			(effects
@@ -23295,7 +23295,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "28275910-0be3-4d25-a930-a50c51c052a6")
@@ -23307,7 +23307,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9d0a05ad-23fd-4a24-bb55-e264ed30f4a2")
@@ -23319,7 +23319,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "1308b0c9-fb31-4d0c-b351-fa32428ce272")
@@ -23331,7 +23331,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 354 154 360)
+			(at 354 154 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9758e29a-00e8-4456-a587-cf88e9919f75")
@@ -23343,7 +23343,7 @@
 			)
 		)
 		(property "edg_path" "mcu.en_pull.rc.r"
-			(at 354 154 360)
+			(at 354 154 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5ec2a8f2-3aeb-4260-93d5-95fb548258b4")
@@ -23355,7 +23355,7 @@
 			)
 		)
 		(property "edg_refdes" "IR4"
-			(at 354 154 360)
+			(at 354 154 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "433fc0c9-cea6-4010-83d5-6543c1161792")
@@ -23367,7 +23367,7 @@
 			)
 		)
 		(property "edg_short_path" "mcu.en_pull.r"
-			(at 354 154 360)
+			(at 354 154 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "dd5d4b1d-502f-4a6f-9f92-a110bf1518e2")
@@ -23483,7 +23483,7 @@
 			(uuid "1bae3bf1-4bf0-40de-9318-4023f0fdc062")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "02d5de0a-b488-42ad-967f-4d0398daaf3c")
 			(effects
@@ -24604,7 +24604,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.hf_in_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "15e97516-d555-40e1-a678-2cdc1f2c5e6f")
 			(effects
@@ -24615,7 +24615,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3aebce95-101d-4df9-8f85-f267f9f934c0")
@@ -24627,7 +24627,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ca403480-67fe-4d2c-8be7-dac7f5ac19bc")
@@ -24639,7 +24639,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bdb8a8e0-b6f1-4e54-83bd-0ac5a1d5cac3")
@@ -24651,7 +24651,7 @@
 			)
 		)
 		(property "edg_part" "CC0603KRX7R9BB104 (YAGEO)"
-			(at 212 210 360)
+			(at 212 210 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "0b8b1fa6-1114-47ca-a1f7-ce1ee4572a30")
@@ -24663,7 +24663,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.hf_in_cap.cap"
-			(at 212 210 360)
+			(at 212 210 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "0b897f00-ca14-4c2c-9363-c79965403710")
@@ -24675,7 +24675,7 @@
 			)
 		)
 		(property "edg_refdes" "C2"
-			(at 212 210 360)
+			(at 212 210 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "fcd4ef39-7ff4-440b-ae45-224da2438167")
@@ -24687,7 +24687,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.hf_in_cap"
-			(at 212 210 360)
+			(at 212 210 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5cfccb5b-a3c0-4df7-82a7-bfc31da08ffb")
@@ -24803,7 +24803,7 @@
 			(uuid "d39494cf-f67f-4a6c-b882-ca34a637c96d")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "4b36ce72-5372-4d4d-9b94-41048495b553")
 			(effects
@@ -24848,7 +24848,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "TC19"
-			(at 2.5 0 360)
+			(at 2.5 0 0)
 			(layer "F.SilkS")
 			(uuid "fb658abd-2127-4c9e-85ef-9b9417a7e2c1")
 			(effects
@@ -24859,7 +24859,7 @@
 			)
 		)
 		(property "Value" "mcu.vcc_cap1"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "a3458f40-e75d-4e42-89ee-993637dcdf29")
 			(effects
@@ -24870,7 +24870,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6da6526f-722a-4e9a-8f66-983773d1ff8e")
@@ -24882,7 +24882,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "94d4d128-3cd0-40dc-8a2c-fdd8ed4f4336")
@@ -24894,7 +24894,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "41b38f34-bd3d-4472-94d8-79a3bd05fbf1")
@@ -24906,7 +24906,7 @@
 			)
 		)
 		(property "edg_part" "CC0603KRX7R9BB104 (YAGEO)"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e9f8f106-1060-437d-88de-fff6d71bfddc")
@@ -24918,7 +24918,7 @@
 			)
 		)
 		(property "edg_path" "mcu.vcc_cap1.cap"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b9c5e3b0-2167-4773-a17b-a0235ecc4e1a")
@@ -24930,7 +24930,7 @@
 			)
 		)
 		(property "edg_refdes" "IC9"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5e27b42e-4c43-4798-9523-c69889160987")
@@ -24942,7 +24942,7 @@
 			)
 		)
 		(property "edg_short_path" "mcu.vcc_cap1"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "57e01255-afec-44ee-be0e-fe5ab88288da")
@@ -25058,7 +25058,7 @@
 			(uuid "9ab27e0a-7e09-4a5a-a367-604238fecbe0")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "7630f2a8-8a91-45eb-9c22-391ebd23c8a8")
 			(effects
@@ -25999,7 +25999,7 @@
 			)
 		)
 		(property "Value" "reg_3v3.boot_cap"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "b3c20ebe-3ec9-43be-9cb2-780ac6fc2187")
 			(effects
@@ -26010,7 +26010,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bf409996-f5aa-441f-8a4e-94eddc2deeac")
@@ -26022,7 +26022,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4722a97e-504d-4bc2-a78d-c42e137b9774")
@@ -26034,7 +26034,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6557bf99-0f23-46ed-a235-c7c60d1fecd8")
@@ -26046,7 +26046,7 @@
 			)
 		)
 		(property "edg_part" "CC0603KRX7R9BB104 (YAGEO)"
-			(at 202 218 360)
+			(at 202 218 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b3f6c950-9207-42d4-a2e7-bb0843120976")
@@ -26058,7 +26058,7 @@
 			)
 		)
 		(property "edg_path" "reg_v5.boot_cap"
-			(at 202 218 360)
+			(at 202 218 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "18b94f32-2594-4a6d-99ac-6a6dcfba8e3a")
@@ -26070,7 +26070,7 @@
 			)
 		)
 		(property "edg_refdes" "C3"
-			(at 202 218 360)
+			(at 202 218 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "497e32b5-3eb9-44cf-9f9a-d6ef1a543222")
@@ -26082,7 +26082,7 @@
 			)
 		)
 		(property "edg_short_path" "reg_v5.boot_cap"
-			(at 202 218 360)
+			(at 202 218 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4341b4dc-7014-4d34-8bf7-fe6e8f45d1e7")
@@ -26198,7 +26198,7 @@
 			(uuid "622d1ddd-8cdb-445e-ad02-5ba6ceaf9829")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "0773d39b-b5af-4e86-9ee3-8c9320dfc710")
 			(effects
@@ -27520,7 +27520,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "TR4"
-			(at 0 -1 360)
+			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "4d326a6d-7943-45cd-99e2-10152e60d320")
 			(effects
@@ -27531,7 +27531,7 @@
 			)
 		)
 		(property "Value" "poe.den"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "f4dfdaab-5e22-4915-a5ce-6664ef048841")
 			(effects
@@ -27685,7 +27685,7 @@
 			(uuid "79770f07-9475-4118-a247-95fdf7b66529")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "efc3517e-abd1-4668-b052-00bfcdc70089")
 			(effects
@@ -28137,7 +28137,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4edf5c11-6d27-4f3b-ba2f-18e65c41170f")
@@ -28149,7 +28149,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5c233fec-8a1b-4491-bf9c-9207ee6dd64d")
@@ -28161,7 +28161,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "dfb2a795-3035-42c0-8aab-6c0964884c54")
@@ -28257,7 +28257,7 @@
 			(uuid "f1761244-1178-4335-8014-c3bf3d44f6fa")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "50ab7b81-2c85-48bc-b27d-49e8f8828c96")
 			(effects
@@ -28957,7 +28957,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm Triangular Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "TJP2"
-			(at 0 1.8 360)
+			(at 0 1.8 0)
 			(layer "B.SilkS")
 			(uuid "6a828df8-f402-495b-9ea9-fc7708d129ac")
 			(effects
@@ -28969,7 +28969,7 @@
 			)
 		)
 		(property "Value" "poe_jmp.neg"
-			(at 0 -1.9 360)
+			(at 0 -1.9 0)
 			(layer "B.Fab")
 			(uuid "e2fa5ad8-756c-410c-ab3e-c68a8aaf6c7f")
 			(effects
@@ -32602,14 +32602,6 @@
 		(uuid "0081c5c4-de79-4bb4-bd87-956d56cccd18")
 	)
 	(segment
-		(start 92.5 153.75)
-		(end 93 153.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 5)
-		(uuid "01c63c0a-ad2b-4bcb-bd02-a43610f97e0a")
-	)
-	(segment
 		(start 90.26 184)
 		(end 99 184)
 		(width 0.25)
@@ -32898,6 +32890,14 @@
 		(uuid "509085cf-0ef3-45c4-b92f-66f9b2ed064b")
 	)
 	(segment
+		(start 92.5 153.75)
+		(end 92.5 153.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 5)
+		(uuid "5157d12a-f68b-448a-a453-ceb1fa263e0d")
+	)
+	(segment
 		(start 102 144)
 		(end 102 145.2125)
 		(width 1)
@@ -32952,14 +32952,6 @@
 		(layer "F.Cu")
 		(net 5)
 		(uuid "5e136d0e-2110-4475-896e-651bdd2ef964")
-	)
-	(segment
-		(start 92 154.25)
-		(end 92.5 153.75)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 5)
-		(uuid "5ef8a261-14cc-40f9-9c30-3891bb51d4b0")
 	)
 	(segment
 		(start 103 95)
@@ -33216,14 +33208,6 @@
 		(layer "F.Cu")
 		(net 5)
 		(uuid "8b11c67f-6fd2-40fd-9c3d-d4de6bb58052")
-	)
-	(segment
-		(start 90.8375 154.25)
-		(end 92 154.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 5)
-		(uuid "8c3e1a31-d417-4248-8df0-ed5164540902")
 	)
 	(segment
 		(start 111.05 100.05)
@@ -33506,6 +33490,14 @@
 		(uuid "cc269afc-dd1d-436e-975f-e7eebe7ee808")
 	)
 	(segment
+		(start 90.8375 154.25)
+		(end 92 154.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 5)
+		(uuid "cc760dcd-e86a-434c-ad20-021844098182")
+	)
+	(segment
 		(start 109.75 176.7375)
 		(end 110.2375 176.7375)
 		(width 0.25)
@@ -33744,6 +33736,22 @@
 		(layer "F.Cu")
 		(net 5)
 		(uuid "f3d08f14-6b18-42ab-be80-baeaeb9a5458")
+	)
+	(segment
+		(start 92.5 153.25)
+		(end 93 153.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 5)
+		(uuid "fa4967d1-f40e-4500-aebb-5bfc82805874")
+	)
+	(segment
+		(start 92 154.25)
+		(end 92.5 153.75)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 5)
+		(uuid "fb1c2ac4-1844-44ba-9288-894255ed0338")
 	)
 	(segment
 		(start 86.365 127.73)
