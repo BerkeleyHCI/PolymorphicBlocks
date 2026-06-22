@@ -189,6 +189,9 @@ class Hy931147c(Connector, GeneratorBlock):
     """Commonly available RJ45 magjack with PoE support.
     Footprint and pin-compatible with Wuerth 7499211121A.
 
+    This uses the footprint for the Wuerth 7499111446, which shares the same pattern
+    but is not functionally compatible.
+
     TODO should define and implement an abstract base class, EthernetConnector, which defines the
     magnetics-side ports and can also be implemented by DiscreteMagneticsEthernetConnector,
     which has a passive-typed RJ45, discrete magnetics, and optional PoE diode bridge generator.
