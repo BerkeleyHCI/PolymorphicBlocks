@@ -384,7 +384,7 @@ class AnalogSetpointResistor(DiscreteApplication, KiCadImportableBlock):
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
 
-        self.gnd = self.Port(Ground())
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Port(AnalogSink(impedance=RangeExpr()), [InOut])
 
         voltage = self.io.link().voltage - self.gnd.link().voltage

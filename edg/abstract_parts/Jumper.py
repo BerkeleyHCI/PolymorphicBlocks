@@ -16,6 +16,41 @@ class Jumper(DiscreteComponent, Block):
         self.b = self.Port(Passive())
 
 
+class GroundJumper(TypedJumper, Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.input = self.Port(Ground(), [Input])
+        self.output = self.Port(Ground(), [Output])
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.device = self.Block(Jumper())
+        self.connect(self.input.net, self.device.a)
+        self.connect(self.output.net, self.device.b)
+
+
+class VoltageJumper(TypedJumper, Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.input = self.Port(VoltageSink(current_draw=RangeExpr(), reverse_voltage_out=RangeExpr()), [Input])
+        self.output = self.Port(
+            VoltageSource(
+                voltage_out=self.input.link().voltage, reverse_current_draw=self.input.link().reverse_current_drawn
+            ),
+            [Output],
+        )
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.device = self.Block(Jumper())
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.reverse_voltage_out, self.output.link().reverse_voltage)
+        self.connect(self.input.net, self.device.a)
+        self.connect(self.output.net, self.device.b)
+
+
 class DigitalJumper(TypedJumper, Block):
     def __init__(self) -> None:
         super().__init__()

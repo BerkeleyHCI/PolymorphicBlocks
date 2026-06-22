@@ -142,12 +142,12 @@ const IC10 = board.add(C_0603_1608Metric, {
 })
 // i2c_pull.scl_res.res
 const IR5 = board.add(R_0603_1608Metric, {
-  translate: pt(2.176, 2.661), rotate: 0,
+  translate: pt(2.158, 2.661), rotate: 0,
   id: 'IR5'
 })
 // i2c_pull.sda_res.res
 const IR6 = board.add(R_0603_1608Metric, {
-  translate: pt(2.176, 2.757), rotate: 0,
+  translate: pt(2.158, 2.757), rotate: 0,
   id: 'IR6'
 })
 // pd.ic
@@ -157,12 +157,12 @@ const IU4 = board.add(WQFN_14_1EP_2_5x2_5mm_P0_5mm_EP1_45x1_45mm, {
 })
 // pd.vdd_cap[0].cap
 const IC11 = board.add(C_0603_1608Metric, {
-  translate: pt(1.049, 2.846), rotate: 0,
+  translate: pt(0.876, 2.846), rotate: 0,
   id: 'IC11'
 })
 // pd.vdd_cap[1].cap
-const IC12 = board.add(C_0805_2012Metric, {
-  translate: pt(0.884, 2.856), rotate: 0,
+const IC12 = board.add(C_0603_1608Metric, {
+  translate: pt(1.031, 2.846), rotate: 0,
   id: 'IC12'
 })
 // usb_esd
@@ -172,22 +172,22 @@ const IU5 = board.add(SOT_23, {
 })
 // vusb_sense.div.top_res
 const IR7 = board.add(R_0603_1608Metric, {
-  translate: pt(2.410, 2.661), rotate: 0,
+  translate: pt(2.393, 2.661), rotate: 0,
   id: 'IR7'
 })
 // vusb_sense.div.bottom_res
 const IR8 = board.add(R_0603_1608Metric, {
-  translate: pt(2.410, 2.757), rotate: 0,
+  translate: pt(2.393, 2.757), rotate: 0,
   id: 'IR8'
 })
 // temp.ic
 const IU6 = board.add(WSON_6_1EP_3x3mm_P0_95mm, {
-  translate: pt(1.300, 2.705), rotate: 0,
+  translate: pt(1.283, 2.705), rotate: 0,
   id: 'IU6'
 })
 // temp.vdd_cap.cap
 const IC13 = board.add(C_0603_1608Metric, {
-  translate: pt(1.283, 2.846), rotate: 0,
+  translate: pt(1.266, 2.846), rotate: 0,
   id: 'IC13'
 })
 // enc.package
@@ -257,17 +257,17 @@ const IC21 = board.add(C_0805_2012Metric, {
 })
 // spk.conn
 const IJ4 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(1.589, 2.762), rotate: 0,
+  translate: pt(1.572, 2.762), rotate: 0,
   id: 'IJ4'
 })
 // ledr.package
 const ID2 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.941, 2.661), rotate: 0,
+  translate: pt(1.924, 2.661), rotate: 0,
   id: 'ID2'
 })
 // ledr.res
 const IR10 = board.add(R_0603_1608Metric, {
-  translate: pt(1.941, 2.758), rotate: 0,
+  translate: pt(1.924, 2.758), rotate: 0,
   id: 'IR10'
 })
 // conv.power_path.inductor
@@ -337,12 +337,12 @@ const IR13 = board.add(R_0603_1608Metric, {
 })
 // low_rc.rc.r
 const IR14 = board.add(R_0603_1608Metric, {
-  translate: pt(2.645, 2.661), rotate: 0,
+  translate: pt(2.628, 2.661), rotate: 0,
   id: 'IR14'
 })
 // low_rc.rc.c
 const IC27 = board.add(C_0603_1608Metric, {
-  translate: pt(2.645, 2.757), rotate: 0,
+  translate: pt(2.628, 2.757), rotate: 0,
   id: 'IC27'
 })
 // high_pull.res
@@ -352,12 +352,12 @@ const IR15 = board.add(R_0603_1608Metric, {
 })
 // high_rc.rc.r
 const IR16 = board.add(R_0603_1608Metric, {
-  translate: pt(2.880, 2.661), rotate: 0,
+  translate: pt(2.862, 2.661), rotate: 0,
   id: 'IR16'
 })
 // high_rc.rc.c
 const IC28 = board.add(C_0603_1608Metric, {
-  translate: pt(2.880, 2.757), rotate: 0,
+  translate: pt(2.862, 2.757), rotate: 0,
   id: 'IC28'
 })
 // tp_pwm_l.tp
@@ -387,12 +387,12 @@ const IR17 = board.add(R_2512_6332Metric, {
 })
 // vsense.div.top_res
 const IR18 = board.add(R_0603_1608Metric, {
-  translate: pt(3.114, 2.661), rotate: 0,
+  translate: pt(3.097, 2.661), rotate: 0,
   id: 'IR18'
 })
 // vsense.div.bottom_res
 const IR19 = board.add(R_0603_1608Metric, {
-  translate: pt(3.114, 2.757), rotate: 0,
+  translate: pt(3.097, 2.757), rotate: 0,
   id: 'IR19'
 })
 // tp_v.tp
@@ -402,32 +402,32 @@ const ITP8 = board.add(TestPoint_TE_RCT_0805, {
 })
 // vfilt.rc.r
 const IR20 = board.add(R_0603_1608Metric, {
-  translate: pt(3.349, 2.661), rotate: 0,
+  translate: pt(3.332, 2.661), rotate: 0,
   id: 'IR20'
 })
 // vfilt.rc.c
 const IC29 = board.add(C_0603_1608Metric, {
-  translate: pt(3.349, 2.757), rotate: 0,
+  translate: pt(3.332, 2.757), rotate: 0,
   id: 'IC29'
 })
 // ifilt.r1
 const IR21 = board.add(R_0603_1608Metric, {
-  translate: pt(3.584, 2.661), rotate: 0,
+  translate: pt(3.566, 2.661), rotate: 0,
   id: 'IR21'
 })
 // ifilt.r2
 const IR22 = board.add(R_0603_1608Metric, {
-  translate: pt(3.584, 2.757), rotate: 0,
+  translate: pt(3.566, 2.757), rotate: 0,
   id: 'IR22'
 })
 // tp_i.rc.r
 const IR23 = board.add(R_0603_1608Metric, {
-  translate: pt(3.818, 2.661), rotate: 0,
+  translate: pt(3.801, 2.661), rotate: 0,
   id: 'IR23'
 })
 // tp_i.rc.c
 const IC30 = board.add(C_0603_1608Metric, {
-  translate: pt(3.818, 2.757), rotate: 0,
+  translate: pt(3.801, 2.757), rotate: 0,
   id: 'IC30'
 })
 // iamp.tp
@@ -437,22 +437,22 @@ const ITP9 = board.add(TestPoint_TE_RCT_0805, {
 })
 // tamp.r1
 const IR24 = board.add(R_0603_1608Metric, {
-  translate: pt(4.053, 2.661), rotate: 0,
+  translate: pt(4.036, 2.661), rotate: 0,
   id: 'IR24'
 })
 // tamp.r2
 const IR25 = board.add(R_0603_1608Metric, {
-  translate: pt(4.209, 2.661), rotate: 0,
+  translate: pt(4.192, 2.661), rotate: 0,
   id: 'IR25'
 })
 // tamp.rf
 const IR26 = board.add(R_0603_1608Metric, {
-  translate: pt(4.053, 2.757), rotate: 0,
+  translate: pt(4.036, 2.757), rotate: 0,
   id: 'IR26'
 })
 // tamp.rg
 const IR27 = board.add(R_0603_1608Metric, {
-  translate: pt(4.209, 2.757), rotate: 0,
+  translate: pt(4.192, 2.757), rotate: 0,
   id: 'IR27'
 })
 // tp_t.tp
@@ -535,7 +535,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(4.385236220472439, 3.2523622047244096);
+const limit1 = pt(4.36791338582677, 3.2523622047244096);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);
