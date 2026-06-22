@@ -639,7 +639,6 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.eth.eth, self.phy.eth)
             self.connect(self.mcu.spi.request("eth_spi"), self.phy.spi)
             self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
-            self.connect(reset_line, self.phy.reset)
             self.connect(int_line, self.phy.int)
 
             (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
@@ -663,12 +662,11 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.ioe.with_mixin(IoControllerI2cTarget()).i2c_target.request("i2c"), self.i2c)
             self.connect(self.ioe.gpio.request("eth_grn"), self.eth.led_grn_sink)
             self.connect(self.ioe.gpio.request("eth_yel"), self.eth.led_yel_sink)
-            self.connect(self.ioe.gpio.request("t2p"), self.poe.t2p)
 
             (self.poe_sense,), _ = self.chain(
                 self.pwr,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=3.0 * Volt(tol=0.1), impedance=(1, 10) * kOhm)),
-                self.ioe.adc.request("vusb_sense"),
+                self.ioe.adc.request("pwr_sense"),
             )
 
         # CAMERA MULTI DOMAIN
@@ -738,6 +736,21 @@ class IotThermalCamera(JlcBoardTop):
                         "flir.miso=4",
                         "flir_vsync=6",
                         "ledr=_GPIO0_STRAP",
+                        "int=31",
+                        "eth_cs=35",
+                        "eth_spi.sck=9",
+                        "eth_spi.mosi=8",
+                        "eth_spi.miso=7",
+                    ],
+                ),
+                (
+                    ["ioe", "pin_assigns"],
+                    [
+                        "i2c.scl=12",
+                        "i2c.sda=11",
+                        "pwr_sense=14",
+                        "eth_grn=8",
+                        "eth_yel=10",
                     ],
                 ),
                 (["mcu", "programming"], "uart-auto"),
