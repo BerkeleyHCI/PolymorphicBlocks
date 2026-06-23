@@ -205,7 +205,7 @@ class BleJoystick(JlcBoardTop):
             self.connect(mcu_i2c, self.vbat_sense.i2c)
             self.imu = imp.Block(Lsm6ds3trc())
             self.connect(mcu_i2c, self.imu.i2c)
-            self.mag = imp.Block(Qmc5883l())
+            self.mag = imp.Block(Qmc5883p())
             self.connect(mcu_i2c, self.mag.i2c)
 
         # POWER GATED DOMAIN

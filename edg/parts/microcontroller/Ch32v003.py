@@ -209,6 +209,7 @@ class Ch32v003_Device(
             mfr="WCH",
             part="CH32V003F4P6",
             datasheet="https://www.wch-ic.com/downloads/CH32V003DS0_PDF.html",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C5187096")
         self.assign(self.actual_basic_part, False)

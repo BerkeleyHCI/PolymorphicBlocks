@@ -34,6 +34,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
             mfr="Allegro MicroSystems",
             part="A1304ELHLX-T",
             datasheet="https://www.allegromicro.com/~/media/Files/Datasheets/A1304-Datasheet.ashx",
+            pnp_rot=90,
         )
 
         self.assign(self.lcsc_part, "C545185")

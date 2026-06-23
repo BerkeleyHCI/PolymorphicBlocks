@@ -761,7 +761,7 @@ class Tlv757p_Device(
             mfr="Texas Instruments",
             part=part_number,
             datasheet="https://www.ti.com/lit/ds/symlink/tlv757p.pdf",
-            pnp_rot=180,
+            pnp_rot=90,
         )
         self.assign(self.lcsc_part, lcsc)
         self.assign(self.actual_basic_part, False)

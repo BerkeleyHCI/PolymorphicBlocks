@@ -6,7 +6,7 @@ from .Imu_Lsm6dsv16x import Lsm6dsv16x
 
 from .Mag_A1304 import A1304
 from .MagSwitch_Ah1806 import Ah1806
-from .Mag_Qmc5883l import Qmc5883l
+from .Mag_Qmc5883 import Qmc5883l, Qmc5883p
 
 from .FlirLepton import FlirLepton
 from .Camera_Ov2640_Fpc24 import Ov2640, Ov2640_Fpc24
