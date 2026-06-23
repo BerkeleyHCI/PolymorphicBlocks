@@ -58,10 +58,9 @@ class ControlSubboard(SubboardBlock):
             self.connect(self.mcu.gpio.request("extra1"), self.extra1)
 
             self.connect(self.i2c, self.mcu.i2c.request("i2c"))
-            # 2.2kOhm as mandated by the VL53L5CX datasheet
-            (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))))
+            (self.i2c_pull,), _ = self.chain(self.i2c, imp.Block(I2cPullup()))
 
-            self.dist = imp.Block(Vl53l5cx())
+            self.dist = imp.Block(Vl53l0x())
             self.connect(self.i2c, self.dist.i2c)
 
             self.als = imp.Block(Bh1750())
@@ -72,7 +71,7 @@ class ControlSubboard(SubboardBlock):
 
             # second qwiic port is on a separate I2C bus
             (self.i2c2_pull, self.qwiic2), _ = self.chain(
-                self.mcu.i2c.request("i2c2"), imp.Block(I2cPullup(2.2 * kOhm(tol=0.05))), imp.Block(QwiicTarget())
+                self.mcu.i2c.request("i2c2"), imp.Block(I2cPullup()), imp.Block(QwiicTarget())
             )
 
         # 5V DOMAIN
