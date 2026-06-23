@@ -301,7 +301,7 @@ class BleJoystick(JlcBoardTop):
                         "io0=17",
                     ],
                 ),
-                (["mcu", "gpio", "trig_pwr_gate", "current_limits"], Range(-0.010, 0.009)),  # use typ ratings
+                (["reg_3v3", "ic", "actual_dropout"], Range(0.075, 0.35)),  # use dropout @ 30mA
             ],
             class_refinements=[
                 (SwdCortexTargetConnector, SwdCortexTargetTagConnect),

@@ -22,16 +22,16 @@ class JlcLed(PartsTableSelectorFootprint, JlcTableSelector, TableLed):
     # because the description formatting is so inconsistent, the table is just hardcoded here
     # instead of trying to parse the parts table
     PART_COLOR_MAP = {
-        "C2286": Led.Red,
-        "C2290": Led.White,
+        "C2286": Led.Red,  # 0603, basic
+        "C2290": Led.White,  # 0603, basic
         "C2293": Led.Blue,
-        "C2296": Led.Yellow,
-        "C2297": Led.Green,
-        "C34499": Led.White,
+        "C2296": Led.Yellow,  # 0805, basic
+        "C2297": Led.Green,  # 0805, basic
+        "C34499": Led.White,  # 0805, basic
         "C72038": Led.Yellow,
         "C72041": Led.Blue,
         "C72043": Led.Green,  # "emerald"
-        "C84256": Led.Red,
+        "C84256": Led.Red,  # 0805, basic
     }
 
     @classmethod
