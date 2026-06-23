@@ -9820,7 +9820,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003685)
+			(mid 1.000175 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
@@ -18803,30 +18803,6 @@
 				(xy 111.026972 108.656397) (xy 111.305418 108.297356) (xy 111.4369 108.10883) (xy 111.447354 108.096213)
 				(xy 111.46099 108.082285) (xy 111.486219 108.063626) (xy 111.559904 108.02549) (xy 111.589704 108.015669)
 				(xy 111.614115 108.01175) (xy 111.6298 108.0105) (xy 112.337627 108.0105)
-			)
-		)
-	)
-	(zone
-		(net 0)
-		(net_name "")
-		(layer "B.Cu")
-		(uuid "f52a3919-abc1-4911-9233-8831ac30982d")
-		(hatch edge 0.5)
-		(priority 1)
-		(connect_pads yes
-			(clearance 0.2)
-		)
-		(min_thickness 0.2)
-		(filled_areas_thickness no)
-		(fill yes
-			(thermal_gap 0.25)
-			(thermal_bridge_width 0.25)
-			(smoothing fillet)
-			(radius 1)
-		)
-		(polygon
-			(pts
-				(xy 146.5 54.5) (xy 146.5 58) (xy 153.5 58) (xy 153.5 54.5) (xy 152.5 53.5) (xy 147.5 53.5)
 			)
 		)
 	)
