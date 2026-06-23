@@ -986,7 +986,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003686)
+			(mid 1.000176 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
@@ -1927,6 +1927,68 @@
 			(uuid "48efe9d5-7611-444b-b734-3e849866e82f")
 		)
 	)
+	(gr_arc
+		(start 102.25 134.75)
+		(mid 102.176777 134.926777)
+		(end 102 135)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "2329b01d-3963-4dbb-bcfb-c80d06c5ccf3")
+	)
+	(gr_line
+		(start 102.25 134.75)
+		(end 102.25 132)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "68f155d8-2e20-42b4-80b7-b83d46b23db8")
+	)
+	(gr_line
+		(start 102.25 132)
+		(end 97.75 132)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "94a5dce3-1c55-4f3d-bf67-bfaee49301e9")
+	)
+	(gr_arc
+		(start 98 135)
+		(mid 97.823223 134.926777)
+		(end 97.75 134.75)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "cbaa2fab-f2af-433d-b28b-74c7712f1962")
+	)
+	(gr_line
+		(start 97.75 134.75)
+		(end 97.75 132)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "d2339cbe-b0d9-48eb-8263-3fca58bcddfc")
+	)
+	(gr_line
+		(start 98 135)
+		(end 102 135)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "Dwgs.User")
+		(uuid "ee25e860-5669-4615-b2f4-05a79eb7d6f7")
+	)
 	(gr_circle
 		(center 100 100)
 		(end 100 115.5)
@@ -2172,6 +2234,18 @@
 				(bold yes)
 			)
 			(justify bottom mirror)
+		)
+	)
+	(gr_text "Stiffener top side\nto 0.3mm total thickness"
+		(at 102.5 135 0)
+		(layer "Dwgs.User")
+		(uuid "76fae83f-a923-46b2-837f-39e500fcdc82")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
 		)
 	)
 	(segment

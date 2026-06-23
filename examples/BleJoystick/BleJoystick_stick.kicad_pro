@@ -64,16 +64,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "copper_edge_clearance|100075000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|ac50d483-dcfe-4fb8-bd90-f3284f83755b",
-        "copper_edge_clearance|100575000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|b908301e-6cd3-4e8c-8d81-e1d484e19fdb",
-        "copper_edge_clearance|101075000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|b8af5553-6178-4036-948d-0fd028a05857",
-        "copper_edge_clearance|101575000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|48efe9d5-7611-444b-b734-3e849866e82f",
-        "copper_edge_clearance|98075000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|54123b2b-6b3c-4d28-9022-a4553335a9e8",
-        "copper_edge_clearance|98575000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|175ef595-6461-436d-a01d-b5fbd5da44fb",
-        "copper_edge_clearance|99075000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|5c4f2a62-ca7a-44f7-bf82-46aa058d798a",
-        "copper_edge_clearance|99575000|135000000|de9272c7-4166-42b6-a758-9b4258109f7a|cafc3390-ec3c-49c3-953e-a4bd6988ce79"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -311,7 +302,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "BleJoystick_stick.net",
-      "plot": "",
+      "plot": "gerbers",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",

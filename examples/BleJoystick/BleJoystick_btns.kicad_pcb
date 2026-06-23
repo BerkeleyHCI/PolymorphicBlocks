@@ -147,7 +147,7 @@
 		(at 111.086554 127.407799 112.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC18"
+		(property "Reference" "JC17"
 			(at 0 -1.43 112.5)
 			(layer "F.SilkS")
 			(uuid "f9ba9439-dade-492d-ae71-1a9d96c0e450")
@@ -715,7 +715,7 @@
 		(at 104.592201 143.086554 22.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC20"
+		(property "Reference" "JC19"
 			(at 0 -1.43 22.5)
 			(layer "F.SilkS")
 			(uuid "afc3ac5e-fa3f-4365-9192-0ee93512b567")
@@ -1447,7 +1447,7 @@
 		(at 104.592201 120.913446 157.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC17"
+		(property "Reference" "JC16"
 			(at 0 -1.43 157.5)
 			(layer "F.SilkS")
 			(uuid "c805830e-fc0f-4ee6-9021-e962105ce677")
@@ -2361,7 +2361,7 @@
 		(at 95.988305 114.97185 165)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC25"
+		(property "Reference" "JC24"
 			(at 0 -1.43 165)
 			(layer "F.SilkS")
 			(uuid "c047223f-ad08-4501-bfe6-fb930e44f79a")
@@ -3144,7 +3144,7 @@
 		(at 100 127)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC15"
+		(property "Reference" "JC14"
 			(at 0.5 1 0)
 			(layer "F.SilkS")
 			(uuid "65ee51db-5069-430b-ad37-a43afe8a3e76")
@@ -3620,7 +3620,7 @@
 		(at 100 137)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC14"
+		(property "Reference" "JC13"
 			(at 0 -1 0)
 			(layer "F.SilkS")
 			(uuid "900cbdb0-c246-4078-a373-24b919877627")
@@ -5064,7 +5064,7 @@
 		(at 95.407799 143.086554 -22.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC21"
+		(property "Reference" "JC20"
 			(at 0 -1.43 -22.5)
 			(layer "F.SilkS")
 			(uuid "58f3e5e8-89e7-4d49-85da-9a6f9522ae3b")
@@ -5274,7 +5274,7 @@
 		(at 88.913446 127.407799 -112.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC23"
+		(property "Reference" "JC22"
 			(at 0 -1.43 -112.5)
 			(layer "F.SilkS")
 			(uuid "5c54c4d1-530f-4d64-9df3-8b733ef2440c")
@@ -6252,7 +6252,7 @@
 		(at 111.086554 136.592201 67.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC19"
+		(property "Reference" "JC18"
 			(at 0 -1.43 67.5)
 			(layer "F.SilkS")
 			(uuid "d81ac165-1735-458b-a3c4-b197611136c4")
@@ -7255,7 +7255,7 @@
 		(at 92.434736 113.486104 150)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC24"
+		(property "Reference" "JC23"
 			(at -0.000001 -1.430001 150)
 			(layer "F.SilkS")
 			(uuid "a45cecb3-ffa5-4e09-a8e1-ff7a63abd18f")
@@ -8783,7 +8783,7 @@
 		(at 107.896677 113.294762 -150)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC26"
+		(property "Reference" "JC25"
 			(at 0.000001 -1.430001 30)
 			(layer "F.SilkS")
 			(uuid "29e4519d-91fc-48e0-a6ea-9a3f873a9e6d")
@@ -9172,7 +9172,7 @@
 		(at 88.913446 136.592201 -67.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC22"
+		(property "Reference" "JC21"
 			(at 0 -1.43 -67.5)
 			(layer "F.SilkS")
 			(uuid "61921271-d9b3-4d71-91cc-f154773d451d")
@@ -9382,7 +9382,7 @@
 		(at 95.407799 120.913446 -157.5)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
-		(property "Reference" "JC16"
+		(property "Reference" "JC15"
 			(at 0.027196 0.999972 22.5)
 			(layer "F.SilkS")
 			(uuid "938190d5-2545-4595-8f92-e67580a14206")
@@ -9820,7 +9820,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003686)
+			(mid 1.000176 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
