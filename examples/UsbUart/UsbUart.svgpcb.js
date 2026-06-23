@@ -92,25 +92,25 @@ const UJ2 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
 })
 
 board.setNetlist([
-  {name: "Uvusb", pads: [["UJ1", "A4"], ["UJ1", "A9"], ["UJ1", "B4"], ["UJ1", "B9"], ["UD1", "1"], ["UU1", "7"], ["UU1", "8"], ["UC1", "1"], ["UC2", "1"], ["UU3", "1"], ["UU3", "3"], ["UC4", "1"]]},
-  {name: "Ugnd", pads: [["UJ1", "A1"], ["UJ1", "A12"], ["UJ1", "B1"], ["UJ1", "B12"], ["UJ1", "S1"], ["UR1", "1"], ["UR2", "1"], ["UD1", "2"], ["UU1", "29"], ["UU1", "3"], ["UC1", "2"], ["UC2", "2"], ["UC3", "2"], ["UU2", "3"], ["UR3", "2"], ["UU3", "2"], ["UC4", "2"], ["UC5", "2"], ["UJ2", "3"]]},
-  {name: "Uv3v3", pads: [["UU3", "5"], ["UC5", "1"], ["UJ2", "4"]]},
-  {name: "Uusb_chain_0.d_P", pads: [["UJ1", "A6"], ["UJ1", "B6"], ["UU1", "4"], ["UU2", "2"]]},
-  {name: "Uusb_chain_0.d_N", pads: [["UJ1", "A7"], ["UJ1", "B7"], ["UU1", "5"], ["UU2", "1"]]},
-  {name: "Uusb_uart.conn.cc.cc1", pads: [["UJ1", "A5"], ["UR1", "2"]]},
-  {name: "Uusb_uart.conn.cc.cc2", pads: [["UJ1", "B5"], ["UR2", "2"]]},
-  {name: "Uusbconv.suspend", pads: [["UU1", "12"]]},
-  {name: "Uusbconv.nsuspend", pads: [["UU1", "11"], ["UD2", "2"]]},
-  {name: "Uusbconv.uart.tx", pads: [["UU1", "26"], ["UJ2", "1"]]},
-  {name: "Uusbconv.uart.rx", pads: [["UU1", "25"], ["UJ2", "2"]]},
-  {name: "Uusbconv.ri", pads: [["UU1", "2"]]},
-  {name: "Uusbconv.dcd", pads: [["UU1", "1"]]},
-  {name: "Uusbconv.dtr", pads: [["UU1", "28"]]},
-  {name: "Uusbconv.dsr", pads: [["UU1", "27"]]},
-  {name: "Uusbconv.rts", pads: [["UU1", "24"]]},
-  {name: "Uusbconv.cts", pads: [["UU1", "23"]]},
-  {name: "Uusbconv.ic.vdd", pads: [["UU1", "6"], ["UU1", "9"], ["UC3", "1"]]},
-  {name: "Uled.package.k", pads: [["UD2", "1"], ["UR3", "1"]]}
+  {name: "vusb", pads: [["UJ1", "A4"], ["UJ1", "A9"], ["UJ1", "B4"], ["UJ1", "B9"], ["UD1", "1"], ["UU1", "7"], ["UU1", "8"], ["UC1", "1"], ["UC2", "1"], ["UU3", "1"], ["UU3", "3"], ["UC4", "1"]]},
+  {name: "gnd", pads: [["UJ1", "A1"], ["UJ1", "A12"], ["UJ1", "B1"], ["UJ1", "B12"], ["UJ1", "S1"], ["UR1", "1"], ["UR2", "1"], ["UD1", "2"], ["UU1", "29"], ["UU1", "3"], ["UC1", "2"], ["UC2", "2"], ["UC3", "2"], ["UU2", "3"], ["UR3", "2"], ["UU3", "2"], ["UC4", "2"], ["UC5", "2"], ["UJ2", "3"]]},
+  {name: "v3v3", pads: [["UU3", "5"], ["UC5", "1"], ["UJ2", "4"]]},
+  {name: "usb_chain_0.d_P", pads: [["UJ1", "A6"], ["UJ1", "B6"], ["UU1", "4"], ["UU2", "2"]]},
+  {name: "usb_chain_0.d_N", pads: [["UJ1", "A7"], ["UJ1", "B7"], ["UU1", "5"], ["UU2", "1"]]},
+  {name: "usb_uart.conn.cc.cc1", pads: [["UJ1", "A5"], ["UR1", "2"]]},
+  {name: "usb_uart.conn.cc.cc2", pads: [["UJ1", "B5"], ["UR2", "2"]]},
+  {name: "usbconv.suspend", pads: [["UU1", "12"]]},
+  {name: "usbconv.nsuspend", pads: [["UU1", "11"], ["UD2", "2"]]},
+  {name: "usbconv.uart.tx", pads: [["UU1", "26"], ["UJ2", "1"]]},
+  {name: "usbconv.uart.rx", pads: [["UU1", "25"], ["UJ2", "2"]]},
+  {name: "usbconv.ri", pads: [["UU1", "2"]]},
+  {name: "usbconv.dcd", pads: [["UU1", "1"]]},
+  {name: "usbconv.dtr", pads: [["UU1", "28"]]},
+  {name: "usbconv.dsr", pads: [["UU1", "27"]]},
+  {name: "usbconv.rts", pads: [["UU1", "24"]]},
+  {name: "usbconv.cts", pads: [["UU1", "23"]]},
+  {name: "usbconv.ic.vdd", pads: [["UU1", "6"], ["UU1", "9"], ["UC3", "1"]]},
+  {name: "led.package.k", pads: [["UD2", "1"], ["UR3", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
