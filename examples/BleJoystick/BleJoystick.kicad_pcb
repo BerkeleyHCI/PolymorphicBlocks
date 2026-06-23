@@ -2701,7 +2701,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC2"
-			(at 2 0 360)
+			(at 2 0 0)
 			(layer "F.SilkS")
 			(uuid "59116419-99be-424d-9e7c-3d10f4ab0ebd")
 			(effects
@@ -3279,7 +3279,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "JC3"
-			(at 2 0 360)
+			(at 2 0 0)
 			(layer "F.SilkS")
 			(uuid "c14af433-da41-4337-b2e2-0f5ce667791b")
 			(effects
@@ -13402,7 +13402,7 @@
 		)
 		(fp_arc
 			(start 0.869178 1.169286)
-			(mid 1.000175 1.003686)
+			(mid 1.000176 1.003686)
 			(end 1.178836 0.891151)
 			(stroke
 				(width 0.16)
@@ -14155,7 +14155,7 @@
 		(descr "Tag-Connect programming header; http://www.tag-connect.com/Materials/TC2030-IDC-NL.pdf")
 		(tags "tag connect programming header pogo pins")
 		(property "Reference" "JJ3"
-			(at 4.84 -76.62 0)
+			(at -3 -1.5 0)
 			(layer "B.SilkS")
 			(uuid "3e415876-8e14-4006-acff-9d0174e4ee2a")
 			(effects
