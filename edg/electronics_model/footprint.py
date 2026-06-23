@@ -4,6 +4,7 @@ from typing import List
 
 from .NetlistGenerator import Netlist, NetBlock, Net, PathShortener
 from .. import edgir
+from ..core import TransformUtil
 
 
 class RefdesMode(Enum):
@@ -143,7 +144,7 @@ def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
 
-def net_exp(nets: List[Net], blocks: List[NetBlock]) -> str:
+def net_exp(refdes_prefix: str, subboard: TransformUtil.Path, nets: List[Net], blocks: List[NetBlock]) -> str:
     """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
     Example:
@@ -161,7 +162,12 @@ def net_exp(nets: List[Net], blocks: List[NetBlock]) -> str:
 
     result = "(nets"
     for i, net in enumerate(nets):
-        result += "\n" + gen_net_header(i + 1, net.name)
+        # apply subboard block and refdes prefix to ensure uniqueness when panelizing designs
+        net_name = net.name
+        if subboard.blocks:
+            net_name = f"{subboard}_{net_name}"
+        net_name = f"{refdes_prefix}{net_name}"
+        result += "\n" + gen_net_header(i + 1, net_name)
         for pin in net.pins:
             result += "\n  " + gen_net_pin(block_dict[pin.block_path].refdes, pin.pin_name)
         result += ")"
@@ -180,7 +186,7 @@ def generate_netlist(netlist: Netlist, refdes_mode: RefdesMode) -> str:
         + "\n"
         + block_exp(netlist.blocks, shortener, refdes_mode)
         + "\n"
-        + net_exp(netlist.nets, netlist.blocks)
+        + net_exp(netlist.refdes_prefix, netlist.subboard, netlist.nets, netlist.blocks)
         + "\n"
         + ")"
     )
