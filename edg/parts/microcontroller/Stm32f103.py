@@ -172,8 +172,8 @@ class Stm32f103_Device(
                 PinResource("PA8", {"PA8": dio_ft_model}),
                 PinResource("PA9", {"PA9": dio_ft_model}),
                 PinResource("PA10", {"PA10": dio_ft_model}),
-                PinResource("PA11", {"PA11": dio_ft_model}),
-                PinResource("PA12", {"PA12": dio_ft_model}),
+                PinResource("PA11", {"PA11": dio_ft_model, "USBDM": Passive()}),
+                PinResource("PA12", {"PA12": dio_ft_model, "USBDP": Passive()}),
                 # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
                 # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
                 PinResource("PA15", {"PA15": dio_ft_model}),  # default is JTDI
@@ -209,7 +209,7 @@ class Stm32f103_Device(
                     CanControllerPort(DigitalBidir.empty()),
                     {"txd": ["PA12", "PD1", "PB9"], "rxd": ["PA11", "PD0", "PB8"]},
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
                 PeripheralFixedPin(
                     "SWD",
                     SwdTargetPort(dio_std_model),

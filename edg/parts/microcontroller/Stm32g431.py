@@ -154,8 +154,8 @@ class Stm32g431_Device(
                 PinResource("PA8", {"PA8": dio_ftf_model}),
                 PinResource("PA9", {"PA9": dio_ftfd_model}),
                 PinResource("PA10", {"PA10": dio_ftda_model}),
-                PinResource("PA11", {"PA11": dio_ftu_model}),  # USB_DM
-                PinResource("PA12", {"PA12": dio_ftu_model}),  # USB_DP
+                PinResource("PA11", {"PA11": dio_ftu_model, "USB_DM": Passive()}),
+                PinResource("PA12", {"PA12": dio_ftu_model, "USB_DP": Passive()}),
                 PinResource("PA13", {"PA13": dio_ftf_model}),
                 PinResource("PA14", {"PA14": dio_ftf_model}),
                 PinResource("PA15", {"PA15": dio_ftf_model}),
@@ -216,7 +216,7 @@ class Stm32g431_Device(
                         "swclk": ["PA14"],
                     },
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
                 PeripheralFixedResource("USBCC", UsbCcPort(), {"cc1": ["PB6"], "cc2": ["PB4"]}),
             ]
         ).remap_pins(self._PIN_MAPPING)

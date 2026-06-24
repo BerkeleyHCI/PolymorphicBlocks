@@ -169,8 +169,8 @@ class Esp32s3_Wroom_1_Device(
                     PinResource("XTAL_32K_N", {"GPIO16": self._dio_model}),  # also ADC2_CH5
                     PinResource("GPIO17", {"GPIO17": self._dio_model}),  # also ADC2_CH6
                     PinResource("GPIO18", {"GPIO18": self._dio_model}),  # also ADC2_CH7
-                    PinResource("GPIO19", {"GPIO19": self._dio_model}),  # also ADC2_CH8 / USB_D-
-                    PinResource("GPIO20", {"GPIO20": self._dio_model}),  # also ADC2_CH9 / USB_D+
+                    PinResource("GPIO19", {"GPIO19": self._dio_model, "USB_D-": Passive()}),  # also ADC2_CH8
+                    PinResource("GPIO20", {"GPIO20": self._dio_model, "USB_D+": Passive()}),  # also ADC2_CH9
                     PinResource("GPIO21", {"GPIO21": self._dio_model}),
                     # VDD_SPI domain
                     # section 2.3.3, these are allocated for flash and should not be used
@@ -220,7 +220,7 @@ class Esp32s3_Wroom_1_Device(
                     PeripheralAnyResource(
                         "DVP", dvp8_model
                     ),  # TODO this also eats an I2S port, also available as 16-bit
-                    PeripheralFixedResource("USB", UsbDevicePort.empty(), {"dp": ["GPIO20"], "dm": ["GPIO19"]}),
+                    PeripheralFixedResource("USB", UsbDevicePort(), {"dp": ["GPIO20"], "dm": ["GPIO19"]}),
                 ]
             )
             .remap_pins(self._PIN_MAPPING)
