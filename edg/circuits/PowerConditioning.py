@@ -11,7 +11,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
     preferred if both are connected.
     """
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(self, voltage_drop: RangeLike = (0, 0.6) * Volt) -> None:
         super().__init__()
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()))  # high-priority source
@@ -27,7 +27,6 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
                 reverse_voltage=(0, self.pwr_in.link().voltage.upper() - self.pwr_in_diode.link().voltage.lower()),
                 current=self.pwr_out.link().current_drawn,
                 voltage_drop=voltage_drop,
-                reverse_recovery_time=reverse_recovery_time,
             )
         )
 
@@ -45,10 +44,9 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
 class DiodePowerMerge(PowerConditioner, GeneratorBlock):
     """Diode power merge block for multiple voltage sources."""
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(self, voltage_drop: RangeLike = (0, 0.6) * Volt) -> None:
         super().__init__()
         self.voltage_drop = self.ArgParameter(voltage_drop)
-        self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
 
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
         self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
@@ -74,7 +72,6 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
                     reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
                     current=self.pwr_out.link().current_drawn,
                     voltage_drop=self.voltage_drop,
-                    reverse_recovery_time=self.reverse_recovery_time,
                 )
             )
             self.connect(pwr_in.net, diode.anode)
@@ -369,7 +366,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                 reverse_voltage=control_voltage,
                 current=RangeExpr.ZERO,  # effectively no current
                 voltage_drop=self.diode_drop,
-                reverse_recovery_time=RangeExpr.ALL,
             )
         )
 
@@ -378,7 +374,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                 reverse_voltage=control_voltage,
                 current=RangeExpr.ZERO,  # effectively no current
                 voltage_drop=self.diode_drop,
-                reverse_recovery_time=RangeExpr.ALL,
             )
         )
 
