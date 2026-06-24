@@ -188,7 +188,7 @@ class CanDiffTestPoint(BaseTypedTestPoint[CanDiffLink]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.io: CanDiffPort = self.Port(CanDiffPort(DigitalBidir.empty()), [InOut])
+        self.io: CanDiffPort = self.Port(CanDiffPort(), [InOut])
 
     @override
     def contents(self) -> None:

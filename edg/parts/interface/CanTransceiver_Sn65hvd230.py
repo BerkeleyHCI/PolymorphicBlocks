@@ -22,16 +22,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             )
         )
 
-        self.can = self.Port(
-            CanDiffPort(
-                DigitalBidir(
-                    voltage_limits=(-2.5, 7.5) * Volt,
-                    voltage_out=(0.5 * Volt, self.vcc.link().voltage.lower()),
-                    current_draw=(-30, 30) * uAmp,
-                    current_limits=(-250, 250) * mAmp,
-                )
-            )
-        )
+        self.can = self.Port(CanDiffPort())
 
     @override
     def contents(self) -> None:
