@@ -194,7 +194,7 @@ class CanDiffTestPoint(BaseTypedTestPoint[CanDiffLink]):
     def contents(self) -> None:
         super().contents()
         name_prefix = (self.tp_name == "").then_else(self.io.link().name(), self.tp_name)
-        self.tp_canh = self.Block(DigitalTestPoint(name_prefix + ".canh"))
-        self.tp_canl = self.Block(DigitalTestPoint(name_prefix + ".canl"))
+        self.tp_canh = self.Block(TestPoint(name_prefix + ".canh"))
+        self.tp_canl = self.Block(TestPoint(name_prefix + ".canl"))
         self.connect(self.tp_canh.io, self.io.canh)
         self.connect(self.tp_canl.io, self.io.canl)
