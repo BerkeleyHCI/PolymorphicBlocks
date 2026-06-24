@@ -103,6 +103,16 @@ class Rp2040_Device(
         )
 
         # Additional ports (on top of IoController)
+        self._dio_ft_model = self._dio_std_model = DigitalBidir.from_supply(  # table 4.4
+            self.gnd,
+            self.iovdd,
+            voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+            current_limits=(-12, 12) * mAmp,  # by IOH / IOL modes
+            input_threshold_abs=(0.8, 2.0) * Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
+            pullup_capable=True,
+            pulldown_capable=True,
+        )
+
         self.qspi = self.Port(SpiController(self._dio_std_model), optional=self._model)  # TODO actually QSPI
         self.qspi_cs = self.Port(self._dio_std_model, optional=self._model)
         self.qspi_sd2 = self.Port(self._dio_std_model, optional=self._model)
