@@ -9,8 +9,8 @@ class UsbSeriesResistor(InternalSubcircuit, Block):
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
         self.resistance = self.ArgParameter(resistance)
-        self.interior = self.Port(UsbHostPort.empty(), [Input])
-        self.exterior = self.Port(UsbDevicePort.empty(), [Output])
+        self.interior = self.Port(UsbHostPort(), [Input])
+        self.exterior = self.Port(UsbDevicePort(), [Output])
 
     @override
     def contents(self) -> None:

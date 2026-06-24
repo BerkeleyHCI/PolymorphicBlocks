@@ -176,8 +176,8 @@ class UsbCcPulldownResistor(InternalSubcircuit, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.cc = self.Port(UsbCcPort.empty(), [Input])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.cc = self.Port(UsbCcPort(), [Input])
+        self.gnd = self.Port(Ground(), [Common])
 
     @override
     def contents(self) -> None:

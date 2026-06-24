@@ -39,9 +39,10 @@ class UsbBitBang(BitBangAdapter, Block):
         # to propagate to the FPGA port, and this causes both to deadlock (both link voltages depend on
         # the port voltages, and neither is available until the other link voltage is available).
         # Other ideas include moving to a fixed point solver, but that has other trade-offs.
-        self.dp = self.Port(DigitalBidir.empty())
-        self.dm = self.Port(DigitalBidir.empty())
-        self.dp_pull = self.Port(DigitalSink.empty())
+        # TODO: need modeling against USB spec
+        self.dp = self.Port(DigitalBidir())
+        self.dm = self.Port(DigitalBidir())
+        self.dp_pull = self.Port(DigitalSink())
 
     @override
     def contents(self) -> None:
