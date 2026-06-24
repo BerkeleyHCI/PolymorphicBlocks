@@ -252,7 +252,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
         self.dp = self.Block(Resistor(resistance))
         self.connect(self.pwr.net, self.dp.a)
-        self.connect(self.usb.dp.net, self.dp.b)
+        self.connect(self.usb.dp, self.dp.b)
 
 
 class Stm32f103_48(

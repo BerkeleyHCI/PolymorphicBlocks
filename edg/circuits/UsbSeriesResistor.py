@@ -15,5 +15,9 @@ class UsbSeriesResistor(InternalSubcircuit, Block):
     @override
     def contents(self) -> None:
         super().contents()
-        self.dp = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dp, self.exterior.dp)
-        self.dm = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dm, self.exterior.dm)
+        self.dp = self.Block(Resistor(self.resistance))
+        self.connect(self.dp.a, self.interior.dp)
+        self.connect(self.dp.b, self.exterior.dp)
+        self.dm = self.Block(Resistor(self.resistance))
+        self.connect(self.dm.a, self.interior.dm)
+        self.connect(self.dm.b, self.exterior.dm)
