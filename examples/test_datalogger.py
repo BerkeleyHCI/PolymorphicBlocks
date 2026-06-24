@@ -184,7 +184,9 @@ class Datalogger(BoardTop):
             # this uses the legacy / simple (non-mixin) USB and CAN IO style
             self.connect(self.mcu.usb.request(), self.usb_conn.usb)
 
-            (self.can,), _ = self.chain(self.mcu.can.request("can"), imp.Block(CalSolCanBlock()))
+            (self.can,), _ = self.chain(
+                self.mcu.with_mixin(IoControllerCan()).can.request("can"), imp.Block(CalSolCanBlock())
+            )
 
             # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now
             # self.i2c_pullup = imp.Block(I2cPullup())
