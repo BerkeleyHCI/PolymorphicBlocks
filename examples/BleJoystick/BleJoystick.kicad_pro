@@ -65,7 +65,7 @@
         }
       ],
       "drc_exclusions": [
-        "courtyards_overlap|104850001|129650001|008d0e62-4178-4042-b0d1-ca360f7ed742|f5a40a7e-5a54-4fa7-9170-7b70f9efdc7e",
+        "courtyards_overlap|104350001|131650001|008d0e62-4178-4042-b0d1-ca360f7ed742|f5a40a7e-5a54-4fa7-9170-7b70f9efdc7e",
         "courtyards_overlap|108500001|115300001|244a021d-3b1c-4fee-ba4c-3cdc3d41dcbd|6c9bdbed-f324-4fd5-8045-01e3bdb3a68c",
         "courtyards_overlap|112919999|112500001|41119908-19ed-4a58-9584-184f7ff6c5c5|6c9bdbed-f324-4fd5-8045-01e3bdb3a68c",
         "courtyards_overlap|94950001|115300001|954074aa-4f53-4b4a-a5b8-97f540791318|c5fcdedf-2fe9-41d0-bd4d-543619417cd4",

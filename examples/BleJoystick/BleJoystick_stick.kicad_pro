@@ -311,7 +311,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "BleJoystick_stick.net",
-      "plot": "",
+      "plot": "gerbers",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",

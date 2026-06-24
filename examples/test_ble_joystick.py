@@ -205,7 +205,7 @@ class BleJoystick(JlcBoardTop):
             self.connect(mcu_i2c, self.vbat_sense.i2c)
             self.imu = imp.Block(Lsm6ds3trc())
             self.connect(mcu_i2c, self.imu.i2c)
-            self.mag = imp.Block(Qmc5883l())
+            self.mag = imp.Block(Qmc5883p())
             self.connect(mcu_i2c, self.mag.i2c)
 
         # POWER GATED DOMAIN
@@ -252,7 +252,7 @@ class BleJoystick(JlcBoardTop):
             instance_refinements=[
                 (["mcu"], Holyiot_18010),
                 (["btns", "ioe"], Ch32v003),
-                (["reg_3v3"], Ap7215),
+                (["reg_3v3"], Xc6206p),
                 (["bumper_sw", "package"], SmtSwitchRa),
                 # TODO debug why class refinements not working
                 (["btns", "sw[0]", "package"], SmtSwitch),
@@ -301,7 +301,7 @@ class BleJoystick(JlcBoardTop):
                         "io0=17",
                     ],
                 ),
-                (["mcu", "gpio", "trig_pwr_gate", "current_limits"], Range(-0.010, 0.009)),  # use typ ratings
+                (["reg_3v3", "ic", "actual_dropout"], Range(0.075, 0.35)),  # use dropout @ 30mA
             ],
             class_refinements=[
                 (SwdCortexTargetConnector, SwdCortexTargetTagConnect),

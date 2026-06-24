@@ -180,6 +180,8 @@ class Hy931147c_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             },
             "Hanrun",
             "HY931147C",
+            pnp_rot=90,
+            pnp_offset=(5.6, 6.4),
         )
         self.assign(self.lcsc_part, "C91754")
         self.assign(self.actual_basic_part, False)
@@ -495,6 +497,7 @@ class Tps2378_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="TPS2378",
             datasheet="https://www.ti.com/lit/ds/symlink/tps2378.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C337500")
         self.assign(self.actual_basic_part, False)

@@ -270,6 +270,7 @@ class Lmr38020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="LMR38020SDDAR",
             datasheet="https://www.ti.com/lit/ds/symlink/lmr38020.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C3192337")
         self.assign(self.actual_basic_part, False)

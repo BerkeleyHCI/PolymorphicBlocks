@@ -191,9 +191,9 @@ const FC25 = board.add(C_0603_1608Metric, {
   id: 'FC25'
 })
 // spk_dac.rc.r
-const FR19 = board.add(R_0603_1608Metric, {
+const FR15 = board.add(R_0603_1608Metric, {
   translate: pt(1.441, 1.344), rotate: 0,
-  id: 'FR19'
+  id: 'FR15'
 })
 // spk_dac.rc.c
 const FC26 = board.add(C_0603_1608Metric, {
@@ -216,9 +216,9 @@ const FC28 = board.add(C_0805_2012Metric, {
   id: 'FC28'
 })
 // spk_drv.inp_res.res
-const FR20 = board.add(R_0603_1608Metric, {
+const FR16 = board.add(R_0603_1608Metric, {
   translate: pt(1.802, 1.013), rotate: 0,
-  id: 'FR20'
+  id: 'FR16'
 })
 // spk_drv.inp_cap.cap
 const FC29 = board.add(C_0603_1608Metric, {
@@ -226,9 +226,9 @@ const FC29 = board.add(C_0603_1608Metric, {
   id: 'FC29'
 })
 // spk_drv.inn_res.res
-const FR21 = board.add(R_0603_1608Metric, {
+const FR17 = board.add(R_0603_1608Metric, {
   translate: pt(1.646, 1.110), rotate: 0,
-  id: 'FR21'
+  id: 'FR17'
 })
 // spk_drv.inn_cap.cap
 const FC30 = board.add(C_0603_1608Metric, {
@@ -251,9 +251,9 @@ const FC31 = board.add(C_0603_1608Metric, {
   id: 'FC31'
 })
 // npx_res.res
-const FR22 = board.add(R_0603_1608Metric, {
+const FR18 = board.add(R_0603_1608Metric, {
   translate: pt(1.060, 1.693), rotate: 0,
-  id: 'FR22'
+  id: 'FR18'
 })
 // fan
 const FJ11 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
@@ -266,9 +266,9 @@ const FQ1 = board.add(SOT_23, {
   id: 'FQ1'
 })
 // fan_drv.pull
-const FR23 = board.add(R_0603_1608Metric, {
+const FR19 = board.add(R_0603_1608Metric, {
   translate: pt(0.249, 1.092), rotate: 0,
-  id: 'FR23'
+  id: 'FR19'
 })
 // fan_drv.drv
 const FQ2 = board.add(PQFN_8_EP_6x5mm_P1_27mm_Generic, {
@@ -282,47 +282,47 @@ const FQ3 = board.add(SOT_23, {
 })
 
 board.setNetlist([
-  {name: "Fgnd", pads: [["FJ1", "2"], ["FJ2", "A1"], ["FJ2", "A12"], ["FJ2", "B1"], ["FJ2", "B12"], ["FJ2", "S1"], ["FTP2", "1"], ["FU1", "3"], ["FU1", "7"], ["FU1", "8"], ["FC1", "2"], ["FU2", "1"], ["FR3", "2"], ["FC2", "2"], ["FC4", "2"], ["FC5", "2"], ["FD1", "2"], ["FU3", "1"], ["FR6", "2"], ["FC6", "2"], ["FC8", "2"], ["FC9", "2"], ["FD2", "2"], ["FJ6", "8"], ["FJ8", "8"], ["FSW1", "C"], ["FSW1", "S2"], ["FU8", "15"], ["FU8", "8"], ["FU8", "9"], ["FC24", "2"], ["FC25", "2"], ["FC26", "2"], ["FU9", "7"], ["FU9", "9"], ["FC27", "2"], ["FC28", "2"], ["FC30", "2"], ["FU10", "3"], ["FC31", "2"], ["FJ11", "1"], ["FQ1", "2"], ["FQ3", "2"]]},
-  {name: "Fvin", pads: [["FU1", "2"], ["FR1", "2"], ["FU2", "3"], ["FC2", "1"], ["FC4", "1"], ["FR4", "1"], ["FR23", "1"], ["FQ2", "1"], ["FQ2", "2"], ["FQ2", "3"]]},
-  {name: "Fv5", pads: [["FR2", "1"], ["FL1", "2"], ["FC5", "1"], ["FTP3", "1"], ["FD1", "1"], ["FU3", "3"], ["FC6", "1"], ["FC8", "1"], ["FR7", "1"], ["FJ8", "1"], ["FU9", "1"], ["FU9", "6"], ["FC27", "1"], ["FC28", "1"], ["FU10", "5"], ["FC31", "1"]]},
-  {name: "Fv3v3", pads: [["FU1", "4"], ["FC1", "1"], ["FR5", "1"], ["FL2", "2"], ["FC9", "1"], ["FTP4", "1"], ["FD2", "1"], ["FJ6", "1"], ["FU8", "3"], ["FU8", "4"], ["FC24", "1"], ["FC25", "1"]]},
-  {name: "Fpwr.pwr", pads: [["FJ1", "1"], ["FJ2", "A4"], ["FJ2", "A9"], ["FJ2", "B4"], ["FJ2", "B9"], ["FTP1", "1"], ["FU1", "1"], ["FR1", "1"], ["FU8", "2"]]},
-  {name: "Fusb.usb.dp", pads: [["FJ2", "A6"], ["FJ2", "B6"]]},
-  {name: "Fusb.usb.dm", pads: [["FJ2", "A7"], ["FJ2", "B7"]]},
-  {name: "Fusb.cc.cc1", pads: [["FJ2", "A5"], ["FU8", "10"], ["FU8", "11"]]},
-  {name: "Fusb.cc.cc2", pads: [["FJ2", "B5"], ["FU8", "1"], ["FU8", "14"]]},
-  {name: "Fvin_sense.i2c.scl", pads: [["FU1", "5"], ["FJ6", "6"], ["FU8", "6"]]},
-  {name: "Fvin_sense.i2c.sda", pads: [["FU1", "6"], ["FJ6", "7"], ["FU8", "7"]]},
-  {name: "Freg_5v.ic.sw", pads: [["FU2", "2"], ["FC3", "2"], ["FL1", "1"]]},
-  {name: "Freg_5v.ic.fb", pads: [["FU2", "4"], ["FR2", "2"], ["FR3", "1"]]},
-  {name: "Freg_5v.ic.boot", pads: [["FU2", "6"], ["FC3", "1"]]},
-  {name: "Freg_5v.ic.en", pads: [["FU2", "5"], ["FR4", "2"]]},
-  {name: "Freg_3v3.ic.sw", pads: [["FU3", "2"], ["FC7", "2"], ["FL2", "1"]]},
-  {name: "Freg_3v3.ic.fb", pads: [["FU3", "4"], ["FR5", "2"], ["FR6", "1"]]},
-  {name: "Freg_3v3.ic.boot", pads: [["FU3", "6"], ["FC7", "1"]]},
-  {name: "Freg_3v3.ic.en", pads: [["FU3", "5"], ["FR7", "2"]]},
-  {name: "Fcontrol.pd_int", pads: [["FJ6", "5"], ["FU8", "5"]]},
-  {name: "Fcontrol.spk", pads: [["FJ6", "4"], ["FR19", "1"]]},
-  {name: "Fcontrol.drv", pads: [["FJ8", "3"], ["FQ1", "1"]]},
-  {name: "Fcontrol.tach", pads: [["FJ8", "2"], ["FJ11", "3"]]},
-  {name: "Fcontrol.pwm", pads: [["FJ6", "3"], ["FU10", "2"], ["FQ3", "1"]]},
-  {name: "Fcontrol.npx_en", pads: [["FJ6", "2"], ["FU10", "1"]]},
-  {name: "Fcontrol.enc_a", pads: [["FJ8", "5"], ["FSW1", "A"]]},
-  {name: "Fcontrol.enc_b", pads: [["FJ8", "6"], ["FSW1", "B"]]},
-  {name: "Fcontrol.enc_sw", pads: [["FJ8", "7"], ["FSW1", "S1"]]},
-  {name: "Fcontrol.extra1", pads: [["FJ8", "4"]]},
-  {name: "Fpd.ic.vconn", pads: [["FU8", "12"], ["FU8", "13"]]},
-  {name: "Fspk_dac.output", pads: [["FR19", "2"], ["FC26", "1"], ["FC29", "2"]]},
-  {name: "Fspk_drv.spk.a", pads: [["FU9", "8"], ["FJ10", "1"]]},
-  {name: "Fspk_drv.spk.b", pads: [["FU9", "5"], ["FJ10", "2"]]},
-  {name: "Fspk_drv.ic.inp", pads: [["FU9", "4"], ["FR20", "2"]]},
-  {name: "Fspk_drv.ic.inn", pads: [["FU9", "3"], ["FR21", "2"]]},
-  {name: "Fspk_drv.inp_res.input", pads: [["FR20", "1"], ["FC29", "1"]]},
-  {name: "Fspk_drv.inn_res.input", pads: [["FR21", "1"], ["FC30", "1"]]},
-  {name: "Fnpx_shift.output", pads: [["FU10", "4"], ["FR22", "1"]]},
-  {name: "Fnpx_res.output", pads: [["FR22", "2"], ["FJ11", "4"], ["FQ3", "3"]]},
-  {name: "Ffan.pwr", pads: [["FJ11", "2"], ["FQ2", "5"]]},
-  {name: "Ffan_drv.pre.drain", pads: [["FQ1", "3"], ["FR23", "2"], ["FQ2", "4"]]}
+  {name: "gnd", pads: [["FJ1", "2"], ["FJ2", "A1"], ["FJ2", "A12"], ["FJ2", "B1"], ["FJ2", "B12"], ["FJ2", "S1"], ["FTP2", "1"], ["FU1", "3"], ["FU1", "7"], ["FU1", "8"], ["FC1", "2"], ["FU2", "1"], ["FR3", "2"], ["FC2", "2"], ["FC4", "2"], ["FC5", "2"], ["FD1", "2"], ["FU3", "1"], ["FR6", "2"], ["FC6", "2"], ["FC8", "2"], ["FC9", "2"], ["FD2", "2"], ["FJ6", "8"], ["FJ8", "8"], ["FSW1", "C"], ["FSW1", "S2"], ["FU8", "15"], ["FU8", "8"], ["FU8", "9"], ["FC24", "2"], ["FC25", "2"], ["FC26", "2"], ["FU9", "7"], ["FU9", "9"], ["FC27", "2"], ["FC28", "2"], ["FC30", "2"], ["FU10", "3"], ["FC31", "2"], ["FJ11", "1"], ["FQ1", "2"], ["FQ3", "2"]]},
+  {name: "vin", pads: [["FU1", "2"], ["FR1", "2"], ["FU2", "3"], ["FC2", "1"], ["FC4", "1"], ["FR4", "1"], ["FR19", "1"], ["FQ2", "1"], ["FQ2", "2"], ["FQ2", "3"]]},
+  {name: "v5", pads: [["FR2", "1"], ["FL1", "2"], ["FC5", "1"], ["FTP3", "1"], ["FD1", "1"], ["FU3", "3"], ["FC6", "1"], ["FC8", "1"], ["FR7", "1"], ["FJ8", "1"], ["FU9", "1"], ["FU9", "6"], ["FC27", "1"], ["FC28", "1"], ["FU10", "5"], ["FC31", "1"]]},
+  {name: "v3v3", pads: [["FU1", "4"], ["FC1", "1"], ["FR5", "1"], ["FL2", "2"], ["FC9", "1"], ["FTP4", "1"], ["FD2", "1"], ["FJ6", "1"], ["FU8", "3"], ["FU8", "4"], ["FC24", "1"], ["FC25", "1"]]},
+  {name: "pwr.pwr", pads: [["FJ1", "1"], ["FJ2", "A4"], ["FJ2", "A9"], ["FJ2", "B4"], ["FJ2", "B9"], ["FTP1", "1"], ["FU1", "1"], ["FR1", "1"], ["FU8", "2"]]},
+  {name: "usb.usb.dp", pads: [["FJ2", "A6"], ["FJ2", "B6"]]},
+  {name: "usb.usb.dm", pads: [["FJ2", "A7"], ["FJ2", "B7"]]},
+  {name: "usb.cc.cc1", pads: [["FJ2", "A5"], ["FU8", "10"], ["FU8", "11"]]},
+  {name: "usb.cc.cc2", pads: [["FJ2", "B5"], ["FU8", "1"], ["FU8", "14"]]},
+  {name: "vin_sense.i2c.scl", pads: [["FU1", "5"], ["FJ6", "6"], ["FU8", "6"]]},
+  {name: "vin_sense.i2c.sda", pads: [["FU1", "6"], ["FJ6", "7"], ["FU8", "7"]]},
+  {name: "reg_5v.ic.sw", pads: [["FU2", "2"], ["FC3", "2"], ["FL1", "1"]]},
+  {name: "reg_5v.ic.fb", pads: [["FU2", "4"], ["FR2", "2"], ["FR3", "1"]]},
+  {name: "reg_5v.ic.boot", pads: [["FU2", "6"], ["FC3", "1"]]},
+  {name: "reg_5v.ic.en", pads: [["FU2", "5"], ["FR4", "2"]]},
+  {name: "reg_3v3.ic.sw", pads: [["FU3", "2"], ["FC7", "2"], ["FL2", "1"]]},
+  {name: "reg_3v3.ic.fb", pads: [["FU3", "4"], ["FR5", "2"], ["FR6", "1"]]},
+  {name: "reg_3v3.ic.boot", pads: [["FU3", "6"], ["FC7", "1"]]},
+  {name: "reg_3v3.ic.en", pads: [["FU3", "5"], ["FR7", "2"]]},
+  {name: "control.pd_int", pads: [["FJ6", "5"], ["FU8", "5"]]},
+  {name: "control.spk", pads: [["FJ6", "4"], ["FR15", "1"]]},
+  {name: "control.drv", pads: [["FJ8", "3"], ["FQ1", "1"]]},
+  {name: "control.tach", pads: [["FJ8", "2"], ["FJ11", "3"]]},
+  {name: "control.pwm", pads: [["FJ6", "3"], ["FU10", "2"], ["FQ3", "1"]]},
+  {name: "control.npx_en", pads: [["FJ6", "2"], ["FU10", "1"]]},
+  {name: "control.enc_a", pads: [["FJ8", "5"], ["FSW1", "A"]]},
+  {name: "control.enc_b", pads: [["FJ8", "6"], ["FSW1", "B"]]},
+  {name: "control.enc_sw", pads: [["FJ8", "7"], ["FSW1", "S1"]]},
+  {name: "control.extra1", pads: [["FJ8", "4"]]},
+  {name: "pd.ic.vconn", pads: [["FU8", "12"], ["FU8", "13"]]},
+  {name: "spk_dac.output", pads: [["FR15", "2"], ["FC26", "1"], ["FC29", "2"]]},
+  {name: "spk_drv.spk.a", pads: [["FU9", "8"], ["FJ10", "1"]]},
+  {name: "spk_drv.spk.b", pads: [["FU9", "5"], ["FJ10", "2"]]},
+  {name: "spk_drv.ic.inp", pads: [["FU9", "4"], ["FR16", "2"]]},
+  {name: "spk_drv.ic.inn", pads: [["FU9", "3"], ["FR17", "2"]]},
+  {name: "spk_drv.inp_res.input", pads: [["FR16", "1"], ["FC29", "1"]]},
+  {name: "spk_drv.inn_res.input", pads: [["FR17", "1"], ["FC30", "1"]]},
+  {name: "npx_shift.output", pads: [["FU10", "4"], ["FR18", "1"]]},
+  {name: "npx_res.output", pads: [["FR18", "2"], ["FJ11", "4"], ["FQ3", "3"]]},
+  {name: "fan.pwr", pads: [["FJ11", "2"], ["FQ2", "5"]]},
+  {name: "fan_drv.pre.drain", pads: [["FQ1", "3"], ["FR19", "2"], ["FQ2", "4"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

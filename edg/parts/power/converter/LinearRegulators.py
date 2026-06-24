@@ -135,6 +135,71 @@ class Ldl1117(LinearRegulator):
             self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
+class Ams1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+    def __init__(self, output_voltage: RangeLike):
+        super().__init__()
+
+        # no recommended operating range given, though most parameters are spec'd to this range
+        self.assign(self.pwr_in.voltage_limits, (1.5, 12) * Volt)
+        self.assign(self.pwr_out.current_limits, (0, 0.9) * Amp)  # minimum rating, below the headline 1A spec
+        self.assign(self.actual_quiescent_current, (5, 11) * mAmp)
+        self.assign(self.actual_dropout, (1.1, 1.3) * Volt)  # typ to max
+
+        self.output_voltage = self.ArgParameter(output_voltage)
+        self.generator_param(self.output_voltage)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        parts = [
+            (Range(1.455, 1.545), "AMS1117-1.5", "C16172", False),
+            (Range(1.746, 1.854), "AMS1117-1.8", "C6185", False),
+            (Range(2.425, 2.575), "AMS1117-2.5", "C12087", False),
+            (Range(2.7645, 2.9344), "AMS1117-2.85", "C14791", False),
+            (Range(3.201, 3.399), "AMS1117-3.3", "C6186", True),
+            (Range(4.850, 5.150), "AMS1117-5.0", "C6187", True),
+        ]
+        suitable_parts = [part for part in parts if part[0] in self.get(self.output_voltage)]
+        assert suitable_parts, "no regulator with compatible output"
+        part_output_voltage, part_number, jlc_number, jlc_basic_part = suitable_parts[0]
+
+        self.assign(self.pwr_out.voltage_out, part_output_voltage * Volt)
+        self.footprint(
+            "U",
+            "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+            {
+                "1": self.gnd,
+                "2": self.pwr_out,
+                "3": self.pwr_in,
+            },
+            mfr="Advanced Monolithic Systems",
+            part=part_number,
+            datasheet="http://www.advanced-monolithic.com/pdf/ds1117.pdf",
+            pnp_rot=180,
+        )
+        self.assign(self.lcsc_part, jlc_number)
+        self.assign(self.actual_basic_part, jlc_basic_part)
+
+
+class Ams1117(LinearRegulator):
+    """15Vin, 1A fixed output low dropout linear regulators in SOT-223.
+    3.3 and 5.0v variants are JLC basic parts.
+    """
+
+    @override
+    def contents(self) -> None:
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.ic = imp.Block(Ams1117_Device(self.output_voltage))
+            self.in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
+            # note, a tantalum capacitor is recommended but there isn't a formal ESR spec
+            self.out_cap = imp.Block(DecouplingCapacitor(capacitance=22 * uFarad(tol=0.2)))
+
+            self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+            self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+
 class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
     def __init__(self, output_voltage: RangeLike):
         super().__init__()
@@ -696,7 +761,7 @@ class Tlv757p_Device(
             mfr="Texas Instruments",
             part=part_number,
             datasheet="https://www.ti.com/lit/ds/symlink/tlv757p.pdf",
-            pnp_rot=180,
+            pnp_rot=90,
         )
         self.assign(self.lcsc_part, lcsc)
         self.assign(self.actual_basic_part, False)

@@ -335,7 +335,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
         self,
         pull_resistance: RangeLike = 10 * kOhm(tol=0.05),
         amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
-        diode_drop: RangeLike = (0, 0.4) * Volt,
+        diode_drop: RangeLike = (0, 0.6) * Volt,
     ):
         super().__init__()
         self.pwr_in = self.Port(VoltageSink.empty(), [Input])

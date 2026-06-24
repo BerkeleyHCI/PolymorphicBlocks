@@ -38,6 +38,8 @@ class Net(NamedTuple):
 
 
 class Netlist(NamedTuple):
+    refdes_prefix: str
+    subboard: TransformUtil.Path
     blocks: List[NetBlock]
     nets: List[Net]
 
@@ -371,13 +373,6 @@ class NetlistTransform(BoardScopedTransform):
             key=lambda pair: path_ordering[pair[0].port_component(must_have_port=False)],
         )
 
-        board_refdes_prefix = self._design.get_value(("refdes_prefix",))
-        if board_refdes_prefix is not None:
-            assert isinstance(board_refdes_prefix, str)
-            net_prefix = board_refdes_prefix
-        else:
-            net_prefix = ""
-
         def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
             return bool(path.links) or any(
                 [block.startswith("(adapter)") or block.startswith("(bridge)") for block in path.blocks]
@@ -386,7 +381,7 @@ class NetlistTransform(BoardScopedTransform):
         netlist_footprints = [footprint for path, footprint in scope.footprints.items()]
         netlist_nets = [
             Net(
-                net_prefix + str(name),
+                str(name),
                 sorted(
                     list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
                     key=lambda pin: ((path_ordering[pin.block_path]), pin.pin_name),
@@ -397,7 +392,10 @@ class NetlistTransform(BoardScopedTransform):
         ]
         netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
 
-        return Netlist(netlist_footprints, netlist_nets)
+        board_refdes_prefix = self._design.get_value(("refdes_prefix",))
+        board_refdes_prefix = board_refdes_prefix if board_refdes_prefix is not None else ""
+        assert isinstance(board_refdes_prefix, str)
+        return Netlist(board_refdes_prefix, scope.path, netlist_footprints, netlist_nets)
 
     def run(self) -> Dict[TransformUtil.Path, Netlist]:
         self.transform_design(self._design.design)
