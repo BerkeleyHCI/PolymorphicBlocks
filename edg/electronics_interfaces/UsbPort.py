@@ -111,8 +111,6 @@ class UsbCcLink(Link):
     def contents(self) -> None:
         super().contents()
         # TODO perhaps enable crossover connections as optional layout optimization?
-        # TODO check both b and pull aren't simultaneously connected?
-        # TODO write protocol-level signal constraints?
         self.cc1 = self.connect(self.a.cc1, self.b.cc1)
         self.cc2 = self.connect(self.a.cc2, self.b.cc2)
 
@@ -120,7 +118,7 @@ class UsbCcLink(Link):
 class UsbCcPort(Port[UsbCcLink]):
     link_type = UsbCcLink
 
-    def __init__(self, pullup_capable: BoolLike = False) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
-        self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
+        self.cc1 = self.Port(Passive())
+        self.cc2 = self.Port(Passive())

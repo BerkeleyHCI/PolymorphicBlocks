@@ -40,7 +40,6 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self,
         voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
-        cc_pullup_capable: BoolLike = False,
     ) -> None:
         super().__init__()
         self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
@@ -49,7 +48,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.usb = self.Port(UsbHostPort(), optional=True)
         self.shield = self.Port(Ground(), optional=True)
 
-        self.cc = self.Port(UsbCcPort(pullup_capable=cc_pullup_capable), optional=True)
+        self.cc = self.Port(UsbCcPort(), optional=True)
 
     @override
     def contents(self) -> None:
@@ -183,9 +182,12 @@ class UsbCcPulldownResistor(InternalSubcircuit, Block):
     @override
     def contents(self) -> None:
         super().contents()
-        pdr_model = PulldownResistor(resistance=5.1 * kOhm(tol=0.01))
-        self.cc1 = self.Block(pdr_model).connected(self.gnd, self.cc.cc1)
-        self.cc2 = self.Block(pdr_model).connected(self.gnd, self.cc.cc2)
+        pdr_model = Resistor(resistance=5.1 * kOhm(tol=0.01))
+        self.cc1 = self.Block(pdr_model)
+        self.cc2 = self.Block(pdr_model)
+        self.connect(self.gnd.net, self.cc1.a, self.cc2.a)
+        self.connect(self.cc1.b, self.cc.cc1)
+        self.connect(self.cc2.b, self.cc.cc2)
 
 
 class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
