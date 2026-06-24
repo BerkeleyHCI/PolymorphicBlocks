@@ -1,3 +1,4 @@
+import warnings
 from itertools import chain
 from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable, Mapping, Iterable
 from typing_extensions import override
@@ -63,6 +64,11 @@ class BaseIoController(PinMappable, Block):
                 from .IoControllerInterfaceMixins import IoControllerCan
 
                 self._can_mixin = self.with_mixin(IoControllerCan())
+            warnings.warn(
+                f"can is now a mixin, use .with_mixin(IoControllerCan()).can mixin instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return self._can_mixin.can
         else:
             raise AttributeError(

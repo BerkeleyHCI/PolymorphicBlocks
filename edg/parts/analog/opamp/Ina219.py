@@ -1,6 +1,4 @@
-import warnings
-from typing import Any
-
+from deprecated import deprecated
 from typing_extensions import override
 
 from ....circuits import *
@@ -112,13 +110,12 @@ class Ina219(CurrentSensor, GeneratorBlock):
             self.connect(self.Rs.sense_in, self.ic.in_neg)
             self.connect(self.Rs.sense_out, self.ic.in_pos)
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "sense_pos":
-            warnings.warn(f"Use sense_pwr_in instead.", DeprecationWarning, stacklevel=2)
-            return self.sense_pwr_in
-        elif item == "sense_neg":
-            warnings.warn(f"Use sense_pwr_out instead.", DeprecationWarning, stacklevel=2)
-            return self.sense_pwr_out
-        else:
-            # ideally we'd use super().__getattr__(...), but that's not defined in base classes
-            raise AttributeError(item)
+    @property
+    @deprecated(f"replaced with sense_pwr_in")
+    def sense_pos(self) -> VoltageSink:
+        return self.sense_pwr_in
+
+    @property
+    @deprecated(f"replaced with sense_pwr_out")
+    def sense_neg(self) -> VoltageSource:
+        return self.sense_pwr_out

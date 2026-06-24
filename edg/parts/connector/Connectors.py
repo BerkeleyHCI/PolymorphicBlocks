@@ -1,6 +1,6 @@
-import warnings
 from typing import Any
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ...circuits import *
@@ -72,19 +72,6 @@ class LipoConnector(Connector, Battery):
 
     Connector type not specified, up to the user through a refinement."""
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "chg":
-            warnings.warn(
-                f"Use pwr instead. pwr is sink-capable (bidirectional) and chg is unnecessary.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
-
     def __init__(
         self,
         voltage: RangeLike = (2.5, 4.2) * Volt,
@@ -108,6 +95,11 @@ class LipoConnector(Connector, Battery):
         self.conn = self.Block(PassiveConnector()).connected({"1": self.gnd, "2": self.pwr})
 
         self.assign(self.actual_capacity, (500, 600) * mAmp)  # arbitrary
+
+    @property
+    @deprecated(f"chg is deprecated and unified with sink-capable (bidirectional) pwr")
+    def chg(self) -> VoltageSource:
+        return self.pwr
 
 
 class QwiicTarget(Connector):

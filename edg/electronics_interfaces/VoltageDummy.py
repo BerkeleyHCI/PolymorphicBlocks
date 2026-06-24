@@ -1,5 +1,4 @@
-import warnings
-from typing import Any
+from deprecated import deprecated
 
 from ..electronics_model import *
 from .DummyDevices import BaseDummyBlock
@@ -30,18 +29,10 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
         self.voltage_limits = self.Parameter(RangeExpr(self.io.link().voltage_limits))
         self.reverse_voltage = self.Parameter(RangeExpr(self.io.link().reverse_voltage))
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "pwr":
-            warnings.warn(
-                f"DummyVoltageSource.pwr is deprecated, use .io instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.io
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+    @property
+    @deprecated(f"DummyVoltageSource.pwr is deprecated, use .io instead.")
+    def pwr(self) -> VoltageSource:
+        return self.io
 
 
 class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
@@ -68,15 +59,7 @@ class DummyVoltageSink(BaseDummyBlock[VoltageLink]):
         self.voltage = self.Parameter(RangeExpr(self.io.link().voltage))
         self.current_limits = self.Parameter(RangeExpr(self.io.link().current_limits))
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "pwr":
-            warnings.warn(
-                f"DummyVoltageSink.pwr is deprecated, use .io instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.io
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+    @property
+    @deprecated(f"DummyVoltageSink.pwr is deprecated, use .io instead.")
+    def pwr(self) -> VoltageSink:
+        return self.io

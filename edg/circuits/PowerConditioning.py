@@ -1,6 +1,6 @@
-import warnings
-from typing import Optional, Any
+from typing import Optional
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..abstract_parts import *
@@ -80,25 +80,15 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
             self.connect(pwr_in.net, diode.anode)
             self.connect(self.pwr_out.net, diode.cathode)
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "pwr_in1":
-            warnings.warn(
-                f"Use pwr_ins.request(...) instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_ins.request("1")
-        elif item == "pwr_in2":
-            warnings.warn(
-                f"Use pwr_ins.request(...) instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_ins.request("2")
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+    @property
+    @deprecated(f"replaced with pwr_ins.request(...)")
+    def pwr_in1(self) -> VoltageSink:
+        return self.pwr_ins.request("1")
+
+    @property
+    @deprecated(f"replaced with pwr_ins.request(...)")
+    def pwr_in2(self) -> VoltageSink:
+        return self.pwr_ins.request("2")
 
 
 class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
@@ -235,26 +225,6 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
     """
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "chg_in":
-            warnings.warn(
-                f"Use pwr_out instead. pwr_out is sink-capable (bidirectional) and chg_in is unnecessary.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_out
-        elif item == "chg_out":
-            warnings.warn(
-                f"Use pwr_in instead. pwr_in is source-capable (bidirectional) and chg_out is unnecessary.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_in
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
-
     def __init__(
         self,
         r1_val: RangeLike = 100 * kOhm(tol=0.01),
@@ -324,6 +294,16 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
                 "gnd": Ground(),
             },
         )
+
+    @property
+    @deprecated(f"chg_in is deprecated and unified with sink-capable (bidirectional) pwr_out")
+    def chg_in(self) -> VoltageSource:
+        return self.pwr_out
+
+    @property
+    @deprecated(f"chg_out is deprecated and unified with source-capable (bidirectional) pwr_in")
+    def chg_out(self) -> VoltageSink:
+        return self.pwr_in
 
 
 class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from the multimater
