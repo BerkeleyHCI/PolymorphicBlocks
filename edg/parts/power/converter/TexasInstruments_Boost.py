@@ -286,6 +286,4 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                 ),
             )
 
-            self.require(
-                self.pwr_out.voltage.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage"
-            )
+            self.require(self.pwr_out.voltage.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage")

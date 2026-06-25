@@ -147,9 +147,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
             return self.gnd_model.io
 
     @deprecated_param_remap(("voltage_out", "voltage"))
-    def _generate_pwr_node(
-        self, voltage: RangeLike, current_limits: RangeLike
-    ) -> Union[VoltageSink, VoltageSource]:
+    def _generate_pwr_node(self, voltage: RangeLike, current_limits: RangeLike) -> Union[VoltageSink, VoltageSource]:
         """Helper function that returns a power node, either directly taking the pwr port if available,
         or generating an internal voltage node and optionally connecting it to pwr_out (if used).
 

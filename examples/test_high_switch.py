@@ -83,9 +83,7 @@ class CalSolPowerConnector(Connector, FootprintBlock):
         super().__init__()
 
         self.pwr = self.Port(
-            VoltageSource(
-                voltage=12 * Volt(tol=0.1), current_limits=(0, 3) * Amp  # TODO get actual limits from LVPDB?
-            )
+            VoltageSource(voltage=12 * Volt(tol=0.1), current_limits=(0, 3) * Amp)  # TODO get actual limits from LVPDB?
         )
         self.gnd = self.Port(Ground())
 

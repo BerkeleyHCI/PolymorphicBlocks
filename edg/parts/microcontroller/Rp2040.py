@@ -119,9 +119,7 @@ class Rp2040_Device(
         self.qspi_sd3 = self.Port(self._dio_std_model, optional=self._model)
 
         self.xosc = self.Port(
-            CrystalDriver(
-                frequency_limits=(1, 15) * MHertz, voltage=self.iovdd.link().voltage  # datasheet 2.15.2.2
-            ),
+            CrystalDriver(frequency_limits=(1, 15) * MHertz, voltage=self.iovdd.link().voltage),  # datasheet 2.15.2.2
             optional=True,
         )
 

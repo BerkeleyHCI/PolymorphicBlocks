@@ -16,9 +16,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.fixed_resistance = self.ArgParameter(fixed_resistance)
 
         self.input = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
-        self.output = self.Port(
-            AnalogSource(voltage=RangeExpr(), signal=RangeExpr(), impedance=RangeExpr()), [Output]
-        )
+        self.output = self.Port(AnalogSource(voltage=RangeExpr(), signal=RangeExpr(), impedance=RangeExpr()), [Output])
         self.gnd = self.Port(Ground(), [Common])
 
         # TODO deduplicate with ResistiveDivider class
