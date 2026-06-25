@@ -20,12 +20,12 @@ const SJ1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(0.209, 0.956), rotate: 0,
   id: 'SJ1'
 })
-// usb.cc_pull.cc1.res
+// usb.cc_pull.cc1
 const SR1 = board.add(R_0402_1005Metric, {
   translate: pt(0.495, 0.810), rotate: 0,
   id: 'SR1'
 })
-// usb.cc_pull.cc2.res
+// usb.cc_pull.cc2
 const SR2 = board.add(R_0402_1005Metric, {
   translate: pt(0.495, 0.886), rotate: 0,
   id: 'SR2'
@@ -145,12 +145,12 @@ const SU5 = board.add(Resonator_SMD_Murata_CSTxExxV_3Pin_3_0x1_1mm, {
   translate: pt(0.394, 0.428), rotate: 0,
   id: 'SU5'
 })
-// mcu.usb_res.dp.res
+// mcu.usb_res.dp
 const SR3 = board.add(R_0603_1608Metric, {
   translate: pt(0.562, 0.393), rotate: 0,
   id: 'SR3'
 })
-// mcu.usb_res.dm.res
+// mcu.usb_res.dm
 const SR4 = board.add(R_0603_1608Metric, {
   translate: pt(0.718, 0.393), rotate: 0,
   id: 'SR4'

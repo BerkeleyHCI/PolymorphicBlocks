@@ -25,12 +25,12 @@ const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(2.365, 0.932), rotate: 0,
   id: 'J1'
 })
-// data_usb.cc_pull.cc1.res
+// data_usb.cc_pull.cc1
 const R1 = board.add(R_0603_1608Metric, {
   translate: pt(2.213, 1.187), rotate: 0,
   id: 'R1'
 })
-// data_usb.cc_pull.cc2.res
+// data_usb.cc_pull.cc2
 const R2 = board.add(R_0603_1608Metric, {
   translate: pt(2.369, 1.187), rotate: 0,
   id: 'R2'
@@ -175,12 +175,12 @@ const C8 = board.add(C_0805_2012Metric, {
   translate: pt(0.732, 0.235), rotate: 0,
   id: 'C8'
 })
-// mcu.usb_res.dp.res
+// mcu.usb_res.dp
 const R6 = board.add(R_0603_1608Metric, {
   translate: pt(0.550, 0.342), rotate: 0,
   id: 'R6'
 })
-// mcu.usb_res.dm.res
+// mcu.usb_res.dm
 const R7 = board.add(R_0603_1608Metric, {
   translate: pt(0.706, 0.342), rotate: 0,
   id: 'R7'

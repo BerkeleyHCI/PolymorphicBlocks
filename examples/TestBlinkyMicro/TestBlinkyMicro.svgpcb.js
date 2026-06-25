@@ -5,12 +5,12 @@ const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(2.750, 0.165), rotate: 0,
   id: 'J1'
 })
-// usb.cc_pull.cc1.res
+// usb.cc_pull.cc1
 const R1 = board.add(R_0603_1608Metric, {
   translate: pt(2.598, 0.420), rotate: 0,
   id: 'R1'
 })
-// usb.cc_pull.cc2.res
+// usb.cc_pull.cc2
 const R2 = board.add(R_0603_1608Metric, {
   translate: pt(2.754, 0.420), rotate: 0,
   id: 'R2'
