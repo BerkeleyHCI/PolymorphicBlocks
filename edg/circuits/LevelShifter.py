@@ -51,12 +51,12 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
 
         if self.get(self.src_hint) == "lv":  # LV is source, HV model is incomplete
             lv_io_model = DigitalBidir(
-                voltage_out=self.lv_pwr.link().voltage,  # this is not driving, effectively only a pullup
+                voltage=self.lv_pwr.link().voltage,  # this is not driving, effectively only a pullup
                 output_thresholds=self.lv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             lv_io_model = DigitalBidir(
-                voltage_out=(
+                voltage=(
                     self.lv_pwr.link().voltage.lower(),
                     self.lv_pwr.link().voltage.upper().min(self.hv_io.link().voltage.upper()),
                 ),
@@ -68,12 +68,12 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
 
         if self.get(self.src_hint) == "hv":  # HV is source, LV model is incomplete
             hv_io_model = DigitalBidir(
-                voltage_out=self.hv_pwr.link().voltage,  # this is not driving, effectively only a pullup
+                voltage=self.hv_pwr.link().voltage,  # this is not driving, effectively only a pullup
                 output_thresholds=self.hv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             hv_io_model = DigitalBidir(
-                voltage_out=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
+                voltage=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
                 output_thresholds=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
             )
 

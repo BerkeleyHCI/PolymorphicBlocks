@@ -32,7 +32,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
         self.signal_in = self.Port(AnalogSink(), [Input])
         self.signal_out = self.Port(
             AnalogSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                voltage=self.signal_in.link().voltage.intersect(self.clamp_target),
                 signal=self.signal_in.link().signal,
                 impedance=RangeExpr(),
             ),
@@ -92,7 +92,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
         self.signal_in = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.signal_out = self.Port(
             DigitalSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                voltage=self.signal_in.link().voltage.intersect(self.clamp_target),
                 output_thresholds=self.signal_in.link().output_thresholds,
             ),
             [Output],

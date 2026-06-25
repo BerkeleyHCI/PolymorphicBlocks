@@ -74,7 +74,7 @@ class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
             VoltageSink(
                 voltage_limits=voltage_limits,
                 current_draw=current_draw,
-                reverse_voltage_out=reverse_voltage,
+                reverse_voltage=reverse_voltage,
                 reverse_current_limits=reverse_current_limits,
             )
         )
@@ -147,7 +147,7 @@ class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
         self,
         voltage_limits: RangeLike = RangeExpr.ALL,
         current_draw: RangeLike = RangeExpr.ZERO,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         input_thresholds: RangeLike = RangeExpr.EMPTY,
         output_thresholds: RangeLike = RangeExpr.ALL,
@@ -164,7 +164,7 @@ class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
             DigitalBidir(
                 voltage_limits=voltage_limits,
                 current_draw=current_draw,
-                voltage_out=voltage_out,
+                voltage=voltage,
                 current_limits=current_limits,
                 input_thresholds=input_thresholds,
                 output_thresholds=output_thresholds,

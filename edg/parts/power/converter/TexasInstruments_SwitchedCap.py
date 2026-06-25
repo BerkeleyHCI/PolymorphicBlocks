@@ -15,7 +15,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         self.capn = self.Port(Passive())
         self.capp = self.Port(Passive())
-        self.out = self.Port(VoltageSource(voltage_out=-self.vp.link().voltage, current_limits=(0, 40) * mAmp))
+        self.out = self.Port(VoltageSource(voltage=-self.vp.link().voltage, current_limits=(0, 40) * mAmp))
         self.assign(self.vp.current_draw, (1, 500) * uAmp + self.out.link().current_draw)
 
         # self.sd = self.Port(DigitalSink.from_supply(
@@ -72,7 +72,7 @@ class Lm2664(PowerConditioner, Block):
                     2 / self.ic.FREQUENCY.lower / (self.output_resistance_limit - 2 * self.ic.SWITCH_RESISTANCE.upper),
                     float("inf"),
                 ),
-                voltage=self.pwr_out.voltage_out,
+                voltage=self.pwr_out.voltage,
             )
         )
         self.connect(self.cf.neg, self.ic.capn)

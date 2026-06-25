@@ -168,9 +168,7 @@ class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )  # no separate current draw given, lumped w/ Vbat
 
         self.vreg = self.Port(
-            VoltageSource(  # may be a LDO output or DC-DC input
-                voltage_out=1.55 * Volt(tol=0)  # no tolerance specified
-            )
+            VoltageSource(voltage=1.55 * Volt(tol=0))  # may be a LDO output or DC-DC input  # no tolerance specified
         )
         self.dcc_sw = self.Port(Passive())
 
@@ -179,7 +177,7 @@ class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.rfi_p = self.Port(Passive())
         self.rfi_n = self.Port(Passive())
         self.rfo = self.Port(Passive())
-        self.vr_pa = self.Port(VoltageSource(voltage_out=(0, 3.1) * Volt))  # from power supply scheme figure
+        self.vr_pa = self.Port(VoltageSource(voltage=(0, 3.1) * Volt))  # from power supply scheme figure
 
         dio_model = DigitalBidir.from_supply(
             self.gnd,

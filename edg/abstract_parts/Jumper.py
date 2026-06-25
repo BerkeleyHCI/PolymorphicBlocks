@@ -33,10 +33,10 @@ class GroundJumper(TypedJumper, Block):
 class VoltageJumper(TypedJumper, Block):
     def __init__(self) -> None:
         super().__init__()
-        self.input = self.Port(VoltageSink(current_draw=RangeExpr(), reverse_voltage_out=RangeExpr()), [Input])
+        self.input = self.Port(VoltageSink(current_draw=RangeExpr(), reverse_voltage=RangeExpr()), [Input])
         self.output = self.Port(
             VoltageSource(
-                voltage_out=self.input.link().voltage, reverse_current_draw=self.input.link().reverse_current_draw
+                voltage=self.input.link().voltage, reverse_current_draw=self.input.link().reverse_current_draw
             ),
             [Output],
         )
@@ -46,7 +46,7 @@ class VoltageJumper(TypedJumper, Block):
         super().contents()
         self.device = self.Block(Jumper())
         self.assign(self.input.current_draw, self.output.link().current_draw)
-        self.assign(self.input.reverse_voltage_out, self.output.link().reverse_voltage)
+        self.assign(self.input.reverse_voltage, self.output.link().reverse_voltage)
         self.connect(self.input.net, self.device.a)
         self.connect(self.output.net, self.device.b)
 
@@ -56,7 +56,7 @@ class DigitalJumper(TypedJumper, Block):
         super().__init__()
         self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
-            DigitalSource(voltage_out=self.input.link().voltage, output_thresholds=self.input.link().output_thresholds),
+            DigitalSource(voltage=self.input.link().voltage, output_thresholds=self.input.link().output_thresholds),
             [Output],
         )
 

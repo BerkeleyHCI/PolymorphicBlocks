@@ -20,7 +20,7 @@ class ServoFeedbackConnector(Connector, Block):
         self.pwm = self.Port(DigitalSink(), [Input])  # no specs given
         self.fb = self.Port(
             AnalogSource(  # no specs given
-                voltage_out=(0.9, 2.1)
+                voltage=(0.9, 2.1)
                 * Volt,  # from https://www.pololu.com/blog/814/new-products-special-servos-with-position-feedback
                 signal=(0.9, 2.1) * Volt,
             )

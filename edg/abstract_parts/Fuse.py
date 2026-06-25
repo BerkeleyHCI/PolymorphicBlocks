@@ -89,7 +89,7 @@ class SeriesPowerFuse(Protection):
             [Power, Input],
         )
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()),  # ignore voltage drop
+            VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=RangeExpr()),  # ignore voltage drop
             [Output],
         )
 

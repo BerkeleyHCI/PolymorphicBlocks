@@ -31,7 +31,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.hb = self.Port(
             VoltageSource(
-                voltage_out=self.hs.link().voltage + self.vdd.link().voltage,
+                voltage=self.hs.link().voltage + self.vdd.link().voltage,
             )
         )
         self.ho = self.Port(

@@ -18,7 +18,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
         self.pwr_in_diode = self.Port(VoltageSink(current_draw=RangeExpr()))  # low-priority source
         self.pwr_out = self.Port(
             VoltageSource(  # use the spec voltage drop to avoid circular dependencies downstream
-                voltage_out=self.pwr_in.link().voltage.hull(self.pwr_in_diode.link().voltage - voltage_drop),
+                voltage=self.pwr_in.link().voltage.hull(self.pwr_in_diode.link().voltage - voltage_drop),
             )
         )
 
@@ -49,7 +49,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
         self.voltage_drop = self.ArgParameter(voltage_drop)
 
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=RangeExpr()))
         self.generator_param(self.pwr_ins.requested())
 
     @override
@@ -58,7 +58,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
 
         input_hull = self.pwr_ins.map_extract(lambda pwr_in: pwr_in.link().voltage).hull()
         # use the spec voltage drop to avoid circular dependencies downstream
-        self.assign(self.pwr_out.voltage_out, input_hull - self.voltage_drop)
+        self.assign(self.pwr_out.voltage, input_hull - self.voltage_drop)
 
         requested = self.get(self.pwr_ins.requested())
         assert len(requested) > 0, "power inputs required"
@@ -69,7 +69,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
             pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_draw), name)
             self.diodes[name] = diode = self.Block(
                 Diode(
-                    reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
+                    reverse_voltage=(0, self.pwr_out.voltage.upper() - pwr_in.link().voltage.lower()),
                     current=self.pwr_out.link().current_draw,
                     voltage_drop=self.voltage_drop,
                 )
@@ -138,7 +138,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
                 "pwr_hi": VoltageSink(current_draw=output_current_draw),
                 "pwr_lo": VoltageSink(current_draw=output_current_draw),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_lo.link().voltage.hull(
+                    voltage=self.pwr_lo.link().voltage.hull(
                         # use the spec voltage drop since using the actual voltage drop causes a circular dependency
                         # (where current depends on voltage, but the diode voltage drop depends on the diode selection
                         # which depends on the current through)
@@ -205,7 +205,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
                     current_draw=output_current_draw,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
+                    voltage=self.pwr_in.link().voltage,
                 ),
                 "gnd": Ground(),
             },
@@ -280,11 +280,11 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
             conversions={
                 "pwr_in": VoltageSink(
                     current_draw=batt_current,
-                    reverse_voltage_out=self.pwr_out.link().reverse_voltage,
+                    reverse_voltage=self.pwr_out.link().reverse_voltage,
                     reverse_current_limits=RangeExpr.ALL,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=batt_voltage,
+                    voltage=batt_voltage,
                     reverse_voltage_limits=self.pwr_in.link().reverse_voltage_limits,
                     reverse_current_draw=self.pwr_in.link().reverse_current_draw,
                 ),
@@ -384,13 +384,13 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                     current_draw=self.pwr_out.link().current_draw,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
+                    voltage=self.pwr_in.link().voltage,
                 ),
                 "control": DigitalSink(),  # TODO more modeling here?
                 "gnd": Ground(),
                 "btn_out": DigitalSource.low_from_supply(self.gnd),
                 "btn_in": DigitalBidir(
-                    voltage_out=self.gnd.link().voltage,
+                    voltage=self.gnd.link().voltage,
                     output_thresholds=(self.gnd.link().voltage.upper(), float("inf")),
                     pullup_capable=True,
                 ),

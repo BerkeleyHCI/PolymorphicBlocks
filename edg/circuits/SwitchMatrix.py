@@ -27,7 +27,7 @@ class DiodeSwitchCell(SwitchCell, InternalBlock):
 
         self.col.init_from(
             DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
-                voltage_out=self.row.link().voltage.lower()
+                voltage=self.row.link().voltage.lower()
                 + self.voltage_drop,  # use spec to avoid circular dependency
                 output_thresholds=(self.row.link().voltage + self.voltage_drop).hull(float("inf")),
                 low_driver=True,

@@ -17,19 +17,19 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.vccd = self.Port(
             VoltageSource(  # is an output since VREGIN is +5v
-                voltage_out=(3.0, 3.6) * Volt,  # not specified, inferred from limits of connected inputs
+                voltage=(3.0, 3.6) * Volt,  # not specified, inferred from limits of connected inputs
                 current_limits=(0, 62) * mAmp,  # not specified, inferred from draw of connected inputs + EEPROM
             )
         )
         self.vcccore = self.Port(
             VoltageSource(  # decouple with 0.1uF cap, recommended 1.62-1.98v
-                voltage_out=(1.62, 1.98) * Volt,  # assumed from Vcore limits
+                voltage=(1.62, 1.98) * Volt,  # assumed from Vcore limits
                 current_limits=(0, 0) * mAmp,  # not specified, external sourcing disallowed
             )
         )
         self.vcca = self.Port(
             VoltageSource(  # 1.8v output, decouple with 0.1uF cap
-                voltage_out=(1.62, 1.98) * Volt,  # assumed from Vcore limits
+                voltage=(1.62, 1.98) * Volt,  # assumed from Vcore limits
             )
         )
 
@@ -52,7 +52,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
 
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=12 * MHertz(tol=30e-6), voltage_out=self.vccd.link().voltage)
+            CrystalDriver(frequency_limits=12 * MHertz(tol=30e-6), voltage=self.vccd.link().voltage)
         )  # assumed
         self.ref = self.Port(AnalogSource.from_supply(self.gnd, self.vcca))  # assumed, connect 12k 1% resistor to GND
         self.usb = self.Port(UsbDevicePort())

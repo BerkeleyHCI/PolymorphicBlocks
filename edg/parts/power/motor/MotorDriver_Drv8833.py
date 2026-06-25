@@ -11,13 +11,13 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.gnd = self.Port(Ground())
         self.vint = self.Port(
             VoltageSource(  # internal supply bypass
-                voltage_out=(0, 6.3) * Volt,  # inferred from capacitor rating, actual voltage likely lower
+                voltage=(0, 6.3) * Volt,  # inferred from capacitor rating, actual voltage likely lower
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
         self.vcp = self.Port(
             VoltageSource(  # assumed charge pump is 2x Vm
-                voltage_out=(self.vm.link().voltage - self.gnd.link().voltage) * 2 + self.gnd.link().voltage,
+                voltage=(self.vm.link().voltage - self.gnd.link().voltage) * 2 + self.gnd.link().voltage,
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )

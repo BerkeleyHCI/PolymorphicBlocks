@@ -11,7 +11,7 @@ from ....abstract_parts.IdealIoController import IdealIoController
 class OledI2cTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),
@@ -40,7 +40,7 @@ class OledI2cTest(DesignTop):
 class OledSpiTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),

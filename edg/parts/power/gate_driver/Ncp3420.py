@@ -115,7 +115,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
                 )
                 self.connect(
                     self.boot.cathode.adapt_to(
-                        VoltageSource(voltage_out=self.high_gnd.link().voltage + self.pwr.link().voltage)
+                        VoltageSource(voltage=self.high_gnd.link().voltage + self.pwr.link().voltage)
                     ),
                     self.ic.bst,
                 )

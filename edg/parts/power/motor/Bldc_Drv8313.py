@@ -19,13 +19,13 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.v3p3 = self.Port(
             VoltageSource(  # internal regulator, bypass with 6.3v, 0.47uF capacitor
-                voltage_out=(3.1, 3.52) * Volt,  # Table 6.5 V3P3 voltage
+                voltage=(3.1, 3.52) * Volt,  # Table 6.5 V3P3 voltage
                 current_limits=(0, 10) * mAmp,  # Table 6.3 max V3P3 load current
             )
         )
         self.vcp = self.Port(
             VoltageSource(
-                voltage_out=self.vm.link().voltage + 12 * Volt(tol=0.2),  # assumed, from Vcp abs max ratings
+                voltage=self.vm.link().voltage + 12 * Volt(tol=0.2),  # assumed, from Vcp abs max ratings
                 current_limits=0 * Amp(tol=0),
             )
         )  # charge pump, 16V 0.1uF capacitor to Vm

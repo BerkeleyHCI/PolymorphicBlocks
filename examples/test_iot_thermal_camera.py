@@ -283,8 +283,8 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.vdd = self.Port(VoltageSink(voltage_limits=(2.97, 3.63) * Volt))
 
-        self.v1v20 = self.Port(VoltageSource(voltage_out=1.2 * Volt(tol=0), current_limits=0 * Amp(tol=0)))
-        self.tocap = self.Port(VoltageSource(voltage_out=self.avdd.link().voltage))  # assumed, not documented
+        self.v1v20 = self.Port(VoltageSource(voltage=1.2 * Volt(tol=0), current_limits=0 * Amp(tol=0)))
+        self.tocap = self.Port(VoltageSource(voltage=self.avdd.link().voltage))  # assumed, not documented
         self.exres1 = self.Port(AnalogSource.from_supply(self.gnd, self.avdd))  # assumed, not documented
 
         self.crystal = self.Port(CrystalDriver(frequency_limits=25 * MHertz(tol=30e-6)))  # TODO also support CLKIN
@@ -558,7 +558,7 @@ class Tps2378(Interface, GeneratorBlock):
         self.connect(
             self.poe.pos.adapt_to(
                 VoltageSource(
-                    voltage_out=(POE_VOUT_MIN, POE_VOUT_MAX) * Volt, current_limits=(0, output_power_max / POE_VOUT_MAX)
+                    voltage=(POE_VOUT_MIN, POE_VOUT_MAX) * Volt, current_limits=(0, output_power_max / POE_VOUT_MAX)
                 )
             ),
             self.ic.vdd,

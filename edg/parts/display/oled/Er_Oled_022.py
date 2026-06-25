@@ -39,7 +39,7 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
         self.vcomh = self.Port(
             VoltageSource(
-                voltage_out=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
+                voltage=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
             )
         )
 

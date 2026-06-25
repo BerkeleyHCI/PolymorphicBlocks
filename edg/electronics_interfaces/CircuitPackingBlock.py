@@ -43,7 +43,7 @@ class PackedGround(GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
         self.gnd_ins = self.Port(Vector(Ground.empty()))
-        self.gnd_out = self.Port(GroundReference(voltage_out=RangeExpr()))
+        self.gnd_out = self.Port(GroundReference(voltage=RangeExpr()))
         self.generator_param(self.gnd_ins.requested())
 
     @override
@@ -56,7 +56,7 @@ class PackedGround(GeneratorBlock):
             in_port = self.gnd_ins.append_elt(Ground(), in_request)
             self.connect(in_port.net, self.packed.elts.request(in_request))
         self.connect(self.packed.merged, self.gnd_out.net)
-        self.assign(self.gnd_out.voltage_out, self.gnd_ins.hull(lambda x: x.link().voltage))
+        self.assign(self.gnd_out.voltage, self.gnd_ins.hull(lambda x: x.link().voltage))
 
 
 class PackedVoltageSource(GeneratorBlock):
@@ -67,7 +67,7 @@ class PackedVoltageSource(GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=RangeExpr()))
         self.generator_param(self.pwr_ins.requested())
 
     @override
@@ -83,4 +83,4 @@ class PackedVoltageSource(GeneratorBlock):
             )
             self.connect(in_port.net, self.packed.elts.request(in_request))
         self.connect(self.packed.merged, self.pwr_out.net)
-        self.assign(self.pwr_out.voltage_out, self.pwr_ins.hull(lambda x: x.link().voltage))
+        self.assign(self.pwr_out.voltage, self.pwr_ins.hull(lambda x: x.link().voltage))

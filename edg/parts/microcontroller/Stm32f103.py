@@ -82,10 +82,10 @@ class Stm32f103_Device(
 
         # TODO need to pass through to pin mapper
         # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-        #                                      voltage_out=self.pwr.link().voltage),
+        #                                      voltage=self.pwr.link().voltage),
         #                        optional=True)  # TODO other specs from Table 23
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=(4, 16) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(4, 16) * MHertz, voltage=self.pwr.link().voltage), optional=True
         )  # Table 22
 
         self.swd = self.Port(SwdTargetPort.empty())

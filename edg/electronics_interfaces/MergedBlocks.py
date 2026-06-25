@@ -13,7 +13,7 @@ class MergedVoltageSource(DummyDevice, GeneratorBlock):
         super().__init__()
 
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=RangeExpr()))
         self.generator_param(self.pwr_ins.requested())
 
     @override
@@ -24,7 +24,7 @@ class MergedVoltageSource(DummyDevice, GeneratorBlock):
             elt_port = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_draw), in_request)
             self.connect(self.pwr_out.net, elt_port.net)
 
-        self.assign(self.pwr_out.voltage_out, self.pwr_ins.hull(lambda x: x.link().voltage))
+        self.assign(self.pwr_out.voltage, self.pwr_ins.hull(lambda x: x.link().voltage))
 
     def connected_from(self, *pwr_ins: Port[VoltageLink]) -> "MergedVoltageSource":
         for pwr_in in pwr_ins:
@@ -39,7 +39,7 @@ class MergedDigitalSource(DummyDevice, GeneratorBlock):
         self.ins = self.Port(Vector(DigitalSink.empty()))
         self.out = self.Port(
             DigitalSource(
-                voltage_out=RangeExpr(),
+                voltage=RangeExpr(),
                 output_thresholds=RangeExpr(),
                 pullup_capable=BoolExpr(),
                 pulldown_capable=BoolExpr(),
@@ -55,7 +55,7 @@ class MergedDigitalSource(DummyDevice, GeneratorBlock):
             elt_port = self.ins.append_elt(DigitalSink(current_draw=self.out.link().current_draw), in_request)
             self.connect(self.out.net, elt_port.net)
 
-        self.assign(self.out.voltage_out, self.ins.hull(lambda x: x.link().voltage))
+        self.assign(self.out.voltage, self.ins.hull(lambda x: x.link().voltage))
         self.assign(self.out.output_thresholds, self.ins.intersection(lambda x: x.link().output_thresholds))
         self.assign(self.out.pullup_capable, self.ins.any(lambda x: x.link().pullup_capable))
         self.assign(self.out.pulldown_capable, self.ins.any(lambda x: x.link().pulldown_capable))
@@ -77,7 +77,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, GeneratorBlock):
 
     def __init__(self) -> None:
         super().__init__()
-        self.output = self.Port(AnalogSource(voltage_out=RangeExpr(), signal=RangeExpr(), impedance=RangeExpr()))
+        self.output = self.Port(AnalogSource(voltage=RangeExpr(), signal=RangeExpr(), impedance=RangeExpr()))
         self.inputs = self.Port(Vector(AnalogSink.empty()))
         self.generator_param(self.inputs.requested())
 
@@ -92,7 +92,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, GeneratorBlock):
             )
             self.connect(self.output.net, elt_port.net)
 
-        self.assign(self.output.voltage_out, self.inputs.hull(lambda x: x.link().voltage))
+        self.assign(self.output.voltage, self.inputs.hull(lambda x: x.link().voltage))
         self.assign(self.output.signal, self.inputs.hull(lambda x: x.link().signal))
         self.assign(
             self.output.impedance,  # covering cases of any or all sources driving

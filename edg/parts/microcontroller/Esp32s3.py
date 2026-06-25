@@ -358,7 +358,7 @@ class Freenove_Esp32s3_Wroom(
         super().__init__(**kwargs)
 
         self.vusb_out.init_from(
-            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+            VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
         self.generator_param(
@@ -385,7 +385,7 @@ class Freenove_Esp32s3_Wroom(
 
         self.connect(
             self._generate_pwr_node(
-                voltage_out=3.3 * Volt(tol=0.05),
+                voltage=3.3 * Volt(tol=0.05),
                 current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
             ),
             self.model.pwr,

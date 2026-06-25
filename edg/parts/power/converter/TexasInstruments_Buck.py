@@ -11,12 +11,12 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr_in = self.Port(VoltageSink(voltage_limits=(4.5, 17) * Volt, current_draw=RangeExpr()), [Power])
-        self.sw = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
+        self.sw = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(8000, float("inf")) * kOhm))  # based on input current spec
         self.vbst = self.Port(
             VoltageSink(
                 voltage_limits=(0, 23) * Volt,
-                reverse_voltage_out=(3.6, 6) * Volt,  # assumed from UVLO to BST-SW abs max
+                reverse_voltage=(3.6, 6) * Volt,  # assumed from UVLO to BST-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -112,7 +112,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.sw = self.Port(
             VoltageSource(
-                voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage),
+                voltage=self.pwr_in.link().voltage.hull(self.gnd.link().voltage),
                 current_limits=(0, 2) * Amp,  # most conservative figures, low-side limited. TODO: better ones?
             )
         )  # internal switch specs not defined, only bulk current limit defined
@@ -122,7 +122,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.boot = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.3, 7) * Volt,
-                reverse_voltage_out=(4.5, 7) * Volt,  # assumed from Vin,min to BST-SW abs max
+                reverse_voltage=(4.5, 7) * Volt,  # assumed from Vin,min to BST-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -230,12 +230,12 @@ class Lmr38020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.vin = self.Port(VoltageSink(voltage_limits=(4.2, 80) * Volt, current_draw=RangeExpr()), [Power])
-        self.sw = self.Port(VoltageSource(voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage)))
+        self.sw = self.Port(VoltageSource(voltage=self.vin.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(10, float("inf")) * MOhm))  # assumed given RFbb maximum spec
         self.boot = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.3, 5.5) * Volt,
-                reverse_voltage_out=(3.8, 5.5) * Volt,  # assumed from UVLO to BOOT-SW abs max
+                reverse_voltage=(3.8, 5.5) * Volt,  # assumed from UVLO to BOOT-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )

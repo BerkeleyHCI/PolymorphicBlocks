@@ -65,7 +65,7 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
 
         self.assign(self.actual_frequency, part_frequency)
         self.assign(self.actual_current_limit, (0, part_current.lower))
-        self.vout.init_from(VoltageSource(voltage_out=part_voltage, current_limits=self.sw.link().current_limits))
+        self.vout.init_from(VoltageSource(voltage=part_voltage, current_limits=self.sw.link().current_limits))
 
         self.footprint(
             "U",
@@ -105,7 +105,7 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
             self.power_path = imp.Block(
                 BoostConverterPowerPath(
                     self.pwr_in.link().voltage,
-                    self.ic.vout.voltage_out,
+                    self.ic.vout.voltage,
                     self.actual_frequency,
                     self.pwr_out.link().current_draw,
                     self.ic.actual_current_limit,

@@ -21,7 +21,7 @@ class IronConnector(Connector, Block):
         self.pwr = self.Port(VoltageSink(current_draw=current_draw))
         self.thermocouple = self.Port(
             AnalogSource(
-                voltage_out=self.gnd.link().voltage + (0, 14.3) * mVolt,
+                voltage=self.gnd.link().voltage + (0, 14.3) * mVolt,
                 signal=self.gnd.link().voltage + (0, 14.3) * mVolt,  # up to ~350 C
             ),
             optional=True,
@@ -50,7 +50,7 @@ class IotIron(JlcBoardTop):
         super().contents()
 
         # assume minimum power input of 12v from PD, you probably don't want a 5v USB 15W soldering iron
-        self.usb = self.Block(UsbCReceptacle(voltage_out=(12, 20) * Volt, current_limits=(0, 5) * Amp))
+        self.usb = self.Block(UsbCReceptacle(voltage=(12, 20) * Volt, current_limits=(0, 5) * Amp))
 
         self.vusb = self.connect(self.usb.pwr)
         self.gnd = self.connect(self.usb.gnd)

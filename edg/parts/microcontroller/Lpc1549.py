@@ -48,11 +48,11 @@ class Lpc1549Base_Device(
         # Crystals from table 15, 32, 33
         # TODO Table 32, model crystal load capacitance and series resistance ratings
         self.xtal = self.Port(
-            CrystalDriver(frequency_limits=(1, 25) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(1, 25) * MHertz, voltage=self.pwr.link().voltage), optional=True
         )
         # Assumed from "32kHz crystal" in 14.5
         self.xtal_rtc = self.Port(
-            CrystalDriver(frequency_limits=(32, 33) * kHertz, voltage_out=self.pwr.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(32, 33) * kHertz, voltage=self.pwr.link().voltage), optional=True
         )
 
         self.swd = self.Port(SwdTargetPort.empty())

@@ -36,7 +36,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
         output_swing = self.pwr_out.link().current_draw * self.sense.actual_resistance * self.amp.actual_ratio
         self.force_signal = self.Block(ForcedAnalogSignal(output_swing + self.ref.link().signal))
         self.connect(self.amp.output, self.force_signal.signal_in)
-        self.connect(self.force_signal.signal, self.out)
+        self.connect(self.force_signal.signal_out, self.out)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:

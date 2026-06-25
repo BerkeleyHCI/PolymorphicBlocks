@@ -33,11 +33,11 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         )
         self.vcomh = self.Port(
             VoltageSource(
-                voltage_out=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
+                voltage=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
             )
         )
         self.vdd = self.Port(
-            VoltageSource(voltage_out=(2.4, 2.6) * Volt, current_limits=0 * mAmp(tol=0))  # only for external capacitor
+            VoltageSource(voltage=(2.4, 2.6) * Volt, current_limits=0 * mAmp(tol=0))  # only for external capacitor
         )
         self.vci = self.Port(
             VoltageSink(voltage_limits=(2.4, 3.5) * Volt, current_draw=(20, 300) * uAmp)  # typ sleep to max operating

@@ -56,7 +56,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         super().contents()
 
         self.assign(self.actual_frequency, (1.1, 1.9) * MHertz)
-        self.require(self.pwr_out.voltage_out.within((1.33, 29) * Volt))
+        self.require(self.pwr_out.voltage.within((1.33, 29) * Volt))
 
         with self.implicit_connect(
             ImplicitConnect(self.pwr_in, [Power]),
@@ -90,7 +90,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
             self.rect = self.Block(
                 Diode(
-                    reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
+                    reverse_voltage=(0, self.pwr_out.voltage.upper()),
                     current=self.pwr_out.link().current_draw,
                     voltage_drop=(0, 0.4) * Volt,
                     reverse_recovery_time=(0, 500) * nSecond,  # guess from Digikey's classification for "fast recovery"
@@ -101,7 +101,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                 self.pwr_out,
                 self.rect.cathode.adapt_to(
                     VoltageSource(
-                        voltage_out=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
+                        voltage=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
                     )
                 ),
             )

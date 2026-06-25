@@ -76,7 +76,7 @@ class Rp2040_Device(
         )
         self.vreg_vout = self.Port(
             VoltageSource(  # actually adjustable, section 2.10.3
-                voltage_out=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
+                voltage=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
                 current_limits=(0, 100) * mAmp,  # Table 1, max current
             )
         )
@@ -120,7 +120,7 @@ class Rp2040_Device(
 
         self.xosc = self.Port(
             CrystalDriver(
-                frequency_limits=(1, 15) * MHertz, voltage_out=self.iovdd.link().voltage  # datasheet 2.15.2.2
+                frequency_limits=(1, 15) * MHertz, voltage=self.iovdd.link().voltage  # datasheet 2.15.2.2
             ),
             optional=True,
         )
@@ -464,7 +464,7 @@ class Xiao_Rp2040(
             )
         )
         self.vusb_out.init_from(
-            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+            VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
         self.model = self.Block(
@@ -480,7 +480,7 @@ class Xiao_Rp2040(
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         self.connect(
             self._generate_pwr_node(
-                voltage_out=3.3 * Volt(tol=0.05),
+                voltage=3.3 * Volt(tol=0.05),
                 current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
             ),
             model_pwr,

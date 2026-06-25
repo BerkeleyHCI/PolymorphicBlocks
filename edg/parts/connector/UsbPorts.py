@@ -1,6 +1,7 @@
 from typing_extensions import override
 
 from ...circuits import *
+from ...util import deprecated_param_remap
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
@@ -36,13 +37,14 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
     up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
 
+    @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
         self,
-        voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
+        voltage: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
     ) -> None:
         super().__init__()
-        self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
+        self.pwr = self.Port(VoltageSource(voltage=voltage, current_limits=current_limits), optional=True)
         self.gnd = self.Port(Ground())
 
         self.usb = self.Port(UsbHostPort(), optional=True)
@@ -81,14 +83,15 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
     """USB Type-C Receptacle that automatically generates the CC resistors if CC is not connected."""
 
+    @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
         self,
-        voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
+        voltage: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
     ) -> None:
         super().__init__()
 
-        self.conn = self.Block(UsbCReceptacle_Device(voltage_out=voltage_out, current_limits=current_limits))
+        self.conn = self.Block(UsbCReceptacle_Device(voltage=voltage, current_limits=current_limits))
         self.connect(self.pwr, self.conn.pwr)
         self.connect(self.gnd, self.conn.gnd)
         self.connect(self.usb, self.conn.usb)
@@ -108,7 +111,7 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
             (self.cc_pull,), _ = self.chain(self.conn.cc, self.Block(UsbCcPulldownResistor()))
             self.connect(self.cc_pull.gnd, self.gnd)
             self.require(
-                self.pwr.voltage_out == UsbConnector.USB2_VOLTAGE_RANGE,
+                self.pwr.voltage == UsbConnector.USB2_VOLTAGE_RANGE,
                 "when CC not connected, port restricted to USB 2.0 voltage",
             )
             # note that the DFP (power source) can provide the max current, however the UFP (device)
@@ -125,7 +128,7 @@ class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.pwr.init_from(VoltageSource(voltage_out=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
+        self.pwr.init_from(VoltageSource(voltage=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
         self.gnd.init_from(Ground())
         self.usb.init_from(UsbHostPort())
 
@@ -149,7 +152,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.pwr.init_from(VoltageSource(voltage_out=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
+        self.pwr.init_from(VoltageSource(voltage=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
         self.gnd.init_from(Ground())
         self.usb.init_from(UsbHostPort())
 

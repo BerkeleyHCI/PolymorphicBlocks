@@ -78,7 +78,7 @@ class AnalogLowPassRc(DigitalFilter, Block):
         super().__init__()
         self.input = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
-            AnalogSource(voltage_out=self.input.link().voltage, signal=self.input.link().signal), [Output]
+            AnalogSource(voltage=self.input.link().voltage, signal=self.input.link().signal), [Output]
         )
         self.assign(self.input.current_draw, self.output.link().current_draw)
 
@@ -101,7 +101,7 @@ class DigitalLowPassRc(DigitalFilter, Block):
         self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
             DigitalSource(
-                voltage_out=self.input.link().voltage,
+                voltage=self.input.link().voltage,
                 output_thresholds=self.input.link().output_thresholds,
             ),
             [Output],
@@ -156,7 +156,7 @@ class LowPassRcDac(DigitalToAnalog, Block):
         self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
             AnalogSource(
-                voltage_out=self.input.link().voltage,
+                voltage=self.input.link().voltage,
                 signal=self.input.link().voltage,
                 impedance=impedance,  # TODO use selected resistance from RC filter
             ),
@@ -185,14 +185,14 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
         self.inp = self.Port(AnalogSink(impedance=RangeExpr(), current_draw=RangeExpr()))
         self.outn = self.Port(
             AnalogSource(
-                voltage_out=self.inn.link().voltage,
+                voltage=self.inn.link().voltage,
                 signal=self.inn.link().signal,
                 impedance=RangeExpr(),
             )
         )
         self.outp = self.Port(
             AnalogSource(
-                voltage_out=self.inp.link().voltage,
+                voltage=self.inp.link().voltage,
                 signal=self.inp.link().signal,
                 impedance=RangeExpr(),
             )

@@ -11,7 +11,7 @@ from ...circuits import *
 class OverallocateTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),
@@ -28,7 +28,7 @@ class FullMcuTest(DesignTop):
     # this uses all the pins, to catch potential automatic allocation errors
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),
@@ -52,7 +52,7 @@ class UnpoweredMcuTest(DesignTop):
 class BaseMcuTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),
@@ -86,7 +86,7 @@ class AssignedInvalidPinNumberTest(BaseMcuTest):
 class AssignedI2cTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Block(DummyVoltageSource(voltage_out=3.3 * Volt(tol=0)))
+        self.pwr = self.Block(DummyVoltageSource(voltage=3.3 * Volt(tol=0)))
         self.gnd = self.Block(DummyGround())
         with self.implicit_connect(
             ImplicitConnect(self.pwr.io, [Power]),

@@ -17,7 +17,7 @@ class PmosHighSideSwitch(PowerSwitch):
 
         self.pwr = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
         self.output = self.Port(
-            VoltageSource(voltage_out=self.pwr.link().voltage, current_limits=RangeExpr()),
+            VoltageSource(voltage=self.pwr.link().voltage, current_limits=RangeExpr()),
             [Output],
         )
         self.control = self.Port(DigitalSink(), [Input])

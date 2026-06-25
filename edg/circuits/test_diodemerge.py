@@ -10,8 +10,8 @@ class DiodeMergeTestTop(DesignTop):
     def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(DiodePowerMerge(voltage_drop=(0, 1) * Volt))
-        self.srca = self.Block(DummyVoltageSource(voltage_out=(12, 14) * Volt)).connected(self.dut.pwr_ins.request())
-        self.srcb = self.Block(DummyVoltageSource(voltage_out=(4, 5) * Volt)).connected(self.dut.pwr_ins.request())
+        self.srca = self.Block(DummyVoltageSource(voltage=(12, 14) * Volt)).connected(self.dut.pwr_ins.request())
+        self.srcb = self.Block(DummyVoltageSource(voltage=(4, 5) * Volt)).connected(self.dut.pwr_ins.request())
         self.sink = self.Block(DummyVoltageSink(current_draw=(0.5, 1.5) * Amp)).connected(self.dut.pwr_out)
 
     @override
@@ -30,7 +30,7 @@ class DiodeMergeTestCase(unittest.TestCase):
     def test_diode_merge(self) -> None:
         compiled = ScalaCompiler.compile(DiodeMergeTestTop)
 
-        self.assertEqual(compiled.get_value(["dut", "pwr_out", "voltage_out"]), Range(3.0, 14.0))
+        self.assertEqual(compiled.get_value(["dut", "pwr_out", "voltage"]), Range(3.0, 14.0))
         self.assertEqual(compiled.get_value(["dut", "pwr_ins", "0", "current_draw"]), Range(0.5, 1.5))
         self.assertEqual(compiled.get_value(["dut", "pwr_ins", "1", "current_draw"]), Range(0.5, 1.5))
         self.assertEqual(compiled.get_value(["dut", "diodes[0]", "fp_footprint"]), "Diode_SMD:D_SOD-123")

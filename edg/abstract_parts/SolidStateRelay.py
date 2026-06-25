@@ -50,7 +50,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr_in = self.Port(VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=RangeExpr()))
         self.signal = self.Port(DigitalSink(current_draw=RangeExpr()))
 
         self.ic = self.Block(SolidStateRelay())
@@ -101,7 +101,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.ain = self.Port(AnalogSink(voltage_limits=RangeExpr(), impedance=RangeExpr()))
         self.aout = self.Port(
             AnalogSource(
-                voltage_out=self.ain.link().voltage,
+                voltage=self.ain.link().voltage,
                 signal=self.ain.link().signal,
                 current_limits=self.ic.load_current_limit,
                 impedance=self.ain.link().source_impedance + self.ic.load_resistance,

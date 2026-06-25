@@ -119,7 +119,7 @@ class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
         self.pwr_in = self.Port(VoltageSink(voltage_limits=Range.all(), current_draw=RangeExpr()), [Power, Input])
         self.pwr_out = self.Port(
             VoltageSource(
-                voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+                voltage=self.pwr_in.link().voltage,  # ignore voltage drop
                 current_limits=RangeExpr(),
             ),
             [Output],

@@ -100,7 +100,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
         self.signal_in = self.Port(AnalogSink(), [Input])
         self.signal_out = self.Port(
             AnalogSource(
-                voltage_out=self.signal_in.link().voltage.intersect(
+                voltage=self.signal_in.link().voltage.intersect(
                     self.gnd.link().voltage + (0, self.diode.actual_zener_voltage.upper())
                 ),
                 signal=self.signal_in.link().signal,

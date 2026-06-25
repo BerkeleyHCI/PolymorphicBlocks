@@ -301,7 +301,7 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power, Input])
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage),  # ignore voltage drop
+            VoltageSource(voltage=self.pwr_in.link().voltage),  # ignore voltage drop
             [Output],
         )
         current_draw = self.pwr_out.link().current_draw.abs()
@@ -424,7 +424,7 @@ class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
         self.output = self.Port(
             AnalogSource(
-                voltage_out=self.input.link().voltage,
+                voltage=self.input.link().voltage,
                 signal=self.input.link().signal,
                 impedance=self.input.link().source_impedance + self.res.actual_resistance,
             ),
@@ -465,7 +465,7 @@ class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
             DigitalSource(
-                voltage_out=self.input.link().voltage,
+                voltage=self.input.link().voltage,
                 output_thresholds=self.input.link().output_thresholds,
             ),
             [Output],
@@ -521,7 +521,7 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         )
         self.exterior = self.Port(
             DigitalBidir(
-                voltage_out=RangeExpr(),
+                voltage=RangeExpr(),
                 current_draw=RangeExpr(),
                 voltage_limits=RangeExpr(),
                 current_limits=RangeExpr(),
@@ -544,7 +544,7 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.connect(self.exterior.net, self.res.a)
         self.connect(self.interior.net, self.res.b)
 
-        self.assign(self.exterior.voltage_out, self.interior.link().voltage)
+        self.assign(self.exterior.voltage, self.interior.link().voltage)
         self.assign(self.exterior.current_draw, self.interior.link().current_draw)
         self.assign(self.exterior.voltage_limits, self.interior.link().voltage_limits)
         self.assign(

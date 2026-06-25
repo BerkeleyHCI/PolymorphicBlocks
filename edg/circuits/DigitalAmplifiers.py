@@ -26,7 +26,7 @@ class LoadSwitch(PowerSwitch, Block):
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
 
         self.control = self.Port(DigitalSink(), [Input])
-        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage), [Output])
+        self.pwr_out = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage), [Output])
 
     @override
     def contents(self) -> None:
@@ -135,7 +135,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
         conversions: Dict[str, HasPassivePort] = {
             "pwr": VoltageSink(current_draw=self.output.link().current_draw),
             "output": VoltageSource(
-                voltage_out=self.pwr.link().voltage,
+                voltage=self.pwr.link().voltage,
                 current_limits=self.drv.actual_drain_current_rating,
             ),
             "control": DigitalSink(),  # TODO model pullup resistor current

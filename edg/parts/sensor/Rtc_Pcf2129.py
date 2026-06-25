@@ -15,7 +15,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
 
         dio_model = DigitalBidir(
             voltage_limits=(-0.5, self.pwr.link().voltage.lower() + 0.5),
-            voltage_out=(0, self.pwr.link().voltage.lower()),
+            voltage=(0, self.pwr.link().voltage.lower()),
             current_limits=(-1, 1) * mAmp,  # TODO higher sink current on SDA/nCE
             input_thresholds=(0.25 * self.pwr.link().voltage.upper(), 0.7 * self.pwr.link().voltage.upper()),
             output_thresholds=(0, self.pwr.link().voltage.upper()),
@@ -28,7 +28,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
         self.clkout = self.Port(opendrain_model, optional=True)
         self.int = self.Port(opendrain_model, optional=True)
 
-        self.bbs = self.Port(VoltageSource(voltage_out=self.pwr_bat.link().voltage))
+        self.bbs = self.Port(VoltageSource(voltage=self.pwr_bat.link().voltage))
 
     @override
     def contents(self) -> None:

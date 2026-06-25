@@ -36,7 +36,7 @@ class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage)
+        self.assign(self.pwr_out.voltage, part_output_voltage)
         self.assign(self.lcsc_part, lcsc_part)
         self.assign(self.actual_basic_part, False)
         self.footprint(
@@ -99,7 +99,7 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+        self.assign(self.pwr_out.voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
@@ -163,7 +163,7 @@ class Ams1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, jlc_number, jlc_basic_part = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage * Volt)
+        self.assign(self.pwr_out.voltage, part_output_voltage * Volt)
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
@@ -242,7 +242,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+        self.assign(self.pwr_out.voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-23-5",
@@ -293,7 +293,7 @@ class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, Footprin
         self.assign(self.pwr_out.current_limits, (0, 0.6) * Amp)
         self.assign(self.actual_quiescent_current, (50, 80) * uAmp)
         self.assign(self.actual_dropout, (0, 0.25) * Volt)  # worst-case @ 100mA Iout
-        self.assign(self.pwr_out.voltage_out, (3.234, 3.366) * Volt)
+        self.assign(self.pwr_out.voltage, (3.234, 3.366) * Volt)
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-89-3",
@@ -376,7 +376,7 @@ class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, part_dropout, part_max_current, lcsc_part, basic_part = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage * Volt)
+        self.assign(self.pwr_out.voltage, part_output_voltage * Volt)
         self.assign(self.actual_dropout, part_dropout * Volt)
         self.assign(self.pwr_out.current_limits, (0, part_max_current) * Amp)
         self.footprint(
@@ -448,7 +448,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage_nominal, part_number, part_dropout, lcsc_part = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+        self.assign(self.pwr_out.voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
         self.assign(self.actual_dropout, part_dropout * Volt)
         self.footprint(
             "U",
@@ -526,7 +526,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage_nominal * Volt(tol=TOLERANCE))
+        self.assign(self.pwr_out.voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-23-5",
@@ -647,7 +647,7 @@ class Lp5907_Device(
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, footprint, jlc_number = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage)
+        self.assign(self.pwr_out.voltage, part_output_voltage)
         if footprint == "Package_TO_SOT_SMD:SOT-23-5":
             pinning: Mapping[str, HasPassivePort] = {
                 "1": self.pwr_in,
@@ -745,7 +745,7 @@ class Tlv757p_Device(
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, part_dropout, lcsc = suitable_parts[0]
 
-        self.assign(self.pwr_out.voltage_out, part_output_voltage)
+        self.assign(self.pwr_out.voltage, part_output_voltage)
         self.assign(self.actual_dropout, (0, part_dropout) * Volt)
 
         self.footprint(
@@ -832,7 +832,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
         suitable_parts = [part for part in parts if part[0] in self.get(self.output_voltage)]
         assert suitable_parts, "no regulator with compatible output"
 
-        self.assign(self.pwr_out.voltage_out, suitable_parts[0][0])
+        self.assign(self.pwr_out.voltage, suitable_parts[0][0])
         self.assign(self.pwr_in.voltage_limits, suitable_parts[0][1])
         self.assign(self.pwr_out.current_limits, (0, 100) * mAmp)
         self.assign(self.actual_quiescent_current, suitable_parts[0][2])

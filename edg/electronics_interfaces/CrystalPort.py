@@ -1,6 +1,8 @@
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..electronics_model import *
+from ..util import deprecated_param_remap
 
 
 class CrystalLink(Link):
@@ -9,7 +11,7 @@ class CrystalLink(Link):
         self.driver = self.Port(CrystalDriver())
         self.crystal = self.Port(CrystalPort())
 
-        self.drive_voltage = self.Parameter(RangeExpr(self.driver.voltage_out))
+        self.drive_voltage = self.Parameter(RangeExpr(self.driver.voltage))
         self.frequency = self.Parameter(RangeExpr(self.crystal.frequency))
 
     @override
@@ -35,10 +37,16 @@ class CrystalPort(Port[CrystalLink]):
 class CrystalDriver(Port[CrystalLink]):
     link_type = CrystalLink
 
-    def __init__(self, frequency_limits: RangeLike = RangeExpr.ALL, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def __init__(self, frequency_limits: RangeLike = RangeExpr.ALL, voltage: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
-        self.voltage_out = self.Parameter(RangeExpr(voltage_out))
+        self.voltage = self.Parameter(RangeExpr(voltage))
         self.xtal_in = self.Port(Passive())
         self.xtal_out = self.Port(Passive())
 
         self.frequency_limits = self.Parameter(RangeExpr(frequency_limits))
+
+    @property
+    @deprecated("use voltage")
+    def voltage_out(self) -> RangeExpr:
+        return self.voltage

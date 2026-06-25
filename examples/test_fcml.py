@@ -35,7 +35,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
             [Power, Input],
         )
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=Range.all()), [Output]
+            VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=Range.all()), [Output]
         )  # ignore voltage drop
 
         self.diode = self.Block(Diode(reverse_voltage=reverse_voltage, current=current, voltage_drop=voltage_drop))
@@ -168,9 +168,9 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
             },
             conversions={
                 "low_in": Ground(),  # TODO better conventions for Ground vs VoltageSink|Source
-                "low_out": VoltageSource(voltage_out=self.low_in.link().voltage),
+                "low_out": VoltageSource(voltage=self.low_in.link().voltage),
                 "high_in": VoltageSink(current_draw=self.high_out.link().current_draw),
-                "high_out": VoltageSource(voltage_out=self.low_in.link().voltage),
+                "high_out": VoltageSource(voltage=self.low_in.link().voltage),
                 "low_boot_cap.1": VoltageSink(),
                 "high_boot_cap.1": VoltageSink(),
                 "low_gate": DigitalSink(),  # TODO model gate current draw
@@ -281,7 +281,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
             self.pwr_out,
             self.inductor.b.adapt_to(
                 VoltageSource(
-                    voltage_out=self.output_voltage,
+                    voltage=self.output_voltage,
                     current_limits=BuckConverterPowerPath._ilim_expr(
                         self.inductor.actual_current_rating, self.sw_current_limits, self.actual_inductor_current_ripple
                     ),

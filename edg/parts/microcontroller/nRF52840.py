@@ -696,14 +696,14 @@ class Feather_Nrf52840(
         self.export_tap(self.gnd, self.device.gnd)
 
         self.connect(
-            self._generate_pwr_node(voltage_out=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS),
+            self._generate_pwr_node(voltage=self._AP2112_3V3_OUT, current_limits=UsbConnector.USB2_CURRENT_LIMITS),
             self.model.pwr,
         )
         self.export_tap((self.pwr if self.get(self.pwr.is_connected()) else self.pwr_out).net, self.device.pwr)
 
         self.vusb_out.init_from(
             VoltageSource(
-                voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
+                voltage=UsbConnector.USB2_VOLTAGE_RANGE - self._MBR120_DROP,
                 current_limits=UsbConnector.USB2_CURRENT_LIMITS,
             )
         )

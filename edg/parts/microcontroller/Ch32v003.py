@@ -109,7 +109,7 @@ class Ch32v003_Device(
         )  # note, switched internal pull-up resistor, 35-55 kOhm
 
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage_out=self.vdd.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(4, 25) * MHertz, voltage=self.vdd.link().voltage), optional=True
         )  # Table 3-10 crystal / resonator specs, typ 24 MHz
 
         self._dio_ft_model = DigitalBidir.from_supply(

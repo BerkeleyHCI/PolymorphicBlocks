@@ -108,7 +108,7 @@ class FetHalfBridge(HalfBridge):
 
         # to avoid tolerance stackup, model the switch node as a static voltage
         self.connect(self.low_fet.drain, self.high_fet.source)
-        self.connect(self.low_fet.drain.adapt_to(VoltageSource(voltage_out=self.pwr.link().voltage)), self.out)
+        self.connect(self.low_fet.drain.adapt_to(VoltageSource(voltage=self.pwr.link().voltage)), self.out)
         self.connect(self.out.as_ground((0, 0) * Amp), self.driver.high_gnd)  # TODO model driver current
 
         self.assign(
@@ -261,7 +261,7 @@ class RampLimiter(KiCadSchematicBlock):
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "pwr_in": VoltageSink(current_draw=self.pwr_out.link().current_draw + div_current_draw),
-                "pwr_out": VoltageSource(voltage_out=self.pwr_in.link().voltage),
+                "pwr_out": VoltageSource(voltage=self.pwr_in.link().voltage),
                 "control": DigitalSink(),
                 "gnd": Ground(),
             },

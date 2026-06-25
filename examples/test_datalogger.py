@@ -89,7 +89,7 @@ class BufferedSupply(PowerConditioner):
             )
             self.connect(
                 self.diode.anode.adapt_to(VoltageSink()),
-                self.fet.drain.adapt_to(VoltageSource(voltage_out=self.pwr.link().voltage)),
+                self.fet.drain.adapt_to(VoltageSource(voltage=self.pwr.link().voltage)),
                 self.sc_out,
             )
 
@@ -97,7 +97,7 @@ class BufferedSupply(PowerConditioner):
                 self.pwr,
                 self.diode.cathode.adapt_to(
                     VoltageSource(
-                        voltage_out=(
+                        voltage=(
                             self.pwr.link().voltage.lower() - self.voltage_drop.upper(),
                             self.pwr.link().voltage.upper(),
                         )
@@ -122,7 +122,7 @@ class BufferedSupply(PowerConditioner):
                 self.amp.inn,
                 self.sense.b.adapt_to(
                     AnalogSource(
-                        voltage_out=(0, self.pwr.link().voltage.upper()),
+                        voltage=(0, self.pwr.link().voltage.upper()),
                         # TODO calculate operating signal level
                     )
                 ),

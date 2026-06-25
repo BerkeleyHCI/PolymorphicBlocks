@@ -145,7 +145,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         self.connect(
             self.pwr_out,
             self.rect.cathode.adapt_to(
-                VoltageSource(voltage_out=self.fb.actual_input_voltage, current_limits=(0, max_current.upper()))
+                VoltageSource(voltage=self.fb.actual_input_voltage, current_limits=(0, max_current.upper()))
             ),
         )
 
@@ -270,7 +270,7 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
             self.rect = self.Block(
                 Diode(
-                    reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
+                    reverse_voltage=(0, self.pwr_out.voltage.upper()),
                     current=self.pwr_out.link().current_draw,
                     voltage_drop=(0, 0.8) * Volt,
                     reverse_recovery_time=(0, 500) * nSecond,  # guess from Digikey's classification for "fast recovery"
@@ -281,11 +281,11 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                 self.pwr_out,
                 self.rect.cathode.adapt_to(
                     VoltageSource(
-                        voltage_out=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
+                        voltage=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
                     )
                 ),
             )
 
             self.require(
-                self.pwr_out.voltage_out.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage"
+                self.pwr_out.voltage.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage"
             )

@@ -193,7 +193,7 @@ class SeriesPowerInductor(DiscreteApplication):
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power, Input])
         self.pwr_out = self.Port(
             VoltageSource(
-                voltage_out=self.pwr_in.link().voltage,
+                voltage=self.pwr_in.link().voltage,
             ),
             [Output],
         )

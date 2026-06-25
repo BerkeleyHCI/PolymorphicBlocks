@@ -138,4 +138,4 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
         self.forced = self.Block(ForcedAnalogSignal(self.ic.out.signal.intersect(output_diff_range)))
 
         self.connect(self.forced.signal_in, self.ic.out)
-        self.connect(self.forced.signal, self.output)
+        self.connect(self.forced.signal_out, self.output)

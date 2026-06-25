@@ -18,13 +18,13 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.vdd = self.Port(VoltageSink(voltage_limits=(3, 5.5) * Volt, current_draw=(0.010, 8) * mAmp))
         self.vreg = self.Port(
             VoltageSource(
-                voltage_out=(7, 7) * Volt,  # "nominal output voltage"
+                voltage=(7, 7) * Volt,  # "nominal output voltage"
                 current_limits=0 * Amp(tol=0),  # regulator decoupling terminal only
             )
         )
         self.vcp = self.Port(
             VoltageSource(  # assumed this doubles vbb (worst case), arbitrarily connected to vbb1
-                voltage_out=self.vbb1.link().voltage * 2 - self.gnd.link().voltage, current_limits=0 * Amp(tol=0)
+                voltage=self.vbb1.link().voltage * 2 - self.gnd.link().voltage, current_limits=0 * Amp(tol=0)
             )
         )
         self.cp1 = self.Port(Passive())

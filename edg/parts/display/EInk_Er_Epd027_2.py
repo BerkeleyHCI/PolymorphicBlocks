@@ -39,14 +39,14 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         )
         self.vdd1v8 = self.Port(
             VoltageSource(
-                voltage_out=1.8 * Volt(tol=0),  # specs not given
+                voltage=1.8 * Volt(tol=0),  # specs not given
                 current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )
 
         self.vcom = self.Port(
             VoltageSource(
-                voltage_out=(2.4, 20) * Volt,  # configurable up to VGH
+                voltage=(2.4, 20) * Volt,  # configurable up to VGH
                 current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )
@@ -56,19 +56,19 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         # pin 4 is NC for this part
         self.vshr = self.Port(
             VoltageSource(
-                voltage_out=(0, 11) * Volt,  # inferred from power selection register
+                voltage=(0, 11) * Volt,  # inferred from power selection register
                 current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )
         self.vsh = self.Port(
             VoltageSource(
-                voltage_out=(2.4, 15) * Volt,  # inferred from power selection register
+                voltage=(2.4, 15) * Volt,  # inferred from power selection register
                 current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )
         self.vsl = self.Port(
             VoltageSource(
-                voltage_out=(-15, -2.4) * Volt,  # inferred from power selection register
+                voltage=(-15, -2.4) * Volt,  # inferred from power selection register
                 current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )

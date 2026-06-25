@@ -5,16 +5,18 @@ from typing_extensions import override
 
 from ...circuits import *
 from .Jst import JstShSmHorizontal
+from ...util import deprecated_param_remap
 
 
 @abstract_block
 class PowerBarrelJack(Connector, PowerSource, Block):
     """Barrel jack that models a configurable voltage / max current power supply."""
 
-    def __init__(self, voltage_out: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr.ALL) -> None:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def __init__(self, voltage: RangeLike = RangeExpr(), current_limits: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
 
-        self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits))
+        self.pwr = self.Port(VoltageSource(voltage=voltage, current_limits=current_limits))
         self.gnd = self.Port(Ground())
 
 
@@ -24,7 +26,7 @@ class Pj_102ah(PowerBarrelJack, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.require(self.pwr.voltage_out.within((0, 24) * Volt))  # datasheet ratings for connector
+        self.require(self.pwr.voltage.within((0, 24) * Volt))  # datasheet ratings for connector
         self.require(self.pwr.current_limits.within((0, 2.5) * Volt))
         self.footprint(
             "J",
@@ -46,7 +48,7 @@ class Pj_036ah(PowerBarrelJack, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.require(self.pwr.voltage_out.within((0, 24) * Volt))  # datasheet ratings for connector
+        self.require(self.pwr.voltage.within((0, 24) * Volt))  # datasheet ratings for connector
         self.require(self.pwr.current_limits.within((0, 5) * Volt))
 
         self.footprint(
@@ -85,7 +87,7 @@ class LipoConnector(Connector, Battery):
         self.gnd.init_from(Ground())
         self.pwr.init_from(
             VoltageSource(
-                voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+                voltage=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
                 current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
                 reverse_voltage_limits=actual_voltage * RangeExpr._to_expr_type(charge_tolerance),
                 reverse_current_draw=(0, 0) * Amp,

@@ -44,14 +44,14 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
         self.vcomh = self.Port(
             VoltageSource(
-                voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
+                voltage=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
         self.vsl = self.Port(Passive())
         self.vp = self.Port(
             VoltageSource(
-                voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
+                voltage=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )

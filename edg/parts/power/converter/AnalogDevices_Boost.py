@@ -17,7 +17,7 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.gnd = self.Port(Ground(), [Common])
         self.sw = self.Port(VoltageSink())
         self.fb = self.Port(AnalogSink(impedance=(8000, float("inf")) * kOhm))
-        self.vout = self.Port(VoltageSource(voltage_out=output_voltage, current_limits=self.sw.link().current_limits))
+        self.vout = self.Port(VoltageSource(voltage=output_voltage, current_limits=self.sw.link().current_limits))
         self.nshdn = self.Port(
             DigitalSink(
                 voltage_limits=(-0.3, 6) * Volt, current_draw=(0.01, 1) * uAmp, input_thresholds=(0.35, 1) * Volt
@@ -58,7 +58,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         super().contents()
 
         self.assign(self.actual_frequency, (380, 630) * kHertz)
-        self.require(self.pwr_out.voltage_out.within((2.2, 4.3) * Volt))  # >4.3v requires external diode
+        self.require(self.pwr_out.voltage.within((2.2, 4.3) * Volt))  # >4.3v requires external diode
 
         with self.implicit_connect(
             ImplicitConnect(self.pwr_in, [Power]),

@@ -70,7 +70,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         # ports for power source mode
         self.gnd = self.Port(Ground(), [Common])
         self.jd_pwr_src = self.Port(
-            VoltageSource(voltage_out=(3.5, 5.5) * Volt, current_limits=(0, 900) * mAmp), optional=True
+            VoltageSource(voltage=(3.5, 5.5) * Volt, current_limits=(0, 900) * mAmp), optional=True
         )
 
         self.jd_pwr_sink = self.Port(
@@ -86,7 +86,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         self.jd_data = self.Port(
             DigitalBidir(
                 voltage_limits=(0, 3.5) * Volt,
-                voltage_out=(0, 3.5) * Volt,
+                voltage=(0, 3.5) * Volt,
                 input_thresholds=(0.3, 3.0) * Volt,
                 output_thresholds=(0.3, 3.0) * Volt,
             )
@@ -209,7 +209,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         self.jd_data = self.Port(
             JacdacDataPort(
                 DigitalBidir(
-                    voltage_out=self.signal.link().voltage,
+                    voltage=self.signal.link().voltage,
                     voltage_limits=self.signal.link().voltage_limits,
                     input_thresholds=self.signal.link().input_thresholds,
                     output_thresholds=self.signal.link().output_thresholds,
