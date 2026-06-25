@@ -51,11 +51,11 @@ class UsbBitBang(BitBangAdapter, Block):
         self.dp_pull_res = self.Block(Resistor(1.5 * kOhm(tol=0.05)))
         self.connect(self.dp_pull_res.a, self.dp_pull.net)
         self.dp_res = self.Block(Resistor(68 * Ohm(tol=0.05)))
-        self.connect(self.dp_res.a, self.dp.net)
-        self.connect(self.dp_pull_res.b, self.dp_res.b, self.usb.dp)
+        self.connect(self.dp_res.b, self.dp.net)
+        self.connect(self.dp_pull_res.b, self.dp_res.a, self.usb.dp)
         self.dm_res = self.Block(Resistor(68 * Ohm(tol=0.05)))
-        self.connect(self.dm_res.a, self.dm.net)
-        self.connect(self.dm_res.b, self.usb.dm)
+        self.connect(self.dm_res.b, self.dm.net)
+        self.connect(self.dm_res.a, self.usb.dm)
 
     def connected_from(self, dp_pull: Port[DigitalLink], dp: Port[DigitalLink], dm: Port[DigitalLink]) -> "UsbBitBang":
         builder.block().connect(dp_pull, self.dp_pull)
