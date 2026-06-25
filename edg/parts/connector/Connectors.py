@@ -27,7 +27,7 @@ class Pj_102ah(PowerBarrelJack, FootprintBlock):
     def contents(self) -> None:
         super().contents()
         self.require(self.pwr.voltage.within((0, 24) * Volt))  # datasheet ratings for connector
-        self.require(self.pwr.current_limits.within((0, 2.5) * Volt))
+        self.require(self.pwr.current_limits.within((0, 2.5) * Amp))
         self.footprint(
             "J",
             "Connector_BarrelJack:BarrelJack_CUI_PJ-102AH_Horizontal",
@@ -49,7 +49,7 @@ class Pj_036ah(PowerBarrelJack, FootprintBlock):
     def contents(self) -> None:
         super().contents()
         self.require(self.pwr.voltage.within((0, 24) * Volt))  # datasheet ratings for connector
-        self.require(self.pwr.current_limits.within((0, 5) * Volt))
+        self.require(self.pwr.current_limits.within((0, 5) * Amp))
 
         self.footprint(
             "J",

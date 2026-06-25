@@ -14,7 +14,7 @@ def deprecated_param_remap(*params: Tuple[str, str]) -> Callable[[CallableType],
 
     def decorator(func: CallableType) -> CallableType:
         @wraps(func)
-        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             for old_param, new_param in params:
                 if old_param in kwargs:
                     warnings.warn(
@@ -22,9 +22,10 @@ def deprecated_param_remap(*params: Tuple[str, str]) -> Callable[[CallableType],
                         DeprecationWarning,
                         stacklevel=2,
                     )
-                    assert new_param not in kwargs, f"both old {old_param} and new {new_param} parameters specified"
+                    if new_param in kwargs:
+                        raise ValueError(f"both old {old_param} and new {new_param} parameters specified")
                     kwargs[new_param] = kwargs.pop(old_param)
-            return func(self, *args, **kwargs)
+            return func(*args, **kwargs)
 
         return wrapper  # type: ignore
 
