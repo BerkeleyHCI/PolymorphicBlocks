@@ -1,21 +1,20 @@
 import warnings
 from functools import wraps
-from typing import Tuple, Callable, ParamSpec, TypeVar, Any
+from typing import Tuple, Callable, TypeVar, Any
 
-P = ParamSpec("P")
-R = TypeVar("R")
+CallableType = TypeVar("CallableType", bound=Callable[..., Any])
 
 
-def deprecated_param_remap(*params: Tuple[str, str]) -> Callable[[Callable[P, R]], Callable[P, R]]:
+def deprecated_param_remap(*params: Tuple[str, str]) -> Callable[[CallableType], CallableType]:
     """Decorator to remap deprecated parameter names to new names.
 
     Args:
         *params: A list of tuples where each tuple contains the old parameter name and the new parameter name.
     """
 
-    def decorator(func: Callable[P, R]) -> Callable[P, R]:
+    def decorator(func: CallableType) -> CallableType:
         @wraps(func)
-        def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             for old_param, new_param in params:
                 if old_param in kwargs:
                     warnings.warn(
