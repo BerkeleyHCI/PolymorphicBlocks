@@ -252,7 +252,7 @@ class AnalogSource(HasPassivePort, AnalogBase):
         else:  # generic default
             signal = supply_range
 
-        return AnalogSource(voltage=supply_range, signal=signal, current_limits=current_limits, impedance=impedance)
+        return AnalogSource(voltage=supply_range, signal=signal, current_limits=current_limits, impedance=impedance)  # type: ignore
 
     @deprecated_param_remap(("voltage_out", "voltage"), ("signal_out", "signal"))
     def __init__(

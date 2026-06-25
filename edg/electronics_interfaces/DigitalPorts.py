@@ -357,13 +357,13 @@ class DigitalSource(HasPassivePort, DigitalBase):
         else:
             output_threshold = (GroundLink._voltage_range(neg).upper(), VoltageLink._voltage_range(pos).lower())
 
-        return DigitalSource(voltage=supply_range, current_limits=current_limits, output_thresholds=output_threshold)
+        return DigitalSource(voltage=supply_range, current_limits=current_limits, output_thresholds=output_threshold)  # type: ignore
 
     @staticmethod
     def from_bidir(model: DigitalBidir) -> DigitalSource:
         model_is_empty = not model._get_initializers([])
         if not model_is_empty:  # DigitalSource has additional high_driver and low_driver fields
-            return DigitalSource(
+            return DigitalSource(  # type: ignore
                 model.voltage,
                 model.current_limits,
                 output_thresholds=model.output_thresholds,
@@ -371,7 +371,7 @@ class DigitalSource(HasPassivePort, DigitalBase):
                 pulldown_capable=model.pulldown_capable,
             )
         else:
-            return DigitalSource.empty()
+            return DigitalSource.empty()  # type: ignore
 
     @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
@@ -579,7 +579,7 @@ class DigitalBidir(HasPassivePort, DigitalBase):
         else:  # assumed ideal
             output_threshold = (neg_base, VoltageLink._voltage_range(pos).lower())
 
-        return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
+        return DigitalBidir(  # type: ignore
             voltage_limits=voltage_limit,
             current_draw=current_draw,
             voltage=supply_range,
