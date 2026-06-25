@@ -175,7 +175,7 @@ class Nucleo_F303k8(
             * kOhm(tol=0),  # TODO: actually spec'd as maximum external impedance; internal impedance not given
         )
         dac_model = AnalogSource.from_supply(
-            self.gnd, vdd, signal_out_bound=(0.2 * Volt, -0.2 * Volt), impedance=15 * kOhm(tol=0)  # assumes buffer off
+            self.gnd, vdd, signal_bound=(0.2 * Volt, -0.2 * Volt), impedance=15 * kOhm(tol=0)  # assumes buffer off
         )
 
         uart_model = UartPort(DigitalBidir.empty())

@@ -21,7 +21,7 @@ class Opa171_Base_Device(InternalSubcircuit):
         return AnalogSource.from_supply(
             self.vn,
             self.vp,
-            signal_out_bound=(0.350 * Volt, -0.350 * Volt),  # output swing from rail, 10k load, over temperature
+            signal_bound=(0.350 * Volt, -0.350 * Volt),  # output swing from rail, 10k load, over temperature
             current_limits=(-35, 25) * mAmp,  # short circuit current
             impedance=150 * Ohm(tol=0),  # open-loop resistance
         )

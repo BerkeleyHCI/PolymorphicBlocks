@@ -118,7 +118,7 @@ class Stm32l432_Device(
         dac_model = AnalogSource.from_supply(
             self.gnd,
             self.pwr,
-            signal_out_bound=(0, 0),  # 0-Vref w/ DAC output buffer off
+            signal_bound=(0, 0),  # 0-Vref w/ DAC output buffer off
             impedance=(9.6, 13.8) * kOhm,  # DAC buffer off
         )
 

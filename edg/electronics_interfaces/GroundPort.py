@@ -97,7 +97,7 @@ class GroundAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
-                signal_out=self.src.link().voltage,
+                signal=self.src.link().voltage,
             )
         )
         self.connect(self.dst.net, self.src.net)

@@ -5,6 +5,7 @@ from ..electronics_model import *
 from .VoltagePorts import VoltageSink, VoltageSource
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalLink
 from .AnalogPort import AnalogSink, AnalogSource, AnalogLink
+from ..util import deprecated_param_remap
 
 DummyLinkType = TypeVar("DummyLinkType", bound=Link)
 
@@ -41,17 +42,18 @@ class DummyDigitalSink(BaseDummyBlock[DigitalLink]):
 
 
 class DummyAnalogSource(BaseDummyBlock[AnalogLink]):
+    @deprecated_param_remap(("voltage_out", "voltage"), ("signal_out", "signal"))
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
-        signal_out: RangeLike = RangeExpr.EMPTY,
+        voltage: RangeLike = RangeExpr.ZERO,
+        signal: RangeLike = RangeExpr.EMPTY,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ) -> None:
         super().__init__()
         self.io = self.Port(
             AnalogSource(
-                voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
+                voltage=voltage, signal=signal, current_limits=current_limits, impedance=impedance
             ),
             [InOut],
         )
@@ -134,8 +136,8 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
         self.signal_in = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
         self.signal_out = self.Port(
             AnalogSource(
-                voltage_out=self.signal_in.link().voltage,
-                signal_out=forced_signal,
+                voltage=self.signal_in.link().voltage,
+                signal=forced_signal,
                 current_limits=self.signal_in.link().current_limits,
             ),
             [Output],

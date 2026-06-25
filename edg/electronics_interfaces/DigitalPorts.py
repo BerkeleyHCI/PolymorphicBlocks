@@ -8,6 +8,7 @@ from typing_extensions import override
 from ..electronics_model import *
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
+from ..util import deprecated_param_remap
 
 
 class DigitalLink(Link):
@@ -78,9 +79,9 @@ class DigitalLink(Link):
         )
 
         # TODO clean this up, massively, like, this needs new constructs to simplify this pattern
-        voltage_hull = self.bidirs.hull(lambda x: x.voltage_out)
+        voltage_hull = self.bidirs.hull(lambda x: x.voltage)
         voltage_hull = self.sources.any_connected().then_else(
-            voltage_hull.hull(self.sources.hull(lambda x: x.voltage_out)), voltage_hull
+            voltage_hull.hull(self.sources.hull(lambda x: x.voltage)), voltage_hull
         )
         self.assign(self.voltage, voltage_hull)
 
@@ -200,7 +201,7 @@ class DigitalSinkBridge(PortBridge):
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_draw)
         self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
-        self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+        self.assign(self.inner_link.voltage, self.outer_port.link().voltage)
         self.assign(self.inner_link.output_thresholds, self.outer_port.link().output_thresholds)
 
 
@@ -314,7 +315,7 @@ class DigitalSourceBridge(PortBridge):
 
         self.connect(self.outer_port.net, self.inner_link.net)
 
-        self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+        self.assign(self.outer_port.voltage, self.inner_link.link().voltage)
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
         )  # TODO subtract internal current draw
@@ -365,7 +366,7 @@ class DigitalSource(HasPassivePort, DigitalBase):
         model_is_empty = not model._get_initializers([])
         if not model_is_empty:  # DigitalSource has additional high_driver and low_driver fields
             return DigitalSource(
-                model.voltage_out,
+                model.voltage,
                 model.current_limits,
                 output_thresholds=model.output_thresholds,
                 pullup_capable=model.pullup_capable,
@@ -374,9 +375,10 @@ class DigitalSource(HasPassivePort, DigitalBase):
         else:
             return DigitalSource.empty()
 
+    @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         *,
         output_thresholds: RangeLike = RangeExpr.ALL,
@@ -390,7 +392,7 @@ class DigitalSource(HasPassivePort, DigitalBase):
 
         self.net = self.Port(Passive())
 
-        self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
+        self.voltage: RangeExpr = self.Parameter(RangeExpr(voltage))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
         self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
 
@@ -405,7 +407,7 @@ class DigitalSource(HasPassivePort, DigitalBase):
     def low_from_supply(neg: Port[GroundLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
         """Sink-only digital source, eg open-drain output"""
         return DigitalSource(
-            voltage_out=neg.link().voltage,
+            voltage=neg.link().voltage,
             current_limits=current_limits,
             output_thresholds=(neg.link().voltage.upper(), float("inf")),
             high_driver=False,
@@ -452,6 +454,11 @@ class DigitalSource(HasPassivePort, DigitalBase):
     def as_voltage_source(self) -> VoltageSource:
         return self._convert(DigitalSourceAdapterVoltageSource())
 
+    @property
+    @deprecated(f"use voltage")
+    def voltage_out(self) -> RangeExpr:
+        return self.voltage
+
 
 class DigitalBidirBridge(PortBridge):
     """A bridge for DigitalBidir ports.
@@ -490,7 +497,7 @@ class DigitalBidirBridge(PortBridge):
 
         self.connect(self.outer_port.net, self.inner_link.net)
 
-        self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+        self.assign(self.outer_port.voltage, self.inner_link.link().voltage)
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_draw)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
         self.assign(
@@ -577,7 +584,7 @@ class DigitalBidir(HasPassivePort, DigitalBase):
         return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
             voltage_limits=voltage_limit,
             current_draw=current_draw,
-            voltage_out=supply_range,
+            voltage=supply_range,
             current_limits=current_limits,
             input_thresholds=input_threshold,
             output_thresholds=output_threshold,
@@ -585,12 +592,13 @@ class DigitalBidir(HasPassivePort, DigitalBase):
             pulldown_capable=pulldown_capable,
         )
 
+    @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
         self,
         *,
         voltage_limits: RangeLike = RangeExpr.ALL,
         current_draw: RangeLike = RangeExpr.ZERO,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         input_thresholds: RangeLike = RangeExpr.EMPTY,
         output_thresholds: RangeLike = RangeExpr.ALL,
@@ -604,7 +612,7 @@ class DigitalBidir(HasPassivePort, DigitalBase):
 
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
-        self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
+        self.voltage: RangeExpr = self.Parameter(RangeExpr(voltage))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
         self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
         self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
@@ -615,6 +623,11 @@ class DigitalBidir(HasPassivePort, DigitalBase):
 
     def as_voltage_source(self) -> VoltageSource:
         return self._convert(DigitalSourceAdapterVoltageSource())
+
+    @property
+    @deprecated(f"use voltage")
+    def voltage_out(self) -> RangeExpr:
+        return self.voltage
 
 
 class DigitalSingleSourceFake:

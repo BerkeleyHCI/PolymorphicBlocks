@@ -23,7 +23,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             AnalogSource.from_supply(
                 self.vss,
                 self.vcc,
-                signal_out_bound=(25 * mVolt, -25 * mVolt),  # maximum output swing
+                signal_bound=(25 * mVolt, -25 * mVolt),  # maximum output swing
                 current_limits=(-6, 6) * mAmp,  # for Vdd=1.8, 23mA for Vdd=5.5
                 impedance=300 * Ohm(tol=0),  # no tolerance bounds given on datasheet
             )

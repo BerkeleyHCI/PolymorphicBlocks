@@ -22,7 +22,7 @@ class IronConnector(Connector, Block):
         self.thermocouple = self.Port(
             AnalogSource(
                 voltage_out=self.gnd.link().voltage + (0, 14.3) * mVolt,
-                signal_out=self.gnd.link().voltage + (0, 14.3) * mVolt,  # up to ~350 C
+                signal=self.gnd.link().voltage + (0, 14.3) * mVolt,  # up to ~350 C
             ),
             optional=True,
         )

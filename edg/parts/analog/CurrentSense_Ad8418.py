@@ -31,7 +31,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
         self.out = self.Port(
             AnalogSource(
                 voltage_out=(0.032, self.vs.link().voltage.upper() - 0.032),
-                signal_out=(self.vref1.link().signal + self.vref2.link().signal) / 2 + (self.in_diff_range * self.GAIN),
+                signal=(self.vref1.link().signal + self.vref2.link().signal) / 2 + (self.in_diff_range * self.GAIN),
                 impedance=2 * Ohm(tol=0),  # range not specified
             )
         )

@@ -123,7 +123,7 @@ class Lpc1549Base_Device(
         dac_model = AnalogSource.from_supply(
             self.gnd,
             self.pwr,
-            signal_out_bound=(0, -0.3 * Volt),
+            signal_bound=(0, -0.3 * Volt),
             current_limits=RangeExpr.ALL,  # not given by spec
             impedance=(300, 300) * Ohm,  # Table 25, "typical" rating
         )

@@ -425,7 +425,7 @@ class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.output = self.Port(
             AnalogSource(
                 voltage_out=self.input.link().voltage,
-                signal_out=self.input.link().signal,
+                signal=self.input.link().signal,
                 impedance=self.input.link().source_impedance + self.res.actual_resistance,
             ),
             [Output],

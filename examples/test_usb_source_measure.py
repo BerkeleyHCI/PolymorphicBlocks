@@ -370,7 +370,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
                 "actual": AnalogSink(impedance=self.rtop.actual_resistance + self.rbot.actual_resistance),
                 "rtop.2": AnalogSource(
                     voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
-                    signal_out=self.target.link().voltage.hull(self.actual.link().voltage),
+                    signal=self.target.link().voltage.hull(self.actual.link().voltage),
                     impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance),
                 ),
                 "rbot.2": AnalogSink(),  # ideal, rtop.2 contains the parameter model
@@ -429,7 +429,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
                 ),
                 "output": AnalogSource(
                     voltage_out=self.input.link().voltage.intersect(self.model_voltage_clamp),
-                    signal_out=self.input.link().signal.intersect(self.model_signal_clamp),
+                    signal=self.input.link().signal.intersect(self.model_signal_clamp),
                     impedance=self.input.link().source_impedance,
                 ),
             },

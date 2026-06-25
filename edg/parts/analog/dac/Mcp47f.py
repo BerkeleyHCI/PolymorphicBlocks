@@ -21,14 +21,14 @@ class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
         out_ref0_model = AnalogSource.from_supply(
             self.vss,
             self.vref0,
-            signal_out_bound=(0.01 * Volt, -0.016 * Volt),  # output amp min / max voltages
+            signal_bound=(0.01 * Volt, -0.016 * Volt),  # output amp min / max voltages
             current_limits=(-3, 3) * mAmp,  # short circuit current, typ
             impedance=(122, 900) * Ohm,  # derived from assumed Vout=Vdd=2.7v, Isc=3-22mA
         )
         out_ref1_model = AnalogSource.from_supply(
             self.vss,
             self.vref1,
-            signal_out_bound=(0.01 * Volt, -0.016 * Volt),  # output amp min / max voltages
+            signal_bound=(0.01 * Volt, -0.016 * Volt),  # output amp min / max voltages
             current_limits=(-3, 3) * mAmp,  # short circuit current, typ
             impedance=(122, 900) * Ohm,  # derived from assumed Vout=Vdd=2.7v, Isc=3-22mA
         )

@@ -22,7 +22,7 @@ class ServoFeedbackConnector(Connector, Block):
             AnalogSource(  # no specs given
                 voltage_out=(0.9, 2.1)
                 * Volt,  # from https://www.pololu.com/blog/814/new-products-special-servos-with-position-feedback
-                signal_out=(0.9, 2.1) * Volt,
+                signal=(0.9, 2.1) * Volt,
             )
         )
 

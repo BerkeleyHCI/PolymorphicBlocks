@@ -33,7 +33,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
         self.signal_out = self.Port(
             AnalogSource(
                 voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                signal_out=self.signal_in.link().signal,
+                signal=self.signal_in.link().signal,
                 impedance=RangeExpr(),
             ),
             [Output],

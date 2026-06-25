@@ -24,7 +24,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             AnalogSource.from_supply(
                 self.vss,
                 self.vcc,
-                signal_out_bound=(0.180 * Volt, -0.100 * Volt),  # assuming a 10k load, Vcc=2.7v
+                signal_bound=(0.180 * Volt, -0.100 * Volt),  # assuming a 10k load, Vcc=2.7v
                 current_limits=(-40, 40) * mAmp,  # output short circuit current
             )
         )

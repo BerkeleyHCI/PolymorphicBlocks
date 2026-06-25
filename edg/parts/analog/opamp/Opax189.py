@@ -21,7 +21,7 @@ class Opax189_Base_Device(InternalSubcircuit):
         return AnalogSource.from_supply(
             self.vn,
             self.vp,
-            signal_out_bound=(0.110 * Volt, -0.111 * Volt),  # output swing from rail, assumed at 10k load
+            signal_bound=(0.110 * Volt, -0.111 * Volt),  # output swing from rail, assumed at 10k load
             current_limits=(-65, 65) * mAmp,  # for +/-18V supply
             impedance=380 * Ohm(tol=0),  # open-loop impedance; no tolerance bounds specified
         )

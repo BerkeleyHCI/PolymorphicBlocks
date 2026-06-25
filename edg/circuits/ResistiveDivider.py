@@ -174,7 +174,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
         self.output = self.Port(
             AnalogSource(
                 voltage_out=output_voltage,
-                signal_out=output_voltage,
+                signal=output_voltage,
                 impedance=self.div.actual_impedance,
             ),
             [Output],
@@ -272,7 +272,7 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
         )
         self.output = self.Port(
-            AnalogSource(voltage_out=output_voltage, signal_out=output_voltage, impedance=self.div.actual_impedance),
+            AnalogSource(voltage_out=output_voltage, signal=output_voltage, impedance=self.div.actual_impedance),
             [Output],
         )
         self.assign(self.input.current_draw, self.output.link().current_draw)

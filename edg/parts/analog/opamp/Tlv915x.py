@@ -26,7 +26,7 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         analog_out_model = AnalogSource.from_supply(
             self.vn,
             self.vp,
-            signal_out_bound=(55 * mVolt, -55 * mVolt),  # output swing from rail, assumed at 10k load, Vs=16v
+            signal_bound=(55 * mVolt, -55 * mVolt),  # output swing from rail, assumed at 10k load, Vs=16v
             current_limits=(-75, 75) * mAmp,  # short circuit current
             impedance=525 * kOhm(tol=0),  # open loop output impedance
         )

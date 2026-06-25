@@ -17,7 +17,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
         )
         self.vout = self.Port(
             AnalogSource.from_supply(
-                self.gnd, self.vcc, signal_out_abs=(0.38, 2.87)  # output saturation limits @ Vcc=3.3v
+                self.gnd, self.vcc, signal_abs=(0.38, 2.87)  # output saturation limits @ Vcc=3.3v
             )
         )
 

@@ -26,7 +26,7 @@ class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         analog_out_model = AnalogSource.from_supply(
             self.vn,
             self.vp,
-            signal_out_bound=(70 * mVolt, -70 * mVolt),  # output swing from rail, assumed at 10k load
+            signal_bound=(70 * mVolt, -70 * mVolt),  # output swing from rail, assumed at 10k load
             current_limits=(-5, 5) * mAmp,  # short circuit current
             impedance=2 * kOhm(tol=0),  # open loop output impedance
         )

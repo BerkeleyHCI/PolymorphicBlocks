@@ -121,7 +121,7 @@ class Stm32g431_Device(
         dac_model = AnalogSource.from_supply(
             self.gnd,
             self.pwr,
-            signal_out_bound=(0.2 * Volt, -0.2 * Volt),  # signal_out_bound only applies when output buffer on
+            signal_bound=(0.2 * Volt, -0.2 * Volt),  # signal_bound only applies when output buffer on
             impedance=(9.6, 13.8) * kOhm,  # assumes buffer off
         )
         self.nrst.init_from(
