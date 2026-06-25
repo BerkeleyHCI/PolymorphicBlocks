@@ -38,7 +38,7 @@ class DigitalLink(Link):
         self.voltage = self.Parameter(RangeExpr())
         self.voltage_limits = self.Parameter(RangeExpr())
 
-        self.current_drawn = self.Parameter(RangeExpr())
+        self.current_draw = self.Parameter(RangeExpr())
         self.current_limits = self.Parameter(RangeExpr())
 
         self.output_thresholds = self.Parameter(RangeExpr())
@@ -68,7 +68,7 @@ class DigitalLink(Link):
             " <b>of limits</b>: ",
             DescriptionString.FormatUnits(self.voltage_limits, "V"),
             "\n<b>current</b>: ",
-            DescriptionString.FormatUnits(self.current_drawn, "A"),
+            DescriptionString.FormatUnits(self.current_draw, "A"),
             " <b>of limits</b>: ",
             DescriptionString.FormatUnits(self.current_limits, "A"),
             "\n<b>output thresholds</b>: ",
@@ -93,7 +93,7 @@ class DigitalLink(Link):
         self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
         self.assign(
-            self.current_drawn, self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
+            self.current_draw, self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
         )
         self.assign(
             self.current_limits,
@@ -101,7 +101,7 @@ class DigitalLink(Link):
                 self.bidirs.intersection(lambda x: x.current_limits)
             ),
         )
-        self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
+        self.require(self.current_limits.contains(self.current_draw), "overcurrent")
 
         self.assign(
             self.output_thresholds,
@@ -161,6 +161,11 @@ class DigitalLink(Link):
             "conflicting source drivers",
         )
 
+    @property
+    @deprecated(f"Use current_draw")
+    def current_drawn(self) -> RangeExpr:
+        return self.current_draw
+
 
 class DigitalBase(Port[DigitalLink]):
     link_type = DigitalLink
@@ -192,7 +197,7 @@ class DigitalSinkBridge(PortBridge):
         self.connect(self.outer_port.net, self.inner_link.net)
 
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
-        self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+        self.assign(self.outer_port.current_draw, self.inner_link.link().current_draw)
         self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
@@ -312,8 +317,8 @@ class DigitalSourceBridge(PortBridge):
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
-        )  # TODO subtract internal current drawn
-        self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+        )  # TODO subtract internal current draw
+        self.assign(self.inner_link.current_draw, self.outer_port.link().current_draw)
 
         self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
 
@@ -325,7 +330,7 @@ class DigitalSourceAdapterVoltageSource(PortAdapter[VoltageSource]):
         self.dst = self.Port(
             VoltageSource(voltage_out=(self.src.link().output_thresholds.upper(), self.src.link().voltage.upper()))
         )
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.assign(self.src.current_draw, self.dst.link().current_draw)
         self.connect(self.src.net, self.dst.net)
 
 
@@ -486,7 +491,7 @@ class DigitalBidirBridge(PortBridge):
         self.connect(self.outer_port.net, self.inner_link.net)
 
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-        self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+        self.assign(self.outer_port.current_draw, self.inner_link.link().current_draw)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits

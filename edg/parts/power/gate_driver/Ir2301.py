@@ -28,7 +28,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 self.com, self.vcc, current_limits=(-250, 120) * mAmp
             )  # static electrical characteristics: output short circuit pulsed current
         )
-        self.assign(self.vcc.current_draw, (50, 190) * uAmp + self.lo.link().current_drawn)
+        self.assign(self.vcc.current_draw, (50, 190) * uAmp + self.lo.link().current_draw)
 
         self.vs = self.Port(
             Ground.from_gnd(self.com, voltage_limits=(-5, 600))  # no current draw since this is a "ground" pin
@@ -42,7 +42,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 * mAmp,  # static electrical characteristics: output short circuit pulsed current
             )
         )
-        self.assign(self.vb.current_draw, (50, 190) * uAmp + self.ho.link().current_drawn)
+        self.assign(self.vb.current_draw, (50, 190) * uAmp + self.ho.link().current_draw)
 
     @override
     def contents(self) -> None:

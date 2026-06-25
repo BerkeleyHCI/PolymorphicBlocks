@@ -127,14 +127,14 @@ class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
 
         self.fb = self.Block(
             FerriteBead(
-                current=self.pwr_out.link().current_drawn, hf_impedance=hf_impedance, dc_resistance=dc_resistance
+                current=self.pwr_out.link().current_draw, hf_impedance=hf_impedance, dc_resistance=dc_resistance
             )
         )
 
         self.connect(self.pwr_in.net, self.fb.a)
         self.connect(self.pwr_out.net, self.fb.b)
 
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
         self.assign(self.pwr_out.current_limits, self.fb.actual_current_rating)
 
     def connected(

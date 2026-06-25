@@ -21,7 +21,7 @@ class MergedVoltageSource(DummyDevice, GeneratorBlock):
         super().generate()
         self.pwr_ins.defined()
         for in_request in self.get(self.pwr_ins.requested()):
-            elt_port = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), in_request)
+            elt_port = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_draw), in_request)
             self.connect(self.pwr_out.net, elt_port.net)
 
         self.assign(self.pwr_out.voltage_out, self.pwr_ins.hull(lambda x: x.link().voltage))
@@ -52,7 +52,7 @@ class MergedDigitalSource(DummyDevice, GeneratorBlock):
         super().generate()
         self.ins.defined()
         for in_request in self.get(self.ins.requested()):
-            elt_port = self.ins.append_elt(DigitalSink(current_draw=self.out.link().current_drawn), in_request)
+            elt_port = self.ins.append_elt(DigitalSink(current_draw=self.out.link().current_draw), in_request)
             self.connect(self.out.net, elt_port.net)
 
         self.assign(self.out.voltage_out, self.ins.hull(lambda x: x.link().voltage))
@@ -87,7 +87,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, GeneratorBlock):
         self.inputs.defined()
         for in_request in self.get(self.inputs.requested()):
             elt_port = self.inputs.append_elt(
-                AnalogSink(current_draw=self.output.link().current_drawn, impedance=self.output.link().sink_impedance),
+                AnalogSink(current_draw=self.output.link().current_draw, impedance=self.output.link().sink_impedance),
                 in_request,
             )
             self.connect(self.output.net, elt_port.net)

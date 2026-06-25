@@ -43,7 +43,7 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
         self.fet = self.Block(
             Fet.NFet(
                 drain_voltage=self.hv_pwr.link().voltage.hull(self.hv_io.link().voltage),
-                drain_current=self.lv_io.link().current_drawn.hull(self.hv_io.link().current_drawn),
+                drain_current=self.lv_io.link().current_draw.hull(self.hv_io.link().current_draw),
                 gate_voltage=self.lv_pwr.link().voltage - self.lv_io.link().voltage,
                 rds_on=(0, 1) * Ohm,  # arbitrary
             )

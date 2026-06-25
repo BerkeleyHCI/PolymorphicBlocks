@@ -55,7 +55,7 @@ class S8261A(PowerConditioner, Block):
 
         self.do_fet = self.Block(
             Fet.NFet(
-                drain_current=self.pwr_in.link().current_drawn,
+                drain_current=self.pwr_in.link().current_draw,
                 gate_voltage=self.pwr_in.link().voltage,
                 rds_on=(0, 0.1) * Ohm,
                 drain_voltage=self.pwr_in.link().voltage,
@@ -63,7 +63,7 @@ class S8261A(PowerConditioner, Block):
         )
         self.co_fet = self.Block(
             Fet.NFet(
-                drain_current=self.pwr_in.link().current_drawn,
+                drain_current=self.pwr_in.link().current_draw,
                 gate_voltage=self.pwr_in.link().voltage,
                 rds_on=(0, 0.1) * Ohm,
                 drain_voltage=self.pwr_in.link().voltage,

@@ -176,7 +176,7 @@ class EspLora(JlcBoardTop):
                 (["mcu", "programming"], "uart-auto-button"),
                 (["usb", "conn", "current_limits"], Range(0.0, 1.1)),  # fudge it a lot
                 (
-                    ["pwr", "current_drawn"],
+                    ["pwr", "current_draw"],
                     Range(0.031392638, 0.8),
                 ),  # allow use of basic part ferrite, assume not everything run simultaneously
                 (

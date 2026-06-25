@@ -31,7 +31,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.top = self.Block(Resistor(self.fixed_resistance, voltage=self.input.link().voltage))
         self.bot = self.Block(PassiveConnector(2))
         self.connect(self.input.net, self.top.a)
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.actual_ratio
         )

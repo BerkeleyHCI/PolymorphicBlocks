@@ -78,7 +78,7 @@ class PackedVoltageSource(GeneratorBlock):
         self.pwr_ins.defined()
         for in_request in self.get(self.pwr_ins.requested()):
             in_port = self.pwr_ins.append_elt(
-                VoltageSink(current_draw=self.pwr_out.link().current_drawn / len(self.get(self.pwr_ins.requested()))),
+                VoltageSink(current_draw=self.pwr_out.link().current_draw / len(self.get(self.pwr_ins.requested()))),
                 in_request,
             )
             self.connect(in_port.net, self.packed.elts.request(in_request))

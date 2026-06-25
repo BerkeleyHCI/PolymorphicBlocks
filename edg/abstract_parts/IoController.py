@@ -236,8 +236,8 @@ class BaseIoController(PinMappable, Block):
 
             if isinstance(io_port, DigitalBidir):
                 io_current_draw_builder = io_current_draw_builder + (
-                    io_port.link().current_drawn.lower().min(0),
-                    io_port.link().current_drawn.upper().max(0),
+                    io_port.link().current_draw.lower().min(0),
+                    io_port.link().current_draw.upper().max(0),
                 )
             elif isinstance(io_port, AnalogSink):
                 pass  # assumed no current draw into a sink
@@ -245,8 +245,8 @@ class BaseIoController(PinMappable, Block):
                 pass  # assumed no current draw
             elif isinstance(io_port, AnalogSource):
                 io_current_draw_builder = io_current_draw_builder + (
-                    io_port.link().current_drawn.lower().min(0),
-                    io_port.link().current_drawn.upper().max(0),
+                    io_port.link().current_draw.lower().min(0),
+                    io_port.link().current_draw.upper().max(0),
                 )
             # TODO: recurse into bundles, really needs a more unified way of handling current draw
 

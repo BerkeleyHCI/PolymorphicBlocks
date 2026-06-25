@@ -35,7 +35,7 @@ class LoadSwitch(PowerSwitch, Block):
         self.fet = self.Block(
             SwitchFet.PFet(
                 drain_voltage=self.pwr_in.link().voltage - self.gnd.link().voltage,
-                drain_current=self.pwr_out.link().current_drawn,
+                drain_current=self.pwr_out.link().current_draw,
                 gate_voltage=self.control.link().voltage - self.gnd.link().voltage,
                 gate_threshold_voltage=(
                     self.control.link().output_thresholds.lower() - self.gnd.link().voltage.lower(),
@@ -47,7 +47,7 @@ class LoadSwitch(PowerSwitch, Block):
             )
         )
 
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
         self.connect(self.pwr_in.net, self.fet.source)
         self.connect(self.control.net, self.fet.gate)
@@ -121,7 +121,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
         self.drv = self.Block(
             SwitchFet.PFet(
                 drain_voltage=pwr_voltage,
-                drain_current=self.output.link().current_drawn,
+                drain_current=self.output.link().current_draw,
                 gate_voltage=pass_gate_voltage,
                 rds_on=(0, self.max_rds),
                 frequency=self.frequency,
@@ -133,7 +133,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
         )
 
         conversions: Dict[str, HasPassivePort] = {
-            "pwr": VoltageSink(current_draw=self.output.link().current_drawn),
+            "pwr": VoltageSink(current_draw=self.output.link().current_draw),
             "output": VoltageSource(
                 voltage_out=self.pwr.link().voltage,
                 current_limits=self.drv.actual_drain_current_rating,
@@ -183,7 +183,7 @@ class OpenDrainDriver(PowerSwitch, Block):
         self.drv = self.Block(
             SwitchFet.NFet(
                 drain_voltage=self.output.link().voltage,
-                drain_current=self.output.link().current_drawn,
+                drain_current=self.output.link().current_draw,
                 gate_voltage=self.control.link().voltage,
                 rds_on=(0, self.max_rds),
                 frequency=self.frequency,

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
+
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..electronics_model import *
@@ -22,7 +24,7 @@ class AnalogLink(Link):
 
         self.voltage = self.Parameter(RangeExpr(self.source.voltage_out))
         self.signal = self.Parameter(RangeExpr(self.source.signal_out))
-        self.current_drawn = self.Parameter(RangeExpr())
+        self.current_draw = self.Parameter(RangeExpr())
 
         self.voltage_limits = self.Parameter(RangeExpr())
         self.signal_limits = self.Parameter(RangeExpr())
@@ -40,7 +42,7 @@ class AnalogLink(Link):
             " <b>of limits</b>: ",
             DescriptionString.FormatUnits(self.voltage_limits, "V"),
             "\n<b>current</b>: ",
-            DescriptionString.FormatUnits(self.current_drawn, "A"),
+            DescriptionString.FormatUnits(self.current_draw, "A"),
             " <b>of limits</b>: ",
             DescriptionString.FormatUnits(self.current_limits, "A"),
             "\n<b>sink impedance</b>: ",
@@ -53,7 +55,7 @@ class AnalogLink(Link):
         self.require(
             self.source.impedance.upper() <= self.sink_impedance.lower() * 0.1
         )  # about 10x for signal integrity
-        self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
+        self.assign(self.current_draw, self.sinks.sum(lambda x: x.current_draw))
 
         self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
         self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
@@ -61,7 +63,12 @@ class AnalogLink(Link):
         self.require(self.voltage.contains(self.signal), "signal levels not contained within voltage")
         self.require(self.signal_limits.contains(self.signal), "incompatible signal levels")
         self.assign(self.current_limits, self.source.current_limits)
-        self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
+        self.require(self.current_limits.contains(self.current_draw), "overcurrent")
+
+    @property
+    @deprecated(f"Use current_draw")
+    def current_drawn(self) -> RangeExpr:
+        return self.current_draw
 
 
 class AnalogBase(Port[AnalogLink]):
@@ -95,7 +102,7 @@ class AnalogSinkBridge(PortBridge):
         self.connect(self.outer_port.net, self.inner_link.net)
 
         self.assign(self.outer_port.impedance, self.inner_link.link().sink_impedance)
-        self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
+        self.assign(self.outer_port.current_draw, self.inner_link.link().current_draw)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
         self.assign(self.outer_port.signal_limits, self.inner_link.link().signal_limits)
 
@@ -137,7 +144,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
             self.outer_port.current_limits, self.inner_link.link().current_limits
         )  # TODO compensate for internal current draw
 
-        self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+        self.assign(self.inner_link.current_draw, self.outer_port.link().current_draw)
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
@@ -213,7 +220,7 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
                 voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
             )
         )
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.assign(self.src.current_draw, self.dst.link().current_draw)
         self.connect(self.src.net, self.dst.net)
 
 

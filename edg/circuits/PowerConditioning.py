@@ -25,7 +25,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
         self.diode = self.Block(
             Diode(
                 reverse_voltage=(0, self.pwr_in.link().voltage.upper() - self.pwr_in_diode.link().voltage.lower()),
-                current=self.pwr_out.link().current_drawn,
+                current=self.pwr_out.link().current_draw,
                 voltage_drop=voltage_drop,
             )
         )
@@ -34,8 +34,8 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
             self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()
             <= self.pwr_in.link().voltage.lower()
         )
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-        self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
+        self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_draw)
 
         self.connect(self.pwr_in_diode.net, self.diode.anode)
         self.connect(self.pwr_out.net, self.pwr_in.net, self.diode.cathode)
@@ -66,11 +66,11 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
         self.diodes = ElementDict[Diode]()
         self.pwr_ins.defined()
         for name in requested:
-            pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), name)
+            pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_draw), name)
             self.diodes[name] = diode = self.Block(
                 Diode(
                     reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
-                    current=self.pwr_out.link().current_drawn,
+                    current=self.pwr_out.link().current_draw,
                     voltage_drop=self.voltage_drop,
                 )
             )
@@ -113,7 +113,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
         # FET behavior requires the high priority path to be higher voltage
         self.require(self.pwr_hi.link().voltage.lower() > self.pwr_lo.link().voltage.upper())
 
-        output_current_draw = self.pwr_out.link().current_drawn
+        output_current_draw = self.pwr_out.link().current_draw
         self.pdr = self.Block(Resistor(10 * kOhm(tol=0.01)))
         self.diode = self.Block(
             Diode(
@@ -185,7 +185,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     @override
     def contents(self) -> None:
         super().contents()
-        output_current_draw = self.pwr_out.link().current_drawn
+        output_current_draw = self.pwr_out.link().current_draw
         self.fet = self.Block(
             Fet.PFet(
                 drain_voltage=(0, self.pwr_out.link().voltage.upper()),
@@ -251,7 +251,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
         # use the maximum voltages and currents accounting for both directions
         batt_voltage = self.pwr_in.link().voltage.hull(self.pwr_out.link().reverse_voltage)
-        batt_current = self.pwr_out.link().current_drawn.hull(self.pwr_in.link().reverse_current_drawn)
+        batt_current = self.pwr_out.link().current_draw.hull(self.pwr_in.link().reverse_current_draw)
 
         power = batt_current * batt_current * self.rds_on
         r1_current = batt_voltage / self.r1.resistance
@@ -286,7 +286,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
                 "pwr_out": VoltageSource(
                     voltage_out=batt_voltage,
                     reverse_voltage_limits=self.pwr_in.link().reverse_voltage_limits,
-                    reverse_current_draw=self.pwr_in.link().reverse_current_drawn,
+                    reverse_current_draw=self.pwr_in.link().reverse_current_draw,
                 ),
                 "gnd": Ground(),
             },
@@ -341,7 +341,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
         super().contents()
         control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
         pwr_voltage = self.pwr_out.link().voltage.hull(self.gnd.link().voltage)
-        pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO)
+        pwr_current = self.pwr_out.link().current_draw.hull(RangeExpr.ZERO)
 
         self.pull_res = self.Block(Resistor(resistance=self.pull_resistance))
         self.pwr_fet = self.Block(
@@ -381,7 +381,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "pwr_in": VoltageSink(
-                    current_draw=self.pwr_out.link().current_drawn,
+                    current_draw=self.pwr_out.link().current_draw,
                 ),
                 "pwr_out": VoltageSource(
                     voltage_out=self.pwr_in.link().voltage,

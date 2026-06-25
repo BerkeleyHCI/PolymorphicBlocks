@@ -79,7 +79,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 0.5) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,
@@ -91,7 +91,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
             self.rect = self.Block(
                 Diode(
                     reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
-                    current=self.pwr_out.link().current_drawn,
+                    current=self.pwr_out.link().current_draw,
                     voltage_drop=(0, 0.4) * Volt,
                     reverse_recovery_time=(0, 500) * nSecond,  # guess from Digikey's classification for "fast recovery"
                 )

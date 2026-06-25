@@ -304,11 +304,11 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
             VoltageSource(voltage_out=self.pwr_in.link().voltage),  # ignore voltage drop
             [Output],
         )
-        current_draw = self.pwr_out.link().current_drawn.abs()
+        current_draw = self.pwr_out.link().current_draw.abs()
 
         self.res = self.Block(Resistor(resistance=self.resistance, power=current_draw * current_draw * self.resistance))
 
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
         self.connect(self.pwr_in.net, self.res.a)
         self.connect(self.pwr_out.net, self.res.b)
 
@@ -434,7 +434,7 @@ class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.assign(self.input.impedance, self.output.link().sink_impedance + self.res.actual_resistance)
 
         self.assign(
-            self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
+            self.res.power, self.input.link().current_draw * self.input.link().current_draw * self.res.resistance
         )
         self.connect(self.input.net, self.res.a)
         self.connect(self.output.net, self.res.b)
@@ -470,12 +470,12 @@ class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
             ),
             [Output],
         )
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
 
         self.res = self.Block(
             Resistor(
                 resistance=resistance,
-                power=self.input.link().current_drawn * self.input.link().current_drawn * resistance,
+                power=self.input.link().current_draw * self.input.link().current_draw * resistance,
             )
         )
         self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
@@ -536,7 +536,7 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.res = self.Block(
             Resistor(
                 resistance=resistance,
-                power=self.interior.link().current_drawn * self.interior.link().current_drawn * resistance,
+                power=self.interior.link().current_draw * self.interior.link().current_draw * resistance,
             )
         )
         self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
@@ -545,7 +545,7 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.connect(self.interior.net, self.res.b)
 
         self.assign(self.exterior.voltage_out, self.interior.link().voltage)
-        self.assign(self.exterior.current_draw, self.interior.link().current_drawn)
+        self.assign(self.exterior.current_draw, self.interior.link().current_draw)
         self.assign(self.exterior.voltage_limits, self.interior.link().voltage_limits)
         self.assign(
             self.exterior.current_limits, self.interior.link().current_limits

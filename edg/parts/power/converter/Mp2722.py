@@ -22,7 +22,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage), current_limits=(0, 5) * Amp
             )  # up to 5A charge / system current
         )  # internal switch specs not defined, only bulk current limit defined
-        self.assign(self.vin.current_draw, self.sw.link().current_drawn)  # TODO quiescent current
+        self.assign(self.vin.current_draw, self.sw.link().current_draw)  # TODO quiescent current
 
         self.pmid = self.Port(
             VoltageSource(
@@ -47,7 +47,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.batt = self.Port(
             VoltageSink(  # technically bidir
                 voltage_limits=(2.6, 4.6) * Volt,  # 2.6 is max UV threshold
-                current_draw=self.sys.link().current_drawn,  # TODO model (reverse) charging current
+                current_draw=self.sys.link().current_draw,  # TODO model (reverse) charging current
             )
         )
         self.battsns = self.Port(VoltageSink())  # technically analog input
@@ -187,7 +187,7 @@ class Mp2722(DiscreteBuckConverter):
                     self.pwr_in.link().voltage,
                     vsys_range,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn + self.ic.sys.link().current_drawn,
+                    self.pwr_out.link().current_draw + self.ic.sys.link().current_draw,
                     (0, 3.2) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,

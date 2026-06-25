@@ -37,11 +37,11 @@ class DiodeSwitchCell(SwitchCell, InternalBlock):
         self.row.init_from(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
 
         self.sw = self.Block(
-            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_drawn)
+            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_draw)
         )
         self.d = self.Block(
             Diode(
-                current=self.col.link().current_drawn,
+                current=self.col.link().current_draw,
                 reverse_voltage=(self.col.link().voltage - self.row.link().voltage).abs(),
                 voltage_drop=self.voltage_drop,
             )

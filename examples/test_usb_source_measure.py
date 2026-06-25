@@ -425,7 +425,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
             self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "input": AnalogSink(
-                    current_draw=self.output.link().current_drawn, impedance=self.output.link().sink_impedance
+                    current_draw=self.output.link().current_draw, impedance=self.output.link().sink_impedance
                 ),
                 "output": AnalogSource(
                     voltage_out=self.input.link().voltage.intersect(self.model_voltage_clamp),
@@ -648,7 +648,7 @@ class UsbSourceMeasure(JlcBoardTop):
                 self.Block(VoltageTestPoint("vc-")),
             )
             self.vcontroln = self.connect(
-                self.reg_vcontroln.pwr_out.as_ground(current_draw=self.reg_vcontrol.pwr_out.link().current_drawn)
+                self.reg_vcontroln.pwr_out.as_ground(current_draw=self.reg_vcontrol.pwr_out.link().current_draw)
             )
 
         # power path domain

@@ -83,7 +83,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, self.NMOS_CURRENT_LIMIT) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,

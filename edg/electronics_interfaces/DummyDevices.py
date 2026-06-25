@@ -98,7 +98,7 @@ class ForcedVoltageCurrentLimit(DummyDevice):
         )
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
 
 class ForcedVoltage(DummyDevice):
@@ -112,7 +112,7 @@ class ForcedVoltage(DummyDevice):
         self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
 
 class ForcedVoltageCurrent(DummyDevice):
@@ -141,7 +141,7 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
             [Output],
         )
 
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_draw)
         self.connect(self.signal_in.net, self.signal_out.net)
 
     @override

@@ -85,7 +85,7 @@ class Rp2040_Device(
             VoltageSink(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
                 current_draw=self.vreg_vout.is_connected().then_else(
-                    self.vreg_vout.link().current_drawn, 0 * Amp(tol=0)
+                    self.vreg_vout.link().current_draw, 0 * Amp(tol=0)
                 ),
             )
         )
@@ -459,7 +459,7 @@ class Xiao_Rp2040(
             VoltageSink(  # based on RS3236-3.3
                 voltage_limits=(3.3 * 1.025 + 0.55, 7.5) * Volt,  # output * tolerance + dropout @ 300mA
                 current_draw=self.pwr_out.is_connected().then_else(  # prop output current draw
-                    self.pwr_out.link().current_drawn, (0, 0) * Amp
+                    self.pwr_out.link().current_draw, (0, 0) * Amp
                 ),
             )
         )

@@ -60,7 +60,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             self.pgnds.append_elt(Passive(), i)
 
             self.require(out_i.is_connected().implies(en_i.is_connected() & in_i.is_connected()))
-            channel_currents.append(out_i.is_connected().then_else(out_i.link().current_drawn.abs().upper(), 0 * mAmp))
+            channel_currents.append(out_i.is_connected().then_else(out_i.link().current_draw.abs().upper(), 0 * mAmp))
             out_connected.append(out_i.is_connected())
 
         overall_current = functools.reduce(lambda a, b: a.max(b), channel_currents)
@@ -167,7 +167,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
                     gnd_voltage_source = self.gnd.as_voltage_source()
                 res = self.pgnd_res[i] = self.Block(
                     CurrentSenseResistor(resistance=self.risense_res, sense_in_reqd=False)
-                ).connected(gnd_voltage_source, pgnd_pin.adapt_to(VoltageSink(current_draw=out.link().current_drawn)))
+                ).connected(gnd_voltage_source, pgnd_pin.adapt_to(VoltageSink(current_draw=out.link().current_draw)))
                 self.connect(self.pgnd_sense.append_elt(AnalogSource.empty(), i), res.sense_out)
             else:
                 self.connect(pgnd_pin.adapt_to(Ground()), self.gnd)

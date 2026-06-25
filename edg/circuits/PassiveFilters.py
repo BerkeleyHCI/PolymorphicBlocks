@@ -80,7 +80,7 @@ class AnalogLowPassRc(DigitalFilter, Block):
         self.output = self.Port(
             AnalogSource(voltage_out=self.input.link().voltage, signal_out=self.input.link().signal), [Output]
         )
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
         self.connect(self.input.net, self.rc.input)
@@ -106,7 +106,7 @@ class DigitalLowPassRc(DigitalFilter, Block):
             ),
             [Output],
         )
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
         self.connect(self.gnd.net, self.rc.gnd)
@@ -162,7 +162,7 @@ class LowPassRcDac(DigitalToAnalog, Block):
             ),
             [Output],
         )
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
         self.connect(self.gnd.net, self.rc.gnd)
@@ -208,9 +208,9 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
         self.rp = self.Block(Resistor(resistance=self.impedance))
         self.rn = self.Block(Resistor(resistance=self.impedance))
         self.assign(self.inn.impedance, self.rn.actual_resistance + self.outn.link().sink_impedance)
-        self.assign(self.inn.current_draw, self.outn.link().current_drawn)
+        self.assign(self.inn.current_draw, self.outn.link().current_draw)
         self.assign(self.inp.impedance, self.rp.actual_resistance + self.outp.link().sink_impedance)
-        self.assign(self.inp.current_draw, self.outp.link().current_drawn)
+        self.assign(self.inp.current_draw, self.outp.link().current_draw)
         self.assign(self.outn.impedance, self.rn.actual_resistance + self.inn.link().source_impedance)
         self.assign(self.outp.impedance, self.rp.actual_resistance + self.inp.link().source_impedance)
 

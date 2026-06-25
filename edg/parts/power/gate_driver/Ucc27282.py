@@ -43,7 +43,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         # quiescent to operating, vdd and hb, plus output draw
         self.assign(
             self.vdd.current_draw,
-            (0.3, 4.5) * mAmp + (0.2, 4) * mAmp + self.lo.link().current_drawn + self.ho.link().current_drawn,
+            (0.3, 4.5) * mAmp + (0.2, 4) * mAmp + self.lo.link().current_draw + self.ho.link().current_draw,
         )
 
     @override

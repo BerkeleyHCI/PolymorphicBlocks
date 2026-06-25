@@ -150,7 +150,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
             input = self.inputs.append_elt(
                 AnalogSink(
                     voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
-                    current_draw=self.out.link().current_drawn,
+                    current_draw=self.out.link().current_draw,
                     impedance=self.out.link().sink_impedance + self.device.analog_on_resistance,
                 ),
                 elt,
@@ -184,7 +184,7 @@ class AnalogDemuxer(Interface, GeneratorBlock):
         self.input = self.Port(
             AnalogSink(
                 voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
-                current_draw=self.outputs.hull(lambda x: x.link().current_drawn),
+                current_draw=self.outputs.hull(lambda x: x.link().current_draw),
                 impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance),
             )
         )

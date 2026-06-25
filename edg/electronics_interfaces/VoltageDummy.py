@@ -25,7 +25,7 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
             [Power, InOut],
         )
 
-        self.current_drawn = self.Parameter(RangeExpr(self.io.link().current_drawn))
+        self.current_draw = self.Parameter(RangeExpr(self.io.link().current_draw))
         self.voltage_limits = self.Parameter(RangeExpr(self.io.link().voltage_limits))
         self.reverse_voltage = self.Parameter(RangeExpr(self.io.link().reverse_voltage))
 
@@ -33,6 +33,11 @@ class DummyVoltageSource(BaseDummyBlock[VoltageLink]):
     @deprecated(f"DummyVoltageSource.pwr is deprecated, use .io instead.")
     def pwr(self) -> VoltageSource:
         return self.io
+
+    @property
+    @deprecated(f"Use current_draw")
+    def current_drawn(self) -> RangeExpr:
+        return self.current_draw
 
 
 class DummyVoltageSink(BaseDummyBlock[VoltageLink]):

@@ -202,7 +202,7 @@ class SeriesPowerInductor(DiscreteApplication):
 
         self.connect(self.pwr_in.net, self.ind.a)
         self.connect(self.pwr_out.net, self.ind.b)
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
     def connected(
         self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None

@@ -19,7 +19,7 @@ class UsbBitBang(BitBangAdapter, Block):
         TODO: unify code w/ DigitalBidir bridge?"""
         return DigitalBidir(
             voltage_out=link_port.link().voltage,
-            current_draw=link_port.link().current_drawn,
+            current_draw=link_port.link().current_draw,
             voltage_limits=link_port.link().voltage_limits,
             current_limits=link_port.link().current_limits,
             output_thresholds=link_port.link().output_thresholds,

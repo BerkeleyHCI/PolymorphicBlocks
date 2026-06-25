@@ -68,7 +68,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
                 self.pwr_in.link().voltage,
                 self.output_voltage,
                 self.actual_frequency,
-                self.pwr_out.link().current_drawn,
+                self.pwr_out.link().current_draw,
                 Range.exact(0),
                 input_voltage_ripple=self.input_ripple_limit,
                 output_voltage_ripple=self.output_ripple_limit,

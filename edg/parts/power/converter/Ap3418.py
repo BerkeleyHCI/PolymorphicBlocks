@@ -11,7 +11,7 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
         self.pwr_in = self.Port(
             VoltageSink(
-                voltage_limits=(2.5, 5.5) * Volt, current_draw=self.sw.link().current_drawn  # TODO quiescent current
+                voltage_limits=(2.5, 5.5) * Volt, current_draw=self.sw.link().current_draw  # TODO quiescent current
             ),
             [Power],
         )
@@ -81,7 +81,7 @@ class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 1.8) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,

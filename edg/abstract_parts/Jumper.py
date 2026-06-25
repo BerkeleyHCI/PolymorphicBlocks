@@ -36,7 +36,7 @@ class VoltageJumper(TypedJumper, Block):
         self.input = self.Port(VoltageSink(current_draw=RangeExpr(), reverse_voltage_out=RangeExpr()), [Input])
         self.output = self.Port(
             VoltageSource(
-                voltage_out=self.input.link().voltage, reverse_current_draw=self.input.link().reverse_current_drawn
+                voltage_out=self.input.link().voltage, reverse_current_draw=self.input.link().reverse_current_draw
             ),
             [Output],
         )
@@ -45,7 +45,7 @@ class VoltageJumper(TypedJumper, Block):
     def contents(self) -> None:
         super().contents()
         self.device = self.Block(Jumper())
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
         self.assign(self.input.reverse_voltage_out, self.output.link().reverse_voltage)
         self.connect(self.input.net, self.device.a)
         self.connect(self.output.net, self.device.b)
@@ -64,6 +64,6 @@ class DigitalJumper(TypedJumper, Block):
     def contents(self) -> None:
         super().contents()
         self.device = self.Block(Jumper())
-        self.assign(self.input.current_draw, self.output.link().current_drawn)  # for model purposes, treat as connected
+        self.assign(self.input.current_draw, self.output.link().current_draw)  # for model purposes, treat as connected
         self.connect(self.input.net, self.device.a)
         self.connect(self.output.net, self.device.b)

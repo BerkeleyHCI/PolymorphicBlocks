@@ -26,7 +26,7 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, PowerConditioner, Block):
         super().contents()
 
         # TODO model diode forward voltage drops
-        out_current = self.out_pos.link().current_drawn.hull(self.out_neg.link().current_drawn)
+        out_current = self.out_pos.link().current_draw.hull(self.out_neg.link().current_draw)
         diode_model = Diode(
             reverse_voltage=self.pwm.link().voltage.hull(0 * Volt(tol=0)),
             current=out_current,

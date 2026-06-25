@@ -79,7 +79,7 @@ class IdealVoltageRegulator(Resettable, VoltageRegulator, IdealModel):
         self.gnd.init_from(Ground())
         self.pwr_in.init_from(
             VoltageSink(
-                current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn
+                current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_draw
             )
         )
         self.pwr_out.init_from(VoltageSource(voltage_out=self.output_voltage))

@@ -39,11 +39,11 @@ class L293dd_Device(InternalSubcircuit, FootprintBlock):
             + (
                 0,  # calculate possible motor current, assuming A1/2 and B1/2 are coupled (and not independent)
                 self.out1.is_connected()
-                .then_else(self.out1.link().current_drawn.abs().upper(), 0 * mAmp)
-                .max(self.out2.is_connected().then_else(self.out2.link().current_drawn.abs().upper(), 0 * mAmp))
+                .then_else(self.out1.link().current_draw.abs().upper(), 0 * mAmp)
+                .max(self.out2.is_connected().then_else(self.out2.link().current_draw.abs().upper(), 0 * mAmp))
                 + self.out3.is_connected()
-                .then_else(self.out3.link().current_drawn.abs().upper(), 0 * mAmp)
-                .max(self.out4.is_connected().then_else(self.out4.link().current_drawn.abs().upper(), 0 * mAmp)),
+                .then_else(self.out3.link().current_draw.abs().upper(), 0 * mAmp)
+                .max(self.out4.is_connected().then_else(self.out4.link().current_draw.abs().upper(), 0 * mAmp)),
             ),
         )
 

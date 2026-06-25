@@ -62,8 +62,8 @@ class IdealIoController(
         for elt in self.get(self.dac.requested()):
             aout = self.dac.append_elt(AnalogSource.from_supply(self.gnd, self.pwr), elt)
             io_current_draw_builder = io_current_draw_builder + (
-                aout.link().current_drawn.lower().min(0),
-                aout.link().current_drawn.upper().max(0),
+                aout.link().current_draw.lower().min(0),
+                aout.link().current_draw.upper().max(0),
             )
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.pwr, pullup_capable=True, pulldown_capable=True)
@@ -72,8 +72,8 @@ class IdealIoController(
         for elt in self.get(self.gpio.requested()):
             dio = self.gpio.append_elt(dio_model, elt)
             io_current_draw_builder = io_current_draw_builder + (
-                dio.link().current_drawn.lower().min(0),
-                dio.link().current_drawn.upper().max(0),
+                dio.link().current_draw.lower().min(0),
+                dio.link().current_draw.upper().max(0),
             )
 
         self.spi.defined()

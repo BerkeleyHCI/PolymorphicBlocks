@@ -134,7 +134,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
             if prev_cell is None:  # first cell, direct connect to gnd
                 self.connect(self.gnd, cell.gnd)
             else:
-                self.connect(prev_cell.pwr.as_ground(self.pwr.link().current_drawn), cell.gnd)
+                self.connect(prev_cell.pwr.as_ground(self.pwr.link().current_draw), cell.gnd)
                 prev_capacity_min = cell.actual_capacity.lower().min(prev_capacity_min)
                 prev_capacity_max = cell.actual_capacity.upper().min(prev_capacity_max)
             prev_cell = cell

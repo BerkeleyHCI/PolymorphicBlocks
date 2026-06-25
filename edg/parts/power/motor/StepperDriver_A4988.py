@@ -59,14 +59,14 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.out1b = self.Port(dout1_model)
         self.assign(
             self.vbb1.current_draw,
-            self.out1a.link().current_drawn.hull(self.out1b.link().current_drawn).abs().hull((0, 0)) + kVbbDraw,
+            self.out1a.link().current_draw.hull(self.out1b.link().current_draw).abs().hull((0, 0)) + kVbbDraw,
         )
         dout2_model = DigitalSource.from_supply(self.gnd, self.vbb2, current_limits=(-2, 2) * Amp)
         self.out2a = self.Port(dout2_model)
         self.out2b = self.Port(dout2_model)
         self.assign(
             self.vbb2.current_draw,
-            self.out2a.link().current_drawn.hull(self.out2b.link().current_drawn).abs().hull((0, 0)) + kVbbDraw,
+            self.out2a.link().current_draw.hull(self.out2b.link().current_draw).abs().hull((0, 0)) + kVbbDraw,
         )
 
     @override

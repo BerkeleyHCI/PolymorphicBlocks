@@ -107,7 +107,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
             ),
             [Output],
         )
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_draw)
 
         self.connect(self.signal_in.net, self.signal_out.net, self.diode.cathode)
         self.connect(self.gnd.net, self.diode.anode)

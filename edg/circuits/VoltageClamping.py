@@ -103,7 +103,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
         super().contents()
 
         # TODO bidirectional clamping calcs?
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_draw)
         self.res = self.Block(
             Resistor(
                 resistance=1
