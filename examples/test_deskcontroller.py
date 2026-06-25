@@ -14,7 +14,7 @@ class JiecangConnector(Block):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(
-            VoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
+            VoltageSource(voltage=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
         )  # reportedly drives at least 300mA
         self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr)))
 

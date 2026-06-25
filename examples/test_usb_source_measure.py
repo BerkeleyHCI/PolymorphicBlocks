@@ -222,7 +222,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
                     ),
                 ),
                 "out": VoltageSource(
-                    voltage_out=self.pwr.link().voltage,
+                    voltage=self.pwr.link().voltage,
                     current_limits=self.high_fet.actual_drain_current_rating.intersect(
                         self.low_fet.actual_drain_current_rating
                     ),
@@ -331,7 +331,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
         if dir:
             self.diode = self.Block(
                 Diode(  # TODO should be encoded as a voltage difference?
-                    reverse_voltage=self.amp.out.voltage_out,
+                    reverse_voltage=self.amp.out.voltage,
                     current=RangeExpr.ZERO,  # an approximation, current rating not significant here
                     voltage_drop=(0, 0.8) * Volt,  # arbitrary low threshold
                 )
@@ -369,8 +369,8 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
                 ),
                 "actual": AnalogSink(impedance=self.rtop.actual_resistance + self.rbot.actual_resistance),
                 "rtop.2": AnalogSource(
-                    voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
-                    signal_out=self.target.link().voltage.hull(self.actual.link().voltage),
+                    voltage=self.target.link().voltage.hull(self.actual.link().voltage),
+                    signal=self.target.link().voltage.hull(self.actual.link().voltage),
                     impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance),
                 ),
                 "rbot.2": AnalogSink(),  # ideal, rtop.2 contains the parameter model
@@ -425,11 +425,11 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
             self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "input": AnalogSink(
-                    current_draw=self.output.link().current_drawn, impedance=self.output.link().sink_impedance
+                    current_draw=self.output.link().current_draw, impedance=self.output.link().sink_impedance
                 ),
                 "output": AnalogSource(
-                    voltage_out=self.input.link().voltage.intersect(self.model_voltage_clamp),
-                    signal_out=self.input.link().signal.intersect(self.model_signal_clamp),
+                    voltage=self.input.link().voltage.intersect(self.model_voltage_clamp),
+                    signal=self.input.link().signal.intersect(self.model_signal_clamp),
                     impedance=self.input.link().source_impedance,
                 ),
             },
@@ -524,7 +524,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
         # USB PD port that supplies power to the load
         # USB PD can't actually do 8 A, but this suppresses the error and we can software-limit current draw
-        self.usb = self.Block(UsbCReceptacle(voltage_out=(5, 20) * Volt, current_limits=(0, 8) * Amp))
+        self.usb = self.Block(UsbCReceptacle(voltage=(5, 20) * Volt, current_limits=(0, 8) * Amp))
 
         self.gnd = self.connect(self.usb.gnd)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
@@ -648,7 +648,7 @@ class UsbSourceMeasure(JlcBoardTop):
                 self.Block(VoltageTestPoint("vc-")),
             )
             self.vcontroln = self.connect(
-                self.reg_vcontroln.pwr_out.as_ground(current_draw=self.reg_vcontrol.pwr_out.link().current_drawn)
+                self.reg_vcontroln.pwr_out.as_ground(current_draw=self.reg_vcontrol.pwr_out.link().current_draw)
             )
 
         # power path domain

@@ -28,8 +28,8 @@ class IdealLinearRegulator(Resettable, LinearRegulator, IdealModel):
         super().contents()
         effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
         self.gnd.init_from(Ground())
-        self.pwr_in.init_from(VoltageSink(current_draw=self.pwr_out.link().current_drawn))
-        self.pwr_out.init_from(VoltageSource(voltage_out=effective_output_voltage))
+        self.pwr_in.init_from(VoltageSink(current_draw=self.pwr_out.link().current_draw))
+        self.pwr_out.init_from(VoltageSource(voltage=effective_output_voltage))
         self.reset.init_from(DigitalSink())
 
 
@@ -52,12 +52,12 @@ class LinearRegulatorDevice(Block):
             [Power, Input],
         )
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.RangeExpr(), current_limits=RangeExpr()),  # parameters set by subtype
+            VoltageSource(voltage=self.RangeExpr(), current_limits=RangeExpr()),  # parameters set by subtype
             [Output],
         )
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn + self.actual_quiescent_current)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw + self.actual_quiescent_current)
 
         self.require(
-            self.pwr_out.voltage_out.lower() + self.actual_dropout.upper() <= self.pwr_in.link().voltage.lower(),
+            self.pwr_out.voltage.lower() + self.actual_dropout.upper() <= self.pwr_in.link().voltage.lower(),
             "excessive dropout",
         )

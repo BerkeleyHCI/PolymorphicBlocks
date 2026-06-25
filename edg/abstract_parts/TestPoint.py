@@ -188,13 +188,13 @@ class CanDiffTestPoint(BaseTypedTestPoint[CanDiffLink]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.io: CanDiffPort = self.Port(CanDiffPort(DigitalBidir.empty()), [InOut])
+        self.io: CanDiffPort = self.Port(CanDiffPort(), [InOut])
 
     @override
     def contents(self) -> None:
         super().contents()
         name_prefix = (self.tp_name == "").then_else(self.io.link().name(), self.tp_name)
-        self.tp_canh = self.Block(DigitalTestPoint(name_prefix + ".canh"))
-        self.tp_canl = self.Block(DigitalTestPoint(name_prefix + ".canl"))
+        self.tp_canh = self.Block(TestPoint(name_prefix + ".canh"))
+        self.tp_canl = self.Block(TestPoint(name_prefix + ".canl"))
         self.connect(self.tp_canh.io, self.io.canh)
         self.connect(self.tp_canl.io, self.io.canl)

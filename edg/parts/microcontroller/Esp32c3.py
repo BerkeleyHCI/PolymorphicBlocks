@@ -96,7 +96,7 @@ class Esp32c3_Device(
 
         # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
         self.xtal = self.Port(  # vdda domain assumed
-            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage_out=self.vdda.link().voltage),
+            CrystalDriver(frequency_limits=40 * MHertz(tol=10e-6), voltage=self.vdda.link().voltage),
             optional=self._model,
         )
 
@@ -542,7 +542,7 @@ class Xiao_Esp32c3(
         super().__init__(**kwargs)
 
         self.vusb_out.init_from(
-            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+            VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
         self.generator_param(
@@ -572,7 +572,7 @@ class Xiao_Esp32c3(
         )
         self.connect(
             self._generate_pwr_node(
-                voltage_out=3.3 * Volt(tol=0.05),
+                voltage=3.3 * Volt(tol=0.05),
                 current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
             ),
             model_pwr,

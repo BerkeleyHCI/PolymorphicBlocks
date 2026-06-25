@@ -100,7 +100,7 @@ class BaseIoControllerWrapped(BaseIoController):
 
     def _remap_to_footprint_pinning(
         self, pin_assigns: Dict[str, Tuple[Optional[str], Optional[str]]], pin_dict: Dict[str, Port]
-    ) -> Dict[str, HasPassivePort]:
+    ) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Generates pinning that can be passed into a footprint, given the pin assign dict from _remap_pin_assigns_list
         and pin dict from _generator_pin_dict.
 
@@ -108,12 +108,12 @@ class BaseIoControllerWrapped(BaseIoController):
 
         Internal utility.
         """
-        pinning: Dict[str, HasPassivePort] = {}
+        pinning: Dict[str, Union[Passive, HasPassivePort]] = {}
 
         for name, assign in pin_assigns.items():
             assert name in pin_dict
             port = pin_dict[name]
-            if not isinstance(port, HasPassivePort):
+            if not isinstance(port, (Passive, HasPassivePort)):
                 continue  # ignore non-leaf ports
             assert assign[1] is not None, f"pin {name} missing pin number assignment"
             pinning[assign[1]] = port

@@ -33,7 +33,7 @@ class VoltageRegulator(PowerConditioner):
 
         self.description = DescriptionString(
             "<b>output voltage:</b> ",
-            DescriptionString.FormatUnits(self.pwr_out.voltage_out, "V"),
+            DescriptionString.FormatUnits(self.pwr_out.voltage, "V"),
             " <b>of spec:</b> ",
             DescriptionString.FormatUnits(self.output_voltage, "V"),
             "\n",
@@ -41,7 +41,7 @@ class VoltageRegulator(PowerConditioner):
             DescriptionString.FormatUnits(self.pwr_in.link().voltage, "V"),
         )
 
-        self.require(self.pwr_out.voltage_out.within(self.output_voltage), "Output voltage must be within spec")
+        self.require(self.pwr_out.voltage.within(self.output_voltage), "Output voltage must be within spec")
 
 
 @non_library
@@ -79,8 +79,8 @@ class IdealVoltageRegulator(Resettable, VoltageRegulator, IdealModel):
         self.gnd.init_from(Ground())
         self.pwr_in.init_from(
             VoltageSink(
-                current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn
+                current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_draw
             )
         )
-        self.pwr_out.init_from(VoltageSource(voltage_out=self.output_voltage))
+        self.pwr_out.init_from(VoltageSource(voltage=self.output_voltage))
         self.reset.init_from(DigitalSink())

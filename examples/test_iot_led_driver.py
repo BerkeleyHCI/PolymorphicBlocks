@@ -12,7 +12,7 @@ class PowerInConnector(Connector):
         self.gnd = self.Port(Ground())
         self.pwr = self.Port(
             VoltageSource(
-                voltage_out=(10, 16) * Volt,
+                voltage=(10, 16) * Volt,
                 current_limits=(0, 3) * Amp,
             )
         )

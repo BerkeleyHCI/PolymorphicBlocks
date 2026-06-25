@@ -117,8 +117,8 @@ class IotFan(JlcBoardTop):
         super().contents()
 
         # only populate ONE of these
-        self.pwr = self.Block(PowerBarrelJack(voltage_out=(10, 24) * Volt, current_limits=(0, 5) * Amp))
-        self.usb = self.Block(UsbCReceptacle(voltage_out=(5, 20) * Volt, current_limits=(0, 5) * Amp))
+        self.pwr = self.Block(PowerBarrelJack(voltage=(10, 24) * Volt, current_limits=(0, 5) * Amp))
+        self.usb = self.Block(UsbCReceptacle(voltage=(5, 20) * Volt, current_limits=(0, 5) * Amp))
         self.pwr_merge = self.Block(MergedVoltageSource()).connected_from(self.pwr.pwr, self.usb.pwr)
         self.gnd = self.connect(self.pwr.gnd, self.usb.gnd)
 

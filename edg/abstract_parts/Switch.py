@@ -98,7 +98,7 @@ class DigitalSwitch(HumanInterface):
     @override
     def contents(self) -> None:
         super().contents()
-        self.package = self.Block(Switch(current=self.out.link().current_drawn, voltage=self.out.link().voltage))
+        self.package = self.Block(Switch(current=self.out.link().current_draw, voltage=self.out.link().voltage))
 
         self.connect(self.out.net, self.package.sw)
         self.connect(self.gnd.net, self.package.com)
@@ -130,7 +130,7 @@ class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
 
         self.package = self.Block(
             RotaryEncoder(
-                current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
+                current=self.a.link().current_draw.hull(self.b.link().current_draw),
                 voltage=self.a.link().voltage.hull(self.b.link().voltage),
             )
         )
@@ -194,7 +194,7 @@ class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
 
         self.package = self.Block(
             DirectionSwitch(
-                current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
+                current=self.a.link().current_draw.hull(self.b.link().current_draw),
                 voltage=self.a.link().voltage.hull(self.b.link().voltage),
             )
         )

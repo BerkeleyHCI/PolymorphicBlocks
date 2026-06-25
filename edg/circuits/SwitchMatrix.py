@@ -27,8 +27,7 @@ class DiodeSwitchCell(SwitchCell, InternalBlock):
 
         self.col.init_from(
             DigitalSource(  # diode anode, externally pulled, driven to col by switch closure
-                voltage_out=self.row.link().voltage.lower()
-                + self.voltage_drop,  # use spec to avoid circular dependency
+                voltage=self.row.link().voltage.lower() + self.voltage_drop,  # use spec to avoid circular dependency
                 output_thresholds=(self.row.link().voltage + self.voltage_drop).hull(float("inf")),
                 low_driver=True,
                 high_driver=False,
@@ -37,11 +36,11 @@ class DiodeSwitchCell(SwitchCell, InternalBlock):
         self.row.init_from(DigitalSink())  # switch common, externally driven for column scan, assumed ideal
 
         self.sw = self.Block(
-            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_drawn)
+            Switch(voltage=self.col.link().voltage - self.row.link().voltage, current=self.col.link().current_draw)
         )
         self.d = self.Block(
             Diode(
-                current=self.col.link().current_drawn,
+                current=self.col.link().current_draw,
                 reverse_voltage=(self.col.link().voltage - self.row.link().voltage).abs(),
                 voltage_drop=self.voltage_drop,
             )

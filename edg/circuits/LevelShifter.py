@@ -43,7 +43,7 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
         self.fet = self.Block(
             Fet.NFet(
                 drain_voltage=self.hv_pwr.link().voltage.hull(self.hv_io.link().voltage),
-                drain_current=self.lv_io.link().current_drawn.hull(self.hv_io.link().current_drawn),
+                drain_current=self.lv_io.link().current_draw.hull(self.hv_io.link().current_draw),
                 gate_voltage=self.lv_pwr.link().voltage - self.lv_io.link().voltage,
                 rds_on=(0, 1) * Ohm,  # arbitrary
             )
@@ -51,12 +51,12 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
 
         if self.get(self.src_hint) == "lv":  # LV is source, HV model is incomplete
             lv_io_model = DigitalBidir(
-                voltage_out=self.lv_pwr.link().voltage,  # this is not driving, effectively only a pullup
+                voltage=self.lv_pwr.link().voltage,  # this is not driving, effectively only a pullup
                 output_thresholds=self.lv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             lv_io_model = DigitalBidir(
-                voltage_out=(
+                voltage=(
                     self.lv_pwr.link().voltage.lower(),
                     self.lv_pwr.link().voltage.upper().min(self.hv_io.link().voltage.upper()),
                 ),
@@ -68,12 +68,12 @@ class BidirectionalLevelShifter(Interface, GeneratorBlock):
 
         if self.get(self.src_hint) == "hv":  # HV is source, LV model is incomplete
             hv_io_model = DigitalBidir(
-                voltage_out=self.hv_pwr.link().voltage,  # this is not driving, effectively only a pullup
+                voltage=self.hv_pwr.link().voltage,  # this is not driving, effectively only a pullup
                 output_thresholds=self.hv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             hv_io_model = DigitalBidir(
-                voltage_out=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
+                voltage=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
                 output_thresholds=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
             )
 

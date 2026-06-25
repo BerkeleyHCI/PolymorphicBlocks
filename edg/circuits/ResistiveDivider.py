@@ -7,7 +7,7 @@ from ..abstract_parts import *
 
 
 class DividerValues(ESeriesRatioValue["DividerValues"]):
-    """Resistive divider calculator using the ESeriesRatioUtil infrastructure.
+    r"""Resistive divider calculator using the ESeriesRatioUtil infrastructure.
 
     R1 is the high-side resistor, and R2 is the low-side resistor, such that
     Vout = Vin * R2 / (R1 + R2)
@@ -173,8 +173,8 @@ class BaseVoltageDivider(KiCadImportableBlock):
         )
         self.output = self.Port(
             AnalogSource(
-                voltage_out=output_voltage,
-                signal_out=output_voltage,
+                voltage=output_voltage,
+                signal=output_voltage,
                 impedance=self.div.actual_impedance,
             ),
             [Output],
@@ -184,7 +184,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
         self.connect(self.input.net, self.div.top)
         self.connect(self.output.net, self.div.center)
 
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
 
         self.actual_rtop = self.Parameter(RangeExpr(self.div.actual_rtop))
         self.actual_rbot = self.Parameter(RangeExpr(self.div.actual_rbot))
@@ -272,10 +272,10 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
         )
         self.output = self.Port(
-            AnalogSource(voltage_out=output_voltage, signal_out=output_voltage, impedance=self.div.actual_impedance),
+            AnalogSource(voltage=output_voltage, signal=output_voltage, impedance=self.div.actual_impedance),
             [Output],
         )
-        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.assign(self.input.current_draw, self.output.link().current_draw)
         self.connect(self.gnd.net, self.div.bottom)
         self.connect(self.output.net, self.div.center)
         self.connect(self.input.net, self.div.top)

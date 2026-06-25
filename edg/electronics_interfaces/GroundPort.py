@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..electronics_model import *
+from ..util import deprecated_param_remap
 
 if TYPE_CHECKING:
     from .VoltagePorts import VoltageSource
@@ -17,7 +20,7 @@ class GroundLink(Link):
         if isinstance(port, Ground):
             return port.is_connected().then_else(port.link().voltage, RangeExpr._to_expr_type(RangeExpr.ZERO))
         elif isinstance(port, GroundReference):
-            return port.voltage_out
+            return port.voltage
         else:
             raise TypeError
 
@@ -43,7 +46,7 @@ class GroundLink(Link):
             DescriptionString.FormatUnits(self.voltage_limits, "V"),
         )
 
-        self.assign(self.voltage, self.ref.is_connected().then_else(self.ref.voltage_out, (0, 0) * Volt))
+        self.assign(self.voltage, self.ref.is_connected().then_else(self.ref.voltage, (0, 0) * Volt))
         self.assign(self.voltage_limits, self.gnds.intersection(lambda x: x.voltage_limits))
         self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
@@ -53,14 +56,14 @@ class GroundBridge(PortBridge):
         super().__init__()
 
         self.outer_port = self.Port(Ground())
-        self.inner_link = self.Port(GroundReference(voltage_out=RangeExpr()))
+        self.inner_link = self.Port(GroundReference(voltage=RangeExpr()))
 
     @override
     def contents(self) -> None:
         super().contents()
 
         self.connect(self.outer_port.net, self.inner_link.net)
-        self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+        self.assign(self.inner_link.voltage, self.outer_port.link().voltage)
 
 
 class GroundAdapterVoltageSource(PortAdapter["VoltageSource"]):
@@ -69,7 +72,7 @@ class GroundAdapterVoltageSource(PortAdapter["VoltageSource"]):
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(VoltageSource(voltage_out=self.src.link().voltage))
+        self.dst = self.Port(VoltageSource(voltage=self.src.link().voltage))
         self.connect(self.src.net, self.dst.net)
 
 
@@ -81,7 +84,7 @@ class GroundAdapterDigitalSource(PortAdapter["DigitalSource"]):
         self.src = self.Port(Ground())
         self.dst = self.Port(
             DigitalSource(
-                voltage_out=self.src.link().voltage,
+                voltage=self.src.link().voltage,
                 output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
             )
         )
@@ -96,8 +99,8 @@ class GroundAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         self.src = self.Port(Ground())
         self.dst = self.Port(
             AnalogSource(
-                voltage_out=self.src.link().voltage,
-                signal_out=self.src.link().voltage,
+                voltage=self.src.link().voltage,
+                signal=self.src.link().voltage,
             )
         )
         self.connect(self.dst.net, self.src.net)
@@ -130,13 +133,16 @@ class Ground(HasPassivePort, Port[GroundLink]):
 class GroundReference(HasPassivePort, Port[GroundLink]):
     link_type = GroundLink
 
-    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def __init__(self, voltage: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
         self.net = self.Port(Passive())
-        self.voltage_out = self.Parameter(RangeExpr(voltage_out))
+        self.voltage = self.Parameter(RangeExpr(voltage))
 
-
-from deprecated import deprecated
+    @property
+    @deprecated("use voltage")
+    def voltage_out(self) -> RangeExpr:
+        return self.voltage
 
 
 @deprecated("Use Ground() or GroundReference(...), Ground is no longer directioned")

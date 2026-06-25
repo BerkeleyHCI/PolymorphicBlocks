@@ -18,8 +18,8 @@ class UsbBitBang(BitBangAdapter, Block):
         These are basically the semantics of a DigitalBidir bridge.
         TODO: unify code w/ DigitalBidir bridge?"""
         return DigitalBidir(
-            voltage_out=link_port.link().voltage,
-            current_draw=link_port.link().current_drawn,
+            voltage=link_port.link().voltage,
+            current_draw=link_port.link().current_draw,
             voltage_limits=link_port.link().voltage_limits,
             current_limits=link_port.link().current_limits,
             output_thresholds=link_port.link().output_thresholds,
@@ -39,17 +39,23 @@ class UsbBitBang(BitBangAdapter, Block):
         # to propagate to the FPGA port, and this causes both to deadlock (both link voltages depend on
         # the port voltages, and neither is available until the other link voltage is available).
         # Other ideas include moving to a fixed point solver, but that has other trade-offs.
-        self.dp = self.Port(DigitalBidir.empty())
-        self.dm = self.Port(DigitalBidir.empty())
-        self.dp_pull = self.Port(DigitalSink.empty())
+        # TODO: need modeling against USB spec
+        self.dp = self.Port(DigitalBidir())
+        self.dm = self.Port(DigitalBidir())
+        self.dp_pull = self.Port(DigitalSink())
 
     @override
     def contents(self) -> None:
         super().contents()
 
-        self.dp_pull_res = self.Block(DigitalSeriesResistor(1.5 * kOhm(tol=0.05))).connected(self.dp_pull, self.usb.dp)
-        self.dp_res = self.Block(DigitalBidirSeriesResistor(68 * Ohm(tol=0.05))).connected(self.dp, self.usb.dp)
-        self.dm_res = self.Block(DigitalBidirSeriesResistor(68 * Ohm(tol=0.05))).connected(self.dm, self.usb.dm)
+        self.dp_pull_res = self.Block(Resistor(1.5 * kOhm(tol=0.05)))
+        self.connect(self.dp_pull_res.a, self.dp_pull.net)
+        self.dp_res = self.Block(Resistor(68 * Ohm(tol=0.05)))
+        self.connect(self.dp_res.b, self.dp.net)
+        self.connect(self.dp_pull_res.b, self.dp_res.a, self.usb.dp)
+        self.dm_res = self.Block(Resistor(68 * Ohm(tol=0.05)))
+        self.connect(self.dm_res.b, self.dm.net)
+        self.connect(self.dm_res.a, self.usb.dm)
 
     def connected_from(self, dp_pull: Port[DigitalLink], dp: Port[DigitalLink], dm: Port[DigitalLink]) -> "UsbBitBang":
         builder.block().connect(dp_pull, self.dp_pull)

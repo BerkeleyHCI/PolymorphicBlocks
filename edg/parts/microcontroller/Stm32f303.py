@@ -69,14 +69,14 @@ class Nucleo_F303k8(
 
         self.vusb_out.init_from(
             VoltageSource(
-                voltage_out=(4.75 - 0.58, 5.1)
+                voltage=(4.75 - 0.58, 5.1)
                 * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
                 current_limits=(0, 0.5) * Amp,  # max USB draw  # TODO higher from external power
             )
         )
         self.pwr_out.init_from(
             VoltageSource(
-                voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
+                voltage=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
                 current_limits=(0, 0.5) * Amp,  # max USB current draw, LDO also guarantees 500mA output current
             )
         )
@@ -175,7 +175,7 @@ class Nucleo_F303k8(
             * kOhm(tol=0),  # TODO: actually spec'd as maximum external impedance; internal impedance not given
         )
         dac_model = AnalogSource.from_supply(
-            self.gnd, vdd, signal_out_bound=(0.2 * Volt, -0.2 * Volt), impedance=15 * kOhm(tol=0)  # assumes buffer off
+            self.gnd, vdd, signal_bound=(0.2 * Volt, -0.2 * Volt), impedance=15 * kOhm(tol=0)  # assumes buffer off
         )
 
         uart_model = UartPort(DigitalBidir.empty())

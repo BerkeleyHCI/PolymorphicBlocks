@@ -20,7 +20,7 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
             AnalogSource.from_supply(
                 self.vss,
                 self.vref,
-                signal_out_bound=(0.01 * Volt, -0.04 * Volt),  # output swing
+                signal_bound=(0.01 * Volt, -0.04 * Volt),  # output swing
                 current_limits=(-15, 15) * mAmp,  # short circuit current, typ
                 impedance=(171, 273) * Ohm,  # derived from assumed Vout=2Vref=4.096, Isc=24mA or 15mA
             )

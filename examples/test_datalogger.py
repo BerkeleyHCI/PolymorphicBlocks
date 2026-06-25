@@ -46,7 +46,7 @@ class BufferedSupply(PowerConditioner):
         self.pwr_out = self.Port(VoltageSource.empty(), [Output])
         self.require(
             self.pwr.current_draw.within(
-                self.pwr_out.link().current_drawn + (0, self.charging_current.upper()) + (0, 0.05)
+                self.pwr_out.link().current_draw + (0, self.charging_current.upper()) + (0, 0.05)
             )
         )  # TODO nonhacky bounds on opamp/sense resistor current draw
         self.sc_out = self.Port(VoltageSource.empty(), optional=True)
@@ -89,7 +89,7 @@ class BufferedSupply(PowerConditioner):
             )
             self.connect(
                 self.diode.anode.adapt_to(VoltageSink()),
-                self.fet.drain.adapt_to(VoltageSource(voltage_out=self.pwr.link().voltage)),
+                self.fet.drain.adapt_to(VoltageSource(voltage=self.pwr.link().voltage)),
                 self.sc_out,
             )
 
@@ -97,7 +97,7 @@ class BufferedSupply(PowerConditioner):
                 self.pwr,
                 self.diode.cathode.adapt_to(
                     VoltageSource(
-                        voltage_out=(
+                        voltage=(
                             self.pwr.link().voltage.lower() - self.voltage_drop.upper(),
                             self.pwr.link().voltage.upper(),
                         )
@@ -122,7 +122,7 @@ class BufferedSupply(PowerConditioner):
                 self.amp.inn,
                 self.sense.b.adapt_to(
                     AnalogSource(
-                        voltage_out=(0, self.pwr.link().voltage.upper()),
+                        voltage=(0, self.pwr.link().voltage.upper()),
                         # TODO calculate operating signal level
                     )
                 ),
@@ -184,7 +184,9 @@ class Datalogger(BoardTop):
             # this uses the legacy / simple (non-mixin) USB and CAN IO style
             self.connect(self.mcu.usb.request(), self.usb_conn.usb)
 
-            (self.can,), _ = self.chain(self.mcu.can.request("can"), imp.Block(CalSolCanBlock()))
+            (self.can,), _ = self.chain(
+                self.mcu.with_mixin(IoControllerCan()).can.request("can"), imp.Block(CalSolCanBlock())
+            )
 
             # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now
             # self.i2c_pullup = imp.Block(I2cPullup())

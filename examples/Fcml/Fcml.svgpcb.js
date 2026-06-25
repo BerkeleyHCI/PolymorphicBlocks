@@ -20,12 +20,12 @@ const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(1.237, 1.501), rotate: 0,
   id: 'J1'
 })
-// usb_mcu.cc_pull.cc1.res
+// usb_mcu.cc_pull.cc1
 const R1 = board.add(R_0603_1608Metric, {
   translate: pt(1.086, 1.756), rotate: 0,
   id: 'R1'
 })
-// usb_mcu.cc_pull.cc2.res
+// usb_mcu.cc_pull.cc2
 const R2 = board.add(R_0603_1608Metric, {
   translate: pt(1.242, 1.756), rotate: 0,
   id: 'R2'
@@ -35,12 +35,12 @@ const J2 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(1.774, 1.501), rotate: 0,
   id: 'J2'
 })
-// usb_fpga.cc_pull.cc1.res
+// usb_fpga.cc_pull.cc1
 const R3 = board.add(R_0603_1608Metric, {
   translate: pt(1.623, 1.756), rotate: 0,
   id: 'R3'
 })
-// usb_fpga.cc_pull.cc2.res
+// usb_fpga.cc_pull.cc2
 const R4 = board.add(R_0603_1608Metric, {
   translate: pt(1.779, 1.756), rotate: 0,
   id: 'R4'
@@ -575,17 +575,17 @@ const R20 = board.add(R_0603_1608Metric, {
   translate: pt(3.371, 1.656), rotate: 0,
   id: 'R20'
 })
-// usb_fpga_bitbang.dp_pull_res.res
+// usb_fpga_bitbang.dp_pull_res
 const R21 = board.add(R_0603_1608Metric, {
   translate: pt(1.418, 2.264), rotate: 0,
   id: 'R21'
 })
-// usb_fpga_bitbang.dp_res.res
+// usb_fpga_bitbang.dp_res
 const R22 = board.add(R_0603_1608Metric, {
   translate: pt(1.418, 2.361), rotate: 0,
   id: 'R22'
 })
-// usb_fpga_bitbang.dm_res.res
+// usb_fpga_bitbang.dm_res
 const R23 = board.add(R_0603_1608Metric, {
   translate: pt(1.418, 2.458), rotate: 0,
   id: 'R23'
@@ -685,12 +685,12 @@ const C60 = board.add(C_0603_1608Metric, {
   translate: pt(2.802, 0.755), rotate: 0,
   id: 'C60'
 })
-// mcu.usb_res.dp.res
+// mcu.usb_res.dp
 const R24 = board.add(R_0603_1608Metric, {
   translate: pt(2.023, 0.852), rotate: 0,
   id: 'R24'
 })
-// mcu.usb_res.dm.res
+// mcu.usb_res.dm
 const R25 = board.add(R_0603_1608Metric, {
   translate: pt(2.179, 0.852), rotate: 0,
   id: 'R25'

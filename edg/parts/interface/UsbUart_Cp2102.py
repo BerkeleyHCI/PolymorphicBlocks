@@ -16,7 +16,7 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.vdd = self.Port(
             VoltageSource(  # as input, limits are 3.0-3.6v
-                voltage_out=(3.0, 3.6) * Volt,  # Table 6
+                voltage=(3.0, 3.6) * Volt,  # Table 6
                 current_limits=(0, 100) * mAmp,  # Table 6 note
             )
         )

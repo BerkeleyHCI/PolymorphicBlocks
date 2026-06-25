@@ -1,5 +1,4 @@
-import warnings
-from typing import Any
+from deprecated import deprecated
 
 from ..electronics_model import *
 from .DummyDevices import BaseDummyBlock
@@ -11,15 +10,7 @@ class DummyGround(BaseDummyBlock[GroundLink]):
         super().__init__()
         self.io: Ground = self.Port(Ground(), [Common, InOut])
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "gnd":
-            warnings.warn(
-                f"DummyGround.gnd is deprecated, use .io instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.io
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+    @property
+    @deprecated(f"DummyGround.gnd is deprecated, use .io instead.")
+    def gnd(self) -> Ground:
+        return self.io

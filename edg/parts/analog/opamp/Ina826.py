@@ -36,7 +36,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             AnalogSource.from_supply(
                 self.vsn,
                 self.vsp,
-                signal_out_bound=(0.1 * Volt, -0.15 * Volt),
+                signal_bound=(0.1 * Volt, -0.15 * Volt),
                 current_limits=(-16, 16) * mAmp,  # continuous to Vs/2
                 impedance=100 * Ohm(tol=0),  # no tolerance bounds given on datasheet; open-loop impedance
             )
@@ -135,7 +135,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
         )
         input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
         output_diff_range = input_diff_range * self.actual_ratio + output_neg_signal
-        self.forced = self.Block(ForcedAnalogSignal(self.ic.out.signal_out.intersect(output_diff_range)))
+        self.forced = self.Block(ForcedAnalogSignal(self.ic.out.signal.intersect(output_diff_range)))
 
         self.connect(self.forced.signal_in, self.ic.out)
         self.connect(self.forced.signal_out, self.output)

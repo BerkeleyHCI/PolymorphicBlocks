@@ -34,7 +34,7 @@ class PowerInConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Port(VoltageSource(voltage_out=(10, 25) * Volt, current_limits=(0, 1) * Amp))
+        self.pwr = self.Port(VoltageSource(voltage=(10, 25) * Volt, current_limits=(0, 1) * Amp))
 
         self.conn = self.Block(JstPh()).connected({"1": self.gnd, "2": self.pwr})
 

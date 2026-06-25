@@ -50,7 +50,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr_in = self.Port(VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=RangeExpr()))
         self.signal = self.Port(DigitalSink(current_draw=RangeExpr()))
 
         self.ic = self.Block(SolidStateRelay())
@@ -69,7 +69,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.connect(self.pwr_out.net, self.ic.fetb)
 
         self.assign(self.pwr_in.voltage_limits, self.ic.load_voltage_limit)  # TODO: assumed magic ground
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
         self.assign(self.pwr_out.current_limits, self.ic.load_current_limit)
         self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
 
@@ -101,8 +101,8 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.ain = self.Port(AnalogSink(voltage_limits=RangeExpr(), impedance=RangeExpr()))
         self.aout = self.Port(
             AnalogSource(
-                voltage_out=self.ain.link().voltage,
-                signal_out=self.ain.link().signal,
+                voltage=self.ain.link().voltage,
+                signal=self.ain.link().signal,
                 current_limits=self.ic.load_current_limit,
                 impedance=self.ain.link().source_impedance + self.ic.load_resistance,
             )

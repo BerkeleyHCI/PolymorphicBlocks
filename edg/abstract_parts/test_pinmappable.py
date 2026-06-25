@@ -289,9 +289,7 @@ class PinMapUtilTest(unittest.TestCase):
 
     def test_assign_bundle_delegating_fixed(self) -> None:
         dio_model = DigitalBidir()
-        dio_model_tx = DigitalBidir(
-            voltage_out=3.3 * Volt(tol=0.01),
-        )
+        dio_model_tx = DigitalBidir(voltage=3.3 * Volt(tol=0.01))
         dio_model_rx = DigitalBidir(current_draw=1 * mAmp(tol=0.01))
         ain_model = AnalogSink()
         allocated = PinMapUtil(
@@ -308,8 +306,8 @@ class PinMapUtilTest(unittest.TestCase):
         self.assertEqual(allocated[0].pin, {"tx": ("3", "3"), "rx": ("1", "1")})
 
         assert isinstance(allocated[0].port_model, UartPort)
-        self.assertTrue(allocated[0].port_model.tx.voltage_out.initializer is not None)
-        self.assertTrue(allocated[0].port_model.tx.voltage_out.initializer is dio_model_tx.voltage_out.initializer)
+        self.assertTrue(allocated[0].port_model.tx.voltage.initializer is not None)
+        self.assertTrue(allocated[0].port_model.tx.voltage.initializer is dio_model_tx.voltage.initializer)
         self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is not None)
         self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is dio_model_rx.current_draw.initializer)
 

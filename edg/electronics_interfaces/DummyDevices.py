@@ -5,6 +5,7 @@ from ..electronics_model import *
 from .VoltagePorts import VoltageSink, VoltageSource
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalLink
 from .AnalogPort import AnalogSink, AnalogSource, AnalogLink
+from ..util import deprecated_param_remap
 
 DummyLinkType = TypeVar("DummyLinkType", bound=Link)
 
@@ -29,9 +30,10 @@ class DummyPassive(BaseDummyBlock[PassiveLink]):
 
 
 class DummyDigitalSource(BaseDummyBlock[DigitalLink]):
-    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def __init__(self, voltage: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
-        self.io = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits), [InOut])
+        self.io = self.Port(DigitalSource(voltage=voltage, current_limits=current_limits), [InOut])
 
 
 class DummyDigitalSink(BaseDummyBlock[DigitalLink]):
@@ -41,18 +43,17 @@ class DummyDigitalSink(BaseDummyBlock[DigitalLink]):
 
 
 class DummyAnalogSource(BaseDummyBlock[AnalogLink]):
+    @deprecated_param_remap(("voltage_out", "voltage"), ("signal_out", "signal"))
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
-        signal_out: RangeLike = RangeExpr.EMPTY,
+        voltage: RangeLike = RangeExpr.ZERO,
+        signal: RangeLike = RangeExpr.EMPTY,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ) -> None:
         super().__init__()
         self.io = self.Port(
-            AnalogSource(
-                voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
-            ),
+            AnalogSource(voltage=voltage, signal=signal, current_limits=current_limits, impedance=impedance),
             [InOut],
         )
 
@@ -81,7 +82,7 @@ class ForcedVoltageCurrentDraw(DummyDevice):
         super().__init__()
 
         self.pwr_in = self.Port(VoltageSink(current_draw=forced_current_draw), [Input])
-        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage), [Output])
+        self.pwr_out = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage), [Output])
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
 
@@ -94,11 +95,11 @@ class ForcedVoltageCurrentLimit(DummyDevice):
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=forced_current_limit), [Output]
+            VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=forced_current_limit), [Output]
         )
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
 
 class ForcedVoltage(DummyDevice):
@@ -109,10 +110,10 @@ class ForcedVoltage(DummyDevice):
         super().__init__()
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
-        self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
+        self.pwr_out = self.Port(VoltageSource(voltage=forced_voltage), [Output])
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
 
 class ForcedVoltageCurrent(DummyDevice):
@@ -122,7 +123,7 @@ class ForcedVoltageCurrent(DummyDevice):
         super().__init__()
 
         self.pwr_in = self.Port(VoltageSink(current_draw=forced_current), [Input])
-        self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
+        self.pwr_out = self.Port(VoltageSource(voltage=forced_voltage), [Output])
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
 
@@ -134,14 +135,14 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
         self.signal_in = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
         self.signal_out = self.Port(
             AnalogSource(
-                voltage_out=self.signal_in.link().voltage,
-                signal_out=forced_signal,
+                voltage=self.signal_in.link().voltage,
+                signal=forced_signal,
                 current_limits=self.signal_in.link().current_limits,
             ),
             [Output],
         )
 
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_draw)
         self.connect(self.signal_in.net, self.signal_out.net)
 
     @override
@@ -163,7 +164,7 @@ class ForcedDigitalSinkCurrentDraw(DummyDevice):
 
         self.pwr_out = self.Port(
             DigitalSource(
-                voltage_out=self.pwr_in.link().voltage,
+                voltage=self.pwr_in.link().voltage,
                 current_limits=RangeExpr.ALL,
                 output_thresholds=self.pwr_in.link().output_thresholds,
             ),

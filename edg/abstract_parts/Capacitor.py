@@ -450,7 +450,7 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
 
         self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
         self.output = self.Port(
-            AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=self.input.link().source_impedance),
+            AnalogSource(voltage=RangeExpr(), signal=RangeExpr(), impedance=self.input.link().source_impedance),
             [Output],
         )
 
@@ -472,12 +472,12 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
         self.assign(self.input.impedance, self.output.link().sink_impedance)  # assumed high frequency
         voltage_halfspan = (self.input.link().voltage.upper() - self.input.link().voltage.lower()) / 2
         self.assign(
-            self.output.voltage_out,
+            self.output.voltage,
             (self.output_bias.lower() - voltage_halfspan, self.output_bias.upper() + voltage_halfspan),
         )
         signal_halfspan = (self.input.link().signal.upper() - self.input.link().signal.lower()) / 2
         self.assign(
-            self.output.signal_out,
+            self.output.signal,
             (self.output_bias.lower() - signal_halfspan, self.output_bias.upper() + signal_halfspan),
         )
 

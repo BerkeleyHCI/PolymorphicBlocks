@@ -12,7 +12,7 @@ class CanConnector(Connector):
 
         self.pwr = self.Port(
             VoltageSource(
-                voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+                voltage=(7, 14) * Volt,  # TODO get limits from CAN power brick?
                 current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
             ),
             optional=True,

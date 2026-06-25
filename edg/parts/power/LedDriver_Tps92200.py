@@ -24,11 +24,11 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.fb = self.Port(AnalogSink.from_supply(self.gnd, self.vin, voltage_limit_abs=(-0.1, 6) * Volt))
 
-        self.sw = self.Port(VoltageSource(voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage)))
+        self.sw = self.Port(VoltageSource(voltage=self.vin.link().voltage.hull(self.gnd.link().voltage)))
         self.boot = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.1, 6) * Volt,
-                reverse_voltage_out=(4, 6) * Volt,  # assumed from IN min to BOOT-SW abs max
+                reverse_voltage=(4, 6) * Volt,  # assumed from IN min to BOOT-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )

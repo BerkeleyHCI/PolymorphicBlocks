@@ -17,7 +17,7 @@ class PmosHighSideSwitch(PowerSwitch):
 
         self.pwr = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
         self.output = self.Port(
-            VoltageSource(voltage_out=self.pwr.link().voltage, current_limits=RangeExpr()),
+            VoltageSource(voltage=self.pwr.link().voltage, current_limits=RangeExpr()),
             [Output],
         )
         self.control = self.Port(DigitalSink(), [Input])
@@ -32,7 +32,7 @@ class PmosHighSideSwitch(PowerSwitch):
         self.drv = self.Block(
             SwitchFet.PFet(
                 drain_voltage=self.pwr.link().voltage,
-                drain_current=self.output.link().current_drawn,
+                drain_current=self.output.link().current_draw,
                 gate_voltage=self.control.link().voltage
                 - self.pwr.link().voltage,  # TODO needs to be diff from pwr.voltage
                 rds_on=(0, self.max_rds),
@@ -45,7 +45,7 @@ class PmosHighSideSwitch(PowerSwitch):
         self.connect(self.output.net, self.drv.drain)
         self.connect(self.control.net, self.drv.gate)
 
-        self.assign(self.pwr.current_draw, self.output.link().current_drawn)
+        self.assign(self.pwr.current_draw, self.output.link().current_draw)
         self.assign(self.output.current_limits, self.drv.actual_drain_current_rating)
 
 

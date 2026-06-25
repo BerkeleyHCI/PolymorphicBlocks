@@ -118,7 +118,7 @@ class Stm32l432_Device(
         dac_model = AnalogSource.from_supply(
             self.gnd,
             self.pwr,
-            signal_out_bound=(0, 0),  # 0-Vref w/ DAC output buffer off
+            signal_bound=(0, 0),  # 0-Vref w/ DAC output buffer off
             impedance=(9.6, 13.8) * kOhm,  # DAC buffer off
         )
 
@@ -145,8 +145,8 @@ class Stm32l432_Device(
                 PinResource("PA8", {"PA8": dio_ft_model}),
                 PinResource("PA9", {"PA8": dio_ftf_model}),
                 PinResource("PA10", {"PA10": dio_ftf_model}),
-                PinResource("PA11", {"PA11": dio_ftu_model}),
-                PinResource("PA12", {"PA12": dio_ftu_model}),
+                PinResource("PA11", {"PA11": dio_ftu_model, "USB_DM": Passive()}),
+                PinResource("PA12", {"PA12": dio_ftu_model, "USB_DP": Passive()}),
                 PinResource("PA13", {"PA13": dio_ft_model}),
                 PinResource("PA14", {"PA14": dio_ft_model}),
                 PinResource("PA15", {"PA15": dio_ft_model}),

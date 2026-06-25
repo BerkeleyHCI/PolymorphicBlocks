@@ -4,6 +4,7 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .DigitalPorts import DigitalBidir
+from ..electronics_model.PassivePort import PassiveBridge
 
 
 class UsbLink(Link):
@@ -34,15 +35,13 @@ class UsbHostBridge(PortBridge):
 
     @override
     def contents(self) -> None:
-        from .DigitalPorts import DigitalBidirBridge
-
         super().contents()
 
-        self.dm_bridge = self.Block(DigitalBidirBridge())
+        self.dm_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.dm, self.dm_bridge.outer_port)
         self.connect(self.dm_bridge.inner_link, self.inner_link.dm)
 
-        self.dp_bridge = self.Block(DigitalBidirBridge())
+        self.dp_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
         self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
@@ -53,8 +52,8 @@ class UsbHostPort(Port[UsbLink]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.dp = self.Port(DigitalBidir())
-        self.dm = self.Port(DigitalBidir())
+        self.dp = self.Port(Passive())
+        self.dm = self.Port(Passive())
 
 
 class UsbDeviceBridge(PortBridge):
@@ -65,15 +64,13 @@ class UsbDeviceBridge(PortBridge):
 
     @override
     def contents(self) -> None:
-        from .DigitalPorts import DigitalBidirBridge
-
         super().contents()
 
-        self.dm_bridge = self.Block(DigitalBidirBridge())
+        self.dm_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.dm, self.dm_bridge.outer_port)
         self.connect(self.dm_bridge.inner_link, self.inner_link.dm)
 
-        self.dp_bridge = self.Block(DigitalBidirBridge())
+        self.dp_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
         self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
@@ -82,12 +79,10 @@ class UsbDevicePort(Port[UsbLink]):
     link_type = UsbLink
     bridge_type = UsbDeviceBridge
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        if model is None:
-            model = DigitalBidir()  # ideal by default
-        self.dp = self.Port(model)
-        self.dm = self.Port(model)
+        self.dp = self.Port(Passive())
+        self.dm = self.Port(Passive())
 
 
 class UsbPassivePort(Port[UsbLink]):
@@ -95,8 +90,8 @@ class UsbPassivePort(Port[UsbLink]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.dp = self.Port(DigitalBidir())
-        self.dm = self.Port(DigitalBidir())
+        self.dp = self.Port(Passive())
+        self.dm = self.Port(Passive())
 
 
 class UsbCcLink(Link):
@@ -111,8 +106,6 @@ class UsbCcLink(Link):
     def contents(self) -> None:
         super().contents()
         # TODO perhaps enable crossover connections as optional layout optimization?
-        # TODO check both b and pull aren't simultaneously connected?
-        # TODO write protocol-level signal constraints?
         self.cc1 = self.connect(self.a.cc1, self.b.cc1)
         self.cc2 = self.connect(self.a.cc2, self.b.cc2)
 
@@ -120,7 +113,7 @@ class UsbCcLink(Link):
 class UsbCcPort(Port[UsbCcLink]):
     link_type = UsbCcLink
 
-    def __init__(self, pullup_capable: BoolLike = False) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
-        self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
+        self.cc1 = self.Port(Passive())
+        self.cc2 = self.Port(Passive())

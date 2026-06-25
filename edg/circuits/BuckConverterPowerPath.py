@@ -274,7 +274,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
             self.pwr_out,
             self.inductor.b.adapt_to(
                 VoltageSource(
-                    voltage_out=self.output_voltage,
+                    voltage=self.output_voltage,
                     current_limits=self._ilim_expr(
                         self.inductor.actual_current_rating, self.sw_current_limits, self.actual_inductor_current_ripple
                     )

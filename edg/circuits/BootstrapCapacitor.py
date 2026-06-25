@@ -16,14 +16,12 @@ class BootstrapCapacitor(Block):
 
         self.neg = self.Port(VoltageSink())
         self.pos = self.Port(
-            VoltageSource(
-                voltage_out=RangeExpr(), reverse_voltage_limits=RangeExpr.ALL, reverse_current_draw=(0, 0) * Amp
-            )
+            VoltageSource(voltage=RangeExpr(), reverse_voltage_limits=RangeExpr.ALL, reverse_current_draw=(0, 0) * Amp)
         )
         boost_voltage = self.pos.link().reverse_voltage - self.neg.link().voltage.lower()
 
         self.cap = self.Block(Capacitor(capacitance=capacitance, voltage=boost_voltage))
-        self.assign(self.pos.voltage_out, self.neg.link().voltage + boost_voltage)
+        self.assign(self.pos.voltage, self.neg.link().voltage + boost_voltage)
         self.connect(self.pos.net, self.cap.pos)
         self.connect(self.neg.net, self.cap.neg)
 

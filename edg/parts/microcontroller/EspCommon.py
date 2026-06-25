@@ -155,7 +155,7 @@ class EspAutoProgram(Interface, KiCadSchematicBlock):
         self.q_boot = self.Block(bjt_model)
 
         output_model = DigitalSource(
-            voltage_out=signal_voltage,
+            voltage=signal_voltage,
             current_limits=(0, 0) * Amp,  # simplified for signal only
             output_thresholds=signal_thresholds,
         )

@@ -62,7 +62,7 @@ class FetHalfBridge(HalfBridge):
         self.low_fet = self.Block(
             SwitchFet.NFet(
                 drain_voltage=self.pwr.link().voltage,
-                drain_current=(0, self.out.link().current_drawn.upper()),
+                drain_current=(0, self.out.link().current_draw.upper()),
                 gate_voltage=self.driver.low_out.link().voltage,
                 rds_on=self.fet_rds,
                 frequency=self.frequency,
@@ -82,7 +82,7 @@ class FetHalfBridge(HalfBridge):
         self.high_fet = self.Block(
             SwitchFet.NFet(
                 drain_voltage=self.pwr.link().voltage,
-                drain_current=(0, self.out.link().current_drawn.upper()),
+                drain_current=(0, self.out.link().current_draw.upper()),
                 gate_voltage=self.driver.high_out.link().voltage - self.driver.high_gnd.link().voltage,
                 rds_on=self.fet_rds,
                 frequency=self.frequency,
@@ -92,7 +92,7 @@ class FetHalfBridge(HalfBridge):
         self.connect(
             self.high_fet.drain.adapt_to(
                 VoltageSink(
-                    voltage_limits=self.high_fet.actual_drain_voltage_rating, current_draw=self.out.link().current_drawn
+                    voltage_limits=self.high_fet.actual_drain_voltage_rating, current_draw=self.out.link().current_draw
                 )
             ),
             self.pwr,
@@ -108,7 +108,7 @@ class FetHalfBridge(HalfBridge):
 
         # to avoid tolerance stackup, model the switch node as a static voltage
         self.connect(self.low_fet.drain, self.high_fet.source)
-        self.connect(self.low_fet.drain.adapt_to(VoltageSource(voltage_out=self.pwr.link().voltage)), self.out)
+        self.connect(self.low_fet.drain.adapt_to(VoltageSource(voltage=self.pwr.link().voltage)), self.out)
         self.connect(self.out.as_ground((0, 0) * Amp), self.driver.high_gnd)  # TODO model driver current
 
         self.assign(
@@ -206,7 +206,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.drv = self.Block(
             SwitchFet.PFet(
                 drain_voltage=pwr_voltage,
-                drain_current=self.pwr_out.link().current_drawn,
+                drain_current=self.pwr_out.link().current_draw,
                 gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
                 gate_threshold_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.lower()),
                 rds_on=(0, self.max_rds),
@@ -260,8 +260,8 @@ class RampLimiter(KiCadSchematicBlock):
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
-                "pwr_in": VoltageSink(current_draw=self.pwr_out.link().current_drawn + div_current_draw),
-                "pwr_out": VoltageSource(voltage_out=self.pwr_in.link().voltage),
+                "pwr_in": VoltageSink(current_draw=self.pwr_out.link().current_draw + div_current_draw),
+                "pwr_out": VoltageSource(voltage=self.pwr_in.link().voltage),
                 "control": DigitalSink(),
                 "gnd": Ground(),
             },

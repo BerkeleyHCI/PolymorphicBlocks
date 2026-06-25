@@ -16,7 +16,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
             CanTransceiverPort(
                 DigitalBidir(
                     voltage_limits=(-0.5 * Volt, self.vcc1.link().voltage.lower() + 0.5 * Volt),
-                    voltage_out=(0 * Volt, self.vcc1.link().voltage.lower()),
+                    voltage=(0 * Volt, self.vcc1.link().voltage.lower()),
                     current_limits=(-5, 5) * uAmp,
                     input_thresholds=(0.8, 2) * Volt,
                     output_thresholds=(0 * Volt, self.vcc1.link().voltage.lower()),
@@ -24,17 +24,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
             )
         )
 
-        self.can = self.Port(
-            CanDiffPort(
-                DigitalBidir(
-                    voltage_limits=(-7, 7)
-                    * Volt,  # TODO: need better model of differential pins where there can be a common-mode offset
-                    voltage_out=(0.8, 4.5) * Volt,
-                    current_draw=(-4, 4) * mAmp,
-                    current_limits=(-70, 70) * mAmp,
-                )
-            )
-        )
+        self.can = self.Port(CanDiffPort())
 
     @override
     def contents(self) -> None:

@@ -76,7 +76,7 @@ class Rp2040_Device(
         )
         self.vreg_vout = self.Port(
             VoltageSource(  # actually adjustable, section 2.10.3
-                voltage_out=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
+                voltage=1.1 * Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
                 current_limits=(0, 100) * mAmp,  # Table 1, max current
             )
         )
@@ -85,7 +85,7 @@ class Rp2040_Device(
             VoltageSink(
                 voltage_limits=(1.62, 3.63) * Volt,  # Table 628
                 current_draw=self.vreg_vout.is_connected().then_else(
-                    self.vreg_vout.link().current_drawn, 0 * Amp(tol=0)
+                    self.vreg_vout.link().current_draw, 0 * Amp(tol=0)
                 ),
             )
         )
@@ -103,7 +103,7 @@ class Rp2040_Device(
         )
 
         # Additional ports (on top of IoController)
-        self._dio_usb_model = self._dio_ft_model = self._dio_std_model = DigitalBidir.from_supply(  # table 4.4
+        self._dio_ft_model = self._dio_std_model = DigitalBidir.from_supply(  # table 4.4
             self.gnd,
             self.iovdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
@@ -119,9 +119,7 @@ class Rp2040_Device(
         self.qspi_sd3 = self.Port(self._dio_std_model, optional=self._model)
 
         self.xosc = self.Port(
-            CrystalDriver(
-                frequency_limits=(1, 15) * MHertz, voltage_out=self.iovdd.link().voltage  # datasheet 2.15.2.2
-            ),
+            CrystalDriver(frequency_limits=(1, 15) * MHertz, voltage=self.iovdd.link().voltage),  # datasheet 2.15.2.2
             optional=True,
         )
 
@@ -223,7 +221,7 @@ class Rp2040_Device(
                     PinResource("GPIO28", {"GPIO28": self._dio_std_model, "ADC2": adc_model}),
                     PinResource("GPIO29", {"GPIO29": self._dio_std_model, "ADC3": adc_model}),
                     # fixed-pin peripherals
-                    PeripheralFixedPin("USB", UsbDevicePort(self._dio_usb_model), {"dm": "USB_DM", "dp": "USB_DP"}),
+                    PeripheralFixedPin("USB", UsbDevicePort(), {"dm": "USB_DM", "dp": "USB_DP"}),
                     # reassignable peripherals
                     PeripheralFixedResource(
                         "UART0",
@@ -459,12 +457,12 @@ class Xiao_Rp2040(
             VoltageSink(  # based on RS3236-3.3
                 voltage_limits=(3.3 * 1.025 + 0.55, 7.5) * Volt,  # output * tolerance + dropout @ 300mA
                 current_draw=self.pwr_out.is_connected().then_else(  # prop output current draw
-                    self.pwr_out.link().current_drawn, (0, 0) * Amp
+                    self.pwr_out.link().current_draw, (0, 0) * Amp
                 ),
             )
         )
         self.vusb_out.init_from(
-            VoltageSource(voltage_out=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+            VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
 
         self.model = self.Block(
@@ -480,7 +478,7 @@ class Xiao_Rp2040(
         model_pwr = self.connect(self.model.iovdd, self.model.vreg_vin, self.model.adc_avdd, self.model.usb_vdd)
         self.connect(
             self._generate_pwr_node(
-                voltage_out=3.3 * Volt(tol=0.05),
+                voltage=3.3 * Volt(tol=0.05),
                 current_limits=UsbConnector.USB2_CURRENT_LIMITS,  # tolerance is a guess
             ),
             model_pwr,

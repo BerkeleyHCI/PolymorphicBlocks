@@ -37,7 +37,7 @@ class PassiveAdapterVoltageSource(PortAdapter["VoltageSource"]):
     # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
         reverse_current_draw: RangeLike = RangeExpr.EMPTY,
@@ -48,7 +48,7 @@ class PassiveAdapterVoltageSource(PortAdapter["VoltageSource"]):
         self.src = self.Port(Passive())
         self.dst = self.Port(
             VoltageSource(
-                voltage_out=voltage_out,
+                voltage=voltage,
                 current_limits=current_limits,
                 reverse_voltage_limits=reverse_voltage_limits,
                 reverse_current_draw=reverse_current_draw,
@@ -63,7 +63,7 @@ class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
         self,
         voltage_limits: RangeLike = RangeExpr.ALL,
         current_draw: RangeLike = RangeExpr.ZERO,
-        reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
+        reverse_voltage: RangeLike = RangeExpr.EMPTY,
         reverse_current_limits: RangeLike = RangeExpr.EMPTY,
     ):
         from ..electronics_interfaces.VoltagePorts import VoltageSink
@@ -74,7 +74,7 @@ class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
             VoltageSink(
                 voltage_limits=voltage_limits,
                 current_draw=current_draw,
-                reverse_voltage_out=reverse_voltage_out,
+                reverse_voltage=reverse_voltage,
                 reverse_current_limits=reverse_current_limits,
             )
         )
@@ -85,7 +85,7 @@ class PassiveAdapterDigitalSource(PortAdapter["DigitalSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         output_thresholds: RangeLike = RangeExpr.ALL,
         pullup_capable: BoolLike = False,
@@ -100,7 +100,7 @@ class PassiveAdapterDigitalSource(PortAdapter["DigitalSource"]):
         self.src = self.Port(Passive())
         self.dst = self.Port(
             DigitalSource(
-                voltage_out=voltage_out,
+                voltage=voltage,
                 current_limits=current_limits,
                 output_thresholds=output_thresholds,
                 pullup_capable=pullup_capable,
@@ -147,7 +147,7 @@ class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
         self,
         voltage_limits: RangeLike = RangeExpr.ALL,
         current_draw: RangeLike = RangeExpr.ZERO,
-        voltage_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         input_thresholds: RangeLike = RangeExpr.EMPTY,
         output_thresholds: RangeLike = RangeExpr.ALL,
@@ -164,7 +164,7 @@ class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
             DigitalBidir(
                 voltage_limits=voltage_limits,
                 current_draw=current_draw,
-                voltage_out=voltage_out,
+                voltage=voltage,
                 current_limits=current_limits,
                 input_thresholds=input_thresholds,
                 output_thresholds=output_thresholds,
@@ -180,8 +180,8 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
-        signal_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
+        signal: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ):
@@ -190,9 +190,7 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
-            AnalogSource(
-                voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
-            )
+            AnalogSource(voltage=voltage, signal=signal, current_limits=current_limits, impedance=impedance)
         )
         self.connect(self.src, self.dst.net)
 

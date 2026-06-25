@@ -16,7 +16,7 @@ class Cr2032(Battery, FootprintBlock):
         super().__init__(voltage, *args, **kwargs)
         self.pwr.init_from(
             VoltageSource(
-                voltage_out=self.gnd.link().voltage
+                voltage=self.gnd.link().voltage
                 + actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
                 current_limits=(0, 10) * mAmp,
             )
@@ -52,7 +52,7 @@ class Li18650(Battery, FootprintBlock):
         super().__init__(voltage, *args, **kwargs)
         self.pwr.init_from(
             VoltageSource(
-                voltage_out=self.gnd.link().voltage + actual_voltage,
+                voltage=self.gnd.link().voltage + actual_voltage,
                 current_limits=(0, 2) * Amp,  # arbitrary assuming low capacity, 1 C discharge
             )
         )
@@ -90,7 +90,7 @@ class AaBattery(Battery, FootprintBlock):
         self.gnd.init_from(Ground())
         self.pwr.init_from(
             VoltageSource(
-                voltage_out=self.gnd.link().voltage + actual_voltage,
+                voltage=self.gnd.link().voltage + actual_voltage,
                 current_limits=(0, 1) * Amp,
             )
         )
@@ -134,7 +134,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
             if prev_cell is None:  # first cell, direct connect to gnd
                 self.connect(self.gnd, cell.gnd)
             else:
-                self.connect(prev_cell.pwr.as_ground(self.pwr.link().current_drawn), cell.gnd)
+                self.connect(prev_cell.pwr.as_ground(self.pwr.link().current_draw), cell.gnd)
                 prev_capacity_min = cell.actual_capacity.lower().min(prev_capacity_min)
                 prev_capacity_max = cell.actual_capacity.upper().min(prev_capacity_max)
             prev_cell = cell

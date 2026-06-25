@@ -27,7 +27,7 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
         self.setp = self.Port(Passive())
         self.setc = self.Port(Passive())
-        self.c1 = self.Port(VoltageSource(voltage_out=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
+        self.c1 = self.Port(VoltageSource(voltage=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
 
     @override
     def contents(self) -> None:
@@ -107,7 +107,7 @@ class Qmc5883p_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             input_threshold_factor=(0.3, 0.7),
         )
         self.i2c = self.Port(I2cTarget(dio_model))
-        self.c1 = self.Port(VoltageSource(voltage_out=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
+        self.c1 = self.Port(VoltageSource(voltage=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
 
     @override
     def contents(self) -> None:

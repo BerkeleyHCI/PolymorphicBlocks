@@ -1,6 +1,6 @@
-import warnings
-from typing import Optional, Any
+from typing import Optional
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..abstract_parts import *
@@ -11,23 +11,22 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
     preferred if both are connected.
     """
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(self, voltage_drop: RangeLike = (0, 0.6) * Volt) -> None:
         super().__init__()
 
         self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()))  # high-priority source
         self.pwr_in_diode = self.Port(VoltageSink(current_draw=RangeExpr()))  # low-priority source
         self.pwr_out = self.Port(
             VoltageSource(  # use the spec voltage drop to avoid circular dependencies downstream
-                voltage_out=self.pwr_in.link().voltage.hull(self.pwr_in_diode.link().voltage - voltage_drop),
+                voltage=self.pwr_in.link().voltage.hull(self.pwr_in_diode.link().voltage - voltage_drop),
             )
         )
 
         self.diode = self.Block(
             Diode(
                 reverse_voltage=(0, self.pwr_in.link().voltage.upper() - self.pwr_in_diode.link().voltage.lower()),
-                current=self.pwr_out.link().current_drawn,
+                current=self.pwr_out.link().current_draw,
                 voltage_drop=voltage_drop,
-                reverse_recovery_time=reverse_recovery_time,
             )
         )
 
@@ -35,8 +34,8 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
             self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()
             <= self.pwr_in.link().voltage.lower()
         )
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-        self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
+        self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_draw)
 
         self.connect(self.pwr_in_diode.net, self.diode.anode)
         self.connect(self.pwr_out.net, self.pwr_in.net, self.diode.cathode)
@@ -45,13 +44,12 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
 class DiodePowerMerge(PowerConditioner, GeneratorBlock):
     """Diode power merge block for multiple voltage sources."""
 
-    def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(self, voltage_drop: RangeLike = (0, 0.6) * Volt) -> None:
         super().__init__()
         self.voltage_drop = self.ArgParameter(voltage_drop)
-        self.reverse_recovery_time = self.ArgParameter(reverse_recovery_time)
 
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage=RangeExpr()))
         self.generator_param(self.pwr_ins.requested())
 
     @override
@@ -60,7 +58,7 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
 
         input_hull = self.pwr_ins.map_extract(lambda pwr_in: pwr_in.link().voltage).hull()
         # use the spec voltage drop to avoid circular dependencies downstream
-        self.assign(self.pwr_out.voltage_out, input_hull - self.voltage_drop)
+        self.assign(self.pwr_out.voltage, input_hull - self.voltage_drop)
 
         requested = self.get(self.pwr_ins.requested())
         assert len(requested) > 0, "power inputs required"
@@ -68,37 +66,26 @@ class DiodePowerMerge(PowerConditioner, GeneratorBlock):
         self.diodes = ElementDict[Diode]()
         self.pwr_ins.defined()
         for name in requested:
-            pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), name)
+            pwr_in = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_draw), name)
             self.diodes[name] = diode = self.Block(
                 Diode(
-                    reverse_voltage=(0, self.pwr_out.voltage_out.upper() - pwr_in.link().voltage.lower()),
-                    current=self.pwr_out.link().current_drawn,
+                    reverse_voltage=(0, self.pwr_out.voltage.upper() - pwr_in.link().voltage.lower()),
+                    current=self.pwr_out.link().current_draw,
                     voltage_drop=self.voltage_drop,
-                    reverse_recovery_time=self.reverse_recovery_time,
                 )
             )
             self.connect(pwr_in.net, diode.anode)
             self.connect(self.pwr_out.net, diode.cathode)
 
-    def __getattr__(self, item: str) -> Any:
-        if item == "pwr_in1":
-            warnings.warn(
-                f"Use pwr_ins.request(...) instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_ins.request("1")
-        elif item == "pwr_in2":
-            warnings.warn(
-                f"Use pwr_ins.request(...) instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_ins.request("2")
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+    @property
+    @deprecated(f"replaced with pwr_ins.request(...)")
+    def pwr_in1(self) -> VoltageSink:
+        return self.pwr_ins.request("1")
+
+    @property
+    @deprecated(f"replaced with pwr_ins.request(...)")
+    def pwr_in2(self) -> VoltageSink:
+        return self.pwr_ins.request("2")
 
 
 class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
@@ -126,7 +113,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
         # FET behavior requires the high priority path to be higher voltage
         self.require(self.pwr_hi.link().voltage.lower() > self.pwr_lo.link().voltage.upper())
 
-        output_current_draw = self.pwr_out.link().current_drawn
+        output_current_draw = self.pwr_out.link().current_draw
         self.pdr = self.Block(Resistor(10 * kOhm(tol=0.01)))
         self.diode = self.Block(
             Diode(
@@ -151,7 +138,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
                 "pwr_hi": VoltageSink(current_draw=output_current_draw),
                 "pwr_lo": VoltageSink(current_draw=output_current_draw),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_lo.link().voltage.hull(
+                    voltage=self.pwr_lo.link().voltage.hull(
                         # use the spec voltage drop since using the actual voltage drop causes a circular dependency
                         # (where current depends on voltage, but the diode voltage drop depends on the diode selection
                         # which depends on the current through)
@@ -198,7 +185,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     @override
     def contents(self) -> None:
         super().contents()
-        output_current_draw = self.pwr_out.link().current_drawn
+        output_current_draw = self.pwr_out.link().current_draw
         self.fet = self.Block(
             Fet.PFet(
                 drain_voltage=(0, self.pwr_out.link().voltage.upper()),
@@ -218,7 +205,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
                     current_draw=output_current_draw,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
+                    voltage=self.pwr_in.link().voltage,
                 ),
                 "gnd": Ground(),
             },
@@ -234,26 +221,6 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
     More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
     """
-
-    def __getattr__(self, item: str) -> Any:
-        if item == "chg_in":
-            warnings.warn(
-                f"Use pwr_out instead. pwr_out is sink-capable (bidirectional) and chg_in is unnecessary.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_out
-        elif item == "chg_out":
-            warnings.warn(
-                f"Use pwr_in instead. pwr_in is source-capable (bidirectional) and chg_out is unnecessary.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.pwr_in
-        else:
-            raise AttributeError(
-                item
-            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
 
     def __init__(
         self,
@@ -284,7 +251,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
         # use the maximum voltages and currents accounting for both directions
         batt_voltage = self.pwr_in.link().voltage.hull(self.pwr_out.link().reverse_voltage)
-        batt_current = self.pwr_out.link().current_drawn.hull(self.pwr_in.link().reverse_current_drawn)
+        batt_current = self.pwr_out.link().current_draw.hull(self.pwr_in.link().reverse_current_draw)
 
         power = batt_current * batt_current * self.rds_on
         r1_current = batt_voltage / self.r1.resistance
@@ -313,17 +280,27 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
             conversions={
                 "pwr_in": VoltageSink(
                     current_draw=batt_current,
-                    reverse_voltage_out=self.pwr_out.link().reverse_voltage,
+                    reverse_voltage=self.pwr_out.link().reverse_voltage,
                     reverse_current_limits=RangeExpr.ALL,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=batt_voltage,
+                    voltage=batt_voltage,
                     reverse_voltage_limits=self.pwr_in.link().reverse_voltage_limits,
-                    reverse_current_draw=self.pwr_in.link().reverse_current_drawn,
+                    reverse_current_draw=self.pwr_in.link().reverse_current_draw,
                 ),
                 "gnd": Ground(),
             },
         )
+
+    @property
+    @deprecated(f"chg_in is deprecated and unified with sink-capable (bidirectional) pwr_out")
+    def chg_in(self) -> VoltageSource:
+        return self.pwr_out
+
+    @property
+    @deprecated(f"chg_out is deprecated and unified with source-capable (bidirectional) pwr_in")
+    def chg_out(self) -> VoltageSink:
+        return self.pwr_in
 
 
 class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from the multimater
@@ -364,7 +341,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
         super().contents()
         control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
         pwr_voltage = self.pwr_out.link().voltage.hull(self.gnd.link().voltage)
-        pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO)
+        pwr_current = self.pwr_out.link().current_draw.hull(RangeExpr.ZERO)
 
         self.pull_res = self.Block(Resistor(resistance=self.pull_resistance))
         self.pwr_fet = self.Block(
@@ -389,7 +366,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                 reverse_voltage=control_voltage,
                 current=RangeExpr.ZERO,  # effectively no current
                 voltage_drop=self.diode_drop,
-                reverse_recovery_time=RangeExpr.ALL,
             )
         )
 
@@ -398,7 +374,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                 reverse_voltage=control_voltage,
                 current=RangeExpr.ZERO,  # effectively no current
                 voltage_drop=self.diode_drop,
-                reverse_recovery_time=RangeExpr.ALL,
             )
         )
 
@@ -406,16 +381,16 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "pwr_in": VoltageSink(
-                    current_draw=self.pwr_out.link().current_drawn,
+                    current_draw=self.pwr_out.link().current_draw,
                 ),
                 "pwr_out": VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
+                    voltage=self.pwr_in.link().voltage,
                 ),
                 "control": DigitalSink(),  # TODO more modeling here?
                 "gnd": Ground(),
                 "btn_out": DigitalSource.low_from_supply(self.gnd),
                 "btn_in": DigitalBidir(
-                    voltage_out=self.gnd.link().voltage,
+                    voltage=self.gnd.link().voltage,
                     output_thresholds=(self.gnd.link().voltage.upper(), float("inf")),
                     pullup_capable=True,
                 ),

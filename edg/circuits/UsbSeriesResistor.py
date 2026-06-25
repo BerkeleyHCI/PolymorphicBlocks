@@ -9,11 +9,15 @@ class UsbSeriesResistor(InternalSubcircuit, Block):
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
         self.resistance = self.ArgParameter(resistance)
-        self.interior = self.Port(UsbHostPort.empty(), [Input])
-        self.exterior = self.Port(UsbDevicePort.empty(), [Output])
+        self.interior = self.Port(UsbHostPort(), [Input])
+        self.exterior = self.Port(UsbDevicePort(), [Output])
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.dp = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dp, self.exterior.dp)
-        self.dm = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dm, self.exterior.dm)
+        self.dp = self.Block(Resistor(self.resistance))
+        self.connect(self.dp.a, self.exterior.dp)
+        self.connect(self.dp.b, self.interior.dp)
+        self.dm = self.Block(Resistor(self.resistance))
+        self.connect(self.dm.a, self.exterior.dm)
+        self.connect(self.dm.b, self.interior.dm)

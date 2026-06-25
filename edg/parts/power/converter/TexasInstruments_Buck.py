@@ -11,12 +11,12 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr_in = self.Port(VoltageSink(voltage_limits=(4.5, 17) * Volt, current_draw=RangeExpr()), [Power])
-        self.sw = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
+        self.sw = self.Port(VoltageSource(voltage=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(8000, float("inf")) * kOhm))  # based on input current spec
         self.vbst = self.Port(
             VoltageSink(
                 voltage_limits=(0, 23) * Volt,
-                reverse_voltage_out=(3.6, 6) * Volt,  # assumed from UVLO to BST-SW abs max
+                reverse_voltage=(3.6, 6) * Volt,  # assumed from UVLO to BST-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -25,7 +25,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.assign(self.pwr_in.current_draw, self.sw.link().current_drawn)  # TODO quiescent current
+        self.assign(self.pwr_in.current_draw, self.sw.link().current_draw)  # TODO quiescent current
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-23-6",
@@ -87,7 +87,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 1.2) * Amp,  # output current limit, switch limit not given
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,
@@ -112,17 +112,17 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.sw = self.Port(
             VoltageSource(
-                voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage),
+                voltage=self.pwr_in.link().voltage.hull(self.gnd.link().voltage),
                 current_limits=(0, 2) * Amp,  # most conservative figures, low-side limited. TODO: better ones?
             )
         )  # internal switch specs not defined, only bulk current limit defined
-        self.assign(self.pwr_in.current_draw, self.sw.link().current_drawn)  # TODO quiescent current)
+        self.assign(self.pwr_in.current_draw, self.sw.link().current_draw)  # TODO quiescent current)
 
         self.fb = self.Port(AnalogSink())  # no impedance specs
         self.boot = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.3, 7) * Volt,
-                reverse_voltage_out=(4.5, 7) * Volt,  # assumed from Vin,min to BST-SW abs max
+                reverse_voltage=(4.5, 7) * Volt,  # assumed from Vin,min to BST-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -197,7 +197,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 2.5) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,
@@ -230,12 +230,12 @@ class Lmr38020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.vin = self.Port(VoltageSink(voltage_limits=(4.2, 80) * Volt, current_draw=RangeExpr()), [Power])
-        self.sw = self.Port(VoltageSource(voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage)))
+        self.sw = self.Port(VoltageSource(voltage=self.vin.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(10, float("inf")) * MOhm))  # assumed given RFbb maximum spec
         self.boot = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.3, 5.5) * Volt,
-                reverse_voltage_out=(3.8, 5.5) * Volt,  # assumed from UVLO to BOOT-SW abs max
+                reverse_voltage=(3.8, 5.5) * Volt,  # assumed from UVLO to BOOT-SW abs max
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -250,9 +250,7 @@ class Lmr38020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.assign(
-            self.vin.current_draw, self.sw.link().current_drawn + (3, 40) * uAmp
-        )  # shutdown to non-switching Iq
+        self.assign(self.vin.current_draw, self.sw.link().current_draw + (3, 40) * uAmp)  # shutdown to non-switching Iq
         self.footprint(
             "U",
             "Package_SO:HSOP-8-1EP_3.9x4.9mm_P1.27mm_EP2.41x3.1mm_ThermalVias",
@@ -333,7 +331,7 @@ class Lmr38020(VoltageRegulatorEnableWrapper, DiscreteBuckConverter, GeneratorBl
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 1.8) * Amp,  # low-side min switch current limit
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,

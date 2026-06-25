@@ -32,8 +32,8 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
         self.signal_in = self.Port(AnalogSink(), [Input])
         self.signal_out = self.Port(
             AnalogSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                signal_out=self.signal_in.link().signal,
+                voltage=self.signal_in.link().voltage.intersect(self.clamp_target),
+                signal=self.signal_in.link().signal,
                 impedance=RangeExpr(),
             ),
             [Output],
@@ -92,7 +92,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
         self.signal_in = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.signal_out = self.Port(
             DigitalSource(
-                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                voltage=self.signal_in.link().voltage.intersect(self.clamp_target),
                 output_thresholds=self.signal_in.link().output_thresholds,
             ),
             [Output],
@@ -103,7 +103,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
         super().contents()
 
         # TODO bidirectional clamping calcs?
-        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_draw)
         self.res = self.Block(
             Resistor(
                 resistance=1

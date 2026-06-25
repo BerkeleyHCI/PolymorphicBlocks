@@ -3,6 +3,7 @@ from typing import Any
 from typing_extensions import override
 
 from ....circuits import *
+from ....util import deprecated_param_remap
 
 
 # These adapters are needed to properly orient the boost-side switch, since it outputs on the high side
@@ -10,13 +11,14 @@ from ....circuits import *
 class VoltageSinkConnector(DummyDevice):
     """Connects two voltage sinks together (FET top sink to exterior source)."""
 
-    def __init__(self, voltage_out: RangeLike, a_current_limits: RangeLike, b_current_limits: RangeLike) -> None:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def __init__(self, voltage: RangeLike, a_current_limits: RangeLike, b_current_limits: RangeLike) -> None:
         super().__init__()
         self.a = self.Port(
-            VoltageSource(voltage_out=voltage_out, current_limits=a_current_limits), [Input]
+            VoltageSource(voltage=voltage, current_limits=a_current_limits), [Input]
         )  # FET top: set output voltage, allow instantaneous current draw
         self.b = self.Port(
-            VoltageSource(voltage_out=voltage_out, current_limits=b_current_limits), [Output]
+            VoltageSource(voltage=voltage, current_limits=b_current_limits), [Output]
         )  # exterior source: set output voltage + Ilim
         self.connect(self.a.net, self.b.net)
 
@@ -68,7 +70,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
                 self.pwr_in.link().voltage,
                 self.output_voltage,
                 self.actual_frequency,
-                self.pwr_out.link().current_drawn,
+                self.pwr_out.link().current_draw,
                 Range.exact(0),
                 input_voltage_ripple=self.input_ripple_limit,
                 output_voltage_ripple=self.output_ripple_limit,

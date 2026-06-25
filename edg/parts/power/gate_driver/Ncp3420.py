@@ -50,7 +50,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
 
         self.assign(
-            self.vcc.current_draw, (0.7, 5.0) * mAmp + self.drvl.link().current_drawn + self.drvh.link().current_drawn
+            self.vcc.current_draw, (0.7, 5.0) * mAmp + self.drvl.link().current_draw + self.drvh.link().current_draw
         )  # only system supply given
 
     @override
@@ -115,7 +115,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
                 )
                 self.connect(
                     self.boot.cathode.adapt_to(
-                        VoltageSource(voltage_out=self.high_gnd.link().voltage + self.pwr.link().voltage)
+                        VoltageSource(voltage=self.high_gnd.link().voltage + self.pwr.link().voltage)
                     ),
                     self.ic.bst,
                 )

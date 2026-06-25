@@ -149,5 +149,5 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
             self.connect(self.vref, self.ic.vrefp)
         else:  # dummy source, for the Vref capacitor
             (self.vrefp_source,), _ = self.chain(
-                self.Block(DummyVoltageSource(voltage_out=2.4 * Volt(tol=0.02))), self.ic.vrefp
+                self.Block(DummyVoltageSource(voltage=2.4 * Volt(tol=0.02))), self.ic.vrefp
             )

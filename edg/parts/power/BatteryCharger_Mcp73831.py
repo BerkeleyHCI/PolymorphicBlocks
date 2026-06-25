@@ -23,7 +23,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.vbat = self.Port(
             VoltageSink(
-                reverse_voltage_out=(4.168, 4.232) * Volt,  # -2 variant
+                reverse_voltage=(4.168, 4.232) * Volt,  # -2 variant
                 reverse_current_limits=self.actual_charging_current.hull(0 * Amp(tol=0)),
             )
         )

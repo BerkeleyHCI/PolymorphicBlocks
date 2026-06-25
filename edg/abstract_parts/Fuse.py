@@ -89,14 +89,14 @@ class SeriesPowerFuse(Protection):
             [Power, Input],
         )
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()),  # ignore voltage drop
+            VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=RangeExpr()),  # ignore voltage drop
             [Output],
         )
 
         self.fuse = self.Block(
             self.FUSE_TYPE(
                 trip_current=trip_current,
-                hold_current=(self.pwr_out.link().current_drawn.upper(), float("inf")),
+                hold_current=(self.pwr_out.link().current_draw.upper(), float("inf")),
                 voltage=self.pwr_in.link().voltage,
             )
         )
@@ -104,7 +104,7 @@ class SeriesPowerFuse(Protection):
         self.connect(self.pwr_out.net, self.fuse.b)
 
         self.assign(self.pwr_in.voltage_limits, self.fuse.actual_voltage_rating)  # TODO: eventually needs a ground ref
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
         self.assign(self.pwr_out.current_limits, (0, self.fuse.actual_hold_current.lower()))
 
     def connected(

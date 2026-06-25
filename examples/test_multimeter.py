@@ -87,8 +87,8 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
             conversions={
                 "input_positive": AnalogSink(),
                 "output": AnalogSource(  # assumed clamped by the switch in the resistor mux
-                    voltage_out=output_voltage,
-                    signal_out=output_voltage,
+                    voltage=output_voltage,
+                    signal=output_voltage,
                     current_limits=(-10, 10) * mAmp,
                     impedance=1 * mOhm(tol=0),
                 ),
@@ -166,8 +166,8 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
                     )  # approx lowest resistance - TODO properly model the resistor mux
                 ),
                 "range.sw": AnalogSource(
-                    voltage_out=(0, max_in_voltage),
-                    signal_out=(0, max_in_voltage),
+                    voltage=(0, max_in_voltage),
+                    signal=(0, max_in_voltage),
                     impedance=(1, 1000) * kOhm,  # TODO properly model resistor mux
                 ),
                 "output": AnalogSink(voltage_limits=self.voltage_rating),  # TODO should be analog source
@@ -311,8 +311,8 @@ class Multimeter(JlcBoardTop):
             self.inp = self.Block(BananaSafetyJack())
             inp_port = self.inp.port.adapt_to(
                 AnalogSource(
-                    voltage_out=VOLTAGE_RATING,
-                    signal_out=VOLTAGE_RATING,
+                    voltage=VOLTAGE_RATING,
+                    signal=VOLTAGE_RATING,
                     current_limits=(0, 10) * mAmp,
                     impedance=(0, 100) * Ohm,
                 )

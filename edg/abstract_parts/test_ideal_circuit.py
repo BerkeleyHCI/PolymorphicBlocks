@@ -25,7 +25,7 @@ class IdealCircuitTestTop(Block):
             self.connect(self.mcu.pwr, self.reg.pwr_out)
             self.mcu_io = self.Block(DummyDigitalSink()).connected(self.mcu.gpio.request("test"))
 
-        self.require(self.pwr.current_drawn == 3 * Amp(tol=0))
+        self.require(self.pwr.current_draw == 3 * Amp(tol=0))
         self.require(self.reg_draw.voltage == 2 * Volt(tol=0))
 
 

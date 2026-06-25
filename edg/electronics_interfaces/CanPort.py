@@ -4,6 +4,7 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalBidirBridge
+from ..electronics_model.PassivePort import PassiveBridge
 
 
 class CanLogicLink(Link):
@@ -69,7 +70,7 @@ class CanDiffLink(Link):
 
     def __init__(self) -> None:
         super().__init__()
-        self.nodes = self.Port(Vector(CanDiffPort(DigitalBidir.empty())))  # TODO mark as required
+        self.nodes = self.Port(Vector(CanDiffPort.empty()))  # TODO mark as required
 
         # TODO write custom top level digital constraints
         # TODO future: digital constraints through link inference
@@ -86,18 +87,18 @@ class CanDiffBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
-        self.outer_port = self.Port(CanDiffPort(DigitalBidir.empty()))
-        self.inner_link = self.Port(CanDiffPort(DigitalBidir.empty()))
+        self.outer_port = self.Port(CanDiffPort.empty())
+        self.inner_link = self.Port(CanDiffPort.empty())
 
     @override
     def contents(self) -> None:
         super().contents()
 
-        self.canh_bridge = self.Block(DigitalBidirBridge())
+        self.canh_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.canh, self.canh_bridge.outer_port)
         self.connect(self.canh_bridge.inner_link, self.inner_link.canh)
 
-        self.canl_bridge = self.Block(DigitalBidirBridge())
+        self.canl_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.canl, self.canl_bridge.outer_port)
         self.connect(self.canl_bridge.inner_link, self.inner_link.canl)
 
@@ -106,9 +107,7 @@ class CanDiffPort(Port[CanDiffLink]):
     link_type = CanDiffLink
     bridge_type = CanDiffBridge
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        if model is None:  # ideal by default
-            model = DigitalBidir()
-        self.canh = self.Port(model)
-        self.canl = self.Port(model)
+        self.canh = self.Port(Passive())
+        self.canl = self.Port(Passive())

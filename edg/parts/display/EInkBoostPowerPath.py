@@ -1,6 +1,7 @@
 from typing_extensions import override
 
 from ...circuits import *
+from ...util import deprecated_param_remap
 
 
 class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
@@ -8,9 +9,10 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
     a bootstrap switched-cap circuit.
     Current is the peak current through the FET and diodes."""
 
+    @deprecated_param_remap(("voltage_out", "voltage"))
     def __init__(
         self,
-        voltage_out: RangeLike,
+        voltage: RangeLike,
         current: RangeLike,
         inductance: RangeLike,
         in_capacitance: RangeLike,
@@ -27,7 +29,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
         self.gate = self.Port(DigitalSink.empty())
         self.isense = self.Port(AnalogSource.empty(), optional=True)
 
-        self.voltage_out = self.ArgParameter(voltage_out)
+        self.voltage = self.ArgParameter(voltage)
         self.current = self.ArgParameter(current)
         self.inductance = self.ArgParameter(inductance)
         self.in_capacitance = self.ArgParameter(in_capacitance)
@@ -41,7 +43,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
 
         self.fet = self.Block(
             Fet.NFet(
-                drain_voltage=self.voltage_out.hull((0, 0) * Volt),
+                drain_voltage=self.voltage.hull((0, 0) * Volt),
                 drain_current=self.current,
                 gate_voltage=self.gate.link().voltage,
                 rds_on=(0, 400) * mOhm,
@@ -52,7 +54,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
         self.in_cap = self.Block(DecouplingCapacitor(capacitance=self.in_capacitance))
 
         diode_model = Diode(
-            reverse_voltage=self.voltage_out.hull((0, 0) * Volt),
+            reverse_voltage=self.voltage.hull((0, 0) * Volt),
             current=self.current.hull((0, 0) * Volt),
             voltage_drop=self.diode_voltage_drop,
             reverse_recovery_time=(0, 500e-9),  # guess from Digikey's classification for "fast recovery"
@@ -61,7 +63,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
         self.boot_neg_diode = self.Block(diode_model)
         self.boot_gnd_diode = self.Block(diode_model)
 
-        self.boot_cap = self.Block(Capacitor(capacitance=self.out_capacitance, voltage=self.voltage_out))
+        self.boot_cap = self.Block(Capacitor(capacitance=self.out_capacitance, voltage=self.voltage))
         out_cap_model = DecouplingCapacitor(capacitance=self.out_capacitance)
         self.out_cap = self.Block(out_cap_model)
         self.neg_out_cap = self.Block(out_cap_model)
@@ -71,10 +73,10 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
             conversions={
                 "inductor.1": VoltageSink(),
                 "diode.K": VoltageSource(
-                    voltage_out=self.voltage_out,
+                    voltage=self.voltage,
                 ),
                 "boot_neg_diode.A": VoltageSource(
-                    voltage_out=-self.voltage_out,
+                    voltage=-self.voltage,
                 ),
                 "boot_gnd_diode.K": Ground(),
                 "sense.2": Ground(),

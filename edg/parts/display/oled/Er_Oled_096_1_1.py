@@ -35,12 +35,12 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 current_draw=(1, 300) * uAmp,  # sleep to operating
             )
         )
-        self.vcc = self.Port(VoltageSource(voltage_out=(7, 7.5) * Volt, current_limits=0 * mAmp(tol=0)))
+        self.vcc = self.Port(VoltageSource(voltage=(7, 7.5) * Volt, current_limits=0 * mAmp(tol=0)))
 
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
         self.vcomh = self.Port(
             VoltageSource(
-                voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+                voltage=self.vcc.voltage,  # can program Vcomh to be fractions of Vcc
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )

@@ -4,6 +4,7 @@ from typing_extensions import override
 
 from ..electronics_interfaces import *
 from .IoController import BaseIoController, IoController
+from ..util import deprecated_param_remap
 
 
 class IoControllerSpiPeripheral(BlockInterfaceMixin[BaseIoController]):
@@ -145,9 +146,8 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
             self.gnd_model = self.Block(DummyGround())
             return self.gnd_model.io
 
-    def _generate_pwr_node(
-        self, voltage_out: RangeLike, current_limits: RangeLike
-    ) -> Union[VoltageSink, VoltageSource]:
+    @deprecated_param_remap(("voltage_out", "voltage"))
+    def _generate_pwr_node(self, voltage: RangeLike, current_limits: RangeLike) -> Union[VoltageSink, VoltageSource]:
         """Helper function that returns a power node, either directly taking the pwr port if available,
         or generating an internal voltage node and optionally connecting it to pwr_out (if used).
 
@@ -159,7 +159,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
         else:
             self.pwr_out_model = self.Block(
                 DummyVoltageSource(
-                    voltage_out=voltage_out,  # tolerance is a guess
+                    voltage=voltage,  # tolerance is a guess
                     current_limits=current_limits,
                 )
             )

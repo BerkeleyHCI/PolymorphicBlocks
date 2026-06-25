@@ -224,14 +224,14 @@ class RobotDriver(JlcBoardTop):
                         "tof_reset_2=12",
                     ],
                 ),
-                (["isense", "out", "signal_out"], Range(0.1, 2.45)),  # trade range for resolution
+                (["isense", "out", "signal"], Range(0.1, 2.45)),  # trade range for resolution
                 (["isense", "sense", "res", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),
                 (["isense", "sense", "res", "res", "require_basic_part"], False),
                 # JLC does not have frequency specs, must be checked TODO
                 (["reg_3v3", "power_path", "inductor", "frequency"], Range(0, 0)),
                 (["reg_3v3", "power_path", "efficiency"], Range(1.0, 1.0)),  # waive this check
                 (
-                    ["mcu", "dac", "spk", "signal_out"],
+                    ["mcu", "dac", "spk", "signal"],
                     Range(0.65, 2.65),
                 ),  # restrict the range to the speaker driver limits,
             ],

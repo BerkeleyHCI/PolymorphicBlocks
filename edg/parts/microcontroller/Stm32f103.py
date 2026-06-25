@@ -82,10 +82,10 @@ class Stm32f103_Device(
 
         # TODO need to pass through to pin mapper
         # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-        #                                      voltage_out=self.pwr.link().voltage),
+        #                                      voltage=self.pwr.link().voltage),
         #                        optional=True)  # TODO other specs from Table 23
         self.osc = self.Port(
-            CrystalDriver(frequency_limits=(4, 16) * MHertz, voltage_out=self.pwr.link().voltage), optional=True
+            CrystalDriver(frequency_limits=(4, 16) * MHertz, voltage=self.pwr.link().voltage), optional=True
         )  # Table 22
 
         self.swd = self.Port(SwdTargetPort.empty())
@@ -172,8 +172,8 @@ class Stm32f103_Device(
                 PinResource("PA8", {"PA8": dio_ft_model}),
                 PinResource("PA9", {"PA9": dio_ft_model}),
                 PinResource("PA10", {"PA10": dio_ft_model}),
-                PinResource("PA11", {"PA11": dio_ft_model}),
-                PinResource("PA12", {"PA12": dio_ft_model}),
+                PinResource("PA11", {"PA11": dio_ft_model, "USBDM": Passive()}),
+                PinResource("PA12", {"PA12": dio_ft_model, "USBDP": Passive()}),
                 # PinResource('PA13', {'PA13': dio_ft_model}),  # forced SWDIO default is JTMS/SWDIO
                 # PinResource('PA14', {'PA14': dio_ft_model}),  # forced SWCLK, default is JTCK/SWCLK
                 PinResource("PA15", {"PA15": dio_ft_model}),  # default is JTDI
@@ -209,7 +209,7 @@ class Stm32f103_Device(
                     CanControllerPort(DigitalBidir.empty()),
                     {"txd": ["PA12", "PD1", "PB9"], "rxd": ["PA11", "PD0", "PB8"]},
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
                 PeripheralFixedPin(
                     "SWD",
                     SwdTargetPort(dio_std_model),
@@ -252,7 +252,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
         self.dp = self.Block(Resistor(resistance))
         self.connect(self.pwr.net, self.dp.a)
-        self.connect(self.usb.dp.net, self.dp.b)
+        self.connect(self.usb.dp, self.dp.b)
 
 
 class Stm32f103_48(

@@ -83,9 +83,7 @@ class CalSolPowerConnector(Connector, FootprintBlock):
         super().__init__()
 
         self.pwr = self.Port(
-            VoltageSource(
-                voltage_out=12 * Volt(tol=0.1), current_limits=(0, 3) * Amp  # TODO get actual limits from LVPDB?
-            )
+            VoltageSource(voltage=12 * Volt(tol=0.1), current_limits=(0, 3) * Amp)  # TODO get actual limits from LVPDB?
         )
         self.gnd = self.Port(Ground())
 
@@ -112,7 +110,7 @@ class CalSolCanConnector(Connector, FootprintBlock):
 
         self.pwr = self.Port(
             VoltageSource(
-                voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+                voltage=(7, 14) * Volt,  # TODO get limits from CAN power brick?
                 current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
             )
         )
@@ -144,7 +142,7 @@ class CalSolCanConnectorRa(Connector, FootprintBlock):
 
         self.pwr = self.Port(
             VoltageSource(
-                voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+                voltage=(7, 14) * Volt,  # TODO get limits from CAN power brick?
                 current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
             )
         )
@@ -176,7 +174,7 @@ class M12CanConnector(Connector, FootprintBlock):
 
         self.pwr = self.Port(
             VoltageSource(
-                voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+                voltage=(7, 14) * Volt,  # TODO get limits from CAN power brick?
                 current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
             )
         )

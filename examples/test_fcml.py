@@ -35,7 +35,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
             [Power, Input],
         )
         self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=Range.all()), [Output]
+            VoltageSource(voltage=self.pwr_in.link().voltage, current_limits=Range.all()), [Output]
         )  # ignore voltage drop
 
         self.diode = self.Block(Diode(reverse_voltage=reverse_voltage, current=current, voltage_drop=voltage_drop))
@@ -43,7 +43,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
         self.connect(self.pwr_in.net, self.diode.anode)
         self.connect(self.pwr_out.net, self.diode.cathode)
 
-        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_draw)
 
 
 class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, GeneratorBlock):
@@ -134,7 +134,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         # Q = C dv => C = I*t / dV
         MAX_FLYING_CAP_DV_PERCENT = 0.08
         flying_cap_capacitance = (
-            self.high_out.link().current_drawn.upper()
+            self.high_out.link().current_draw.upper()
             / self.frequency.lower()
             / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
         )
@@ -144,7 +144,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
             locals={
                 "fet_model": Fet.NFet(
                     drain_voltage=self.in_voltage,
-                    drain_current=(0, self.high_out.link().current_drawn.upper()),
+                    drain_current=(0, self.high_out.link().current_draw.upper()),
                     gate_voltage=self.low_boot_out.link().voltage,  # TODO account for boot diode drop
                     rds_on=self.fet_rds,
                 ),
@@ -168,9 +168,9 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
             },
             conversions={
                 "low_in": Ground(),  # TODO better conventions for Ground vs VoltageSink|Source
-                "low_out": VoltageSource(voltage_out=self.low_in.link().voltage),
-                "high_in": VoltageSink(current_draw=self.high_out.link().current_drawn),
-                "high_out": VoltageSource(voltage_out=self.low_in.link().voltage),
+                "low_out": VoltageSource(voltage=self.low_in.link().voltage),
+                "high_in": VoltageSink(current_draw=self.high_out.link().current_draw),
+                "high_out": VoltageSource(voltage=self.low_in.link().voltage),
                 "low_boot_cap.1": VoltageSink(),
                 "high_boot_cap.1": VoltageSink(),
                 "low_gate": DigitalSink(),  # TODO model gate current draw
@@ -275,13 +275,13 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
         self.connect(
             self.switch,
-            self.inductor.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn * values.dutycycle)),
+            self.inductor.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_draw * values.dutycycle)),
         )
         self.connect(
             self.pwr_out,
             self.inductor.b.adapt_to(
                 VoltageSource(
-                    voltage_out=self.output_voltage,
+                    voltage=self.output_voltage,
                     current_limits=BuckConverterPowerPath._ilim_expr(
                         self.inductor.actual_current_rating, self.sw_current_limits, self.actual_inductor_current_ripple
                     ),
@@ -360,7 +360,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
                 self.pwr_in.link().voltage,
                 self.pwr_in.link().voltage * self.get(self.ratios),
                 self.frequency,
-                self.pwr_out.link().current_drawn,
+                self.pwr_out.link().current_draw,
                 Range.exact(0),
                 input_voltage_ripple=250 * mVolt,
                 output_voltage_ripple=25 * mVolt,  # TODO plumb through to user config
@@ -581,7 +581,7 @@ class Fcml(JlcBoardTop):
                 (["reg_vgate", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 # a bugfix for the SPI flash current draw increased the current beyond the USB port's capabilities
                 # this hack-patch keeps the example building
-                (["vusb", "current_drawn"], Range(0.0311, 0.500)),
+                (["vusb", "current_draw"], Range(0.0311, 0.500)),
             ],
             class_refinements=[
                 (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified

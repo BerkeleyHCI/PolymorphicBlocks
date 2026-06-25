@@ -159,17 +159,17 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
             reference_node = self.gnd
             reference_range = self.gnd.link().voltage
 
-        input_signal_range = self.amp.out.voltage_out.intersect(self.input.link().signal - reference_range)
+        input_signal_range = self.amp.out.voltage.intersect(self.input.link().signal - reference_range)
         output_range = input_signal_range * self.actual_amplification + reference_range
         # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
-        self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_range)))
+        self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal.intersect(output_range)))
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "r1.1": AnalogSink(impedance=self.r1.actual_resistance + self.r2.actual_resistance),
                 "r1.2": AnalogSource(  # this models the entire node
-                    voltage_out=self.amp.out.voltage_out,
+                    voltage=self.amp.out.voltage,
                     impedance=1 / (1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance),
                 ),
                 "r2.1": AnalogSink(),  # ideal
@@ -313,7 +313,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
         input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
         output_diff_range = input_diff_range * self.actual_ratio + output_neg_signal
         # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
-        self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_diff_range)))
+        self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal.intersect(output_diff_range)))
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
@@ -322,9 +322,9 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
                     impedance=self.r1.actual_resistance + self.rf.actual_resistance
                 ),
                 "r1.2": AnalogSource(  # combined R1 and Rf resistance
-                    voltage_out=ResistiveDivider.divider_output(
+                    voltage=ResistiveDivider.divider_output(
                         self.input_negative.link().voltage,
-                        self.amp.out.voltage_out,
+                        self.amp.out.voltage,
                         ResistiveDivider.divider_ratio(self.r1.actual_resistance, self.rf.actual_resistance),
                     ),
                     impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance),
@@ -335,7 +335,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
                 ),
                 "r2.1": AnalogSink(impedance=self.r2.actual_resistance + self.rg.actual_resistance),
                 "r2.2": AnalogSource(  # combined R2 and Rg resistance
-                    voltage_out=ResistiveDivider.divider_output(
+                    voltage=ResistiveDivider.divider_output(
                         self.input_positive.link().voltage,
                         output_neg_voltage,
                         ResistiveDivider.divider_ratio(self.r2.actual_resistance, self.rg.actual_resistance),
@@ -418,7 +418,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
             conversions={
                 "r.1": AnalogSink(impedance=self.r.actual_resistance),  # TODO very simplified and probably very wrong
                 "c.1": AnalogSink(),  # TODO impedance of the feedback circuit?
-                "r.2": AnalogSource(voltage_out=self.amp.out.voltage_out, impedance=self.r.actual_resistance),
+                "r.2": AnalogSource(voltage=self.amp.out.voltage, impedance=self.r.actual_resistance),
                 "c.2": AnalogSink(),
             },
         )

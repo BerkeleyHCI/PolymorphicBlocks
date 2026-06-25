@@ -57,7 +57,7 @@ class BuckConverter(SwitchingVoltageRegulator):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
+        self.require(self.pwr_out.voltage.upper() <= self.pwr_in.voltage_limits.upper())
 
 
 @abstract_block_default(lambda: IdealBuckConverter)
@@ -76,10 +76,10 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
         self.gnd.init_from(Ground())
         self.pwr_in.init_from(
             VoltageSink(
-                current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn
+                current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_draw
             )
         )
-        self.pwr_out.init_from(VoltageSource(voltage_out=effective_output_voltage))
+        self.pwr_out.init_from(VoltageSource(voltage=effective_output_voltage))
         self.reset.init_from(DigitalSink())
 
 
@@ -89,7 +89,7 @@ class BoostConverter(SwitchingVoltageRegulator):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
+        self.require(self.pwr_out.voltage.lower() >= self.pwr_in.voltage_limits.lower())
 
 
 @abstract_block_default(lambda: IdealBoostConverter)
@@ -108,10 +108,10 @@ class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
         self.gnd.init_from(Ground())
         self.pwr_in.init_from(
             VoltageSink(
-                current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn
+                current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_draw
             )
         )
-        self.pwr_out.init_from(VoltageSource(voltage_out=effective_output_voltage))
+        self.pwr_out.init_from(VoltageSource(voltage=effective_output_voltage))
         self.reset.init_from(DigitalSink())
 
 

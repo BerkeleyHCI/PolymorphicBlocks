@@ -38,7 +38,7 @@ class Drv8870_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def contents(self) -> None:
         self.assign(
             self.isen.current_draw,
-            (0, self.out1.link().current_drawn.abs().upper().max(self.out2.link().current_drawn.abs().upper())),
+            (0, self.out1.link().current_draw.abs().upper().max(self.out2.link().current_draw.abs().upper())),
         )
         self.assign(self.vm.current_draw, (10, 10000) * uAmp + self.isen.current_draw)  # from sleep to max operating
 

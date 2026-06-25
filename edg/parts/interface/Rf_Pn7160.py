@@ -267,19 +267,19 @@ class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # internally generated supplies
         self.vdd = self.Port(
             VoltageSource(
-                voltage_out=(1.7, 1.95) * Volt,  # Vddd pin characteristics
+                voltage=(1.7, 1.95) * Volt,  # Vddd pin characteristics
                 current_limits=(0, 0) * Amp,  # connect decap only
             )
         )
         self.vddmid = self.Port(
             VoltageSource(
-                voltage_out=1.8 * Volt(tol=0),  # assumed from external capacitor requirement
+                voltage=1.8 * Volt(tol=0),  # assumed from external capacitor requirement
                 current_limits=(0, 0) * Amp,  # connect decap only
             )
         )
         self.vddtx = self.Port(
             VoltageSource(
-                voltage_out=(self.vddup.link().voltage - 0.3 * Volt).hull(2.5 * Volt),  # up to 0.3v dropout
+                voltage=(self.vddup.link().voltage - 0.3 * Volt).hull(2.5 * Volt),  # up to 0.3v dropout
                 current_limits=(0, 0) * Amp,  # connect decap only
             )
         )

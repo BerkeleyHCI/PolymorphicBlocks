@@ -1,3 +1,4 @@
+import warnings
 from itertools import chain
 from typing import List, Dict, Tuple, Type, Optional, Any, Union, Callable, Mapping, Iterable
 from typing_extensions import override
@@ -63,6 +64,11 @@ class BaseIoController(PinMappable, Block):
                 from .IoControllerInterfaceMixins import IoControllerCan
 
                 self._can_mixin = self.with_mixin(IoControllerCan())
+            warnings.warn(
+                f"can is now a mixin, use .with_mixin(IoControllerCan()).can mixin instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return self._can_mixin.can
         else:
             raise AttributeError(
@@ -230,8 +236,8 @@ class BaseIoController(PinMappable, Block):
 
             if isinstance(io_port, DigitalBidir):
                 io_current_draw_builder = io_current_draw_builder + (
-                    io_port.link().current_drawn.lower().min(0),
-                    io_port.link().current_drawn.upper().max(0),
+                    io_port.link().current_draw.lower().min(0),
+                    io_port.link().current_draw.upper().max(0),
                 )
             elif isinstance(io_port, AnalogSink):
                 pass  # assumed no current draw into a sink
@@ -239,8 +245,8 @@ class BaseIoController(PinMappable, Block):
                 pass  # assumed no current draw
             elif isinstance(io_port, AnalogSource):
                 io_current_draw_builder = io_current_draw_builder + (
-                    io_port.link().current_drawn.lower().min(0),
-                    io_port.link().current_drawn.upper().max(0),
+                    io_port.link().current_draw.lower().min(0),
+                    io_port.link().current_draw.upper().max(0),
                 )
             # TODO: recurse into bundles, really needs a more unified way of handling current draw
 

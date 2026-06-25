@@ -83,7 +83,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         # and has different component sizing guidelines
         vin = self.pwr_in.link().voltage
         vout = self.pwr_out.link().voltage
-        iload = self.pwr_out.link().current_drawn
+        iload = self.pwr_out.link().current_draw
         efficiency_est = Range(0.7, 0.85)  # given by datasheet
 
         ilim = (350, 450) * mAmp  # current limit determined by chip
@@ -118,7 +118,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
             self.inductor.a.adapt_to(
                 VoltageSink(
                     voltage_limits=RangeExpr.ALL,
-                    current_draw=self.pwr_out.link().current_drawn
+                    current_draw=self.pwr_out.link().current_draw
                     * self.pwr_out.link().voltage
                     / self.pwr_in.link().voltage,
                 )
@@ -145,7 +145,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         self.connect(
             self.pwr_out,
             self.rect.cathode.adapt_to(
-                VoltageSource(voltage_out=self.fb.actual_input_voltage, current_limits=(0, max_current.upper()))
+                VoltageSource(voltage=self.fb.actual_input_voltage, current_limits=(0, max_current.upper()))
             ),
         )
 
@@ -253,7 +253,7 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                     self.pwr_in.link().voltage,
                     self.fb.actual_input_voltage,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn,
+                    self.pwr_out.link().current_draw,
                     (0, 1) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,
@@ -270,8 +270,8 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
             self.rect = self.Block(
                 Diode(
-                    reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
-                    current=self.pwr_out.link().current_drawn,
+                    reverse_voltage=(0, self.pwr_out.voltage.upper()),
+                    current=self.pwr_out.link().current_draw,
                     voltage_drop=(0, 0.8) * Volt,
                     reverse_recovery_time=(0, 500) * nSecond,  # guess from Digikey's classification for "fast recovery"
                 )
@@ -281,11 +281,9 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
                 self.pwr_out,
                 self.rect.cathode.adapt_to(
                     VoltageSource(
-                        voltage_out=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
+                        voltage=self.fb.actual_input_voltage, current_limits=self.power_path.switch.current_limits
                     )
                 ),
             )
 
-            self.require(
-                self.pwr_out.voltage_out.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage"
-            )
+            self.require(self.pwr_out.voltage.upper() + self.rect.actual_voltage_drop.upper() <= 40, "max SW voltage")

@@ -29,7 +29,7 @@ class CpuFanPwmControl(BlockInterfaceMixin[CpuFanConnector]):
         self.control = self.Port(
             DigitalBidir(
                 voltage_limits=(0, 5.25) * Volt,
-                voltage_out=(0, 5.25) * Volt,
+                voltage=(0, 5.25) * Volt,
                 pullup_capable=True,
                 input_thresholds=(0.8, 0.8) * Volt,  # only low threshold defined
             )

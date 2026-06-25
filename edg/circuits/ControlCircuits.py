@@ -116,7 +116,7 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
             conversions={
                 "r1.1": AnalogSink(impedance=self.r1.actual_resistance),  # TODO very simplified and probably very wrong
                 # these model the opamp in- node
-                "r1.2": AnalogSource(voltage_out=self.amp.out.voltage_out, impedance=self.r1.actual_resistance),
+                "r1.2": AnalogSource(voltage=self.amp.out.voltage, impedance=self.r1.actual_resistance),
                 "r2.1": AnalogSink(),
                 "c2.2": AnalogSink(),
                 # these model the opamp out node

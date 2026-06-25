@@ -16,9 +16,9 @@ class Fusb302b_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.gnd = self.Port(Ground())
 
-        self.cc = self.Port(UsbCcPort())  # TODO pass in port models?
+        self.cc = self.Port(UsbCcPort())
         i2c_model = DigitalBidir(  # interestingly, IO maximum voltages are not specified
-            voltage_out=(0, 0.35) * Volt,  # low-level output voltage
+            voltage=(0, 0.35) * Volt,  # low-level output voltage
             current_limits=(-20, 0) * mAmp,  # low-level output current limits
             input_thresholds=(0.51, 1.32) * Volt,
             output_thresholds=(0.35, float("inf")) * Volt,

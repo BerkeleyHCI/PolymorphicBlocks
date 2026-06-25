@@ -19,21 +19,21 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.sw = self.Port(
             VoltageSource(
-                voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage), current_limits=(0, 5) * Amp
+                voltage=self.vin.link().voltage.hull(self.gnd.link().voltage), current_limits=(0, 5) * Amp
             )  # up to 5A charge / system current
         )  # internal switch specs not defined, only bulk current limit defined
-        self.assign(self.vin.current_draw, self.sw.link().current_drawn)  # TODO quiescent current
+        self.assign(self.vin.current_draw, self.sw.link().current_draw)  # TODO quiescent current
 
         self.pmid = self.Port(
             VoltageSource(
-                voltage_out=self.vin.link().voltage,  # 5.08-5.22v in boost
+                voltage=self.vin.link().voltage,  # 5.08-5.22v in boost
                 current_limits=0 * Amp(tol=0),  # decoupling only
             )
         )
         self.bst = self.Port(
             VoltageSink(
                 voltage_limits=self.sw.link().voltage + (-0.3, 5) * Volt,
-                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_voltage=5 * Volt(tol=0),
                 reverse_current_limits=0 * Amp(tol=0),
             )
         )
@@ -47,14 +47,14 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.batt = self.Port(
             VoltageSink(  # technically bidir
                 voltage_limits=(2.6, 4.6) * Volt,  # 2.6 is max UV threshold
-                current_draw=self.sys.link().current_drawn,  # TODO model (reverse) charging current
+                current_draw=self.sys.link().current_draw,  # TODO model (reverse) charging current
             )
         )
         self.battsns = self.Port(VoltageSink())  # technically analog input
 
         self.vcc = self.Port(
             VoltageSource(
-                voltage_out=3.65 * Volt(tol=0),  # no tolerance given
+                voltage=3.65 * Volt(tol=0),  # no tolerance given
                 current_limits=(0, 5) * mAmp,  # no limit given, can be used to drive stat LEDs
             )
         )
@@ -65,7 +65,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.rst = self.Port(dio_model, optional=True)  # 200k internal pullup, float if unused
         self.int = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
-        self.vrntc = self.Port(VoltageSource(voltage_out=self.vcc.voltage_out, current_limits=(0, 5) * mAmp))
+        self.vrntc = self.Port(VoltageSource(voltage=self.vcc.voltage, current_limits=(0, 5) * mAmp))
         self.ntc1 = self.Port(AnalogSink())  # required, doesn't seem to be any way to disable
         self.stat = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)  # requires 10k pullup
         self.pg = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)  # requires 10k pullup
@@ -187,7 +187,7 @@ class Mp2722(DiscreteBuckConverter):
                     self.pwr_in.link().voltage,
                     vsys_range,
                     self.actual_frequency,
-                    self.pwr_out.link().current_drawn + self.ic.sys.link().current_drawn,
+                    self.pwr_out.link().current_draw + self.ic.sys.link().current_draw,
                     (0, 3.2) * Amp,
                     input_voltage_ripple=self.input_ripple_limit,
                     output_voltage_ripple=self.output_ripple_limit,

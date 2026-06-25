@@ -33,7 +33,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
         self.connect(self.amp.input_positive, self.sense.sense_in)
         self.connect(self.amp.input_negative, self.sense.sense_out)
 
-        output_swing = self.pwr_out.link().current_drawn * self.sense.actual_resistance * self.amp.actual_ratio
+        output_swing = self.pwr_out.link().current_draw * self.sense.actual_resistance * self.amp.actual_ratio
         self.force_signal = self.Block(ForcedAnalogSignal(output_swing + self.ref.link().signal))
         self.connect(self.amp.output, self.force_signal.signal_in)
         self.connect(self.force_signal.signal_out, self.out)
