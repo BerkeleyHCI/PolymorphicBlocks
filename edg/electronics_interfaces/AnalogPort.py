@@ -8,6 +8,7 @@ from typing_extensions import override
 from ..electronics_model import *
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
+from ..util import deprecated_param_remap
 
 
 class AnalogLink(Link):
@@ -22,8 +23,8 @@ class AnalogLink(Link):
         self.source_impedance = self.Parameter(RangeExpr(self.source.impedance))
         self.sink_impedance = self.Parameter(RangeExpr())
 
-        self.voltage = self.Parameter(RangeExpr(self.source.voltage_out))
-        self.signal = self.Parameter(RangeExpr(self.source.signal_out))
+        self.voltage = self.Parameter(RangeExpr(self.source.voltage))
+        self.signal = self.Parameter(RangeExpr(self.source.signal))
         self.current_draw = self.Parameter(RangeExpr())
 
         self.voltage_limits = self.Parameter(RangeExpr())
@@ -93,7 +94,7 @@ class AnalogSinkBridge(PortBridge):
         # The outer port's voltage_limits is untouched and should be defined in the port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr()))
+        self.inner_link = self.Port(AnalogSource(voltage=RangeExpr(), signal=RangeExpr()))
 
     @override
     def contents(self) -> None:
@@ -106,8 +107,8 @@ class AnalogSinkBridge(PortBridge):
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
         self.assign(self.outer_port.signal_limits, self.inner_link.link().signal_limits)
 
-        self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
-        self.assign(self.inner_link.signal_out, self.outer_port.link().signal)
+        self.assign(self.inner_link.voltage, self.outer_port.link().voltage)
+        self.assign(self.inner_link.signal, self.outer_port.link().signal)
 
 
 class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look the same inside and outside
@@ -115,9 +116,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         super().__init__()
 
         self.outer_port = self.Port(
-            AnalogSource(
-                voltage_out=RangeExpr(), signal_out=RangeExpr(), current_limits=RangeExpr(), impedance=RangeExpr()
-            )
+            AnalogSource(voltage=RangeExpr(), signal=RangeExpr(), current_limits=RangeExpr(), impedance=RangeExpr())
         )
 
         # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
@@ -137,8 +136,8 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
 
         self.connect(self.outer_port.net, self.inner_link.net)
 
-        self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-        self.assign(self.outer_port.signal_out, self.inner_link.link().signal)
+        self.assign(self.outer_port.voltage, self.inner_link.link().voltage)
+        self.assign(self.outer_port.signal, self.inner_link.link().signal)
         self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
@@ -217,7 +216,7 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
         self.src = self.Port(AnalogSink(current_draw=RangeExpr()))  # otherwise ideal
         self.dst = self.Port(
             VoltageSource(
-                voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
+                voltage=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
             )
         )
         self.assign(self.src.current_draw, self.dst.link().current_draw)
@@ -227,49 +226,59 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
 class AnalogSource(HasPassivePort, AnalogBase):
     bridge_type = AnalogSourceBridge
 
+    @deprecated_param_remap(("signal_out_bound", "signal_bound"), ("signal_out_abs", "signal_abs"))
     @staticmethod
     def from_supply(
         neg: Port[GroundLink],
         pos: Port[VoltageLink],
         *,
-        signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
-        signal_out_abs: Optional[RangeLike] = None,
+        signal_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
+        signal_abs: Optional[RangeLike] = None,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ) -> "AnalogSource":
         supply_range = VoltageLink._supply_voltage_range(neg, pos)
-        if signal_out_bound is not None:
-            assert signal_out_abs is None
+        if signal_bound is not None:
+            assert signal_abs is None
             # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
             # typically (positive, negative)
-            signal_out: RangeLike = (
-                supply_range.lower() + signal_out_bound[0],
-                supply_range.upper() + signal_out_bound[1],
+            signal: RangeLike = (
+                supply_range.lower() + signal_bound[0],
+                supply_range.upper() + signal_bound[1],
             )
-        elif signal_out_abs is not None:
-            assert signal_out_bound is None
-            signal_out = signal_out_abs
+        elif signal_abs is not None:
+            assert signal_bound is None
+            signal = signal_abs
         else:  # generic default
-            signal_out = supply_range
+            signal = supply_range
 
-        return AnalogSource(
-            voltage_out=supply_range, signal_out=signal_out, current_limits=current_limits, impedance=impedance
-        )
+        return AnalogSource(voltage=supply_range, signal=signal, current_limits=current_limits, impedance=impedance)
 
+    @deprecated_param_remap(("voltage_out", "voltage"), ("signal_out", "signal"))
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
-        signal_out: RangeLike = RangeExpr.EMPTY,
+        voltage: RangeLike = RangeExpr.ZERO,
+        signal: RangeLike = RangeExpr.EMPTY,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ) -> None:
-        """voltage_out is the total voltage range the device can output (typically limited by power rails)
-        regardless of controls and including transients, while signal_out is the intended operating range"""
+        """voltage is the total voltage range the device can output (typically limited by power rails)
+        regardless of controls and including transients, while signal is the intended operating range"""
         super().__init__()
 
         self.net = self.Port(Passive())
 
-        self.voltage_out = self.Parameter(RangeExpr(voltage_out))
-        self.signal_out = self.Parameter(RangeExpr(signal_out))
+        self.voltage = self.Parameter(RangeExpr(voltage))
+        self.signal = self.Parameter(RangeExpr(signal))
         self.current_limits = self.Parameter(RangeExpr(current_limits))
         self.impedance = self.Parameter(RangeExpr(impedance))
+
+    @property
+    @deprecated(f"use voltage")
+    def voltage_out(self) -> RangeExpr:
+        return self.voltage
+
+    @property
+    @deprecated(f"use signal")
+    def signal_out(self) -> RangeExpr:
+        return self.signal

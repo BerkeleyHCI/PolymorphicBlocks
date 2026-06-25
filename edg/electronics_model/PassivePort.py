@@ -180,8 +180,8 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
-        voltage_out: RangeLike = RangeExpr.ZERO,
-        signal_out: RangeLike = RangeExpr.ZERO,
+        voltage: RangeLike = RangeExpr.ZERO,
+        signal: RangeLike = RangeExpr.ZERO,
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ):
@@ -190,9 +190,7 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
-            AnalogSource(
-                voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
-            )
+            AnalogSource(voltage=voltage, signal=signal, current_limits=current_limits, impedance=impedance)
         )
         self.connect(self.src, self.dst.net)
 
