@@ -255,6 +255,12 @@ class LedSubboard(SubboardBlock):
 
 Some of the electrical modeling may have overly strict limits or overly broad operating parameters resulting in compiler errors from ERC failures, use refinements to override their values.
 
+```python
+class_refinements=[
+    (Neopixel, ["pwr", "voltage_limits"], Range(3.0, 5.5)),  # mostly works fine at 3.3v
+]
+```
+
 - Values can be inspected via:
   - CLI compiler error messages for values failing constraints,
   - the IDE,
