@@ -14,7 +14,7 @@ Also see the [reference for building subcircuit / part library blocks](reference
 class MyBoard(SimpleBoardTop):
     def contents(self) -> None:
         # declare subblocks and connections here
-        super().contents()  # required to call this superclass method        
+        super().contents()  # required to call this superclass method first        
         self.mcu = self.Block(IoController())
         self.led = self.Block(IndicatorLed())
         self.connect(self.mcu.gpio.request("led"), self.led.signal)
@@ -30,7 +30,7 @@ class MyBoard(SimpleBoardTop):
                 (IoController, Esp32c3),  # replace all abstract IoController with Esp32c3
             ],
             instance_values=[
-                (["mcu", "pin_assigns"],  ["led=3", "sw=6"])  # assign to footprint pin
+                (["mcu", "pin_assigns"],  ["led=3", "sw=6"])  # assign to footprint pins 3 and 6
             ],
         )
 ```
@@ -95,7 +95,7 @@ with self.implicit_connect(
     self.block_name = imp.Block(BlockType(...))
 ``` 
 
-- Port matching is done against the block's ports' tags like `Power` and `Common`.
+- Port matching is done against the block's ports' tags using tag objects `Power` and `Common`.
 
 #### Chain Connections
 
@@ -109,7 +109,7 @@ with self.implicit_connect(
   - their `Input` tagged port, for an incoming connection from the left,
   - their `Output` tagged port, for an outgoing connection to the right,
   - their `InOut` tagged port, for both incoming and outgoing connections (tapped connection).
-- This returns a tuple of `(blocks...), chain`.
+- This returns a nested tuple of `((blocks...), chain)`.
   Blocks must be named, the chain object can be optionally named to name the interior nets.
 - In the example above:
   - The trailing comma in `(self.led, )` unpacks the single-element blocks tuple to name it.
