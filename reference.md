@@ -1,6 +1,6 @@
 # Quick Reference
 
-A short reference for writing HDL code.
+A short reference for writing HDL for (top-level) board designs.
 
 New? Consider reading through the [getting started guide](getting-started.md).
 
