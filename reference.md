@@ -82,6 +82,8 @@ self.connect(self.block1.port, self.block2.port, ...)
 
 - `self.connect` returns a `Connection` object, which can be used in connections.
 - Optionally assign a name to the `Connection` by assigning to a `self` variable.
+- Connections must be between ports of compatible type.
+  Typed ports (like `Ground` or `VoltageSink`) are distinct from `Passive` ports and not connectable without adapters.
 
 #### Implicit Connection Blocks
 
