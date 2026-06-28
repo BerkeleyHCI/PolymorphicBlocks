@@ -70,7 +70,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Ina826(KiCadImportableBlock, GeneratorBlock):
+class Ina826(Sensor, KiCadImportableBlock, GeneratorBlock):
     """Cost-effective instrumentation amplifier in SOIC-8, with gain 1-1000 set by single resistor.
     TODO: DiffAmp / InAmp abstract class, which supports KiCadImportableBlock
     """

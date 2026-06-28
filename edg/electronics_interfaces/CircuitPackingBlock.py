@@ -15,7 +15,7 @@ class NetPackingBlock(InternalBlock, Block):
         self.nets_packed = self.Metadata({"src": self._ports.name_of(elts), "dst": self._ports.name_of(merged)})
 
 
-class PackedPassive(GeneratorBlock):
+class PackedPassive(InternalSubcircuit, GeneratorBlock):
     """A pseudoblock that asserts all elts are connected to the same net, then connects them to merged."""
 
     def __init__(self) -> None:
@@ -36,7 +36,7 @@ class PackedPassive(GeneratorBlock):
         )
 
 
-class PackedGround(GeneratorBlock):
+class PackedGround(InternalSubcircuit, GeneratorBlock):
     """Takes in several Ground connections that are of the same net (asserted in netlister),
     and provides a single Ground."""
 
@@ -59,7 +59,7 @@ class PackedGround(GeneratorBlock):
         self.assign(self.gnd_out.voltage, self.gnd_ins.hull(lambda x: x.link().voltage))
 
 
-class PackedVoltageSource(GeneratorBlock):
+class PackedVoltageSource(InternalSubcircuit, GeneratorBlock):
     """Takes in several VoltageSink connections that are of the same net (asserted in netlister),
     and provides a single VoltageSource. Distributes the current draw from the VoltageSource
     equally among the inputs."""

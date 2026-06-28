@@ -53,7 +53,7 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Max17048(DefaultExportBlock):
+class Max17048(Sensor, DefaultExportBlock):
     """1-Cell Li-Ion voltage based fuel gauge. Senses its pwr as the battery voltage."""
 
     def __init__(self) -> None:

@@ -111,7 +111,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, "C38437")
 
 
-class A4988(GeneratorBlock):
+class A4988(MotorDriver, GeneratorBlock):
     """Bipolar stepper motor driver with microstepping (1:2/4/8/16) and current limiting. 8-35V input, up to 2A."""
 
     def __init__(
@@ -302,7 +302,7 @@ class PololuA4988_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
         )
 
 
-class PololuA4988(BrushedMotorDriver, WrapperSubboardBlock):
+class PololuA4988(MotorDriver, WrapperSubboardBlock):
     """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
 
     def __init__(self, step_resolution: IntLike = 16):

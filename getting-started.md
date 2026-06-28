@@ -6,9 +6,9 @@ Introductory tutorial and example starter project, building towards a basic mech
 ## Goals
 The main goal of this HDL are:
 - enable libraries of subcircuits, through concepts supporting direct (without modification) reuse of subcircuit blocks, even in projects with different requirements
-- automate simple calculations, like resistor sizing
-- automate passive parts selections, like choosing resistors given a spec
-- automate simple correctness checks, including voltage limits, current limits, and logic level compatibility
+- automate straightforward calculations, like resistor sizing
+- automate passive parts selections, like choosing resistors from a parts table
+- automate common correctness checks, including voltage limits, current limits, and logic level compatibility
 
 These capabilities will be shown throughout this tutorial. 
 
@@ -67,7 +67,7 @@ That is, blocks are "placed" or instantiated, and their ports are connected, thr
 
 
 ### Optional Integrated Development Environment (IDE) with Graphical Editor
-We have also built a basic IDE (as a PyCharm plugin) that provides some basic graphical integrations for working with HDL. 
+We have also built a basic IDE (as a PyCharm plugin, must be compiled locally) that provides some basic graphical integrations for working with HDL. 
 Specifically, it:
 - generates a block diagram visualization of the design
 - allows inspection of solved / computed parameters in the design
@@ -296,6 +296,9 @@ If using the IDE: the compiled block diagram should look like:
 
 If you have KiCad installed, you can import the design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
+This example needs the Seeed Studio KiCad footprint library: https://github.com/Seeed-Studio/OPL_Kicad_Library
+Don't worry about installing it, in a few sections this will be replaced with a standard STM32.
+
 In the KiCad standalone PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
 KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
 ![Blinky layout with default placement](docs/blinky_kicad.png)
@@ -310,6 +313,8 @@ This can be useful during placement to understand the function of each component
 
 As you continue to modify HDL, the unique component identifiers (tstamps) are stable and allows you to update a partial layout with a new netlist.
 **Unique component identifiers are generated from Block names, so if HDL names change those footprints will not update.**
+
+Component refdeses are generated in order of block instantiation, depth-first.
 
 
 ## Adding a Switch Matrix Generator

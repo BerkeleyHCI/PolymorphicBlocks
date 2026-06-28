@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .ResistiveDivider import VoltageDivider, FeedbackVoltageDivider
 
 
-class VoltageComparator(GeneratorBlock):
+class VoltageComparator(Analog, GeneratorBlock):
     """A comparator subcircuit that compares an input voltage rail against some reference, either
     internally generated from the power lines or an external analog signals.
     Accounts for tolerance stackup on the reference input - so make sure the trip

@@ -2,7 +2,7 @@ from typing import Optional
 from ..abstract_parts import *
 
 
-class BootstrapCapacitor(Block):
+class BootstrapCapacitor(InternalBlock, Block):
     """A Capacitor wrapper for bootstrap capacitors, with a negative VoltageSink and a positive VoltageSource.
     This is meant to be used only with bootstrap pins on power conversion chips, that source some voltage and sink the
     boosted voltage. This is not meant to be general-purpose and will not function standalone.

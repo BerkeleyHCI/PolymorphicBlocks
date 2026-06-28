@@ -77,7 +77,7 @@ class DiodeSwitchCellNeopixel(SwitchCellNeopixel, DiodeSwitchCell, InternalBlock
 
 
 @abstract_block_default(lambda: SwitchDiodeMatrix)
-class SwitchMatrix(InternalBlock, Block):
+class SwitchMatrix(HumanInterface, Block):
 
     def __init__(self, ncols: IntLike, nrows: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
         super().__init__()
@@ -90,7 +90,7 @@ class SwitchMatrix(InternalBlock, Block):
         self.cols = self.Port(Vector(DigitalSource.empty()))
 
 
-class SwitchDiodeMatrix(SwitchMatrix, HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
+class SwitchDiodeMatrix(SwitchMatrix, GeneratorBlock, SvgPcbTemplateBlock):
     """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
     using max(nrows, ncols) IOs.
 
@@ -249,7 +249,7 @@ class SwitchMatrixNeopixels(BlockInterfaceMixin[SwitchMatrix]):
         self.npx_gnd = self.Port(Ground.empty())
 
 
-class SwitchDiodeMatrixNeopixels(SwitchMatrixNeopixels, SwitchDiodeMatrix, HumanInterface, GeneratorBlock):
+class SwitchDiodeMatrixNeopixels(SwitchMatrixNeopixels, SwitchDiodeMatrix, GeneratorBlock):
     """SwitchMatrix implementation with neopixel chain."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
