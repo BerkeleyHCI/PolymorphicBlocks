@@ -209,8 +209,7 @@ First, we need to connect the power and ground between the devices.
     super().contents()
     self.mcu = self.Block(Xiao_Rp2040())
     self.led = self.Block(IndicatorLed())
-+   self.connect(self.usb.pwr, self.mcu.pwr)
-+   self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
++   self.connect(self.mcu.gnd, self.led.gnd)
 ```
 
 <details> <summary>Alternatively, with IDE graphical edit actions</summary>
@@ -244,8 +243,7 @@ Make these changes to the `contents` method:
     super().contents()
     self.mcu = self.Block(Xiao_Rp2040())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.usb.pwr, self.mcu.pwr)
-    self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.mcu.gnd, self.led.gnd)
 +   self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
@@ -311,8 +309,7 @@ __Now, we'll add a 3x2 switch matrix with just a few lines of code, this is wher
     super().contents()
     self.mcu = self.Block(Xiao_Rp2040())
     self.led = self.Block(IndicatorLed())
-    self.connect(self.usb.pwr, self.mcu.pwr)
-    self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+    self.connect(self.mcu.gnd, self.led.gnd)
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
 +   self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
@@ -394,8 +391,7 @@ Because blocks encapsulate their subcircuits, using a discrete microcontroller i
 -     self.mcu = self.Block(Xiao_Rp2040())
 +     self.mcu = self.Block(IoController())
       self.led = self.Block(IndicatorLed())
-      self.connect(self.usb.pwr, self.mcu.pwr)
-      self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gnd, self.led.gnd)
       self.connect(self.mcu.gpio.request('led'), self.led.signal)
   
       self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
@@ -437,8 +433,7 @@ We'll add in the USB type-C port that was previously part of the Xiao, and conne
 +     self.connect(self.usb.usb, self.mcu.usb.request('usb'))
 
       self.led = self.Block(IndicatorLed())
-      self.connect(self.usb.pwr, self.mcu.pwr)
-      self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gnd, self.led.gnd)
       self.connect(self.mcu.gpio.request('led'), self.led.signal)
   
       self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
@@ -467,8 +462,7 @@ We'll insert a simple linear regulator, a step-down voltage converter.
       self.connect(self.usb.usb, self.mcu.usb.request('usb'))
 
       self.led = self.Block(IndicatorLed())
-      self.connect(self.usb.pwr, self.mcu.pwr)
-      self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gnd, self.led.gnd)
       self.connect(self.mcu.gpio.request('led'), self.led.signal)
   
       self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
@@ -486,6 +480,8 @@ After finishing this tutorial, see the [hierarchical layout tutorial](getting_st
 
 
 ## Adding addressable RGBs with Mixins
+Electronics sometimes have variations-on-a-theme with a common base, for example adding addressable RGBs to the switch matrix without redefining it completely.
+This is supported though **mixins**.
 
 **Make these changes** to the `contents` method:
 ```diff
@@ -505,15 +501,14 @@ After finishing this tutorial, see the [hierarchical layout tutorial](getting_st
       self.connect(self.usb.usb, self.mcu.usb.request('usb'))
 
       self.led = self.Block(IndicatorLed())
-      self.connect(self.usb.pwr, self.mcu.pwr)
-      self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gnd, self.led.gnd)
       self.connect(self.mcu.gpio.request('led'), self.led.signal)
   
       self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
       self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
       self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
       
-+     sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels())
++     sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
 +     self.connect(self.usb.gnd, sw_npx.npx_gnd)
 +     self.connect(self.usb.pwr, sw_npx.npx_pwr)
 
@@ -526,7 +521,9 @@ After finishing this tutorial, see the [hierarchical layout tutorial](getting_st
 
 Mixins are not supported with graphical edit actions.
 
-! mixins desc
+Mixins are a way to require additional functionality (including ports and parameters) on a base abstract block.
+
+Mixins are also used elsewhere, such as adding optional IO types to IoController (like CAN or the requirement for onboard WiFi) or adding requiring a switch port on a rotary encoder.
 
 We have also added a buffer (`L74Ahct1g125`) to shift the 3.3v logic level of the microcontroller to the higher data voltage required by the addressable RGBs.
 The RGBs datasheet defines their input thresholds as incompatible with 3.3v and this will generate ERC errors without the buffer.
@@ -534,23 +531,102 @@ Go ahead and try it!
 
 
 ## Implicit Connections
-_The code is starting to get a bit long and tedious._
+_The code is starting to get a bit long and tedious. We'll refactor that using implicit scopes, a syntactic sugar construct, to make it shorter and more readable._
 
+**Replace** the `contents` method:
+```python
+class BlinkyExample(SimpleBoardTop):
+    def contents() -> None:
+        super().contents()
+        
+        self.usb = self.Block(UsbCReceptacle())
+        
+        self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
+        self.connect(self.usb.pwr, self.reg.pwr_in)
+        
+        with self.implicit_connect(
+            ImplicitConnect(self.reg.pwr_out, [Power]),
+            ImplicitConnect(self.reg.gnd, [Common]),
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.connect(self.usb.usb, self.mcu.usb.request('usb'))
+      
+            self.led = imp.Block(IndicatorLed())
+            self.connect(self.mcu.gpio.request('led'), self.led.signal)
+      
+            self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+        
+        with self.implicit_connect(
+            ImplicitConnect(self.usb.pwr, [Power]),
+            ImplicitConnect(self.usb.gnd, [Common]),
+        ) as imp:
+            sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
+            self.connect(self.usb.gnd, sw_npx.npx_gnd)
+            self.connect(self.usb.pwr, sw_npx.npx_pwr)
+      
+            self.npx_shift = imp.Block(L74Ahct1g125())
+            self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
+            self.connect(self.npx_shift.output, sw_npx.npx_din)
+```
 
 Refactoring operations are not supported with graphical edit actions.
 The IDE is not implicit-scope-aware for graphical edit actions.
 
+The implicit scope defines the connections to make and the conditions for which ports to connect (through tags):
+
+```python
+with self.implicit_connect(
+    ImplicitConnect(self.reg.pwr_out, [Power]),
+    ImplicitConnect(self.reg.gnd, [Common]),
+) as imp:
+    # any blocks here instantiated with imp.Block(...) instead of self.Block(...)
+    # will have Power-tagged ports connected to self.reg.pwr_out
+    # and Common-tagged ports connected to self.reg.gnd
+```
+
+> When blocks define ports, they can associate tags with them to specify implicit connectivity.
+> To prevent errors, all ports with tags are required to be connected, either implicitly (as in this section) or explicitly (through `connect` statements).
+>
+> The most common tags are `Power` (for a general positive voltage rail) and `Common` (for ground).
+
+Inside an implicit connection block, only blocks instantiated with `imp.Block(...)` have implicit connections made.
+
 There is also a more complex `self.chain(...)` construct allowing for very compact HDL, detailed in the [reference document](reference.md).
 
 
+### Explicit Pin Assignments
+While `IoController` automatically IO pinnings according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
+However, it does define a `pin_assigns` parameter (as an array-of-strings) which allows specifying a pin number (on the footprint) or pin name (eg, `GPIO3` - format specific to each microcontroller) for each requested pin.
 
-## Explicit Pin Assignments
+We can also force parameter values through the refinements system, using `instance_values`.
+Let's arbitrarily choose pins 26-29 for the LEDs.
+**Add a pin assignment for the ESP32 in the refinements section**:
+```diff
+  class BlinkyExample(SimpleBoardTop):
+    def contents() -> None:
+      ...
+      
+    def refinements(self) -> Refinements:
+      return super().refinements() + Refinements(
+        ...
++       instance_values=[
++         (['mcu', 'pin_assigns'], [
++           'led=10',
++           'sw_col_0=16',
++           'sw_col_1=17',
++           'sw_col_2=18',
++           'sw_row0=19',
++           'sw_row1=20',
++         ])
+        ])
+```
 
 
-
-
-## Defining Library Parts
-Continue to [the next part of the tutorial](getting_started_schimport.md) on defining a library Block with a KiCad schematic.
+## Next: Hierarchical Layout
+Continue to the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for using the hierarchical netlist to help with reuse in board layout.
 
 
 ### Additional Resources
