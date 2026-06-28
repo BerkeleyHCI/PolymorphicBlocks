@@ -105,15 +105,15 @@ with self.implicit_connect(
 (self.led,), _ = self.chain(imp.Block(IndicatorSinkLed()), self.mcu.gpio.request("led"))
 ```
 
-- Blocks in the chain are connected to:
-  - their `Input` tagged port, for an incoming connection from the left,
-  - their `Output` tagged port, for an outgoing connection to the right,
-  - their `InOut` tagged port, for both incoming and outgoing connections (tapped connection).
-- This returns a nested tuple of `((blocks...), chain)`.
+- `self.chain` returns a nested tuple of `((blocks...), chain)`.
   Blocks must be named, the chain object can be optionally named to name the interior nets.
 - In the example above:
   - The trailing comma in `(self.led, )` unpacks the single-element blocks tuple to name it.
   - The `_` discards (does not name) the chain object.
+- Blocks in the chain are connected to:
+  - their `Input` tagged port, for an incoming connection from the left,
+  - their `Output` tagged port, for an outgoing connection to the right,
+  - their `InOut` tagged port, for both incoming and outgoing connections (tapped connection).
 
 #### .connected(...)
 
@@ -158,8 +158,8 @@ def refinements(self) -> Refinements:
 
 - Some blocks, particularly discrete components like `Resistor`s and `Fet`s, are implemented as automatic selection from a parts table.
 - These are some common top-level refinements:
-  - Class refinement `(SelectorArea, ["footprint_area"], Range.from_lower(1.5))`: require a minimum footprint courtyard area in mm²
-    - These are common minimum areas for passives: 01005=0.72, 0201=0.98, 0402=1.74, 0603=4.32, 0805=6.38, 1206=10.21.
+  - Class refinement `(SelectorArea, ["footprint_area"], Range.from_lower(1.5))`: require a minimum footprint courtyard area, in mm²
+    - Common minimum areas for passives, in mm²: 01005=0.72, 0201=0.98, 0402=1.74, 0603=4.32, 0805=6.38, 1206=10.21.
   - Instance refinement `(["part_table_block", "excluded_parts"], ["1N2127"])`: exclude parts from selection, e.g., if they're out-of-stock.
   - Instance refinement `(["part_table_block", "part"], "1N2127")`: require a particular part.
   - Instance refinement `(["part_table_block", "footprint_spec"], "Diode_SMD:D_SMA")`: require a particular footprint.
@@ -220,7 +220,7 @@ class CustomUartConnector(Block):
 ```
 
 - `self.port_name = self.Port(...)` defines a port on the block.
-- Ports must be typed, the `Passive` port type is not automatically connectable to typed single-wire ports like `Ground` or `VoltageSink` without explicit adapters.
+- Ports must be typed, the `Passive` port type is not automatically connectable to typed single-wire ports like `Ground` or `VoltageSink` without adapters.
 - Ports take electrical modeling parameters (like voltage and current limits) as parameters, empty parameter generally means an ideal port.
 - `PassiveConnector` is an abstract class for connectors with a parameterizable number of passive-typed pins, including 2.54mm headers, FPCs, and more.
 - `PassiveConnector.connected(...)` automatically adapts typed ports to the connector's Passive ports.
