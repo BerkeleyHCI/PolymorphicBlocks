@@ -32,7 +32,7 @@ While the user-facing HDL design model is connections between ports, the interna
 Links are a block-like construct (diamonds in the diagram) that define how parameters propagate between ports and constraints on them.
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_full.png)
 
-Continuing the digital IO example, the link checks the output thresholds against the input thresholds and calculate the full range of voltage levels given all connected drivers.
+Continuing the digital IO example, the link checks the output thresholds against the input thresholds and calculates the full range of voltage levels given all connected drivers.
 These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:  
 
 All links are fully defined in the same HDL code, and you can inspect the link definitions of included port types to see how they work and what they check.
@@ -63,13 +63,13 @@ Specifically, it:
 - allows inspection of solved / computed parameters in the design
 - provides schematic-like graphical edit actions to insert HDL
 
-The graphical edit actions have significant limitations (and probably bugs / unhandled edge cases) compared to the full HDL and is best suited for simple designs or as a learning tool.
+The graphical edit actions have significant limitations (and probably bugs / unhandled edge cases) compared to the full HDL and are best suited for simple designs or as a learning tool.
 **Consider it more of a tech demonstrator and proof-of-concept** but do give it a try.
 
 ![Annotated IDE screen](docs/ide/overview.png)
 
 The IDE has these major components:
-- **Block Diagram Visualization**: shows the compiled design visualized as a block diagram here.
+- **Block Diagram Visualization**: shows the compiled design visualized as a block diagram.
   - **Design Tree**: shows the compiled design as a tree structure of the block hierarchy.
 - **Library Browser**: shows all the library blocks, ports, and links.
   The text box at the top allows filtering by keyword.
@@ -323,8 +323,8 @@ TODO Write Me
 
 </details>
 
-`SwitchMatrix` is a generator block that takes the number of columns (width) and rows (height) as parameters and generates the switch matrix (including diodes for mutli-key detection).
-For the keyboard enthusiasts, this generates COL2ROW circuits.
+`SwitchMatrix` is a generator block that takes the number of columns (width) and rows (height) as parameters and generates the switch matrix (including diodes for multi-key detection).
+For keyboard enthusiasts, this generates COL2ROW circuits.
 
 `SwitchMatrix` has two ports, `cols` and `rows`, both of which are port arrays.
 Unlike microcontrollers, where the array is defined by its incoming connections (are elements sinks), `SwitchMatrix` port arrays are internally defined (are elements sources) based on the parameters.
@@ -412,7 +412,7 @@ Refactoring and delete operations are not supported with graphical edit actions.
 However, you can delete lines of code, then recompile, then insert new blocks and connections using the graphical edits flow.
 
 Instead of directly replacing the microcontroller, we replace it with the `IoController` abstract block, which all microcontrollers implement.
-Then, we specify refine that to a specific microcontroller, here the STM32F103.
+Then, we refine that to a specific microcontroller, here the STM32F103.
 
 If we recompile this now, it will give errors since the microcontroller has no power source.
 
@@ -481,7 +481,7 @@ After finishing this tutorial, see the [hierarchical layout tutorial](getting_st
 
 ## Adding addressable RGBs with Mixins
 Electronics sometimes have variations-on-a-theme with a common base, for example adding addressable RGBs to the switch matrix without redefining it completely.
-This is supported though **mixins**.
+This is supported through **mixins**.
 
 **Make these changes** to the `contents` method:
 ```diff
@@ -513,8 +513,8 @@ This is supported though **mixins**.
 +     self.connect(self.usb.pwr, sw_npx.npx_pwr)
 
 +     self.npx_shift = self.Block(L74Ahct1g125())
-+     self.connect(self.usb.gnd, npx_shift.gnd)
-+     self.connect(self.usb.pwr, npx_shift.pwr)
++     self.connect(self.usb.gnd, self.npx_shift.gnd)
++     self.connect(self.usb.pwr, self.npx_shift.pwr)
 +     self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
 +     self.connect(self.npx_shift.output, sw_npx.npx_din)
 ```
@@ -598,12 +598,12 @@ There is also a more complex `self.chain(...)` construct allowing for very compa
 
 
 ### Explicit Pin Assignments
-While `IoController` automatically IO pinnings according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
+While `IoController` automatically assigns IO pinnings according to the capabilities of each chip, it does not have access to layout data to do physically-based pin assignment.
 However, it does define a `pin_assigns` parameter (as an array-of-strings) which allows specifying a pin number (on the footprint) or pin name (eg, `GPIO3` - format specific to each microcontroller) for each requested pin.
 
 We can also force parameter values through the refinements system, using `instance_values`.
 Let's arbitrarily choose pins 26-29 for the LEDs.
-**Add a pin assignment for the ESP32 in the refinements section**:
+**Add a pin assignment for the STM32 in the refinements section**:
 ```diff
   class BlinkyExample(SimpleBoardTop):
     def contents() -> None:
@@ -630,7 +630,7 @@ Continue to the [hierarchical layout tutorial](getting_started_hierarchy_layout.
 
 
 ### Additional Resources
-If you want to some more complex examples of boards designed in this HDL, check out:
+For some more complex examples of boards designed in this HDL, check out:
 - [Keyboard](examples/test_keyboard.py): the fabbed-out version of this example, with a few more features and different choices of parts.
 - [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix, using a parameterized charlieplexing LED array generator.
 - [Seven Segment Clock](examples/test_seven_segment.py): an IoT (ESP32S3) seven-segment LED clock, using individually-addressable RGBs for each segment.
