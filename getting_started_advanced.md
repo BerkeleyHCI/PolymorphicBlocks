@@ -57,23 +57,18 @@ First, we'll need to define the block such that it can take a parameter.
 This is actually only slight twist on the naive approach:  
 ```python
 class LedArray(Block):
-  @init_in_parent
   def __init__(self, count: IntLike) -> None:
     super().__init__()
 ```
 
 Instead of the constructor argument being a Python type that defines a value like `int`, we use an expression-type.
 This defines the type of the parameter being passed but not the value.
-`@init_in_parent` is needed whenever a Block defines constructor parameters.
 
 > The expression type is a way to refer to the parameter but without giving it a concrete value.
 > This is needed since the value is resolved in the compiler and therefore not available in the HDL to the constructor.
 > 
 > Note that the type is not `IntExpr`, but `IntLike`, which also includes `int`.
 > This allows calling the constructor with an `int` value directly, if we just have a static parameterization.
-> However, because of the required `@init_in_parent`, the actual value seem by the constructor will be a new `IntExpr`.
-> 
-> `@init_in_parent` does some processing on the function itself, for example inspecting the constructor argument list and turning those into parameters, and translating the values passed in from the constructor call into references to the block's own parameters.
 
 
 ### Port Arrays - Definition
@@ -110,15 +105,20 @@ class LedArray(GeneratorBlock):
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.generator(self.generate, count)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
     
-  def generate(self, count: int) -> None:
+  def generate(self) -> None:
+    super().generate()
     ...
 ```
 
 > While here we use generators as a way to get a concrete value for circuit generation (the LED count), generators can also be used to do calculations beyond the operations available with the parameters.
 > For example, while we can add two `IntExpr`s (which produces another `IntExpr`), something more complex like square root is not provided.
-> For those cases, use a generator to get the parameter's value, where you have access to the full power of Python.
+> For those cases, use a generator to get the parameter's concrete value, where you have access to the full power of Python.
+> 
+> Generator parameters must be explicitly defined using `self.generator_param(...)`.
+> Within `generate`, you can get the concrete value of a generator parameter using `self.get(...)`.
 
 ### Port Arrays - Internal
 So far, the port array is still empty, so we must define its elements.
@@ -126,8 +126,9 @@ With the count available as an int, we can use the `for` loop structure from bef
 ```python
 class LedArray(GeneratorBlock):
   ...
-  def generate(self, count: int) -> None:
-    for i in range(count):
+  def generate(self) -> None:
+    super().generate()
+    for i in range(self.get(self.count)):
       self.ios.append_elt(DigitalSink.empty())
       ...
 ```
@@ -158,11 +159,13 @@ Instantiate the LEDs and connect them to the IO pin and ground as needed.
 >       super().__init__()
 >       self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
 >       self.gnd = self.Port(Ground.empty(), [Common])
->       self.generator(self.generate, count)
+>       self.count = self.ArgParameter(count)
+>       self.generator_param(self.count)
 >   
->     def generate(self, count: int) -> None:
+>     def generate(self) -> None:
+>         super().generate()
 >         self.led = ElementDict[IndicatorLed]()
->         for i in range(count):
+>         for i in range(self.get(self.count)):
 >           io = self.ios.append_elt(DigitalSink.empty())
 >           self.led[i] = self.Block(IndicatorLed())
 >           self.connect(io, self.led[i].signal)
@@ -231,47 +234,6 @@ class BlinkyExample(SimpleBoardTop):
       ])
 
 ```
-
-> <details>
->   <summary>At this point, your HDL might look like...</summary>
->
->   ```python
->   class BlinkyExample(SimpleBoardTop):
->     def contents(self) -> None:
->       super().contents()
->       self.usb = self.Block(UsbCReceptacle())
->       self.buck = self.Block(BuckConverter(3.3*Volt(tol=0.05)))
->       self.connect(self.usb.gnd, self.buck.gnd)
->       self.connect(self.usb.pwr, self.buck.pwr_in)
->
->       with self.implicit_connect(
->           ImplicitConnect(self.buck.pwr_out, [Power]),
->           ImplicitConnect(self.buck.gnd, [Common]),
->       ) as imp:
->         self.mcu = imp.Block(IoController())
->
->         (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
->
->         (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
->
->         # optionally, you may have also instantiated your magnetic sensor
->
->     def refinements(self) -> Refinements:
->       return super().refinements() + Refinements(
->       instance_refinements=[
->         (['buck'], Tps561201),
->         (['mcu'], Esp32_Wroom_32),
->       ],
->       instance_values=[
->         (['mcu', 'pin_assigns'], [
->           'led_0=26',
->           'led_1=27',
->           'led_2=28',
->           'led_3=29',
->          ])
->       ])
->   ```
-> </details>
 
 
 ## Board Optimization
