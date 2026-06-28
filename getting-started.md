@@ -3,8 +3,18 @@
 Introductory tutorial and example starter project, building towards a basic mechanical keyboard macropad.
 
 
+## Goals
+The main goal of this HDL are:
+- enable libraries of subcircuits, through concepts supporting direct (without modification) reuse of subcircuit blocks, even in projects with different requirements
+- automate simple calculations, like resistor sizing
+- automate passive parts selections, like choosing resistors given a spec
+- automate simple correctness checks, including voltage limits, current limits, and logic level compatibility
+
+These capabilities will be shown throughout this tutorial. 
+
+
 ## Core concepts
-The core abstraction is the hierarchical block diagram, which we will explain using an example design of a microcontroller driving an LED.
+The core abstraction is the hierarchical block diagram, shown here using an example design of a microcontroller driving an LED.
 
 In conventional schematic tools, such a design could be a flat schematic, consisting of the microcontroller module, LED, and resistor:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_flat.png)
@@ -90,13 +100,13 @@ from edg import *
 
 
 class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    super().contents()
-    # your implementation here
+    def contents(self) -> None:
+        super().contents()
+        # your implementation here
 
 
 if __name__ == "__main__":
-  compile_board_inplace(BlinkyExample)
+    compile_board_inplace(BlinkyExample)
 ```
 
 - `from edg import *` brings in the base classes for circuit construction, like `SimpleBoardTop`.
@@ -146,10 +156,10 @@ For this simple example, we connect an LED to a self-powered Xiao Rp2040 microco
 **Make these changes** to the `contents` method:
 ```diff
   def contents(self) -> None:
-    super().contents()
--   # your implementation here
-+   self.mcu = self.Block(Xiao_Rp2040())
-+   self.led = self.Block(IndicatorLed())
+      super().contents()
+-     # your implementation here
++     self.mcu = self.Block(Xiao_Rp2040())
++     self.led = self.Block(IndicatorLed())
 ```
 
 <details> <summary>Alternatively, with IDE graphical edit actions</summary>
@@ -206,10 +216,10 @@ First, we need to connect the power and ground between the devices.
 **Make these changes** to the `contents` method:
 ```diff
   def contents() -> None:
-    super().contents()
-    self.mcu = self.Block(Xiao_Rp2040())
-    self.led = self.Block(IndicatorLed())
-+   self.connect(self.mcu.gnd, self.led.gnd)
+      super().contents()
+      self.mcu = self.Block(Xiao_Rp2040())
+      self.led = self.Block(IndicatorLed())
++     self.connect(self.mcu.gnd, self.led.gnd)
 ```
 
 <details> <summary>Alternatively, with IDE graphical edit actions</summary>
@@ -240,11 +250,11 @@ Make these changes to the `contents` method:
 
 ```diff
   def contents() -> None:
-    super().contents()
-    self.mcu = self.Block(Xiao_Rp2040())
-    self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gnd, self.led.gnd)
-+   self.connect(self.mcu.gpio.request('led'), self.led.signal)
+      super().contents()
+      self.mcu = self.Block(Xiao_Rp2040())
+      self.led = self.Block(IndicatorLed())
+      self.connect(self.mcu.gnd, self.led.gnd)
++     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
 <details> <summary>Alternatively, with IDE graphical edit actions</summary>
@@ -275,6 +285,8 @@ Port arrays behave differently when viewed externally (as we're doing here) and 
 Internal usage of port arrays will be covered later in the library building section.
 
 This should now compile without errors.
+The LED subcircuit automatically calculates the resistor specification from the connected microcontroller's GPIO voltage and a builtin wide target current range (1-10mA).
+The resistor in the LED subcircuit then chooses a suitable resistor from its parts table.
 
 If using the IDE: the compiled block diagram should look like:
 ![Fully connected block diagram](docs/ide/ide_blinky_connect.png)
@@ -306,15 +318,15 @@ __Now, we'll add a 3x2 switch matrix with just a few lines of code, this is wher
 **Make these changes** to the `contents` method:
 ```diff
   def contents() -> None:
-    super().contents()
-    self.mcu = self.Block(Xiao_Rp2040())
-    self.led = self.Block(IndicatorLed())
-    self.connect(self.mcu.gnd, self.led.gnd)
-    self.connect(self.mcu.gpio.request('led'), self.led.signal)
-
-+   self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
-+   self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
-+   self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+      super().contents()
+      self.mcu = self.Block(Xiao_Rp2040())
+      self.led = self.Block(IndicatorLed())
+      self.connect(self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gpio.request('led'), self.led.signal)
+  
++     self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
++     self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
++     self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
 ```
 
 <details> <summary>Alternatively, with IDE graphical edit actions</summary>
@@ -344,8 +356,8 @@ Internally, SwitchMatrix uses the abstract `Switch` block, and `SimpleBoardTop` 
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents(self) -> None:
-      ...
+      def contents(self) -> None:
+          ...
   
 +   @override
 +   def refinements(self) -> Refinements:
@@ -386,26 +398,26 @@ Because blocks encapsulate their subcircuits, using a discrete microcontroller i
 **Make these changes** to the design:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
-      super().contents()
--     self.mcu = self.Block(Xiao_Rp2040())
-+     self.mcu = self.Block(IoController())
-      self.led = self.Block(IndicatorLed())
-      self.connect(self.mcu.gnd, self.led.gnd)
-      self.connect(self.mcu.gpio.request('led'), self.led.signal)
-  
-      self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
-  
-    @override
-    def refinements(self) -> Refinements:
-        return super().refinements() + Refinements(
-            class_refinements=[
-+               (IoController, Stm32f103_48),
-                (Switch, KailhSocket),
-            ],
-        )
+      def contents() -> None:
+          super().contents()
+-         self.mcu = self.Block(Xiao_Rp2040())
++         self.mcu = self.Block(IoController())
+          self.led = self.Block(IndicatorLed())
+          self.connect(self.mcu.gnd, self.led.gnd)
+          self.connect(self.mcu.gpio.request('led'), self.led.signal)
+      
+          self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+          self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+          self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+    
+      @override
+      def refinements(self) -> Refinements:
+          return super().refinements() + Refinements(
+              class_refinements=[
++                 (IoController, Stm32f103_48),
+                  (Switch, KailhSocket),
+              ],
+          )
 ```
 
 Refactoring and delete operations are not supported with graphical edit actions.
@@ -422,23 +434,23 @@ We'll add in the USB type-C port that was previously part of the Xiao, and conne
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
-      super().contents()
+      def contents() -> None:
+          super().contents()
+          
++         self.usb = self.Block(UsbCReceptacle())
+          
+          self.mcu = self.Block(IoController())
++         self.connect(self.usb.gnd, self.mcu.gnd)
++         self.connect(self.usb.pwr, self.mcu.pwr)
++         self.connect(self.usb.usb, self.mcu.usb.request('usb'))
+    
+          self.led = self.Block(IndicatorLed())
+          self.connect(self.mcu.gnd, self.led.gnd)
+          self.connect(self.mcu.gpio.request('led'), self.led.signal)
       
-+     self.usb = self.Block(UsbCReceptacle())
-      
-      self.mcu = self.Block(IoController())
-+     self.connect(self.usb.gnd, self.mcu.gnd)
-+     self.connect(self.usb.pwr, self.mcu.pwr)
-+     self.connect(self.usb.usb, self.mcu.usb.request('usb'))
-
-      self.led = self.Block(IndicatorLed())
-      self.connect(self.mcu.gnd, self.led.gnd)
-      self.connect(self.mcu.gpio.request('led'), self.led.signal)
-  
-      self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+          self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+          self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+          self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
 ```
 
 We will still get errors if we recompile, since USB provides 5v, while the STM32F103 is a 3.3v part.
@@ -446,28 +458,28 @@ We'll insert a simple linear regulator, a step-down voltage converter.
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
-      super().contents()
+      def contents() -> None:
+          super().contents()
+          
+          self.usb = self.Block(UsbCReceptacle())
+          
++         self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
++         self.connect(self.usb.gnd, self.reg.gnd)
++         self.connect(self.usb.pwr, self.reg.pwr_in)
+          
+          self.mcu = self.Block(IoController())
+          self.connect(self.usb.gnd, self.mcu.gnd)
+-         self.connect(self.usb.pwr, self.mcu.pwr)
++         self.connect(self.reg.pwr_out, self.mcu.pwr)
+          self.connect(self.usb.usb, self.mcu.usb.request('usb'))
+    
+          self.led = self.Block(IndicatorLed())
+          self.connect(self.mcu.gnd, self.led.gnd)
+          self.connect(self.mcu.gpio.request('led'), self.led.signal)
       
-      self.usb = self.Block(UsbCReceptacle())
-      
-+     self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
-+     self.connect(self.usb.gnd, self.reg.gnd)
-+     self.connect(self.usb.pwr, self.reg.pwr_in)
-      
-      self.mcu = self.Block(IoController())
-      self.connect(self.usb.gnd, self.mcu.gnd)
--     self.connect(self.usb.pwr, self.mcu.pwr)
-+     self.connect(self.reg.pwr_out, self.mcu.pwr)
-      self.connect(self.usb.usb, self.mcu.usb.request('usb'))
-
-      self.led = self.Block(IndicatorLed())
-      self.connect(self.mcu.gnd, self.led.gnd)
-      self.connect(self.mcu.gpio.request('led'), self.led.signal)
-  
-      self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+          self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+          self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+          self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
 ```
 
 Once we recompile, it should complete with no errors.
@@ -486,37 +498,37 @@ This is supported through **mixins**.
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
-      super().contents()
+      def contents() -> None:
+          super().contents()
+          
+          self.usb = self.Block(UsbCReceptacle())
+          
+          self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
+          self.connect(self.usb.gnd, self.reg.gnd)
+          self.connect(self.usb.pwr, self.reg.pwr_in)
+          
+          self.mcu = self.Block(IoController())
+          self.connect(self.usb.gnd, self.mcu.gnd)
+          self.connect(self.reg.pwr_out, self.mcu.pwr)
+          self.connect(self.usb.usb, self.mcu.usb.request('usb'))
+    
+          self.led = self.Block(IndicatorLed())
+          self.connect(self.mcu.gnd, self.led.gnd)
+          self.connect(self.mcu.gpio.request('led'), self.led.signal)
       
-      self.usb = self.Block(UsbCReceptacle())
-      
-      self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
-      self.connect(self.usb.gnd, self.reg.gnd)
-      self.connect(self.usb.pwr, self.reg.pwr_in)
-      
-      self.mcu = self.Block(IoController())
-      self.connect(self.usb.gnd, self.mcu.gnd)
-      self.connect(self.reg.pwr_out, self.mcu.pwr)
-      self.connect(self.usb.usb, self.mcu.usb.request('usb'))
-
-      self.led = self.Block(IndicatorLed())
-      self.connect(self.mcu.gnd, self.led.gnd)
-      self.connect(self.mcu.gpio.request('led'), self.led.signal)
-  
-      self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
-      
-+     sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
-+     self.connect(self.usb.gnd, sw_npx.npx_gnd)
-+     self.connect(self.usb.pwr, sw_npx.npx_pwr)
-
-+     self.npx_shift = self.Block(L74Ahct1g125())
-+     self.connect(self.usb.gnd, self.npx_shift.gnd)
-+     self.connect(self.usb.pwr, self.npx_shift.pwr)
-+     self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
-+     self.connect(self.npx_shift.output, sw_npx.npx_din)
+          self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+          self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+          self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+          
++         sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
++         self.connect(self.usb.gnd, sw_npx.npx_gnd)
++         self.connect(self.usb.pwr, sw_npx.npx_pwr)
+    
++         self.npx_shift = self.Block(L74Ahct1g125())
++         self.connect(self.usb.gnd, self.npx_shift.gnd)
++         self.connect(self.usb.pwr, self.npx_shift.pwr)
++         self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
++         self.connect(self.npx_shift.output, sw_npx.npx_din)
 ```
 
 Mixins are not supported with graphical edit actions.
@@ -606,27 +618,29 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
 **Add a pin assignment for the STM32 in the refinements section**:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
-      ...
-      
-    def refinements(self) -> Refinements:
-      return super().refinements() + Refinements(
+      def contents() -> None:
         ...
-+       instance_values=[
-+         (['mcu', 'pin_assigns'], [
-+           'led=10',
-+           'sw_col_0=16',
-+           'sw_col_1=17',
-+           'sw_col_2=18',
-+           'sw_row0=19',
-+           'sw_row1=20',
-+         ])
-        ])
+        
+      def refinements(self) -> Refinements:
+          return super().refinements() + Refinements(
+              ...
++             instance_values=[
++                 (['mcu', 'pin_assigns'], [
++                     'led=10',
++                     'sw_col_0=16',
++                     'sw_col_1=17',
++                     'sw_col_2=18',
++                     'sw_row0=19',
++                     'sw_row1=20',
++                 ])
+              ])
 ```
 
 
 ## Next: Hierarchical Layout
 Continue to the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for using the hierarchical netlist to help with reuse in board layout.
+
+Or, continue to [the library block definition tutorial using KiCad schematic import](getting_started_schimport.md).
 
 
 ### Additional Resources
