@@ -1,38 +1,44 @@
 # Getting Started Tutorial
 
+Introductory tutorial and example starter project, building towards a basic mechanical keyboard macropad.
+
+
 ## Core concepts
 The core abstraction is the hierarchical block diagram, which we will explain using an example design of a microcontroller driving an LED.
 
 In conventional schematic tools, such a design could be a flat schematic, consisting of the microcontroller module, LED, and resistor:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_flat.png)
 
-Many modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:  
+Modern tools have the concept of hierarchy blocks, where a block could be a subcircuit:
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy1.png)
 
 In the example above, the LED-resistor subcircuit is contained within a block, which can be manipulated as a unit, and exposes ports (circles on the diagram) while encapsulating internal pins.
-(note: in mainstream schematic tools with this feature, the subcircuit is usually presented in its own sheet, instead of having its contents displayed in the block)
 
 Generalizing this model, components are blocks too, and component pins are also block ports:  
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_hierarchy2.png)
 
-The main concepts our model extends on top of the simple hierarchy blocks above are **parameters**, **links**, and **generators**.
+The main concepts our model extends on top of the simple hierarchy blocks above are **parameters** and **generators**.
 
 **Parameters** are variables that can be attached to blocks and ports.
-For example, a digital IO, like `digital[0]` in the example above, would have parameters like input voltage tolerance, output voltage range, and logic thresholds.
-This allows for a more powerful design correctness check (think ERC++), and provides a foundation for generators.
+For example, a digital IO, like the `mcu`'s `digital[0]` in the example above, would have parameters like voltage limits, output voltage range, and logic thresholds.
+This allows for automated design correctness check of basic datasheet parameters (think ERC++) and provides a foundation for generators.
 
 **Generators** allow a block's internal contents to be constructed by code, possibly based on parameters on it and its ports.
 For example, the `IndicatorLed` block automatically sizes the resistor based on the input voltage on the `sig` pin, and the DC-DC converter block automatically sizes inductors and capacitors based on the target output voltage and current.
 
-Finally, in the internal model (mainly relevant for compiler writers and library builders), the connections between ports expand into **links** which defines how parameters propagate between those ports and any constraints on them.
-Continuing the digital IO example, the link would check the output thresholds against the input thresholds, and provide the worst-case voltage levels given all connected drivers.
-These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:  
+<details> <summary>Under the hood: from connections to links</summary>
+
+While the user-facing HDL design model is connections between ports, the internal model expands these connections into **links**.
+Links are a block-like construct (diamonds in the diagram) that define how parameters propagate between ports and constraints on them.
 ![Blinky Hierarchy Block Diagram](docs/blinky_model_full.png)
 
-> In the user-facing HDL design model, links are inferred based on the types of connected ports and not explicit.
-> Being aware of links can be useful for debugging, but this is mainly relevant for compiler writers and library builders.
+Continuing the digital IO example, the link checks the output thresholds against the input thresholds and calculate the full range of voltage levels given all connected drivers.
+These could be viewed as a block-like object (diamonds on the diagram) instead of direct wire connections:  
 
-We'll put these concepts into practice in the rest of this tutorial by building a variation of the blinky example above, then defining a custom part.
+All links are fully defined in the same HDL code, and you can inspect the link definitions of included port types to see how they work and what they check.
+You can also write custom links and ports, though this will be unnecessary for most users.
+
+</details>
 
 
 ### Setup
@@ -41,7 +47,6 @@ Instructions for setting up the IDE and compiler are in the [setup document](set
 
 ### Reference Document
 While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
-The reference document includes a short overview of all the core primitives and common library elements.
 
 
 ### Hardware Description Language (HDL)
@@ -815,7 +820,7 @@ Continue to [the next part of the tutorial](getting_started_schimport.md) on def
 
 ### Additional Resources
 If you want to some more complex examples of boards designed in this HDL, check out:
-- [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix.
-  Ignore the implementation of the charlieplexing LED matrix library block for now, just look at the top-leve design.
+- [Keyboard](examples/test_keyboard.py): the fabbed-out version of this example, with a few more features and different choices of parts.
+- [LED Matrix](examples/test_ledmatrix.py): a charlieplexed LED matrix, using a parameterized charlieplexing LED array generator.
+- [Seven Segment Clock](examples/test_seven_segment.py): an IoT (ESP32S3) seven-segment LED clock, using individually-addressable RGBs for each segment.
 - [Simon Game](examples/test_simon.py): an implementation of the Simon electronic game, that uses 12v dome buttons and includes the needed power conversion circuitry.
-- [CANdapter](examples/test_can_adapter.py): an USB to isolated CAN adapter, with a bunch of onboard LEDs and an LCD display.
