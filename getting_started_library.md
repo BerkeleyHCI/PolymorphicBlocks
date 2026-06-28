@@ -5,6 +5,10 @@ _We do this in two stages, first defining a `FootprintBlock` for the chip itself
 > While `Block`s are arbitrary hierarchy blocks that only have ports, inner blocks, and connections, `FootprintBlock` also allows up to one PCB footprint, and a mapping from the block ports to footprint pins.
 > In schematic terms, think of `FootprintBlock` as analogous to a schematic symbol, while `Block` is closer to a hierarchy sheet.
 
+### Dragons be Ahead
+
+Library block definition is a less polished and more complex experience than building boards using existing library blocks.
+
 
 ## Creating a part
 Block definitions correspond to classes, and a new block can be defined by creating a new class.

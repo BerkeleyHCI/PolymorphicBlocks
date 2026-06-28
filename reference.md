@@ -128,7 +128,7 @@ self.tp_gnd = self.Block(GroundTestPoint()).connected(self.gnd)
 
 ### Refinements
 
-Refinements allow specifying, at the top level, modification across the design hierarchy.
+Refinements allow specifying, at the top level, modifications across the design hierarchy.
 
 ```python
 def refinements(self) -> Refinements:
