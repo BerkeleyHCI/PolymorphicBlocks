@@ -434,7 +434,7 @@ We'll add in the USB type-C port that was previously part of the Xiao, and conne
       self.mcu = self.Block(IoController())
 +     self.connect(self.usb.gnd, self.mcu.gnd)
 +     self.connect(self.usb.pwr, self.mcu.pwr)
-+     self.connect(self.usb.usb, self.mcu.usb.request('usb))
++     self.connect(self.usb.usb, self.mcu.usb.request('usb'))
 
       self.led = self.Block(IndicatorLed())
       self.connect(self.usb.pwr, self.mcu.pwr)
@@ -464,7 +464,7 @@ We'll insert a simple linear regulator, a step-down voltage converter.
       self.connect(self.usb.gnd, self.mcu.gnd)
 -     self.connect(self.usb.pwr, self.mcu.pwr)
 +     self.connect(self.reg.pwr_out, self.mcu.pwr)
-      self.connect(self.usb.usb, self.mcu.usb.request('usb))
+      self.connect(self.usb.usb, self.mcu.usb.request('usb'))
 
       self.led = self.Block(IndicatorLed())
       self.connect(self.usb.pwr, self.mcu.pwr)
@@ -487,16 +487,66 @@ After finishing this tutorial, see the [hierarchical layout tutorial](getting_st
 
 ## Adding addressable RGBs with Mixins
 
+**Make these changes** to the `contents` method:
+```diff
+  class BlinkyExample(SimpleBoardTop):
+    def contents() -> None:
+      super().contents()
+      
+      self.usb = self.Block(UsbCReceptacle())
+      
+      self.reg = self.Block(LinearRegulator(3.3*Volt(tol=0.05)))
+      self.connect(self.usb.gnd, self.reg.gnd)
+      self.connect(self.usb.pwr, self.reg.pwr_in)
+      
+      self.mcu = self.Block(IoController())
+      self.connect(self.usb.gnd, self.mcu.gnd)
+      self.connect(self.reg.pwr_out, self.mcu.pwr)
+      self.connect(self.usb.usb, self.mcu.usb.request('usb'))
+
+      self.led = self.Block(IndicatorLed())
+      self.connect(self.usb.pwr, self.mcu.pwr)
+      self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+      self.connect(self.mcu.gpio.request('led'), self.led.signal)
+  
+      self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+      self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
+      self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
+      
++     sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels())
++     self.connect(self.usb.gnd, sw_npx.npx_gnd)
++     self.connect(self.usb.pwr, sw_npx.npx_pwr)
+
++     self.npx_shift = self.Block(L74Ahct1g125())
++     self.connect(self.usb.gnd, npx_shift.gnd)
++     self.connect(self.usb.pwr, npx_shift.pwr)
++     self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
++     self.connect(self.npx_shift.output, sw_npx.npx_din)
+```
 
 Mixins are not supported with graphical edit actions.
+
+! mixins desc
+
+We have also added a buffer (`L74Ahct1g125`) to shift the 3.3v logic level of the microcontroller to the higher data voltage required by the addressable RGBs.
+The RGBs datasheet defines their input thresholds as incompatible with 3.3v and this will generate ERC errors without the buffer.
+Go ahead and try it!
+
+
+## Implicit Connections
+_The code is starting to get a bit long and tedious._
+
+
+Refactoring operations are not supported with graphical edit actions.
+The IDE is not implicit-scope-aware for graphical edit actions.
+
+There is also a more complex `self.chain(...)` construct allowing for very compact HDL, detailed in the [reference document](reference.md).
+
+
 
 ## Explicit Pin Assignments
 
 
-## Implicit Connections
-
-
-There is also a more complex `self.chain(...)` construct allowing for very compact HDL, detailed in the [reference document](reference.md).
 
 
 ## Defining Library Parts
