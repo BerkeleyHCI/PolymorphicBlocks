@@ -9,6 +9,9 @@ _We do this in two stages, first defining a `FootprintBlock` for the chip itself
 ### Dragons be Ahead
 Library block definition is a less polished and more complex experience than building boards using existing library blocks.
 
+This tutorial only walks through the basics and constructs.
+The next best place is to look through the parts libraries for how these work in practice.
+
 
 ## Creating a part
 Block definitions correspond to classes, and a new block can be defined by creating a new class.
@@ -24,14 +27,7 @@ class Lf21215tmr_Device(FootprintBlock):
     # block implementation (subblocks, internal connections, footprint) here
 ```
 
-> While you can edit block definitions in the IDE, it must be part of a valid top-level design.
-> It currently is not possible to set a non-BoardTop block as the top level.
-> However, you can instantiate this block in your design, then double-click into it, and edit from there.
-> 
-> If you want to instantiate the new block from the GUI, you will need to recompile first.
-> 
-> IDE support for library construction is very limited.
-> You currently can't create Blocks or insert Ports from the IDE.
+> IDE support for graphical edit actions for library construction is very limited and is not recommended.
 
 > `__init__` is meant to define the interface of a block (all Ports and Parameters), while `contents` is meant to define the contents of a block (largely Blocks, connections, and constraints).
 > This split is not enforced (and there are cases where it is desirable to mix them into just `__init__`), but the main benefits of this are performance (avoid building the full design tree unnecessarily) and separation for readability.
@@ -80,8 +76,8 @@ For `DigitalSource`, while we could write the parameters explicitly:
 ```python
 # DON'T DO THIS - BETTER STYLE BELOW
 self.vout = self.Port(DigitalSource(
-  voltage_out=(self.gnd.link().voltage.lower(),
-               self.vcc.link().voltage.upper()),
+  voltage=(self.gnd.link().voltage.lower(),
+           self.vcc.link().voltage.upper()),
   current_limits=(-9, 9)*mAmp,
   output_thresholds=(self.gnd.link().voltage.upper() + 0.2 * Volt,
                      self.vcc.link().voltage.lower() - 0.3 * Volt)
@@ -153,38 +149,6 @@ class Lf21215tmr_Device(FootprintBlock):
 > 3. Pinning: a dict associating a pin number to a port.
 > 4. Additional data like `mfr`, `part`, and `datasheet`, which is generated in the netlist and may eventually be used for BoM generation.
 
-> If using the IDE, the footprint and pinning can be set from the KiCad panel.
-> 
-> You will need to make sure the KiCad footprint directory is properly set.
-> 1. Open up IntelliJ settings: main menu > File > Settings (Windows) or Main > Preferences (MacOS).
-> 2. In the settings panel, go to Tools > EDG IDE.
-> 3. Set the KiCad Footprint Directory.
->    - On Windows, this may be: `C:\Program Files\KiCad\6.0\share\kicad\footprints`
->    - On MacOS, this may be: `/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints`
-> 4. Restart the IDE.
->
-> To set the footprint from the GUI:
-> 1. Switch to the KiCad tab (from the Library Browser).
-> 2. Select the corresponding block in the block diagram.
->    - Remember that GUI edits are only allowed on blocks that are part of the current top-level design.
->      You may need to instantiate your block to be able to set a footprint from the GUI.
-> 3. Position the caret where you want to insert the code, such as inside `def contents()`
-> 4. Search for the footprint you want to use, in this case `Package_TO_SOT_SMD.pretty:SOT-23.kicad_mod`
-> 5. Double-click the footprint entry to insert the code.
->    - If the caret is in an existing `self.footprint` call, it will be edited to use the new footprint
-> 6. At this point, you have an empty `footprint(...)` call.
->    Fill in the manufacturer, part number, and datasheet URL fields as follows:
->    - Manufacturer: `Littelfuse`
->    - Part: `LF21215TMR`
->    - Datasheet: `https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf`
-> 7. Double-click on the footprint pins to set the ports.
->    Here, assign as follows:
->    - Pin 1: `vcc`
->    - Pin 2: `vout`
->    - Pin 3: `gnd`
-> 
-> ![KiCad tab](docs/ide/ide_kicad_magsense.png)
- 
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
 >
@@ -230,10 +194,6 @@ Since this won't be a footprint, it should extend `Block` directly, and you can 
 
 > In contrast to definition we just wrote, this drops the `_Device` postfix we used to indicate a footprint block.
 
-<!-- TODO GUI Export support -->
-
-<!-- TODO Create Wrapper Block? -->
-
 As indicated by the application circuit, this block would have the same ports as the device (two **VoltageSink** and one **DigitalSource**). It would have two parts, the `Lf21215tmr_Device` we just defined, and a `DecouplingCapacitor`.
 **Instantiate them both, then connect them together**.
 ```python
@@ -244,7 +204,7 @@ class Lf21215tmr(Block):
     self.cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
 ```
 
-> Our design model requires a tolerance for all parts.
+> The design model requires a tolerance for all parts.
 > We've chosen a default loose 20% tolerance for decoupling capacitors. 
 
 For the ports, because these are intermediate ports, they must not have parameters (be `empty()`).
