@@ -1,7 +1,163 @@
 # Quick Reference
-A simplified EDG EDSL guide, primarily as a reference for those who have been through the [getting started guide](getting-started.md).
+A short reference for writing HDL code.
+New? Consider reading through the [getting started guide](getting-started.md).
 
-_Some documentation may be out of date._
+
+## For System Builders
+
+### DesignTop Block
+`Block`s represent a subcircuit (including the top-level circuit) and contain inner blocks and connections between them.
+
+```python
+class MyBoard(SimpleBoardTop):
+    def contents(self) -> None:
+        # declare subblocks and connections here
+        super().contents()  # required to call this superclass method        
+        self.mcu = self.Block(IoController())
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+        self.connect(self.mcu.gnd, self.led.gnd)
+
+    def refinements(self) -> Refinements:
+        # refinements describe modifications across the design hierarchy
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Esp32c3),  # replace all abstract IoController with Esp32c3
+            ],
+            instance_refinements=[
+                (["mcu"], Esp32c3),  # replace mcu with Esp32c3, redundant with the above class refinement
+            ],
+            instance_values=[
+                (
+                    ["mcu", "pin_assigns"],  # assign IOs to these physical pins
+                    [
+                        "led=3",  # assign led to physical pin 3
+                    ],
+                )
+            ],
+        )
+```
+
+- `SimpleBoardTop` maps abstract passive components to the JLC parts library and relaxes some strict constraints that do not matter for maker-type boards.
+- Alternatively, use `DesignTop` (which has no default mappings) or `JlcBoardTop` (which has JLC part mappings).
+
+### Block definition
+
+```python
+self.block_name = self.Block(BlockType(...))
+```
+
+- All blocks must have a unique name as a `self` variable (this preserves netlist stability for layout).
+- Some blocks may take arguments, see their `__init__` for details.
+- Builtin parts (like ICs) are in [the parts folder](edg/parts) and builtin circuits are in [the circuits folder](edg/circuits).
+- Abstract blocks can be instantiated, but require a refinement in the top-level design.
+  - Some DesignTop subclasses like `SimpleBoardTop` provide default refinements.
+
+#### Range Arguments
+
+```python
+self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
+```
+
+- Blocks commonly take arguments as a range-like type, typically a specification for an allowable range accounting for tolerance stackup.
+
+#### ElementDict
+
+```python
+self.block_name = ElementDict[IndicatorLed]()
+for i in range(4):
+    self.block_name[i] = self.Block(IndicatorLed())
+```
+
+- `ElementDict` provides an internal namespace for blocks, by index name.
+- Use this to construct (and uniquely name) arrays of blocks.
+
+### Connections
+
+```python
+self.connect(self.block1.port, self.block2.port, ...)
+```
+
+- `self.connect` connects ports on blocks, inferring the link type from the port types in the connection.
+- `self.connect` returns a `Connection` object, which can be used in connections.
+- Optionally assign a name to the `Connection` by assigning to a `self` variable.
+
+#### Implicit Connection Blocks
+
+```python
+with self.implicit_connect(
+    ImplicitConnect(self.pwr, [Power]),
+    ImplicitConnect(self.gnd, [Common]),
+) as imp:
+    self.block_name = imp.Block(BlockType(...))
+``` 
+
+- `self.implicit_connect` creates a scope for implicit connections, which automatically connects ports on instantiated blocks by matching on tags like `Power` and `Common`.
+- This is typically used to implicitly connect power (`Power` tag) and ground (`Common` tag) ports.
+
+#### Chain Connections
+
+```python
+(self.led,), _ = self.chain(imp.Block(IndicatorSinkLed()), self.mcu.gpio.request("led"))
+```
+
+- `self.chain` connects ports in a chain, from left to right.
+- Blocks in the chain are connected to:
+  - their `Input` tagged port, for an incoming connection from the left,
+  - their `Output` tagged port, for an outgoing connection to the right,
+  - their `InOut` tagged port, for both incoming and outgoing connections (tapped connection).
+- This returns a tuple of `(blocks...), chain`.
+  Blocks must be named, the chain object can be optionally named to name the interior nets.
+
+#### .connected(...)
+
+```python
+self.tp_gnd = self.Block(GroundTestPoint()).connected(self.gnd)
+```
+
+- Some (but far from all) blocks define a `.connected(...)` as a shorthand connection method, see each class's API for details.
+
+### IoController
+
+```python
+self.mcu = imp.Block(IoController())
+self.connect(self.mcu.gpio.request("led"), self.led.signal)
+```
+
+- `IoController` is an abstract class for any programmable IO controller, typically microcontrollers, but also including FPGAs.
+- `IoController`s have a `gnd` and `pwr` input power ports, and `gpio`, `adc`, `spi`, `i2c`, `uart`, and `usb` Vector IO ports which elements can be requested from.
+- Not all `IoController`s support all IO types, see each class's API for details.
+- The `request(...)` name is used in the `pin_assigns` refinement, with each entry specified as either `led=3` (by footprint pin number) or `led=GPIO4` (by IO name, see each class's API for details).
+
+### Mixins
+
+```python
+self.mcu.with_mixin(IoControllerWifi())
+self.connect(self.can.controller, self.mcu.with_mixin(IoControllerCan()).can.request("can"))
+```
+
+- Mixins are a way to require additional functionality on an abstract block, they restrict refinements to concrete classes that implement the mixin.
+- Mixins can define ports and parameters.
+- IoController has these mixins:
+  - defining IO ports: `IoControllerDac`, `IoControllerI2cTarget`, `IoControllerSpiPeripheral`, `IoControllerTouchDriver`, `IoControllerCan`, `IoControllerUsbCc`, `IoControllerI2s`, `IoControllerDvp8`
+  - connectivity requirements only: `IoControllerWifi`, `IoControllerBluetooth`, `IoControllerBle`
+  - defining power ports, typically for microcontroller dev boards: `IoControllerPowerOut`, `IoControllerUsbOut`, `IoControllerVin`
+
+### Connector Blocks
+
+
+### Connector Pairs
+
+
+### Refinements
+
+
+### Overriding Values / "Waiving" ERCs
+
+
+
+## For Library Builders
+
 
 ## Core Primitives
 
