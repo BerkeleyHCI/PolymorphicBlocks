@@ -78,8 +78,10 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
                 # don't overwrite if exists, it may define a default refinement
                 self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
 
+    @override
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
         super()._populate_def_proto_block_base(pb)
+        assert isinstance(pb, edgir.HierarchyBlock)
         if self._is_mixin():
             pb.is_mixin = self._is_mixin()
 
