@@ -145,6 +145,8 @@ Try building the example now.
    Using interpreter from configured SDK [...]
    [... lots of compilation output here ...]
    Completed: generate netlist: wrote [...]
+   Completed: generate BOM: write [...]
+   Done
    ```
 4. Some options (like where the netlist is generated into) can be modified via the run options at the top right:  
    ![run menu](docs/ide/ide_run_config.png)
@@ -166,7 +168,7 @@ For this simple example, we connect an LED to a self-powered Xiao Rp2040 microco
 
 Let's start by instantiating the USB type-C receptacle through graphical operations in the IDE.
 1. In the Library Browser, search for the block (here, `Xiao_Rp2040`) using the Filter textbox:  
-   ![Library filtering by USB](docs/ide/ide_library_usbc.png)
+   ![Library filtering by xiao](docs/ide/ide_library_xiao.png)
 
    > The library icons have these meanings:
    > - ![Folder](docs/intellij_icons/AllIcons.Nodes.Folder.svg) (category): this "block" is actually a category organizer and cannot be instantiated.
@@ -175,11 +177,11 @@ Let's start by instantiating the USB type-C receptacle through graphical operati
 
 2. Double-click the library entry.
    This will insert the code to instantiate the block as a _live template_, code with template fields you can fill in:  
-   ![Live template example](docs/ide/ide_livetemplate_usbc.png)  
+   ![Live template example](docs/ide/ide_livetemplate_mcu.png)  
    **Editing outside the currently active template field (boxed in blue) will break off and cancel the template.**
    **Moving the cursor outside the currently active template field, either using the mouse or keyboard arrows, is discouraged.**
-3. Name the block `usb`, by typing it into the first template field.  
-   ![Live template example](docs/ide/ide_livetemplate_usbc_named.png)
+3. Name the block `mcu`, by typing it into the first template field.  
+   ![Live template example](docs/ide/ide_livetemplate_mcu_named.png)
 4. Then press [Tab] through the end of the template (leaving the other fields empty, they're optional).
 5. Once you commit the live template, the block will appear in the block diagram visualizer.
     - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile.
@@ -215,7 +217,7 @@ First, we need to connect the power and ground between the devices.
 
 **Make these changes** to the `contents` method:
 ```diff
-  def contents() -> None:
+  def contents(self) -> None:
       super().contents()
       self.mcu = self.Block(Xiao_Rp2040())
       self.led = self.Block(IndicatorLed())
@@ -227,8 +229,7 @@ First, we need to connect the power and ground between the devices.
 1. Double click any of the ground ports (say, `mcu.gnd`).
    This starts a connection operation, which dims out the ports that cannot be connected:  
    ![Connection beginning](docs/ide/ide_connect_usbc_start.png)
-2. Select (single click) on all the other ground ports to be connected (here, just `led.gnd`):  
-   ![Connection with ports](docs/ide/ide_connect_usbc_all.png)
+2. Select (single click) the other ports to be connected (here, just `led.gnd`).
 3. Double-click anywhere (within a block) to complete and insert the connections as a live template.
    ![Connection live template](docs/ide/ide_livetemplate_gnd_connect.png)
    > - Double-click on a port to simultaneously select that port and complete and insert the connection.
@@ -242,14 +243,11 @@ First, we need to connect the power and ground between the devices.
 `self.connect(...)` connects all the argument ports together.
 Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
 
-If using the IDE: the compiled block diagram should look like:  
-![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
-
 Then, we need to connect the LED to a GPIO on the microcontroller.
 Make these changes to the `contents` method:
 
 ```diff
-  def contents() -> None:
+  def contents(self) -> None:
       super().contents()
       self.mcu = self.Block(Xiao_Rp2040())
       self.led = self.Block(IndicatorLed())
@@ -262,6 +260,8 @@ Make these changes to the `contents` method:
 1. **Repeat the previous connect process**, but with `mcu.gpio` to `led.signal`.
    The microcontroller GPIO port ![port array symbol](docs/ide/ide_portarray.png) looks different as it is a dynamically sized port array.
    Connections into it ![port array symbol](docs/ide/ide_portarray_slice_min.png) `request(...)` a new element from the array.
+
+   Graphical port array connect operations are buggy. 
 2. Give the GPIO pin an (optional) name `led` by modifying the generated code:
    ```diff
    - self.connect(self.mcu.gpio.request(), self.led.signal)
@@ -301,7 +301,7 @@ Don't worry about installing it, in a few sections this will be replaced with a 
 
 In the KiCad standalone PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
 KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
-![Blinky layout with default placement](docs/blinky_kicad.png)
+![Blinky layout with default placement](docs/kicad_blinky.png)
 
 The generated netlist preserves the design hierarchy.
 This works with KiCad 10+'s native design blocks feature (which is somewhat heavyweight) as well as the [Sublayout plugin](https://github.com/ducky64/sublayout) (more lightweight and limited).
@@ -322,7 +322,7 @@ __Now, we'll add a 3x2 switch matrix with just a few lines of code, this is wher
 
 **Make these changes** to the `contents` method:
 ```diff
-  def contents() -> None:
+  def contents(self) -> None:
       super().contents()
       self.mcu = self.Block(Xiao_Rp2040())
       self.led = self.Block(IndicatorLed())
@@ -334,11 +334,7 @@ __Now, we'll add a 3x2 switch matrix with just a few lines of code, this is wher
 +     self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
 ```
 
-<details> <summary>Alternatively, with IDE graphical edit actions</summary>
-
-TODO Write Me 
-
-</details>
+Array-array connect operations are not supported with graphical edit actions.
 
 `SwitchMatrix` is a generator block that takes the number of columns (width) and rows (height) as parameters and generates the switch matrix (including diodes for multi-key detection).
 For keyboard enthusiasts, this generates COL2ROW circuits.
@@ -350,7 +346,7 @@ Port arrays can be connected to other arrays, forming a parallel connection.
 Here, we connect `cols` (and `rows`) to the microcontroller, using `request_vector(...)` to request a new GPIOs the size of the incoming connection.
 
 If we load the netlist into KiCad, we get this:
-![Default SwitchMatrix Layout](docs/switchmatrix_kicad.png)
+![Default SwitchMatrix Layout](docs/kicad_switchmatrix.png)
 
 
 ## Abstract Parts and Refinements
@@ -364,7 +360,6 @@ Internally, SwitchMatrix uses the abstract `Switch` block, and `SimpleBoardTop` 
       def contents(self) -> None:
           ...
   
-+   @override
 +   def refinements(self) -> Refinements:
 +       return super().refinements() + Refinements(
 +           class_refinements=[
@@ -377,8 +372,10 @@ Internally, SwitchMatrix uses the abstract `Switch` block, and `SimpleBoardTop` 
 
 1. **Navigate into the switch in the switch matrix hierarchy and select it**.
    It is currently refined to a JlcSwitch, the tactile 5.1mm switch that is part of the JLC basic parts library.
+
    ![Switch design hierarchy](docs/ide/ide_designhierarchy_switch.png)
 2. **In the library, search for KailhSocket**, then right-click it and select "Refine class Switch to KailhSocket"
+
    ![KailhSocket refinement menu](docs/ide/ide_refine_switch.png) 
 
 </details>
@@ -387,7 +384,7 @@ Refinements allow specifying, at the top level, modifications across the design 
 Here, we override the default Switch refinement to use a mechanical keyswitch socket.
 
 If we load the netlist into KiCad, we get more reasonable components:
-![Refined SwitchMatrix Layout](docs/switchmatrix_refined_kicad.png)
+![Refined SwitchMatrix Layout](docs/kicad_switchmatrix_refined.png)
 
 After finishing this tutorial, see the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for speeding up layout using hierarchical layout replication.
 
@@ -403,7 +400,7 @@ Because blocks encapsulate their subcircuits, using a discrete microcontroller i
 **Make these changes** to the design:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-      def contents() -> None:
+      def contents(self) -> None:
           super().contents()
 -         self.mcu = self.Block(Xiao_Rp2040())
 +         self.mcu = self.Block(IoController())
@@ -415,7 +412,6 @@ Because blocks encapsulate their subcircuits, using a discrete microcontroller i
           self.connect(self.sw.cols, self.mcu.gpio.request_vector('cols'))
           self.connect(self.sw.rows, self.mcu.gpio.request_vector('rows'))
     
-      @override
       def refinements(self) -> Refinements:
           return super().refinements() + Refinements(
               class_refinements=[
@@ -439,7 +435,7 @@ We'll add in the USB type-C port that was previously part of the Xiao, and conne
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-      def contents() -> None:
+      def contents(self) -> None:
           super().contents()
           
 +         self.usb = self.Block(UsbCReceptacle())
@@ -463,7 +459,7 @@ We'll insert a simple linear regulator, a step-down voltage converter.
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-      def contents() -> None:
+      def contents(self) -> None:
           super().contents()
           
           self.usb = self.Block(UsbCReceptacle())
@@ -491,7 +487,7 @@ Once we recompile, it should complete with no errors.
 
 If we load the netlist into KiCad, we get the discrete microcontroller and its bundles of capacitors.
 Because we used USB, the microcontroller subcircuit also automatically generated a crystal to meet USB timing requirements.
-![Refined SwitchMatrix Layout](docs/switchmatrix_discrete_kicad.png)
+![Refined SwitchMatrix Layout](docs/kicad_switchmatrix_discrete.png)
 
 After finishing this tutorial, see the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for speeding up layout by loading an existing microcontroller block layout.
 
@@ -503,7 +499,7 @@ This is supported through **mixins**.
 **Make these changes** to the `contents` method:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-      def contents() -> None:
+      def contents(self) -> None:
           super().contents()
           
           self.usb = self.Block(UsbCReceptacle())
@@ -534,6 +530,15 @@ This is supported through **mixins**.
 +         self.connect(self.usb.pwr, self.npx_shift.pwr)
 +         self.connect(self.mcu.gpio.request('npx'), self.npx_shift.input)
 +         self.connect(self.npx_shift.output, sw_npx.npx_din)
+
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Stm32f103_48),
+                (Switch, KailhSocket),
++               (Neopixel, Sk6812Mini_E),
+            ],
+        )
 ```
 
 Mixins are not supported with graphical edit actions.
@@ -546,6 +551,8 @@ We have also added a buffer (`L74Ahct1g125`) to shift the 3.3v logic level of th
 The RGBs datasheet defines their input thresholds as incompatible with 3.3v and this will generate ERC errors without the buffer.
 Go ahead and try it!
 
+We also add a refinement to use the SK6812-Mini-E, a through-board LED used on mechanical keyboards.
+
 
 ## Implicit Connections
 _The code is starting to get a bit long and tedious. We'll refactor that using implicit scopes, a syntactic sugar construct, to make it shorter and more readable._
@@ -553,7 +560,7 @@ _The code is starting to get a bit long and tedious. We'll refactor that using i
 **Replace** the `contents` method:
 ```python
 class BlinkyExample(SimpleBoardTop):
-    def contents() -> None:
+    def contents(self) -> None:
         super().contents()
         
         self.usb = self.Block(UsbCReceptacle())
@@ -623,7 +630,7 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
 **Add a pin assignment for the STM32 in the refinements section**:
 ```diff
   class BlinkyExample(SimpleBoardTop):
-      def contents() -> None:
+      def contents(self) -> None:
         ...
         
       def refinements(self) -> Refinements:
