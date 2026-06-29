@@ -371,6 +371,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)
             pb.is_abstract = True
+            pb.is_mixin = False
             default_refinement_fn = self._elt_properties[(self.__class__, AbstractBlockProperty)]
             if default_refinement_fn is not None:
                 default_refinement = default_refinement_fn()

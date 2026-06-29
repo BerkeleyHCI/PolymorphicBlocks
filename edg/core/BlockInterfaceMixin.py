@@ -5,6 +5,7 @@ from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
+from .. import edgir
 
 MixinBaseType = TypeVar("MixinBaseType", covariant=True, bound=Block, default=Block)
 
@@ -76,6 +77,13 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
             if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
                 # don't overwrite if exists, it may define a default refinement
                 self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
+
+    @override
+    def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
+        super()._populate_def_proto_block_base(pb)
+        assert isinstance(pb, edgir.HierarchyBlock)
+        if self._is_mixin():
+            pb.is_mixin = self._is_mixin()
 
     def implementation(self, fn: Callable[[MixinBaseType], None]) -> None:
         """Wrap implementation definitions (where MixinBaseType is required) in this. This is only called
