@@ -31,6 +31,7 @@ class MixinProtoTestCase(unittest.TestCase):
 
     def test_abstract(self) -> None:
         self.assertEqual(self.pb.is_abstract, True)
+        self.assertEqual(self.pb.is_mixin, True)
         self.assertEqual(self.pb.HasField("default_refinement"), False)
 
     def test_superclass(self) -> None:
@@ -71,6 +72,7 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
 
     def test_abstract(self) -> None:
         self.assertEqual(self.pb.is_abstract, True)
+        self.assertEqual(self.pb.is_mixin, True)
         self.assertEqual(self.pb.HasField("default_refinement"), False)
 
     def test_superclass(self) -> None:
@@ -113,6 +115,7 @@ class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforw
 
     def test_abstract(self) -> None:
         self.assertEqual(self.pb.is_abstract, False)
+        self.assertEqual(self.pb.is_mixin, False)
         self.assertEqual(self.pb.HasField("default_refinement"), False)
 
     def test_superclass(self) -> None:
