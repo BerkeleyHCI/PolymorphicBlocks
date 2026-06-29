@@ -373,11 +373,14 @@ class HierarchyBlock(_message.Message):
     PREREFINE_MIXINS_FIELD_NUMBER: _builtins.int
     GENERATOR_FIELD_NUMBER: _builtins.int
     IS_ABSTRACT_FIELD_NUMBER: _builtins.int
+    IS_MIXIN_FIELD_NUMBER: _builtins.int
     DEFAULT_REFINEMENT_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
     DESCRIPTION_FIELD_NUMBER: _builtins.int
     is_abstract: _builtins.bool
     "true if self_class is abstract, and should error if used in a design"
+    is_mixin: _builtins.bool
+    "true if self_class is a mixin"
 
     @_builtins.property
     def params(self) -> _containers.RepeatedCompositeFieldContainer[Global___NamedValInit]: ...
@@ -453,6 +456,7 @@ class HierarchyBlock(_message.Message):
         prerefine_mixins: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...,
         generator: Global___Generator | None = ...,
         is_abstract: _builtins.bool = ...,
+        is_mixin: _builtins.bool = ...,
         default_refinement: _ref_pb2.LibraryPath | None = ...,
         meta: _common_pb2.Metadata | None = ...,
         description: _abc.Iterable[Global___StringDescriptionElement] | None = ...,
@@ -484,6 +488,8 @@ class HierarchyBlock(_message.Message):
         b"generator",
         "is_abstract",
         b"is_abstract",
+        "is_mixin",
+        b"is_mixin",
         "links",
         b"links",
         "meta",
