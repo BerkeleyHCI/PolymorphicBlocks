@@ -642,8 +642,8 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
 +                     'sw_col_0=16',
 +                     'sw_col_1=17',
 +                     'sw_col_2=18',
-+                     'sw_row0=19',
-+                     'sw_row1=20',
++                     'sw_row_0=19',
++                     'sw_row_1=20',
 +                 ])
               ])
 ```
