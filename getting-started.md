@@ -415,7 +415,7 @@ Because blocks encapsulate their subcircuits, using a discrete microcontroller i
       def refinements(self) -> Refinements:
           return super().refinements() + Refinements(
               class_refinements=[
-+                 (IoController, Stm32f103_48),
++                 (IoController, Stm32f103),
                   (Switch, KailhSocket),
               ],
           )
@@ -534,7 +534,7 @@ This is supported through **mixins**.
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
 +               (Neopixel, Sk6812Mini_E),
             ],
@@ -639,11 +639,11 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
 +             instance_values=[
 +                 (['mcu', 'pin_assigns'], [
 +                     'led=10',
-+                     'sw_col_0=16',
-+                     'sw_col_1=17',
-+                     'sw_col_2=18',
-+                     'sw_row_0=19',
-+                     'sw_row_1=20',
++                     'cols_0=16',
++                     'cols_1=17',
++                     'rows_0=18',
++                     'rows_1=19',
++                     'rows_2=20',
 +                 ])
               ])
 ```

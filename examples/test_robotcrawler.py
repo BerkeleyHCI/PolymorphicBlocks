@@ -172,7 +172,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (["mcu"], Esp32s3_Wroom_1),
-                (["mcu_servo"], Stm32f103_48),
+                (["mcu_servo"], Stm32f103),
                 (["mcu_test"], Rp2040),
                 (["reg_3v3"], Ap7215),
                 (["reg_2v5"], Xc6206p),

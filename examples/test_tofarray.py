@@ -130,7 +130,7 @@ class TofArray(JlcBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
-                (["mcu"], Stm32f103_48),
+                (["mcu"], Stm32f103),
                 (["reg_3v3"], Ldl1117),  # TBD find one that is in stock
                 (["spk", "conn"], JstPhKVertical),
                 (["can", "conn"], MolexSl),

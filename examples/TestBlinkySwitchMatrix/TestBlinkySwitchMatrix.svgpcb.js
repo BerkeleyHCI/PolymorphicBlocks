@@ -6,26 +6,38 @@ const U1 = board.add(XIAO_RP2040_SMD, {
   translate: pt(1.466, 0.410), rotate: 0,
   id: 'U1'
 })
+// led.package
+const D1 = board.add(LED_0603_1608Metric, {
+  translate: pt(1.995, 0.029), rotate: 0,
+  id: 'D1'
+})
+// led.res
+const R1 = board.add(R_0603_1608Metric, {
+  translate: pt(1.994, 0.126), rotate: 0,
+  id: 'R1'
+})
 
 board.setNetlist([
-  {name: "mcu.gpio.0_0", pads: [["U1", "7"], ["SW1", "1"], ["SW3", "1"], ["SW5", "1"]]},
-  {name: "mcu.gpio.0_1", pads: [["U1", "8"], ["SW2", "1"], ["SW4", "1"], ["SW6", "1"]]},
-  {name: "mcu.gpio.1_0", pads: [["U1", "9"], ["D1", "1"], ["D2", "1"]]},
-  {name: "mcu.gpio.1_1", pads: [["U1", "11"], ["D3", "1"], ["D4", "1"]]},
-  {name: "mcu.gpio.1_2", pads: [["U1", "10"], ["D5", "1"], ["D6", "1"]]},
-  {name: "mcu.gnd", pads: [["U1", "13"]]},
+  {name: "mcu.gpio.cols_0", pads: [["U1", "8"], ["SW1", "1"], ["SW3", "1"], ["SW5", "1"]]},
+  {name: "mcu.gpio.cols_1", pads: [["U1", "9"], ["SW2", "1"], ["SW4", "1"], ["SW6", "1"]]},
+  {name: "mcu.gpio.rows_0", pads: [["U1", "11"], ["D2", "1"], ["D3", "1"]]},
+  {name: "mcu.gpio.rows_1", pads: [["U1", "10"], ["D4", "1"], ["D5", "1"]]},
+  {name: "mcu.gpio.rows_2", pads: [["U1", "5"], ["D6", "1"], ["D7", "1"]]},
+  {name: "mcu.gnd", pads: [["U1", "13"], ["R1", "2"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
   {name: "mcu.vusb_out", pads: [["U1", "14"]]},
-  {name: "sw.sw[0,0].sw.com", pads: [["SW1", "2"], ["D1", "2"]]},
-  {name: "sw.sw[1,0].sw.com", pads: [["SW2", "2"], ["D2", "2"]]},
-  {name: "sw.sw[0,1].sw.com", pads: [["SW3", "2"], ["D3", "2"]]},
-  {name: "sw.sw[1,1].sw.com", pads: [["SW4", "2"], ["D4", "2"]]},
-  {name: "sw.sw[0,2].sw.com", pads: [["SW5", "2"], ["D5", "2"]]},
-  {name: "sw.sw[1,2].sw.com", pads: [["SW6", "2"], ["D6", "2"]]}
+  {name: "led.signal", pads: [["U1", "7"], ["D1", "2"]]},
+  {name: "led.package.k", pads: [["D1", "1"], ["R1", "1"]]},
+  {name: "sw.sw[0,0].sw.com", pads: [["SW1", "2"], ["D2", "2"]]},
+  {name: "sw.sw[1,0].sw.com", pads: [["SW2", "2"], ["D3", "2"]]},
+  {name: "sw.sw[0,1].sw.com", pads: [["SW3", "2"], ["D4", "2"]]},
+  {name: "sw.sw[1,1].sw.com", pads: [["SW4", "2"], ["D5", "2"]]},
+  {name: "sw.sw[0,2].sw.com", pads: [["SW5", "2"], ["D6", "2"]]},
+  {name: "sw.sw[1,2].sw.com", pads: [["SW6", "2"], ["D7", "2"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(1.936220472440945, 2.1181102362204722);
+const limit1 = pt(2.171062992125984, 2.1181102362204722);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);
@@ -88,18 +100,18 @@ function SwitchDiodeMatrix_2_3_sw(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 
       buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
       obj.footprints[`SW${1 + xIndex * nrows + yIndex}`] = button = board.add(
-        SW_Hotswap_Kailh_MX,
+        SW_SPST_SKQG_WithoutStem,
         {
           translate: buttonPos, rotate: 0,
           id: `SW${1 + xIndex * nrows + yIndex}`
         })
 
       diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
-      obj[`D${1 + xIndex * nrows + yIndex}`] = diode = board.add(
+      obj[`D${2 + xIndex * nrows + yIndex}`] = diode = board.add(
         D_SOD_323,
         {
           translate: diodePos, rotate: 90,
-          id: `D${1 + xIndex * nrows + yIndex}`
+          id: `D${2 + xIndex * nrows + yIndex}`
         })
 
       // create stub wire for button -> column common line

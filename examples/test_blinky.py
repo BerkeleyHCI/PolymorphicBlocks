@@ -89,7 +89,7 @@ class TestBlinkyIncomplete(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
             ],
         )
@@ -119,7 +119,7 @@ class TestBlinkyInvalid(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
             ],
         )
@@ -153,7 +153,7 @@ class TestBlinkyRegulated(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
             ],
         )
@@ -197,7 +197,7 @@ class TestBlinkyRgb(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
             ],
@@ -245,7 +245,7 @@ class TestBlinkyImplicit(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
             ],
@@ -293,7 +293,7 @@ class TestBlinkyPinned(SimpleBoardTop):
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             class_refinements=[
-                (IoController, Stm32f103_48),
+                (IoController, Stm32f103),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
             ],
@@ -302,11 +302,11 @@ class TestBlinkyPinned(SimpleBoardTop):
                     ["mcu", "pin_assigns"],
                     [
                         "led=10",
-                        "sw_col_0=16",
-                        "sw_col_1=17",
-                        "sw_col_2=18",
-                        "sw_row_0=19",
-                        "sw_row_1=20",
+                        "cols_0=16",
+                        "cols_1=17",
+                        "rows_0=18",
+                        "rows_1=19",
+                        "rows_2=20",
                     ],
                 )
             ],
@@ -729,8 +729,7 @@ class BlinkyTestCase(unittest.TestCase):
             compile_board_inplace(TestBlinkyInvalid, False)
 
     def test_design_regulated(self) -> None:
-        with self.assertRaises(CompilerCheckError):
-            compile_board_inplace(TestBlinkyRegulated, False)
+        run_test_board(TestBlinkyRegulated)
 
     def test_design_rgb(self) -> None:
         run_test_board(TestBlinkyRgb)
