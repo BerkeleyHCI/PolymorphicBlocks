@@ -326,7 +326,7 @@
   (tstamps "02ae014f"))
 (comp (ref "SW1")
   (value "sw")
-  (footprint "Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX")
+  (footprint "PCM_Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX")
   (property (name "Sheetname") (value ""))
   (property (name "Sheetfile") (value ""))
   (property (name "edg_path") (value "sw.package"))
