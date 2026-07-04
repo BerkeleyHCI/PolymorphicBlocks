@@ -154,4 +154,21 @@ You may want to have a different switch cell for the odd rows, which flips the L
 _The tutorial only covers using the Sublayout plugin._
 _Some pre-routed blocks are provided in [examples/prerouted_blocks](examples/prerouted_blocks) which are Sublayout-compatible .kicad_pcb files._
 
+1. Select the STM32F103 footprint and run the Sublayout plugin.
+   ![sublayout_stm32.png](docs/kicad/sublayout_stm32.png)
 
+2. Press Restore and select the pre-routed block, here [examples/prerouted_blocks/Stm32f103.kicad_pcb](examples/prerouted_blocks/Stm32f103.kicad_pcb)
+   It will complete with warnings about missing footprints (R3, the USB pullup resistor, and J2, the programming header) which are not included in the prerouted block. 
+   However, it will place the rest of your components including the crystal oscillator.
+
+   ![pcb_stm32.png](docs/kicad/pcb_stm32.png)
+
+> Footprints are positioned exactly as they appear in the prerouted block, even if they are different footprints (e.g., using 1206 instead of 0603, or choosing a different crystal package).
+> The Sublayout plugin allows restoring a prerouted block with different footprints, but you will probably need to do some fix-up work.
+
+
+## Finishing the Board
+
+With the switch matrix and microcontroller done, that's a huge chunk of the work of laying out this board.
+
+You will still need to place and route the USB connector (including the CC pulldown resistors for passive power delivery negotiation), programming header, voltage regulator, and debugging LED.
