@@ -26,7 +26,7 @@ For hierarchical loading and replication, you have a few options:
   - This tutorial does not cover this.
   - This seems brittle to other traces overlapping the placement rule area and does not seem grouping-aware. 
 
-> Replicate Layout, Save/Restore Layout, and HierarchicalPCB will **NOT work**. 
+> ⚠️ Replicate Layout, Save/Restore Layout, and HierarchicalPCB will **NOT work**. 
 > These require and validate against schematic files, which are not generated in this HDL flow.
 
 
@@ -40,7 +40,7 @@ For hierarchical loading and replication, you have a few options:
    ![pcb_netlist.png](docs/kicad/pcb_netlist.png)
    > If you launched the PCB Editor from a KiCad project, this will not be on the toolbar (you will have "Update PCB from Schematic" instead).
    > You can still access it from the menu: File > Import > Netlist...
-3. Select the generated netlist file, likely `BlinkyExample/BlinkyExample.net` in whereever you ran your HDL script, then click Load and Test Netlist.
+3. Select the generated netlist file, likely `BlinkyExample/BlinkyExample.net` in wherever you ran your HDL script, then click Load and Test Netlist.
    It should load with no errors, but there may be some warnings about missing pins.
 
    ![pcb_netlist_dialog.png](docs/kicad/pcb_netlist_dialog.png)
@@ -60,8 +60,8 @@ For hierarchical loading and replication, you have a few options:
 The switch, diode, LED, and LED capacitor are all part of a SwitchCell hierarchical sheet in the netlist, which allows the layout to be replicated for each switch.
 
 Start by arranging all the switch footprints in a grid.
-This can be done by selecting all the switch footprints, then right-clicking and selecting Create From Selection > Create Array...
-Set the grid array size (here, 3x2 as consistent with the HDL parameters) and spacing (19.05mm typical for mechanical keyboard switch spacing).
+This can be done by selecting all the switch footprints, then right-clicking and selecting Create from Selection > Create Array...
+Set the grid array size (here, 2x3 as consistent with the HDL parameters) and spacing (19.05mm typical for mechanical keyboard switch spacing).
 Set Item Source to Arrange selection (move the footprints, instead of creating new ones), and the Grid Position to Source items remain in place.
 
 ![kicad_array.png](docs/kicad/kicad_array.png)
@@ -153,11 +153,12 @@ You may want to have a different switch cell for the odd rows, which flips the L
 
 _The tutorial only covers using the Sublayout plugin._
 _Some pre-routed blocks are provided in [examples/prerouted_blocks](examples/prerouted_blocks) which are Sublayout-compatible .kicad_pcb files._
+_You can open those files as boards to inspect the layout snippet._
 
 1. Select the STM32F103 footprint and run the Sublayout plugin.
    ![sublayout_stm32.png](docs/kicad/sublayout_stm32.png)
 
-2. Press Restore and select the pre-routed block, here [examples/prerouted_blocks/Stm32f103.kicad_pcb](examples/prerouted_blocks/Stm32f103.kicad_pcb)
+2. Press Restore and select the pre-routed block, here [examples/prerouted_blocks/Stm32f103.kicad_pcb](examples/prerouted_blocks/Stm32f103.kicad_pcb).
    It will complete with warnings about missing footprints (R3, the USB pullup resistor, and J2, the programming header) which are not included in the prerouted block. 
    However, it will place the rest of your components including the crystal oscillator.
 
@@ -165,6 +166,7 @@ _Some pre-routed blocks are provided in [examples/prerouted_blocks](examples/pre
 
 > Footprints are positioned exactly as they appear in the prerouted block, even if they are different footprints (e.g., using 1206 instead of 0603, or choosing a different crystal package).
 > The Sublayout plugin allows restoring a prerouted block with different footprints, but you will probably need to do some fix-up work.
+> In this case, consider it as a first-pass layout.
 
 
 ## Finishing the Board
