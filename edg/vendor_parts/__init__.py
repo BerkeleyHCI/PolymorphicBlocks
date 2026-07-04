@@ -3,7 +3,7 @@ from . import jlc
 from . import jlcparts
 from .generic import *
 
-from .TactileSwitches import SmtSwitch, SmtSwitchRa, KailhSocket
+from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed
 
 from .CeramicResonator_Cstne import Cstne
