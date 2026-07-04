@@ -182,6 +182,14 @@ self.connect(self.mcu.gpio.request("led"), self.led.signal)
 - `IoController`s have a `gnd` and `pwr` input power ports, and `gpio`, `adc`, `spi`, `i2c`, `uart`, and `usb` Vector IO ports which elements can be requested from.
 - Not all `IoController`s support all IO types, see each class's API for details.
 - The `request(...)` name is used in the `pin_assigns` refinement, with each entry specified as either `led=3` (by footprint pin number) or `led=GPIO4` (by IO name, see each class's API for details).
+- These request types are available, and their pin assignment entries are:
+
+  | Request Type            | Request Syntax                           | Pin Assignment Entries                                 |
+  |-------------------------|------------------------------------------|--------------------------------------------------------|
+  | Single Element          | `self.mcu.gpio.request("my_io")`         | `"my_io=3"`                                            |
+  | Vector                  | `self.mcu.gpio.request_vector("my_ios")` | `"my_ios_0=3", "my_ios_1=4", ...` (underscore-indexed) |
+  | Bundle (e.g., SPI, I2C) | `self.mcu.spi.request("my_spi")`         | `"my_spi.sck=3", "my_spi.mosi=4", ...` (dot-indexed)   |
+  | Unnamed                 | `self.mcu.gpio.request()`                | Arbitrarily named, don't rely on this                  |
 
 
 ### Mixins
@@ -281,6 +289,7 @@ class LedSubboard(SubboardBlock):
 - These use a `SubboardConnectorPair` block (like `Fpc050SocketTabPair`) to define the physical connector pair.
   - `SubboardConnectorPair` are similar to `PassiveConnector`, with `Passive` typed ports. 
     - Typed ports (like `Ground` or `VoltageSink`) internally contain a `Passive` `net` which can be attached to the connector's `Passive` ports.
+  - `self.Export(...)` creates a Port on the Block that is connected to (and takes on the type) of the inner port.
   - `self.export_tap` behaves similar to `self.connect`, but attaches the inner port to the outer port without propagating parameter values (non-physical attachment).
     Conceptually, the connector taps onto (or hangs off) the parameter-propagating Export connection.
 

@@ -296,7 +296,7 @@ If using the IDE: the compiled block diagram should look like:
 
 If you have KiCad installed, you can import the design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
-This example needs the Seeed Studio KiCad footprint library: https://github.com/Seeed-Studio/OPL_Kicad_Library
+The example-so-far needs the Seeed Studio KiCad footprint library: https://github.com/Seeed-Studio/OPL_Kicad_Library
 Don't worry about installing it, in a few sections this will be replaced with a standard STM32.
 
 In the KiCad standalone PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
@@ -627,7 +627,7 @@ While `IoController` automatically assigns IO pinnings according to the capabili
 However, it does define a `pin_assigns` parameter (as an array-of-strings) which allows specifying a pin number (on the footprint) or pin name (eg, `GPIO3` - format specific to each microcontroller) for each requested pin.
 
 We can also force parameter values through the refinements system, using `instance_values`.
-Let's arbitrarily choose pins 26-29 for the LEDs.
+Let's arbitrarily choose sequential pins:
 **Add a pin assignment for the STM32 in the refinements section**:
 ```diff
   class BlinkyExample(SimpleBoardTop):
@@ -649,9 +649,12 @@ Let's arbitrarily choose pins 26-29 for the LEDs.
               ])
 ```
 
+Each pin assignment entry is specified as `pin=num`.
+`pin` is the name of the requested pin (the `request(...)` argument for single element requests, or the argument plus a `_index` for vector requests).
+
 
 ## Next: Hierarchical Layout
-Continue to the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for using the hierarchical netlist to help with reuse in board layout.
+Continue to the [hierarchical layout tutorial](getting_started_hierarchy_layout.md) for importing the generated netlist into KiCad PCB layout and using the hierarchical structure to speed up layout through reuse.
 
 Or, continue to [the library block definition tutorial using KiCad schematic import](getting_started_schimport.md).
 

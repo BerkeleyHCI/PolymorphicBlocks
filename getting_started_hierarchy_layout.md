@@ -18,7 +18,7 @@ For hierarchical loading and replication, you have a few options:
 
   ![Sublayout](docs/kicad/pcm_sublayout.png)
   - This was designed to work with netlist-based flows and automatically detects grouping based on hierarchy data in the netlist.  
-  - This works with KiCad 10+, but zone replication is broken.
+  - This works with KiCad 10+, but zones will not be replicated.
 - Use KiCad's native design blocks feature (KiCad 10+).
   - This tutorial covers hierarchical replication, but hierarchical loading is not covered.
   - The design blocks flow is heavyweight (requires local library creation) and (at least for netlist driven flows, like this one) requires you to group footprints within a block manually.
