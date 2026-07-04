@@ -15,6 +15,7 @@ The example uses the Keyswitch Kicad Library, available on the KiCad Plugin and 
 For hierarchical loading and replication, you have a few options:
 
 - Use the Sublayout plugin (KiCad 8+), also available on the KiCad Plugin and Content Manager.
+
   ![Sublayout](docs/kicad/pcm_sublayout.png)
   - This was designed to work with netlist-based flows and automatically detects grouping based on hierarchy data in the netlist.  
   - This works with KiCad 10+, but zone replication is broken.
@@ -41,6 +42,7 @@ For hierarchical loading and replication, you have a few options:
    > You can still access it from the menu: File > Import > Netlist...
 3. Select the generated netlist file, likely `BlinkyExample/BlinkyExample.net` in whereever you ran your HDL script, then click Load and Test Netlist.
    It should load with no errors, but there may be some warnings about missing pins.
+
    ![pcb_netlist_dialog.png](docs/kicad/pcb_netlist_dialog.png)
 
    > In KiCad 10, uncheck "Group footprints based on symbol group".
@@ -48,6 +50,7 @@ For hierarchical loading and replication, you have a few options:
 
 4. Click "Update PCB" to place the components on the board.
    Drop them anywhere for now.
+
    ![pcb_initial.png](docs/kicad/pcb_initial.png)
    - This may give you error(s) about missing pins, which you can ignore.
 
@@ -57,7 +60,6 @@ For hierarchical loading and replication, you have a few options:
 The switch, diode, LED, and LED capacitor are all part of a SwitchCell hierarchical sheet in the netlist, which allows the layout to be replicated for each switch.
 
 Start by arranging all the switch footprints in a grid.
-
 This can be done by selecting all the switch footprints, then right-clicking and selecting Create From Selection > Create Array...
 Set the grid array size (here, 3x2 as consistent with the HDL parameters) and spacing (19.05mm typical for mechanical keyboard switch spacing).
 Set Item Source to Arrange selection (move the footprints, instead of creating new ones), and the Grid Position to Source items remain in place.
@@ -69,6 +71,8 @@ Set Item Source to Arrange selection (move the footprints, instead of creating n
 You may need to swap components to get the right ordering.
 
 ![pcb_switcharray_ordered.png](docs/kicad/pcb_switcharray_ordered.png)
+
+> You may also use external plugins to arrange the footprints.
 
 Then, lay out a single switch cell, including the switch, diode, LED, LED capacitor, and traces.
 Here is an example layout:
@@ -90,30 +94,64 @@ Group the switch cell footprints: select them, right click, Grouping > Group Ite
 ### Option 1: Sublayout Plugin
 
 1. Enter into the switch cell footprint group you just created and select the switch.
+
    ![pcb_switchcell_anchor.png](docs/kicad/pcb_switchcell_anchor.png)
+
    The group defines the objects to replicate, while the selected footprint defines the _anchor footprint_, the matching component in the other sheets that other footprints are placed around.
 
 2. Run the Sublayout plugin and select all the instances (bottom list box).
-   ![sublayout_selected.png](docs/kicad/sublayout_selected.png)
-3. Press Replicate, and the plugin will replicate the layout, including footprint positions, traces, and groupings.
-   ![pcb_switchmatrix_replicated.png](docs/kicad/pcb_switchmatrix_replicated.png)
 
+   ![sublayout_selected.png](docs/kicad/sublayout_selected.png)
+
+   The Sublayout plugin automatically detects all instances of the same hierarchical sheet (HDL block, by name) and lists them.
+
+3. Press Replicate, and the plugin will replicate the layout, including footprint positions, traces, and groupings.
+
+   ![pcb_switchmatrix_replicated.png](docs/kicad/pcb_switchmatrix_replicated.png)
 
 ### Option 2: KiCad Design Blocks
 
 _KiCad 10+ required._
 
 1. Open the Design Blocks panel: main menu > View > Panels > Design Blocks.
+
    ![kicad_designblocks_empty.png](docs/kicad/kicad_designblocks_empty.png)
+2. If you don't already have a testing library: create a new library.
+   Right click > New Library, and select a location for it.
+
+   ![kicad_designblocks_newlibrary.png](docs/kicad/kicad_designblocks_newlibrary.png)
+3. Select the switch cell footprint group, and save it.
+   Right click on the design blocks library, > Save Selection as Design Block...
+
+   ![kicad_designblocks_save.png](docs/kicad/kicad_designblocks_save.png)
+
+   It should show up as a new entry in the library:
+
+   ![kicad_designblocks_switchcell.png](docs/kicad/kicad_designblocks_switchcell.png)
+4. If you inspect the group properties of the reference layout (select group, `E` hotkey), you'll see the Library link.
+   This links the group to the design block.
+
+   ![kicad_designblocks_refprop.png](docs/kicad/kicad_designblocks_refprop.png)
+5. Group the other switch cells footprints (switches, diodes, LEDs, capacitors), one group per switch cell instance.
+   For each group, set the library link to the same as the reference group.
+
+   ![kicad_designblocks_newgroup.png](docs/kicad/kicad_designblocks_newgroup.png)
+6. To replicate: right-click the group and select Apply Design Block Layout.
+
+   ![kicad_designblocks_replicate.png](docs/kicad/kicad_designblocks_replicate.png)
+
+   > This may shift the position of footprints and you may need to reposition the group.
+7. Move the switch cell groups into the right positions.
 
 ### Snaking
 
 The LEDs are connected in a snaking pattern, which means every other row reverses the LED connection order.
-You may want to have a different switch cell for the odd rows, which flips the LED rotation.
+You may want to have a different switch cell for the odd rows, which flips the LED rotation so data flows from right-to-left.
 
 
-## Loading a Microcontroller Layout
+## Loading a Stock Microcontroller Layout
 
 _The tutorial only covers using the Sublayout plugin._
-_It may be possible to create a design block library using KiCad 10+, but that is a more heavyweight flow and is not covered._ 
+_Some pre-routed blocks are provided in [examples/prerouted_blocks](examples/prerouted_blocks) which are Sublayout-compatible .kicad_pcb files._
+
 
