@@ -1,3 +1,4 @@
+import warnings
 from typing import Any
 
 from typing_extensions import override
@@ -23,8 +24,15 @@ class SelectorArea(PartsTablePart):
     2512    R=29.3376           D=29.3376
     """
 
-    def __init__(self, *args: Any, footprint_area: RangeLike = RangeExpr.ALL, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        filter_area: RangeLike = RangeExpr.ALL,
+        footprint_area: RangeLike = RangeExpr.ALL,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
+        self.filter_area = self.ArgParameter(filter_area)
         self.footprint_area = self.ArgParameter(footprint_area)
 
     @classmethod
@@ -38,12 +46,19 @@ class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.footprint_area)
+        self.generator_param(self.filter_area, self.footprint_area)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if self.get(self.filter_area) != Range.all():
+            warnings.warn(f"area replaced with filter_area", DeprecationWarning)
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
+        area = self.get(self.filter_area).intersect(self.get(self.footprint_area))
         return super()._row_filter(row) and (
-            Range.exact(FootprintDataTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(self.get(self.footprint_area))
+            Range.exact(FootprintDataTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(area)
         )
 
     @classmethod

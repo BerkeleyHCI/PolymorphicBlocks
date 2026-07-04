@@ -1,3 +1,4 @@
+import warnings
 from abc import abstractmethod
 from typing import Optional, Union, Any
 
@@ -41,9 +42,17 @@ class PartsTablePart(Block):
     """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
     as well as matching parts."""
 
-    def __init__(self, *args: Any, part: StringLike = "", excluded_parts: ArrayStringLike = [], **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        filter_parts: ArrayStringLike = [],
+        excluded_parts: ArrayStringLike = [],
+        part: StringLike = "",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self.part = self.ArgParameter(part)
+        self.filter_parts = self.ArgParameter(filter_parts)
+        self.part = self.ArgParameter(part)  # deprecated
         self.excluded_parts = self.ArgParameter(excluded_parts)
         self.actual_part = self.Parameter(StringExpr())
         self.matching_parts = self.Parameter(ArrayStringExpr())
@@ -56,7 +65,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.part)
+        self.generator_param(self.filter_parts, self.part)
         self.generator_param(self.excluded_parts)
 
     def _row_filter(self, row: PartsTableRow) -> bool:
@@ -64,8 +73,11 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
         Only called within generate(), so has access to GeneratorParam.get().
         Subclasses should chain this by and-ing with a super() call."""
         part = self.get(self.part)
+        filter_parts = self.get(self.filter_parts)
+        if part:
+            filter_parts.append(part)
         excluded_parts = self.get(self.excluded_parts)
-        return ((not part) or (part == row[self.PART_NUMBER_COL])) and (
+        return ((not filter_parts) or (row[self.PART_NUMBER_COL] in filter_parts)) and (
             (not excluded_parts) or (row[self.PART_NUMBER_COL] not in excluded_parts)
         )
 
@@ -88,6 +100,11 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
     @override
     def generate(self) -> None:
+        super().generate()
+
+        if self.get(self.part):
+            warnings.warn(f"part replaced with filter_parts taking an array", DeprecationWarning)
+
         matching_table = self._get_table().filter(lambda row: self._row_filter(row))
         postprocessed_table = self._table_postprocess(matching_table)
         postprocessed_table = postprocessed_table.sort_by(self._row_sort_by)
@@ -101,9 +118,12 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 class SelectorFootprint(PartsTablePart):
     """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
 
-    def __init__(self, *args: Any, footprint_spec: StringLike = "", **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, filter_footprints: ArrayStringLike = [], footprint_spec: StringLike = "", **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
+        self.filter_footprints = self.ArgParameter(filter_footprints)  # actual_footprint left to the actual footprint
+        self.footprint_spec = self.ArgParameter(footprint_spec)  # deprecated, named because self.footprint taken
 
 
 @non_library
@@ -116,13 +136,21 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.footprint_spec)
+        self.generator_param(self.filter_footprints, self.footprint_spec)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if self.get(self.footprint_spec):
+            warnings.warn(f"footprint_spec replaced with filter_footprints taking an array", DeprecationWarning)
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        return super()._row_filter(row) and (
-            (not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT]
-        )
+        footprint_spec = self.get(self.footprint_spec)
+        filter_footprints = self.get(self.filter_footprints)
+        if footprint_spec:
+            filter_footprints.append(footprint_spec)
+        return super()._row_filter(row) and ((not filter_footprints or row[self.KICAD_FOOTPRINT] in filter_footprints))
 
 
 @non_library
