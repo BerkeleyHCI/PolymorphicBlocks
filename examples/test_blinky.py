@@ -199,7 +199,7 @@ class TestBlinkyRgb(SimpleBoardTop):
             class_refinements=[
                 (IoController, Stm32f103),
                 (Switch, KailhSocket),
-                (Neopixel, Sk6812Mini_E),
+                (Neopixel, Ws2812c_2020),
             ],
         )
 
@@ -247,7 +247,7 @@ class TestBlinkyImplicit(SimpleBoardTop):
             class_refinements=[
                 (IoController, Stm32f103),
                 (Switch, KailhSocket),
-                (Neopixel, Sk6812Mini_E),
+                (Neopixel, Ws2812c_2020),
             ],
         )
 
@@ -295,7 +295,7 @@ class TestBlinkyPinned(SimpleBoardTop):
             class_refinements=[
                 (IoController, Stm32f103),
                 (Switch, KailhSocket),
-                (Neopixel, Sk6812Mini_E),
+                (Neopixel, Ws2812c_2020),
             ],
             instance_values=[
                 (

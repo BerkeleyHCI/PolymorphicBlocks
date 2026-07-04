@@ -536,7 +536,7 @@ This is supported through **mixins**.
             class_refinements=[
                 (IoController, Stm32f103),
                 (Switch, KailhSocket),
-+               (Neopixel, Sk6812Mini_E),
++               (Neopixel, Ws2812c_2020),
             ],
         )
 ```
@@ -551,7 +551,8 @@ We have also added a buffer (`L74Ahct1g125`) to shift the 3.3v logic level of th
 The RGBs datasheet defines their input thresholds as incompatible with 3.3v and this will generate ERC errors without the buffer.
 Go ahead and try it!
 
-We also add a refinement to use the SK6812-Mini-E, a through-board LED used on mechanical keyboards.
+We also add a refinement to use the `Ws2812c_2020`, an 0808-size addressable RGB LED.
+The `SK6812-Mini-E`, a through-board addressable LED commonly used on mechanical keyboards, is also part of the HDL library, but requires the [examples footprint library](examples/edg.pretty). 
 
 
 ## Implicit Connections

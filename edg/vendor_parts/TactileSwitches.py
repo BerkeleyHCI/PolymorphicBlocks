@@ -40,11 +40,8 @@ class SmtSwitchRa(TactileSwitch, FootprintBlock):
 
 class KailhSocket(MechanicalKeyswitch, FootprintBlock):
     """Kailh mechanical keyboard hotswap socket.
-    Requires an external library, Keyswitch Kicad Library, can be installed from the
-    KiCad Plugin and Content Manager, or from GitHub https://github.com/perigoso/keyswitch-kicad-library
-    Even after the content manager install, it must also be manually added to the footprint table:
-    Name: Switch_Keyboard_Hotswap_Kailh
-    Location: ${KICAD6_3RD_PARTY}/footprints/com_github_perigoso_keyswitch-kicad-library/Switch_Keyboard_Hotswap_Kailh.pretty
+    Requires an external library, Keyswitch Kicad Library, available on the KiCad Plugin and Content Manager (PCM).
+    This footprint uses the path when installed via the PCM.
     """
 
     @override
@@ -53,7 +50,7 @@ class KailhSocket(MechanicalKeyswitch, FootprintBlock):
 
         self.footprint(
             "SW",
-            "Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX",
+            "PCM_Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX",
             {
                 "1": self.sw,
                 "2": self.com,
