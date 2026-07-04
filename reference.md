@@ -122,6 +122,7 @@ with self.implicit_connect(
 #### .connected(...)
 
 Some (but far from all) blocks define a `.connected(...)` as a shorthand connection method, see each class's API for details.
+These return the block itself, allowing it to be assigned to a name.
 
 ```python
 self.tp_gnd = self.Block(GroundTestPoint()).connected(self.gnd)
@@ -290,7 +291,7 @@ Some of the electrical modeling may have overly strict limits or overly broad op
 
 ```python
 class_refinements=[
-    (Neopixel, ["pwr", "voltage_limits"], Range(3.0, 5.5)),  # mostly works fine at 3.3v
+    (Neopixel, ["pwr", "voltage_limits"], Range(3.0, 5.5)),  # kinda works-ish at 3.3v
 ]
 ```
 
