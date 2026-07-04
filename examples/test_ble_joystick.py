@@ -254,15 +254,6 @@ class BleJoystick(JlcBoardTop):
                 (["btns", "ioe"], Ch32v003),
                 (["reg_3v3"], Xc6206p),
                 (["bumper_sw", "package"], SmtSwitchRa),
-                # TODO debug why class refinements not working
-                (["btns", "sw[0]", "package"], SmtSwitch),
-                (["btns", "sw[1]", "package"], SmtSwitch),
-                (["btns", "sw[2]", "package"], SmtSwitch),
-                (["btns", "sw[3]", "package"], SmtSwitch),
-                (["btns", "sw[4]", "package"], SmtSwitch),
-                (["btns", "sw[5]", "package"], SmtSwitch),
-                (["btns", "sw[6]", "package"], SmtSwitch),
-                (["btns", "sw[7]", "package"], SmtSwitch),
             ],
             instance_values=[
                 (["refdes_prefix"], "J"),  # unique refdes for panelization
@@ -310,7 +301,7 @@ class BleJoystick(JlcBoardTop):
                 (TagConnect, TagConnectNonLegged),
                 (PassiveConnector, PinHeader2mm),
                 (Neopixel, Ws2812c_2020),
-                (TactileSwitch, SmtSwitch),
+                (Switch, SmtSwitch),
             ],
             class_values=[
                 (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),

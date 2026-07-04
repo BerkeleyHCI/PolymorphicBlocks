@@ -16,113 +16,191 @@ class TestLed(SimpleBoardTop):
         self.src = self.Block(DummyDigitalSource()).connected(self.led.signal)
 
 
+class TestBlinkyEmpty(SimpleBoardTop):
+    pass
+
+
 class TestBlinkyBasic(SimpleBoardTop):
     """The simplest circuit, a microcontroller dev board with a LED.
     This also tests the dev board wrapper concept."""
 
     @override
     def contents(self) -> None:
+        super().contents()
         self.mcu = self.Block(Xiao_Rp2040())
         self.led = self.Block(IndicatorLed())
-
-        self.connect(self.led.signal, self.mcu.gpio.request())
         self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
 
 
-class TestBlinkyEmpty(SimpleBoardTop):
-    pass
-
-
-class TestBlinkyBasicBattery(SimpleBoardTop):
-    """The simplest circuit, a microcontroller dev board with a LED, powered from a battery"""
+class TestBlinkySwitchMatrix(SimpleBoardTop):
+    """The simplest circuit, a microcontroller dev board with a LED.
+    This also tests the dev board wrapper concept."""
 
     @override
     def contents(self) -> None:
-        self.bat = self.Block(AaBatteryStack(4))
+        super().contents()
         self.mcu = self.Block(Xiao_Rp2040())
         self.led = self.Block(IndicatorLed())
-
-        self.connect(self.mcu.pwr_vin, self.bat.pwr)
-        self.connect(self.mcu.gnd, self.bat.gnd)
-        self.connect(self.led.signal, self.mcu.gpio.request())
         self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+
+class TestBlinkySwitchMatrixRefined(SimpleBoardTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.mcu = self.Block(Xiao_Rp2040())
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Switch, KailhSocket),
+            ],
+        )
 
 
 class TestBlinkyIncomplete(SimpleBoardTop):
     @override
     def contents(self) -> None:
         super().contents()
-        self.usb = self.Block(UsbCReceptacle())
-        self.mcu = self.Block(Stm32f103_48())
+        self.mcu = self.Block(IoController())
         self.led = self.Block(IndicatorLed())
-        self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
-        self.connect(self.usb.pwr, self.mcu.pwr)
+        self.connect(self.mcu.gnd, self.led.gnd)
         self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+            ],
+        )
+
+
+class TestBlinkyInvalid(SimpleBoardTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.usb = self.Block(UsbCReceptacle())
+
+        self.mcu = self.Block(IoController())
+        self.connect(self.usb.gnd, self.mcu.gnd)
+        self.connect(self.usb.pwr, self.mcu.pwr)
+        self.connect(self.usb.usb, self.mcu.usb.request("usb"))
+
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+            ],
+        )
 
 
 class TestBlinkyRegulated(SimpleBoardTop):
     @override
     def contents(self) -> None:
         super().contents()
+
         self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-        self.mcu = self.Block(Stm32f103_48())
-        self.led = self.Block(IndicatorLed())
-        self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
+
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
         self.connect(self.usb.pwr, self.reg.pwr_in)
+
+        self.mcu = self.Block(IoController())
+        self.connect(self.usb.gnd, self.mcu.gnd)
         self.connect(self.reg.pwr_out, self.mcu.pwr)
+        self.connect(self.usb.usb, self.mcu.usb.request("usb"))
+
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
         self.connect(self.mcu.gpio.request("led"), self.led.signal)
 
-
-class TestBlinkyComplete(SimpleBoardTop):
-    @override
-    def contents(self) -> None:
-        super().contents()
-        self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-        self.mcu = self.Block(Stm32f103_48())
-        self.led = self.Block(IndicatorLed())
-        self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
-        self.connect(self.usb.pwr, self.reg.pwr_in)
-        self.connect(self.reg.pwr_out, self.mcu.pwr)
-        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg"], Tps561201),
-            ]
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+            ],
         )
 
 
-class TestBlinkyExpanded(SimpleBoardTop):
+class TestBlinkyRgb(SimpleBoardTop):
     @override
     def contents(self) -> None:
         super().contents()
+
         self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-        self.mcu = self.Block(Stm32f103_48())
-        self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd)
+
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
         self.connect(self.usb.pwr, self.reg.pwr_in)
+
+        self.mcu = self.Block(IoController())
+        self.connect(self.usb.gnd, self.mcu.gnd)
         self.connect(self.reg.pwr_out, self.mcu.pwr)
+        self.connect(self.usb.usb, self.mcu.usb.request("usb"))
 
-        self.sw = self.Block(DigitalSwitch())
-        self.connect(self.mcu.gpio.request("sw"), self.sw.out)
-        self.connect(self.usb.gnd, self.sw.gnd)
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
 
-        self.led = ElementDict[IndicatorLed]()
-        for i in range(4):
-            self.led[i] = self.Block(IndicatorLed())
-            self.connect(self.mcu.gpio.request(f"led{i}"), self.led[i].signal)
-            self.connect(self.usb.gnd, self.led[i].gnd)
+        self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+        sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
+        self.connect(self.usb.gnd, sw_npx.npx_gnd)
+        self.connect(self.usb.pwr, sw_npx.npx_pwr)
+
+        self.npx_shift = self.Block(L74Ahct1g125())
+        self.connect(self.usb.gnd, self.npx_shift.gnd)
+        self.connect(self.usb.pwr, self.npx_shift.pwr)
+        self.connect(self.mcu.gpio.request("npx"), self.npx_shift.input)
+        self.connect(self.npx_shift.output, sw_npx.npx_din)
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg"], Tps561201),
-            ]
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+                (Neopixel, Ws2812c_2020),
+            ],
         )
 
 
@@ -130,70 +208,10 @@ class TestBlinkyImplicit(SimpleBoardTop):
     @override
     def contents(self) -> None:
         super().contents()
+
         self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-        self.connect(self.usb.gnd, self.reg.gnd)
-        self.connect(self.usb.pwr, self.reg.pwr_in)
 
-        with self.implicit_connect(
-            ImplicitConnect(self.reg.pwr_out, [Power]),
-            ImplicitConnect(self.reg.gnd, [Common]),
-        ) as imp:
-            self.mcu = imp.Block(Stm32f103_48())
-
-            self.sw = imp.Block(DigitalSwitch())
-            self.connect(self.mcu.gpio.request("sw"), self.sw.out)
-
-            self.led = ElementDict[IndicatorLed]()
-            for i in range(4):
-                self.led[i] = imp.Block(IndicatorLed())
-                self.connect(self.mcu.gpio.request(f"led{i}"), self.led[i].signal)
-
-    @override
-    def refinements(self) -> Refinements:
-        return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg"], Tps561201),
-            ]
-        )
-
-
-class TestBlinkyChain(SimpleBoardTop):
-    @override
-    def contents(self) -> None:
-        super().contents()
-        self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
-        self.connect(self.usb.gnd, self.reg.gnd)
-        self.connect(self.usb.pwr, self.reg.pwr_in)
-
-        with self.implicit_connect(
-            ImplicitConnect(self.reg.pwr_out, [Power]),
-            ImplicitConnect(self.reg.gnd, [Common]),
-        ) as imp:
-            self.mcu = imp.Block(Stm32f103_48())
-
-            (self.sw,), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request("sw"))
-
-            self.led = ElementDict[IndicatorLed]()
-            for i in range(4):
-                (self.led[i],), _ = self.chain(self.mcu.gpio.request(f"led{i}"), imp.Block(IndicatorLed()))
-
-    @override
-    def refinements(self) -> Refinements:
-        return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg"], Tps561201),
-            ]
-        )
-
-
-class TestBlinkyMicro(SimpleBoardTop):
-    @override
-    def contents(self) -> None:
-        super().contents()
-        self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
         self.connect(self.usb.gnd, self.reg.gnd)
         self.connect(self.usb.pwr, self.reg.pwr_in)
 
@@ -202,28 +220,93 @@ class TestBlinkyMicro(SimpleBoardTop):
             ImplicitConnect(self.reg.gnd, [Common]),
         ) as imp:
             self.mcu = imp.Block(IoController())
+            self.connect(self.usb.usb, self.mcu.usb.request("usb"))
 
-            (self.sw,), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request("sw"))
+            self.led = imp.Block(IndicatorLed())
+            self.connect(self.mcu.gpio.request("led"), self.led.signal)
 
-            self.led = ElementDict[IndicatorLed]()
-            for i in range(4):
-                (self.led[i],), _ = self.chain(self.mcu.gpio.request(f"led{i}"), imp.Block(IndicatorLed()))
+            self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+        with self.implicit_connect(
+            ImplicitConnect(self.usb.pwr, [Power]),
+            ImplicitConnect(self.usb.gnd, [Common]),
+        ) as imp:
+            sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
+            self.connect(self.usb.gnd, sw_npx.npx_gnd)
+            self.connect(self.usb.pwr, sw_npx.npx_pwr)
+
+            self.npx_shift = imp.Block(L74Ahct1g125())
+            self.connect(self.mcu.gpio.request("npx"), self.npx_shift.input)
+            self.connect(self.npx_shift.output, sw_npx.npx_din)
 
     @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
-            instance_refinements=[
-                (["reg"], Tps561201),
-                (["mcu"], Esp32_Wroom_32),
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+                (Neopixel, Ws2812c_2020),
+            ],
+        )
+
+
+class TestBlinkyPinned(SimpleBoardTop):
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.usb = self.Block(UsbCReceptacle())
+
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
+        self.connect(self.usb.pwr, self.reg.pwr_in)
+
+        with self.implicit_connect(
+            ImplicitConnect(self.reg.pwr_out, [Power]),
+            ImplicitConnect(self.reg.gnd, [Common]),
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.connect(self.usb.usb, self.mcu.usb.request("usb"))
+
+            self.led = imp.Block(IndicatorLed())
+            self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+            self.sw = self.Block(SwitchMatrix(ncols=2, nrows=3))
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector("cols"))
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector("rows"))
+
+        with self.implicit_connect(
+            ImplicitConnect(self.usb.pwr, [Power]),
+            ImplicitConnect(self.usb.gnd, [Common]),
+        ) as imp:
+            sw_npx = self.sw.with_mixin(SwitchMatrixNeopixels(npx_order="row_snake"))
+            self.connect(self.usb.gnd, sw_npx.npx_gnd)
+            self.connect(self.usb.pwr, sw_npx.npx_pwr)
+
+            self.npx_shift = imp.Block(L74Ahct1g125())
+            self.connect(self.mcu.gpio.request("npx"), self.npx_shift.input)
+            self.connect(self.npx_shift.output, sw_npx.npx_din)
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Stm32f103),
+                (Switch, KailhSocket),
+                (Neopixel, Ws2812c_2020),
             ],
             instance_values=[
                 (
                     ["mcu", "pin_assigns"],
                     [
-                        "led0=26",
-                        "led1=27",
-                        "led2=28",
-                        "led3=29",
+                        "led=10",
+                        "cols_0=16",
+                        "cols_1=17",
+                        "rows_0=18",
+                        "rows_1=19",
+                        "rows_2=20",
                     ],
                 )
             ],
@@ -625,37 +708,37 @@ class BlinkyTestCase(unittest.TestCase):
     def test_led(self) -> None:
         run_test_board(TestLed)
 
-    def test_design_basic(self) -> None:
-        run_test_board(TestBlinkyBasic)  # generate this netlist as a test
-
     def test_design_empty(self) -> None:
         run_test_board(TestBlinkyEmpty)
 
-    def test_design_battery(self) -> None:
-        run_test_board(TestBlinkyBasicBattery)
+    def test_design_basic(self) -> None:
+        run_test_board(TestBlinkyBasic)
+
+    def test_design_switchmatrix(self) -> None:
+        run_test_board(TestBlinkySwitchMatrix)
+
+    def test_design_switchmatrix_refined(self) -> None:
+        run_test_board(TestBlinkySwitchMatrixRefined)
 
     def test_design_incomplete(self) -> None:
         with self.assertRaises(CompilerCheckError):
             compile_board_inplace(TestBlinkyIncomplete, False)
 
-    def test_design_regulated(self) -> None:
+    def test_design_invalid(self) -> None:
         with self.assertRaises(CompilerCheckError):
-            compile_board_inplace(TestBlinkyRegulated, False)
+            compile_board_inplace(TestBlinkyInvalid, False)
 
-    def test_design_complete(self) -> None:
-        run_test_board(TestBlinkyComplete)
+    def test_design_regulated(self) -> None:
+        run_test_board(TestBlinkyRegulated)
 
-    def test_design_expnaded(self) -> None:
-        run_test_board(TestBlinkyExpanded)
+    def test_design_rgb(self) -> None:
+        run_test_board(TestBlinkyRgb)
 
     def test_design_implicit(self) -> None:
         run_test_board(TestBlinkyImplicit)
 
-    def test_design_chain(self) -> None:
-        run_test_board(TestBlinkyChain)  # generate this netlist as a test
-
-    def test_design_micro(self) -> None:
-        run_test_board(TestBlinkyMicro)
+    def test_design_pinned(self) -> None:
+        run_test_board(TestBlinkyPinned)
 
     def test_design_library(self) -> None:
         run_test_board(TestBlinkyWithLibrary)

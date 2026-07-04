@@ -1,5 +1,6 @@
 from typing import *
 
+from deprecated import deprecated
 from typing_extensions import override
 
 from ...circuits import *
@@ -255,7 +256,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
         self.connect(self.usb.dp, self.dp.b)
 
 
-class Stm32f103_48(
+class Stm32f103(
     Resettable,
     IoControllerI2cTarget,
     IoControllerCan,
@@ -323,3 +324,8 @@ class Stm32f103_48(
             or len(self.get(self.usb.requested())) > 0
             or super()._crystal_required()
         )
+
+
+@deprecated("Use Stm32f103 instead of Stm32f103_48")
+class Stm32f103_48(Stm32f103):
+    pass

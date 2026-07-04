@@ -10,6 +10,10 @@ _In this section, we build a graphical-schematic-defined HX711-based load cell a
 > Schematic-defined blocks can make use of HDL library blocks (as schematic components), including all the automation (like automatic parts selection from a parts table) those libraries provide. 
 
 
+### Dragons be Ahead
+Library block definition is a less polished and more complex experience than building boards using existing library blocks.
+
+
 ## Schematic Definition
 **Start by drawing the application schematic for the HX711**, as described in Figure 4 of its [datasheet](https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf).
 

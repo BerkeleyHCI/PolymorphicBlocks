@@ -64,7 +64,7 @@ class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, 
         self.assign(self.actual_basic_part, False)
 
 
-class Pe4259(Block):
+class Pe4259(InternalSubcircuit, Block):
     """RF switch between 10 MHz to 3000 MHz, 1.8-3.3v input.
     Requires all RF pins be held at 0v or are DC-blocked with a series cap.
     TODO: perhaps a RfSwitch base class? maybe some relation to AnalogSwitch? (though not valid at DC)

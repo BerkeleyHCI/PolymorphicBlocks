@@ -1,0 +1,260 @@
+const board = new PCB();
+
+const sw = SwitchDiodeMatrixNeopixels_2_3_sw(pt(0.039, 0.039))
+// usb.conn
+const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
+  translate: pt(2.252, 0.165), rotate: 0,
+  id: 'J1'
+})
+// usb.cc_pull.cc1
+const R1 = board.add(R_0603_1608Metric, {
+  translate: pt(2.101, 0.420), rotate: 0,
+  id: 'R1'
+})
+// usb.cc_pull.cc2
+const R2 = board.add(R_0603_1608Metric, {
+  translate: pt(2.257, 0.420), rotate: 0,
+  id: 'R2'
+})
+// reg.ic
+const U1 = board.add(SOT_223_3_TabPin2, {
+  translate: pt(1.291, 0.935), rotate: 0,
+  id: 'U1'
+})
+// reg.in_cap.cap
+const C1 = board.add(C_0603_1608Metric, {
+  translate: pt(1.397, 1.145), rotate: 0,
+  id: 'C1'
+})
+// reg.out_cap.cap
+const C2 = board.add(C_1206_3216Metric, {
+  translate: pt(1.209, 1.162), rotate: 0,
+  id: 'C2'
+})
+// mcu.ic
+const U2 = board.add(LQFP_48_7x7mm_P0_5mm, {
+  translate: pt(1.321, 0.203), rotate: 0,
+  id: 'U2'
+})
+// mcu.pwr_cap[0].cap
+const C3 = board.add(C_0805_2012Metric, {
+  translate: pt(1.390, 0.483), rotate: 0,
+  id: 'C3'
+})
+// mcu.pwr_cap[1].cap
+const C4 = board.add(C_0603_1608Metric, {
+  translate: pt(1.554, 0.474), rotate: 0,
+  id: 'C4'
+})
+// mcu.pwr_cap[2].cap
+const C5 = board.add(C_0603_1608Metric, {
+  translate: pt(1.710, 0.474), rotate: 0,
+  id: 'C5'
+})
+// mcu.pwr_cap[3].cap
+const C6 = board.add(C_0603_1608Metric, {
+  translate: pt(1.866, 0.474), rotate: 0,
+  id: 'C6'
+})
+// mcu.vdda_cap_0.cap
+const C7 = board.add(C_0603_1608Metric, {
+  translate: pt(1.176, 0.647), rotate: 0,
+  id: 'C7'
+})
+// mcu.vdda_cap_1.cap
+const C8 = board.add(C_0603_1608Metric, {
+  translate: pt(1.332, 0.647), rotate: 0,
+  id: 'C8'
+})
+// mcu.crystal.package
+const X1 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
+  translate: pt(1.201, 0.512), rotate: 0,
+  id: 'X1'
+})
+// mcu.crystal.cap_a
+const C9 = board.add(C_0603_1608Metric, {
+  translate: pt(1.488, 0.647), rotate: 0,
+  id: 'C9'
+})
+// mcu.crystal.cap_b
+const C10 = board.add(C_0603_1608Metric, {
+  translate: pt(1.644, 0.647), rotate: 0,
+  id: 'C10'
+})
+// mcu.swd.conn
+const J2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
+  translate: pt(1.732, 0.146), rotate: 0,
+  id: 'J2'
+})
+// mcu.usb_pull.dp
+const R3 = board.add(R_0603_1608Metric, {
+  translate: pt(1.800, 0.647), rotate: 0,
+  id: 'R3'
+})
+// led.package
+const D1 = board.add(LED_0603_1608Metric, {
+  translate: pt(1.921, 0.823), rotate: 0,
+  id: 'D1'
+})
+// led.res
+const R4 = board.add(R_0603_1608Metric, {
+  translate: pt(1.920, 0.920), rotate: 0,
+  id: 'R4'
+})
+// npx_shift.ic
+const U3 = board.add(SOT_23_5, {
+  translate: pt(1.663, 0.861), rotate: 0,
+  id: 'U3'
+})
+// npx_shift.vdd_cap.cap
+const C17 = board.add(C_0603_1608Metric, {
+  translate: pt(1.641, 0.996), rotate: 0,
+  id: 'C17'
+})
+
+board.setNetlist([
+  {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U1", "3"], ["C1", "1"], ["D3", "4"], ["C11", "1"], ["D5", "4"], ["C12", "1"], ["D7", "4"], ["C13", "1"], ["D9", "4"], ["C14", "1"], ["D11", "4"], ["C15", "1"], ["D13", "4"], ["C16", "1"], ["U3", "5"], ["C17", "1"]]},
+  {name: "usb.gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "1"], ["C1", "2"], ["C2", "2"], ["U2", "23"], ["U2", "35"], ["U2", "44"], ["U2", "47"], ["U2", "8"], ["C3", "2"], ["C4", "2"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["C8", "2"], ["X1", "2"], ["X1", "4"], ["C9", "2"], ["C10", "2"], ["J2", "3"], ["J2", "5"], ["J2", "9"], ["R4", "2"], ["D3", "2"], ["C11", "2"], ["D5", "2"], ["C12", "2"], ["D7", "2"], ["C13", "2"], ["D9", "2"], ["C14", "2"], ["D11", "2"], ["C15", "2"], ["D13", "2"], ["C16", "2"], ["U3", "1"], ["U3", "3"], ["C17", "2"]]},
+  {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["U2", "33"], ["R3", "2"]]},
+  {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "32"]]},
+  {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
+  {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
+  {name: "reg.pwr_out", pads: [["U1", "2"], ["C2", "1"], ["U2", "1"], ["U2", "24"], ["U2", "36"], ["U2", "48"], ["U2", "9"], ["C3", "1"], ["C4", "1"], ["C5", "1"], ["C6", "1"], ["C7", "1"], ["C8", "1"], ["J2", "1"], ["R3", "1"]]},
+  {name: "mcu.gpio.cols_0", pads: [["U2", "16"], ["SW1", "1"], ["SW3", "1"], ["SW5", "1"]]},
+  {name: "mcu.gpio.cols_1", pads: [["U2", "17"], ["SW2", "1"], ["SW4", "1"], ["SW6", "1"]]},
+  {name: "mcu.gpio.rows_0", pads: [["U2", "18"], ["D2", "1"], ["D4", "1"]]},
+  {name: "mcu.gpio.rows_1", pads: [["U2", "19"], ["D6", "1"], ["D8", "1"]]},
+  {name: "mcu.gpio.rows_2", pads: [["U2", "20"], ["D10", "1"], ["D12", "1"]]},
+  {name: "mcu.xtal_node.xi", pads: [["U2", "5"], ["X1", "1"], ["C9", "1"]]},
+  {name: "mcu.xtal_node.xo", pads: [["U2", "6"], ["X1", "3"], ["C10", "1"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "34"], ["J2", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "37"], ["J2", "4"]]},
+  {name: "mcu.reset_node", pads: [["U2", "7"], ["J2", "10"]]},
+  {name: "mcu.swd.tdi", pads: [["J2", "8"]]},
+  {name: "mcu.swd.swo", pads: [["J2", "6"]]},
+  {name: "led.signal", pads: [["U2", "10"], ["D1", "2"]]},
+  {name: "led.package.k", pads: [["D1", "1"], ["R4", "1"]]},
+  {name: "sw.npx_din", pads: [["D3", "3"], ["U3", "4"]]},
+  {name: "sw.npx_dout", pads: [["D13", "1"]]},
+  {name: "sw.sw[0,0].npx_dout", pads: [["D3", "1"], ["D5", "3"]]},
+  {name: "sw.sw[0,0].sw.com", pads: [["SW1", "2"], ["D2", "2"]]},
+  {name: "sw.sw[1,0].npx_dout", pads: [["D5", "1"], ["D9", "3"]]},
+  {name: "sw.sw[1,0].sw.com", pads: [["SW2", "2"], ["D4", "2"]]},
+  {name: "sw.sw[0,1].npx_din", pads: [["D7", "3"], ["D9", "1"]]},
+  {name: "sw.sw[0,1].npx_dout", pads: [["D7", "1"], ["D11", "3"]]},
+  {name: "sw.sw[0,1].sw.com", pads: [["SW3", "2"], ["D6", "2"]]},
+  {name: "sw.sw[1,1].sw.com", pads: [["SW4", "2"], ["D8", "2"]]},
+  {name: "sw.sw[0,2].npx_dout", pads: [["D11", "1"], ["D13", "3"]]},
+  {name: "sw.sw[0,2].sw.com", pads: [["SW5", "2"], ["D10", "2"]]},
+  {name: "sw.sw[1,2].sw.com", pads: [["SW6", "2"], ["D12", "2"]]},
+  {name: "npx_shift.input", pads: [["U2", "11"], ["U3", "2"]]}
+])
+
+const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
+const limit1 = pt(2.5795275590551188, 2.1181102362204722);
+const xMin = Math.min(limit0[0], limit1[0]);
+const xMax = Math.max(limit0[0], limit1[0]);
+const yMin = Math.min(limit0[1], limit1[1]);
+const yMax = Math.max(limit0[1], limit1[1]);
+
+const filletRadius = 0.1;
+const outline = path(
+  [(xMin+xMax/2), yMax],
+  ["fillet", filletRadius, [xMax, yMax]],
+  ["fillet", filletRadius, [xMax, yMin]],
+  ["fillet", filletRadius, [xMin, yMin]],
+  ["fillet", filletRadius, [xMin, yMax]],
+  [(xMin+xMax/2), yMax],
+);
+board.addShape("outline", outline);
+
+renderPCB({
+  pcb: board,
+  layerColors: {
+    "F.Paste": "#000000ff",
+    "F.Mask": "#000000ff",
+    "B.Mask": "#000000ff",
+    "componentLabels": "#00e5e5e5",
+    "outline": "#002d00ff",
+    "padLabels": "#ffff99e5",
+    "B.Cu": "#ef4e4eff",
+    "F.Cu": "#ff8c00cc",
+  },
+  limits: {
+    x: [xMin, xMax],
+    y: [yMin, yMax]
+  },
+  background: "#00000000",
+  mmPerUnit: 25.4
+})
+
+function SwitchDiodeMatrixNeopixels_2_3_sw(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffset=[0.25, 0]) {
+  // Circuit generator params
+  const ncols = 2
+  const nrows = 3
+
+  // Global params
+  const traceSize = 0.015
+  const viaTemplate = via(0.02, 0.035)
+
+  // Return object
+  const obj = {
+    footprints: {},
+    pts: {}
+  }
+
+  // Actual generator code
+  allColWirePoints = []
+  for (let yIndex=0; yIndex < nrows; yIndex++) {
+    colWirePoints = []
+    rowDiodeVias = []
+
+    for (let xIndex=0; xIndex < ncols; xIndex++) {
+      index = yIndex * ncols + xIndex + 1
+
+      buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
+      obj.footprints[`SW${1 + xIndex * nrows + yIndex}`] = button = board.add(
+        SW_Hotswap_Kailh_MX,
+        {
+          translate: buttonPos, rotate: 0,
+          id: `SW${1 + xIndex * nrows + yIndex}`
+        })
+
+      diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
+      obj[`D${2 + xIndex * nrows + yIndex}`] = diode = board.add(
+        D_SOD_323,
+        {
+          translate: diodePos, rotate: 90,
+          id: `D${2 + xIndex * nrows + yIndex}`
+        })
+
+      // create stub wire for button -> column common line
+      colWirePoint = [buttonPos[0], button.padY("2")]
+      board.wire([colWirePoint, button.pad("2")], traceSize, "F.Cu")
+      colWirePoints.push(colWirePoint)
+
+      // create wire for button -> diode
+      board.wire([button.pad("1"), diode.pad("1")], traceSize, "F.Cu")
+      diodeViaPos = [diode.padX("2"), buttonPos[1] + rowSpacing / 2]
+      diodeVia = board.add(viaTemplate, {translate: diodeViaPos})
+      board.wire([diode.pad("2"), diodeVia.pos], traceSize)
+
+      if (rowDiodeVias.length > 0) {
+        board.wire([rowDiodeVias[rowDiodeVias.length - 1].pos, diodeVia.pos], traceSize, "B.Cu")
+      }
+      rowDiodeVias.push(diodeVia)
+    }
+    allColWirePoints.push(colWirePoints)
+  }
+
+  // Inter-row wiring
+  for (let xIndex=0; xIndex < allColWirePoints[0].length; xIndex++) {
+    board.wire([
+      allColWirePoints[0][xIndex],
+      allColWirePoints[allColWirePoints.length - 1][xIndex]
+    ], traceSize, "F.Cu")
+  }
+
+  return obj
+}
+

@@ -1,216 +1,310 @@
 # Quick Reference
-A simplified EDG EDSL guide, primarily as a reference for those who have been through the [getting started guide](getting-started.md).
 
-_Some documentation may be out of date._
+A short reference for writing HDL for (top-level) board designs.
 
-## Core Primitives
+New? Consider reading through the [getting started guide](getting-started.md).
 
-### Parameters
-- `BoolExpr`: boolean (true / false) variable
-  - Supports standard boolean operations
-- `FloatExpr`: numeric variable
-  - Suppers standard numeric operations
-- `RangeExpr`: range (interval) variable
-  - Supports standard numeric operations (multiplication and division are undefined), some set operations (`.within(other)`, `.contains(other)`, `.intersect(other)`), and get operations (`.lower()`, `.upper()`)
-- `StringExpr`: string (text) variable
-  - Supports equality operations only
+Also see the [reference for building subcircuit / part library blocks](reference_library.md).
 
-### Blocks
-Blocks represent a subcircuit (or hierarchical schematic sheet), and consist of boundary ports and internal subblocks and connections (links) between ports on those subblocks. 
 
-Skeleton structure:
+### DesignTop Block
+`Block`s represent a subcircuit (including the top-level circuit) and contain inner blocks and connections between them.
+
 ```python
-class MyBlock(Block):
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare ports here, and subblocks whose ports are exported
-
-  def contents(self) -> None:
-    super().contents()  # essential to call the superclass method beforehand to initialize state
-    # declare subblocks and connections here
+class MyBoard(SimpleBoardTop):
+    def contents(self) -> None:
+        # declare subblocks and connections here
+        super().contents()  # required to call this superclass method first        
+        self.mcu = self.Block(IoController())
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.sw = self.Block(DigitalSwitch())
+        self.connect(self.mcu.gpio.request("sw"), self.sw.out)
+        self.connect(self.mcu.gnd, self.sw.gnd)
+        
+    def refinements(self) -> Refinements:
+        # refinements describe modifications across the design hierarchy
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Esp32c3),  # replace all abstract IoController with Esp32c3
+            ],
+            instance_values=[
+                (["mcu", "pin_assigns"],  ["led=3", "sw=6"])  # assign to footprint pins 3 and 6
+            ],
+        )
 ```
 
-These are properties of Blocks:
-- The Block type hierarchy defines allowed refinements
-- `@abstract_block` decorates a block as abstract, which will error on netlisting
-
-These can be called inside `__init__(...)`:
-- `self.Parameter(ParameterType(optional_value))`: declare parameters, optionally with a value
-- `self.Port(PortType(...))`: declare ports 
-  - Optional arguments: `tags=[ImplicitTags], optional=False`
-  - `self.Export(self.subblock.port)`: export a subblock's port
-- `@init_in_parent` decorator is needed if `__init__(...)` takes Parameter arguments and must generate constraints in the parent Block  
-  
-These can be called inside `contents()`:
-- `self.Block(BlockType(...))`: declare sub-blocks
-  - Also allowed inside `__init__(...)`, to allow the use of `Export`s 
-- `self.constrain(...)`: constrain some `BoolExpr` (which can be an inline expression, eg `self.param1 == self.param2`) to be true
-- `self.connect(self.subblock1.port, self.subblock2.port, ...)`: connect own ports and/or subblock's ports
-  - Naming is optional.
-- `with self.implicit_connect(...) as imp:`: open an implicit connection scope
-  - Implicit connection arguments of the form `ImplicitConnect(connect_to_port, [MatchingTags])`
-  - `imp.Block(BlockType(...))`: similar to `self.Block(...)` but implicitly connects ports with matching tags
-- `self.chain(self.Block(BlockType(...)), self.Block(BlockType(...)), ...)`: chain-connect between blocks, in `contents`
-  - Return of `self.chain` can be unpacked into a tuple of chained blocks, and the chain object (itself).
-    Naming of the chain object is optional.
-  - Elements are chained from left (outputs) to right (inputs)
-  - The first argument to chain may be a port or block with an `InOut` or `Output`-tagged port.
-  - Middle elements must be a block with an `InOut`-tagged port, or `Input`- and `Output`-tagged ports.
-  - The last argument to chain may be a port or block with an `InOut` or `Input`-tageed port.
-- Assign names to components by assigning the object to a `self` variable:
-  - `self.subblock_name = self.Block(BlockType(...))`
-  - `(self.subblock_name1, self.subblock_name2, ...), self.chain_name = self.chain(...)`
-
-### Generators
-Generators allow some Python code to run that has access to the solved values of some parameters.
-TODO - write this section pending generator refactoring, in the meantime see the port array section of the getting started tutorial.
+- `SimpleBoardTop` maps abstract passive components to the JLC parts library and relaxes some strict constraints that do not matter for maker-type boards.
+- Alternatively, use `DesignTop` (which has no default mappings) or `JlcBoardTop` (which has JLC part mappings).
 
 
-### Footprint
-FootprintBlock is a block that is associated with a PCB footprint.
+### Block definition
 
-All primitives that can be called inside `Block`'s  `__init__(...)` can be called inside `__init__(...)`
+Internal blocks are created using `self.Block(...)` and must be assigned a unique name (in `self`) for netlist stability.
 
-These can be called inside `contents()`:
-- `self.footprint(refdes='R', footprint='Resistor_SMD:R_0603_1608Metric', pinning={...})`: associates a footprint with this block
-  - Pinning argument format: `{'pin_name': self.port, ...}`: associates footprint pins with ports or subports
-  - Optional arguments: `mfr='Manufacturer A', part='Part Number', value='1kOhm', datasheet='www.example.net'`
-
-
-## Port and Link Libraries
-
-### Single-wire Ports
-- `VoltageLink`: voltage rail
-  - `VoltageSource(voltage_out, current_limits)`: voltage source
-  - `VoltageSink(voltage_limits, current_draw)`: voltage sink (power input)
-- `DigitalLink`: low-speed (up to ~100 MHz) digital signals, modeling voltage limits and input / output thresholds
-  - `DigitalSource(voltage_out, current_limits, output_thresholds)`: digital output-only pin
-    - `output_thresholds` is the range of (maximum low output, minimum high output) 
-  - `DigitalSink(voltage_limits, current_draw, input_thresholds)`: digital input-only pin
-    - `input_thresholds` is the range of (maximum low input, minimum high input)
-  - `DigitalBidir(...)`: digital bidirectional (eg, GPIO) pin 
-     - Has all arguments of `DigitalSource` and `DigitalSink`
-- `AnalogLink`: analog signal that models input and output impedance
-  - `AnalogSource(voltage_out, current_limits, impedance)`: analog output
-  - `AnalogSink(voltage_limits, current_draw, impedance)`: analog signal input
-- `PassiveLink`: connected copper that contains no additional data
-  - `Passive`: single wire port that contains no additional data, but can be adapted to other types (eg, with `.as_voltage_source(...)`).
-    Useful for low-level elements (eg, resistors) that can be used in several ways in higher-level constructs (eg, pull-up resistor for digital applications).
-
-### Bundle Ports
-- `I2cLink`: I2C net, consisting of `.scl` and `.sda` Digital sub-ports.
-  - `I2CMaster(model)`: I2C master port
-    - `model`: DigitalBidir model for both SCL and SDA sub-ports
-  - `I2CSlave(model)`: I2C slave port
-- `SpiLink`: SPI net, consisting of `.sck`, `.miso`, and `.mosi` Digital sub-ports. CS must be handled separately. 
-  - `SpiMaster(model, frequency)`: SPI master port
-    - `frequency`: range of allowable frequencies, generally including zero
-  - `SpiSlave(model, frequency)`: SPI slave port
-- `UartLink`: UART net, consisting of `.tx` and `.rx` Digital sub-ports in a crossover point-to-point connection.
-  - `UartPort(model)`: UART port
-- `UsbLink`: USB data net, consisting of `.dp` (D+) and `.dm` (D-) Digital sub-ports in a point-to-point connection.
-  - `UsbHostPort`: USB host
-  - `UsbDevicePort`: USB device
-  - `UsbPassivePort`: other components (eg, TVS diode) on the USB line
-- `CanLogicLink`: CAN logic-level (TXD/RXD) net, consisting of `.txd` and `.rxd` Digital sub-ports in a point-to-point connection.
-  - `CanControllerPort(model)`: CAN controller-side port 
-  - `CanTransceiverPort(model)`: CAN transceiver-side port
-- `CanDiffLink`: CAN differential (CANH/CANL) net, consisting of `.canh` and `.canl` Digital sub-ports in a bus connection.
-  - `CanDiffPort(model)`: CAN node port
-- `SwdLink`: SWD programming net, consisting of `.swdio`, `.swclk`, `.swo`, and `.reset` Digital sub-ports in a point-to-point connection.
-  - `SwdHostPort(model)`: SWD host-side (programmer) port
-  - `SwdTargetPort(model)`: SWD target-side (DUT) port 
-- `CrystalLink`: crystal net, consisting of `.xi` and `.xo` sub-ports in a point-to-point connection.
-  - `CrystalDriver(frequency_limits, voltage_out)`: driver-side port
-  - `CrystalPort(frequency)`: crystal-side port, indicating the frequency of the crystal 
-
-
-## Block Libraries
-The IDE's library tab provides a categorized list of available library blocks.
-Many blocks also have a short descriptive docstring.
-
-
-## Advanced Core Primitives
-These are core primitives needed to model new ports and links
-
-### Ports
-Ports can have parameters and may be connected to each other via a Link.
-
-Skeleton structure:
 ```python
-class MyPort(Port[MyPortLinkType]):
-  link_type = MyPortLinkType  # required
-  bridge_type = MyPortBridgeType  # optional, if a bridge is needed
-  
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare elements like parameters here
+self.block_name = self.Block(BlockType(...))
 ```
 
-These are properties of Ports:
-- The Port type hierarchy currently is not used. However, inheritance may still be useful for code re-use / de-duplication.
+- Some blocks may take arguments, see their `__init__` for details.
+- Builtin parts (like ICs) are in [the parts folder](edg/parts) and builtin circuits are in [the circuits folder](edg/circuits).
+- See [the examples](examples/) for common blocks and how they're used.
+- Abstract blocks can be instantiated, but require a refinement in the top-level design.
+  - Some DesignTop subclasses like `SimpleBoardTop` provide default refinements.
 
-These can be called inside `__init__(...)`:
-- `__init__(...)` may take arguments, and no decorators (as with Block) are needed
-- `self.Parameter(ParameterType(optional_value))`: declare parameters, optionally with a value 
+#### Range Arguments
 
-### Bundles
-Bundles are a special type of Port that is made up of constituent sub-Ports.
+Blocks commonly take arguments as a range-like type, typically a specification for an allowable range accounting for tolerance stackup.
 
-Skeleton structure:
 ```python
-class MyBundle(Bundle):
-  link_type = MyBundleLinkType
-  bridge_type = MyBundleBridgeType  # optional, if a bridge is needed
-  
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare elements like parameters here
+self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
 ```
 
-In addition to the primitives that can be called inside `Port`'s `__init__(...)`, these can be called inside `Bundle`'s  `__init__(...)`:
-- `self.Port(PortType(...))`: declare bundle sub-port
+#### ElementDict
 
-### Links
-Links define propagation rules for connected Ports.
+`ElementDict` creates an internal namespace, providing an unique name for elements in an array of blocks by attaching their index to the name.
 
-Links are structured the same as Blocks, with similar primitives (see the Block documentation for details):
 ```python
-class MyPortLink(Link):
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare ports here
-
-  def contents(self) -> None:
-    super().contents()  # essential to call the superclass method beforehand to initialize state
-    # declare constraints and internal connections here
+self.block_name = ElementDict[IndicatorLed]()
+for i in range(4):
+    self.block_name[i] = self.Block(IndicatorLed())
 ```
 
-These are properties of Links:
-- Each Port can have one type of associated link.
-- The Link type hierarchy currently is not used. However, inheritance may still be useful for code re-use / de-duplication.
-- Extend `CircuitLink` instead of `Link` to copper-connect all ports.
 
-These can be called inside `__init__()`:
-- `__init__()` cannot have arguments, since links are always inferred
-- `self.Parameter(ParameterType(optional_value))`
-- `self.Port(PortType(...))` (without tags, but can have optional)
-  
-These can be called inside `contents()`:
-- `self.connect(self.port1.subport, self.port2.subport, ...)`: for Bundle ports, connect sub-ports and infer inner link
-  - Naming is optional.
-- `self.constrain(...)`
+### Connections
 
-### Bridges
-Bridges are a special type of `Block` that adapts from a Link-facing (inner, `self.inner_link`) port to a Block edge (outer, `self.outer_port`) port.
-Extend `CircuitPortBridge` instead of `PortBridge` to copper-connect all ports.
+`self.connect` connects ports on blocks, inferring the link type from the port types in the connection.
 
-In `__init__()` (may not take arguments), declare these two required ports.
-In `contents()`, add constraints as needed.
+```python
+self.connect(self.block1.port, self.block2.port, ...)
+```
 
-### Adapters
-PortAdapters are a special type of `Block` that adapts / converts from a source (`self.src`) port to a destination (`self.dst`) port.
-Extend `CircuitPortAdapter` instead of `PortAdapter` to copper-connect all ports.
+- `self.connect` returns a `Connection` object, which can be used in connections.
+- Optionally assign a name to the `Connection` by assigning to a `self` variable.
+- Connections must be between ports of compatible type.
+  Typed ports (like `Ground` or `VoltageSink`) are distinct from `Passive` ports and not connectable without adapters.
+- Only the block's ports and inner blocks' ports can be connected.
+  Connections cannot be made arbitrarily deep in the block hierarchy.
 
-In `__init__(...)` (may take arguments, must decorate with `@init_in_parent` if arguments), declare these two required ports.
-In `contents()`, add constraints as needed.
+#### Implicit Connection Blocks
+
+`self.implicit_connect` creates a scope for implicit connections, typically for power and ground.
+
+```python
+with self.implicit_connect(
+    ImplicitConnect(self.pwr, [Power]),
+    ImplicitConnect(self.gnd, [Common]),
+) as imp:
+    self.block_name = imp.Block(BlockType(...))
+``` 
+
+- Port matching is done against the block's ports' tags using tag objects `Power` and `Common`.
+
+#### Chain Connections
+
+`self.chain` connects ports (and ports on blocks) in a chain, from left to right.
+
+```python
+(self.led,), _ = self.chain(imp.Block(IndicatorSinkLed()), self.mcu.gpio.request("led"))
+```
+
+- `self.chain` returns a nested tuple of `((blocks...), chain)`.
+  Blocks must be named, the chain object can be optionally named to name the interior nets.
+- In the example above:
+  - The trailing comma in `(self.led, )` unpacks the single-element blocks tuple to name it.
+  - The `_` discards (does not name) the chain object.
+- Blocks in the chain are connected to:
+  - their `Input` tagged port, for an incoming connection from the left,
+  - their `Output` tagged port, for an outgoing connection to the right,
+  - their `InOut` tagged port, for both incoming and outgoing connections (tapped connection).
+
+#### .connected(...)
+
+Some (but far from all) blocks define a `.connected(...)` as a shorthand connection method, see each class's API for details.
+These return the block itself, allowing it to be assigned to a name.
+
+```python
+self.tp_gnd = self.Block(GroundTestPoint()).connected(self.gnd)
+```
+
+
+### Refinements
+
+Refinements allow specifying, at the top level, modifications across the design hierarchy.
+
+```python
+def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+        class_refinements=[
+            (IoController, Esp32c3),
+        ],
+        instance_refinements=[
+            (["mcu"], Esp32c3),
+        ],
+        instance_values=[
+            (["mcu", "pin_assigns"],  ["led=3"])
+        ],
+        class_values=[
+            (SelectorArea, ["footprint_area"], Range.from_lower(1.5)),
+        ]
+    )
+```
+
+- `class_refinements` replaces all instances of a block type with a subclass.
+- `instance_refinements` replaces a specific instance of a block with a subclass.
+  The instance is specified as a path, as a list of block names from the root.
+- `instance_values` sets a parameter value on a specific instance of a block, specified as a path.
+- `class_values` sets a parameter value on all instances of a block type.
+  It is specified as a class, then a sub-path to the parameter.
+
+
+### Parts Table Parts
+
+- Some blocks, particularly discrete components like `Resistor`s and `Fet`s, are implemented as automatic selection from a parts table.
+- These are some common top-level refinements:
+  - Class refinement `(SelectorArea, ["footprint_area"], Range.from_lower(1.5))`: require a minimum footprint courtyard area, in mm²
+    - Common minimum areas for passives, in mm²: 01005=0.72, 0201=0.98, 0402=1.74, 0603=4.32, 0805=6.38, 1206=10.21.
+  - Instance refinement `(["part_table_block", "excluded_parts"], ["1N2127"])`: exclude parts from selection, e.g., if they're out-of-stock.
+  - Instance refinement `(["part_table_block", "part"], "1N2127")`: require a particular part.
+  - Instance refinement `(["part_table_block", "footprint_spec"], "Diode_SMD:D_SMA")`: require a particular footprint.
+
+
+### IoController
+
+`IoController` is an abstract class for any programmable IO controller, typically microcontrollers, but also including FPGAs.
+
+```python
+self.mcu = imp.Block(IoController())
+self.connect(self.mcu.gpio.request("led"), self.led.signal)
+```
+
+- `IoController`s have `gnd` and `pwr` input power ports, and `gpio`, `adc`, `spi`, `i2c`, `uart`, and `usb` Vector IO ports which elements can be requested from.
+- Not all `IoController`s support all IO types, see each class's API for details.
+- The `request(...)` name is used in the `pin_assigns` refinement, with each entry specified as either `led=3` (by footprint pin number) or `led=GPIO4` (by IO name, see each class's API for details).
+- These request types are available, and their pin assignment entries are:
+
+  | Request Type            | Request Syntax                           | Pin Assignment Entries                                 |
+  |-------------------------|------------------------------------------|--------------------------------------------------------|
+  | Single Element          | `self.mcu.gpio.request("my_io")`         | `"my_io=3"`                                            |
+  | Vector                  | `self.mcu.gpio.request_vector("my_ios")` | `"my_ios_0=3", "my_ios_1=4", ...` (underscore-indexed) |
+  | Bundle (e.g., SPI, I2C) | `self.mcu.spi.request("my_spi")`         | `"my_spi.sck=3", "my_spi.mosi=4", ...` (dot-indexed)   |
+  | Unnamed                 | `self.mcu.gpio.request()`                | Arbitrarily named, don't rely on this                  |
+
+
+### Mixins
+
+Mixins are a way to require additional functionality (or ports) on an abstract block, they restrict refinements to concrete classes that implement the mixin.
+
+```python
+# require additional ports defined by a mixin
+self.connect(self.can.controller, self.mcu.with_mixin(IoControllerCan()).can.request("can"))
+
+# require a mixin as a refinement constraint only
+self.mcu.with_mixin(IoControllerWifi())
+```
+
+- IoController has these mixins:
+  - defining IO ports: `IoControllerDac`, `IoControllerI2cTarget`, `IoControllerSpiPeripheral`, `IoControllerTouchDriver`, `IoControllerCan`, `IoControllerUsbCc`, `IoControllerI2s`, `IoControllerDvp8`
+  - connectivity requirements only: `IoControllerWifi`, `IoControllerBluetooth`, `IoControllerBle`
+  - defining power ports, typically for microcontroller dev boards: `IoControllerPowerOut`, `IoControllerUsbOut`, `IoControllerVin`
+
+
+### Connector Blocks
+
+Custom connectors are implemented as a `Block` with ports representing its IOs.
+
+```python
+class CustomUartConnector(Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.gnd = self.Port(Ground(), [Common])
+        self.pwr = self.Port(VoltageSink(), [Power])
+        self.uart = self.Port(UartPort())
+
+        self.conn = self.Block(PassiveConnector(length=4)).connected(
+            {
+                "1": self.gnd,
+                "2": self.pwr,
+                "3": self.uart.tx,
+                "4": self.uart.rx,
+            }
+        )
+```
+
+- `self.port_name = self.Port(...)` defines a port on the block.
+- Ports must be typed, the `Passive` port type is not automatically connectable to typed single-wire ports like `Ground` or `VoltageSink` without adapters.
+- Ports take electrical modeling parameters (like voltage and current limits) as parameters, empty parameter generally means an ideal port.
+- `PassiveConnector` is an abstract class for connectors with a parameterizable number of passive-typed pins, including 2.54mm headers, FPCs, and more.
+- `PassiveConnector.connected(...)` automatically adapts typed ports to the connector's Passive ports.
+
+### Multipacking
+
+Multipacking allows multiple components, potentially spread across the design hierarchy, to be combined into one component.
+This is an optimization that may save board area and cost.
+Example: quad-pack resistor networks, dual-pack opamps, RGB LEDs.
+
+```python
+class MyBoard(SimpleBoardTop):
+    def contents(self) -> None:
+        ...
+    
+    def multipack(self) -> None:
+        self.res_pack = self.PackedBlock(ResistorArray())
+        self.pack(self.res_pack.elements.request('0'), ['led[0]', 'res'])
+        self.pack(self.res_pack.elements.request('1'), ['led[1]', 'res'])
+        self.pack(self.res_pack.elements.request('2'), ['led[2]', 'res'])
+        self.pack(self.res_pack.elements.request('3'), ['led[3]', 'res'])
+```
+
+- `multipack()` is a blend of `contents()` (in that `PackedBlocks` are declared within) and `refinements()` (in that it uses `List[str]` to reference blocks in the design hierarchy).
+- `self.PackedBlock(...)` is similar to `self.Block(...)`.
+- `self.pack(...)` takes two arguments:
+  - `multipack_part`: the multipack element that is part of the packed block, either a block or an element of a dynamically-sized packed block array.
+  - `path`: the path to the block which this replaces, as a list of strings.
+- This remains correct ERC model-wise, elements of the packed block are modeled as being 'inside' the replaced block.  
+- Each multipack element has its own ports, including for shared pins like the common power pins of a dualpack opamp.
+  A compiler assertion checks that these are all connected to the same netlist net.
+- Multipacking can only be defined at the BoardTop level.
+
+### Sub-boards and Connector Pairs
+
+Subboards are `Block`s that define a subcircuit that is its own board (generates a separate netlist).
+
+```python
+class LedSubboard(SubboardBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.led = self.Block(IndicatorLed())
+        self.gnd = self.Export(self.led.gnd, [Common])
+        self.signal = self.Export(self.led.signal, [Input])
+
+        self.conn = self.Block(Fpc050SocketTabPair(2), external=True)
+        self.export_tap(self.gnd.net, self.conn.pins.request("1"))
+        self.export_tap(self.signal.net, self.conn.pins.request("2"))
+```
+
+- These are defined `Block`s that have their subcircuits inside and exported ports crossing the physical board boundary.
+- These use a `SubboardConnectorPair` block (like `Fpc050SocketTabPair`) to define the physical connector pair.
+  - `SubboardConnectorPair` are similar to `PassiveConnector`, with `Passive` typed ports. 
+    - Typed ports (like `Ground` or `VoltageSink`) internally contain a `Passive` `net` which can be attached to the connector's `Passive` ports.
+  - `self.Export(...)` creates a Port on the Block that is connected to (and takes on the type) of the inner port.
+  - `self.export_tap` behaves similar to `self.connect`, but attaches the inner port to the outer port without propagating parameter values (non-physical attachment).
+    Conceptually, the connector taps onto (or hangs off) the parameter-propagating Export connection.
+
+
+### Overriding Values / "Waiving" ERCs
+
+Some of the electrical modeling may have overly strict limits or overly broad operating parameters resulting in compiler errors from ERC failures, use refinements to override their values.
+
+```python
+class_refinements=[
+    (Neopixel, ["pwr", "voltage_limits"], Range(3.0, 5.5)),  # kinda works-ish at 3.3v
+]
+```
+
+- Values can be inspected via:
+  - CLI compiler error messages for values failing constraints,
+  - the IDE,
+  - or, the .json generated during compilation which contains the entire compiled / solved design.

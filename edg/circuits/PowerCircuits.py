@@ -139,7 +139,7 @@ class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorB
             self.connect(self.reset, self.driver.with_mixin(Resettable()).reset)
 
 
-class RampLimiter(KiCadSchematicBlock):
+class RampLimiter(PowerConditioner, KiCadSchematicBlock):
     """PMOS-based ramp limiter that roughly targets a constant-dV/dt ramp.
     The cgd should be specified to swamp (10x+) the parasitic Cgd of the FET to get more controlled parameters.
     The target ramp rate is in volts/second, and for a capacitive load this can be calculated from a target current with

@@ -5,6 +5,7 @@ from ..core import *
 from ..core.Core import Refable
 from ..core.HdlUserExceptions import UnconnectableError
 from .. import edgir
+from .Categories import DiscreteComponent
 
 
 @non_library
@@ -68,6 +69,7 @@ class HasSubboardBlockApi(Block):
                 constraint_pb.exported.tap = True
 
 
+@non_library
 class SubboardBlock(HasSubboardBlockApi, Block):
     """A block that is a sub-board, where all its blocks not marked external are part of a different board.
     Provides the export_tap construct to tack connectors onto ports without breaking modeling.
@@ -81,6 +83,7 @@ class SubboardBlock(HasSubboardBlockApi, Block):
         self.fp_subboard = self.Metadata("A")  # dummy distinct value
 
 
+@non_library
 class WrapperSubboardBlock(SubboardBlock):
     """A wrapper block where the internal blocks are skipped for netlisting and used for modeling only.
     Useful for eg, dev boards that only generate a connector or socket but re-use modeling from the raw subcircuit."""
@@ -90,7 +93,8 @@ class WrapperSubboardBlock(SubboardBlock):
         self.fp_subblocks_ignored = self.Metadata("B")  # dummy distinct value
 
 
-class SubboardConnectorPair(HasSubboardBlockApi, Block):
+@abstract_block
+class SubboardConnectorPair(DiscreteComponent, HasSubboardBlockApi, Block):
     """A block meant for a connector pair, one in the exterior and one in the interior, of a SubboardBlock.
     When in a SubboardBlock scope and marked external, this inherits the parent and self board scope of its container,
     so inner Blocks marked external are part of the SubboardBlock's parent scope, while internal Blocks
