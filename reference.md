@@ -237,15 +237,15 @@ Example: quad-pack resistor networks, dual-pack opamps, RGB LEDs.
 
 ```python
 class MyBoard(SimpleBoardTop):
-  def contents(self) -> None:
-      ...
-  
-  def multipack(self) -> None:
-    self.res_pack = self.PackedBlock(ResistorArray())
-    self.pack(self.res_pack.elements.request('0'), ['led[0]', 'res'])
-    self.pack(self.res_pack.elements.request('1'), ['led[1]', 'res'])
-    self.pack(self.res_pack.elements.request('2'), ['led[2]', 'res'])
-    self.pack(self.res_pack.elements.request('3'), ['led[3]', 'res'])
+    def contents(self) -> None:
+        ...
+    
+    def multipack(self) -> None:
+        self.res_pack = self.PackedBlock(ResistorArray())
+        self.pack(self.res_pack.elements.request('0'), ['led[0]', 'res'])
+        self.pack(self.res_pack.elements.request('1'), ['led[1]', 'res'])
+        self.pack(self.res_pack.elements.request('2'), ['led[2]', 'res'])
+        self.pack(self.res_pack.elements.request('3'), ['led[3]', 'res'])
 ```
 
 - `multipack()` is a blend of `contents()` (in that `PackedBlocks` are declared within) and `refinements()` (in that it uses `List[str]` to reference blocks in the design hierarchy).
