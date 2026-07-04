@@ -1,7 +1,7 @@
 # Getting Started Tutorial: Advanced Library Construction
 _In this section, we will build a re-usable n-LED array Block, going through the advanced constructs of generators and port arrays._
 
-> The IDE does not support graphical operations for programmatic constructing circuits.
+> The IDE does not support graphical operations for programmatic circuit construction.
 > However, you can continue to use the IDE for visualization.
 
 

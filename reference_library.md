@@ -20,7 +20,7 @@ Parts of this reference are outdated.
 - `BoolExpr`: boolean (true / false) variable
   - Supports standard boolean operations
 - `FloatExpr`: numeric variable
-  - Suppers standard numeric operations
+  - Supports standard numeric operations
 - `RangeExpr`: range (interval) variable
   - Supports standard numeric operations (multiplication and division are undefined), some set operations (`.within(other)`, `.contains(other)`, `.intersect(other)`), and get operations (`.lower()`, `.upper()`)
 - `StringExpr`: string (text) variable
@@ -67,7 +67,7 @@ These can be called inside `contents()`:
   - Elements are chained from left (outputs) to right (inputs)
   - The first argument to chain may be a port or block with an `InOut` or `Output`-tagged port.
   - Middle elements must be a block with an `InOut`-tagged port, or `Input`- and `Output`-tagged ports.
-  - The last argument to chain may be a port or block with an `InOut` or `Input`-tageed port.
+  - The last argument to chain may be a port or block with an `InOut` or `Input`-tagged port.
 - Assign names to components by assigning the object to a `self` variable:
   - `self.subblock_name = self.Block(BlockType(...))`
   - `(self.subblock_name1, self.subblock_name2, ...), self.chain_name = self.chain(...)`
@@ -92,17 +92,17 @@ These can be called inside `contents()`:
 
 ### Single-wire Ports
 - `VoltageLink`: voltage rail
-  - `VoltageSource(voltage_out, current_limits)`: voltage source
+  - `VoltageSource(voltage, current_limits)`: voltage source
   - `VoltageSink(voltage_limits, current_draw)`: voltage sink (power input)
 - `DigitalLink`: low-speed (up to ~100 MHz) digital signals, modeling voltage limits and input / output thresholds
-  - `DigitalSource(voltage_out, current_limits, output_thresholds)`: digital output-only pin
+  - `DigitalSource(voltage, current_limits, output_thresholds)`: digital output-only pin
     - `output_thresholds` is the range of (maximum low output, minimum high output) 
   - `DigitalSink(voltage_limits, current_draw, input_thresholds)`: digital input-only pin
     - `input_thresholds` is the range of (maximum low input, minimum high input)
   - `DigitalBidir(...)`: digital bidirectional (eg, GPIO) pin 
      - Has all arguments of `DigitalSource` and `DigitalSink`
 - `AnalogLink`: analog signal that models input and output impedance
-  - `AnalogSource(voltage_out, current_limits, impedance)`: analog output
+  - `AnalogSource(voltage, current_limits, impedance)`: analog output
   - `AnalogSink(voltage_limits, current_draw, impedance)`: analog signal input
 - `PassiveLink`: connected copper that contains no additional data
   - `Passive`: single wire port that contains no additional data, but can be adapted to other types (eg, with `.as_voltage_source(...)`).
