@@ -1,21 +1,20 @@
 # Getting Started Tutorial: Advanced Library Construction
-_In this section, we will convert the four-LED array into an n-LED array block and go through the advanced constructs of generators and port arrays._
-
-As a refresher, in the first part of the getting started tutorial, we dropped 4 LEDs directly in our top-level design sign with a `for` loop in:  
-```python
-self.led = ElementDict[IndicatorLed]()
-for i in range(4):
-  self.led[i] = self.Block(IndicatorLed())
-  ...
-```
-
-However, arrays of LEDs are common enough that they would make sense as a library block, and it would condense these three lines of code here into just one.
+_In this section, we will build a re-usable n-LED array Block, going through the advanced constructs of generators and port arrays._
 
 > The IDE does not support graphical operations for programmatic constructing circuits.
 > However, you can continue to use the IDE for visualization.
 
 
 ## The Naive (but Broken) Approach
+
+The HDL provides the ElementDict construct for giving unique names to a dynamically-sized array of blocks.
+An array of LEDs looks like: 
+```python
+self.led = ElementDict[IndicatorLed]()
+for i in range(4):
+  self.led[i] = self.Block(IndicatorLed())
+  ...
+```
 
 You might be tempted to drop the above into a Block and pipe the `int` through as a constructor argument:
 ```python
@@ -189,18 +188,6 @@ class BlinkyExample(SimpleBoardTop):
       self.connect(self.mcu.gpio.request_vector('led'), self.led.ios)
 ```
 
-Or, since we added the implicit tag `Input` to the IOs port, we can use `chain` to combine the instantiation and connection:
-```python
-class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    ...
-    with self.implicit_connect(
-            ...
-    ) as imp:
-      ...
-      (self.led, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(LedArray(4)))
-```
-
 As shown above, port arrays can be directly connected together to make parallel connections, and we can request sub-arrays from a port array.
 When connecting port arrays together, exactly one must define the array width, which is automatically propagated to the others in the connection.
 As a result, the single LED count parameter also drives the connection width and the pins requested from the microcontroller. 
@@ -234,11 +221,6 @@ class BlinkyExample(SimpleBoardTop):
       ])
 
 ```
-
-
-## Board Optimization
-
-Continue to [the next part of the tutorial](getting_started_optimization.md) on optimizing the board using packed components.
 
 ### Additional Resources
 Check out these examples of generators:
