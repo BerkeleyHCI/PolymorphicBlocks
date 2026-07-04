@@ -13,6 +13,8 @@ The library design experience is much less polished and more intricate than the 
 
 ## Under Construction
 
+Parts of this reference are outdated.
+
 
 ## Parameters
 - `BoolExpr`: boolean (true / false) variable
