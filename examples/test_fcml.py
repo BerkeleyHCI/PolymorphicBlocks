@@ -574,8 +574,11 @@ class Fcml(JlcBoardTop):
                     ],
                 ),
                 # flying caps need to be beefier for high current rating (which isn't modeled)
-                (["conv", "sw[1]", "cap", "footprint_spec"], "Capacitor_SMD:C_1206_3216Metric"),
-                (["conv", "sw[2]", "cap", "footprint_spec"], ParamValue(["conv", "sw[1]", "cap", "footprint_spec"])),
+                (["conv", "sw[1]", "cap", "filter_footprints"], ["Capacitor_SMD:C_1206_3216Metric"]),
+                (
+                    ["conv", "sw[2]", "cap", "filter_footprints"],
+                    ParamValue(["conv", "sw[1]", "cap", "filter_footprints"]),
+                ),
                 # JLC does not have frequency specs, must be checked TODO
                 (["conv", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 (["reg_vgate", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
@@ -592,7 +595,7 @@ class Fcml(JlcBoardTop):
                 (UsbEsdDiode, Pgb102st23),  # for common parts with the rest of the panel
             ],
             class_values=[
-                (Fet, ["footprint_spec"], "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"),  # don't seem to be alternatives
+                (Fet, ["filter_footprints"], ["Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"]),  # don't seem to be alternatives
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
                 # for compatibility, this board was laid out before derating was supported and does not compile otherwise
                 (Capacitor, ["voltage_margin"], 1.0),

@@ -207,7 +207,10 @@ class PcbBot(JlcBoardTop):
                     ],
                 ),
                 (["expander", "pin_assigns"], []),
-                (["prot_batt", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),  # big diodes to dissipate more power
+                (
+                    ["prot_batt", "diode", "filter_footprints"],
+                    ["Diode_SMD:D_SMA"],
+                ),  # big diodes to dissipate more power
                 (["reg_3v3", "ic", "actual_dropout"], Range(0.0, 0.3)),  # tighter dropout from lower current draw
             ],
             class_refinements=[

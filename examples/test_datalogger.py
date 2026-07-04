@@ -302,7 +302,7 @@ class Datalogger(BoardTop):
                         "swd_swo=PIO0_8",
                     ],
                 ),
-                (["pwr_5v", "power_path", "inductor", "part"], "NR5040T220M"),  # peg to prior part selection
+                (["pwr_5v", "power_path", "inductor", "filter_parts"], ["NR5040T220M"]),  # peg to prior part selection
                 (
                     ["pwr_5v", "power_path", "inductor_current_ripple"],
                     Range(0.01, 0.6),
@@ -312,7 +312,7 @@ class Datalogger(BoardTop):
                 # JLC does not have frequency specs, must be checked TODO
                 (["pwr_5v", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 # keep netlist footprints as libraries change
-                (["buffer", "fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-223-3_TabPin2"),
+                (["buffer", "fet", "filter_footprints"], ["Package_TO_SOT_SMD:SOT-223-3_TabPin2"]),
                 (["eink", "boost", "sense", "resistance"], Range.from_tolerance(3.3, 0.05)),  # 3R not standard
             ],
             class_refinements=[(Fuse, CanFuse)],

@@ -69,7 +69,7 @@ class CapacitorTestCase(unittest.TestCase):
     def test_capacitor_footprint(self) -> None:
         compiled = ScalaCompiler.compile(
             CapacitorGenericTestTop,
-            Refinements(instance_values=[(["dut", "footprint_spec"], "Capacitor_SMD:C_1206_3216Metric")]),
+            Refinements(instance_values=[(["dut", "filter_footprints"], ["Capacitor_SMD:C_1206_3216Metric"])]),
         )
         self.assertEqual(compiled.get_value(["dut", "fp_footprint"]), "Capacitor_SMD:C_1206_3216Metric")
         self.assertEqual(compiled.get_value(["dut", "fp_value"]), "100nF")
@@ -104,7 +104,7 @@ class CapacitorTestCase(unittest.TestCase):
             DeratedCapacitorGenericTestTop,
             Refinements(
                 instance_values=[
-                    (["dut", "footprint_spec"], "Capacitor_SMD:C_1206_3216Metric"),
+                    (["dut", "filter_footprints"], ["Capacitor_SMD:C_1206_3216Metric"]),
                     (["dut", "derating_coeff"], 0.5),
                 ]
             ),
@@ -117,7 +117,7 @@ class CapacitorTestCase(unittest.TestCase):
             BigMultiCapacitorGenericTestTop,
             Refinements(
                 instance_values=[
-                    (["dut", "footprint_spec"], "Capacitor_SMD:C_1206_3216Metric"),
+                    (["dut", "filter_footprints"], ["Capacitor_SMD:C_1206_3216Metric"]),
                     (["dut", "derating_coeff"], 0.5),
                 ]
             ),

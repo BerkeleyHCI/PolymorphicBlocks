@@ -398,7 +398,7 @@ class Multimeter(JlcBoardTop):
                     Range(float("-inf"), float("inf")),
                 ),  # allow the regulator to go into tracking mode
                 (["reg_5v", "fb", "div", "series"], 12),  # JLC has limited resistors
-                (["measure", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),  # beefy input resistor
+                (["measure", "res", "filter_footprints"], ["Resistor_SMD:R_2512_6332Metric"]),  # beefy input resistor
                 (["measure", "res", "fp_mfr"], "Bourns Inc."),
                 (["measure", "res", "fp_part"], "CHV2512-F*-1004***"),
                 # IMPORTANT! Most 2512 resistors are rated to ~200V working voltage, this one is up to 3kV.

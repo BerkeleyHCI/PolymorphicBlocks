@@ -1010,12 +1010,12 @@ class UsbSourceMeasure(JlcBoardTop):
                 (["reg_v12", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 (["conv", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 (["reg_vcontrol", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
-                (["vusb_sense", "Rs", "res", "res", "footprint_spec"], "Resistor_SMD:R_1206_3216Metric"),
+                (["vusb_sense", "Rs", "res", "res", "filter_footprints"], ["Resistor_SMD:R_1206_3216Metric"]),
                 (
-                    ["convin_sense", "Rs", "res", "res", "footprint_spec"],
-                    ParamValue(["vusb_sense", "Rs", "res", "res", "footprint_spec"]),
+                    ["convin_sense", "Rs", "res", "res", "filter_footprints"],
+                    ParamValue(["vusb_sense", "Rs", "res", "res", "filter_footprints"]),
                 ),
-                (["ramp", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
+                (["ramp", "drv", "filter_footprints"], ["Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"]),
                 # less aggressive derating for smaller part
                 (["control", "driver", "cap_in1", "cap", "voltage_margin"], 1.25),
                 # ignore derating on 20v - it's really broken =(
@@ -1038,8 +1038,11 @@ class UsbSourceMeasure(JlcBoardTop):
                 ),  # TODO model is broken for unknown reasons
                 (["boot", "c_fly_pos", "voltage_margin"], 1.1),
                 (["boot", "c_fly_neg", "voltage_margin"], 1.1),
-                (["conv", "boost_sw", "low_fet", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
-                (["conv", "boost_sw", "low_fet", "part"], "BSC093N04LSG"),  # lower total power
+                (
+                    ["conv", "boost_sw", "low_fet", "filter_footprints"],
+                    ["Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"],
+                ),
+                (["conv", "boost_sw", "low_fet", "filter_parts"], ["BSC093N04LSG"]),  # lower total power
                 # require all FETs to be the same; note boost must elaborate first
                 (["conv", "buck_sw", "low_fet", "part"], ParamValue(["conv", "boost_sw", "low_fet", "actual_part"])),
                 (["conv", "buck_sw", "high_fet", "part"], ParamValue(["conv", "boost_sw", "low_fet", "actual_part"])),
@@ -1055,9 +1058,9 @@ class UsbSourceMeasure(JlcBoardTop):
                 (["control", "driver", "high_fet", "part_spec"], "IRF540N"),
                 (["control", "driver", "low_fet", "footprint_spec"], "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"),
                 (["control", "driver", "low_fet", "part_spec"], "IRF9540"),  # has a 30V/4A SOA
-                (["prot_vusb", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
-                (["prot_conv", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
-                (["prot_3v3", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
+                (["prot_vusb", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
+                (["prot_conv", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
+                (["prot_3v3", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
                 # reduce maximum SSR drive current to be within the IO expander limit
                 (["control", "isense", "ranges[0]", "pwr_sw", "ic", "led_current_recommendation"], Range(0.002, 0.010)),
                 (["control", "isense", "ranges[1]", "pwr_sw", "ic", "led_current_recommendation"], Range(0.002, 0.010)),

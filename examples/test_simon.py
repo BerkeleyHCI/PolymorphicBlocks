@@ -124,10 +124,10 @@ class Simon(BoardTop):
                 # JLC does not have frequency specs, must be checked TODO
                 (["pwr", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 # keep netlist footprints as libraries change
-                (["btn_drv[0]", "drv", "footprint_spec"], "Package_TO_SOT_SMD:TO-252-2"),
-                (["btn_drv[1]", "drv", "footprint_spec"], ParamValue(["btn_drv[0]", "drv", "footprint_spec"])),
-                (["btn_drv[2]", "drv", "footprint_spec"], ParamValue(["btn_drv[0]", "drv", "footprint_spec"])),
-                (["btn_drv[3]", "drv", "footprint_spec"], ParamValue(["btn_drv[0]", "drv", "footprint_spec"])),
+                (["btn_drv[0]", "drv", "filter_footprints"], ["Package_TO_SOT_SMD:TO-252-2"]),
+                (["btn_drv[1]", "drv", "filter_footprints"], ParamValue(["btn_drv[0]", "drv", "filter_footprints"])),
+                (["btn_drv[2]", "drv", "filter_footprints"], ParamValue(["btn_drv[0]", "drv", "filter_footprints"])),
+                (["btn_drv[3]", "drv", "filter_footprints"], ParamValue(["btn_drv[0]", "drv", "filter_footprints"])),
             ],
             instance_refinements=[
                 (["mcu"], Nucleo_F303k8),

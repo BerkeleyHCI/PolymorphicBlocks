@@ -768,13 +768,13 @@ class IotThermalCamera(JlcBoardTop):
                 (["reg_poe", "hf_cap", "cap", "voltage_margin"], 1.5),
                 (["eth", "cap", "voltage_margin"], 1.0),  # 1kV rated only
                 (["reg_poe", "power_path", "in_cap", "cap", "voltage_margin"], 1.5),
-                (["poe", "prot", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
+                (["poe", "prot", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
                 (["poe", "den", "resistance"], Range.from_tolerance(25000, 0.05)),  # find a basic part
                 (["phy", "exres1", "res", "require_basic_part"], False),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
-                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
+                (ProtectionZenerDiode, ["diode", "filter_footprints"], ["Diode_SMD:D_SOD-123"]),
                 (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
             ],
         )

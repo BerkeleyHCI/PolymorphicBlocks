@@ -27,7 +27,7 @@ class CapacitorTestCase(unittest.TestCase):
 
     def test_capacitor_part(self) -> None:
         compiled = ScalaCompiler.compile(
-            JlcCapacitorTestTop, Refinements(instance_values=[(["dut", "part"], "CL21B103KBANNNC")])
+            JlcCapacitorTestTop, Refinements(instance_values=[(["dut", "filter_parts"], ["CL21B103KBANNNC"])])
         )
         self.assertEqual(compiled.get_value(["dut", "fp_footprint"]), "Capacitor_SMD:C_0805_2012Metric")
         self.assertEqual(compiled.get_value(["dut", "fp_part"]), "CL21B103KBANNNC")
@@ -43,7 +43,7 @@ class CapacitorTestCase(unittest.TestCase):
     def test_capacitor_footprint(self) -> None:
         compiled = ScalaCompiler.compile(
             JlcCapacitorTestTop,
-            Refinements(instance_values=[(["dut", "footprint_spec"], "Capacitor_SMD:C_0805_2012Metric")]),
+            Refinements(instance_values=[(["dut", "filter_footprints"], ["Capacitor_SMD:C_0805_2012Metric"])]),
         )
         self.assertEqual(compiled.get_value(["dut", "fp_footprint"]), "Capacitor_SMD:C_0805_2012Metric")
 
