@@ -196,7 +196,7 @@ class IotDisplay(JlcBoardTop):
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 10e6)),
                 (["reg_3v3", "fb", "impedance"], Range(20000.0, 100000.0)),
                 (["epd", "boost", "sense", "require_basic_part"], False),  # 3R is not a basic part
-                (["epd", "boost", "inductor", "part"], "CBC3225T680KR"),  # automated selection OOS
+                (["epd", "boost", "inductor", "filter_parts"], ["CBC3225T680KR"]),  # automated selection OOS
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

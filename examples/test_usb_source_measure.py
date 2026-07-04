@@ -1105,7 +1105,7 @@ class UsbSourceMeasure(JlcBoardTop):
                     ParamValue(["control", "tvs_n", "lcsc_part"]),
                 ),  # note, 5v zener diode
                 # out of stock / unassembleable parts
-                (["conv", "power_path", "out_cap", "cap", "part"], "C3216X5R1V226MTJ00E"),
+                (["conv", "power_path", "out_cap", "cap", "filter_parts"], ["C3216X5R1V226MTJ00E"]),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
