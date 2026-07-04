@@ -10,7 +10,7 @@ from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
 
 @abstract_block
 class SelectorArea(PartsTablePart):
-    """A base mixin that defines a footprint_area range specification for blocks that automatically select parts.
+    """A base mixin that defines a filter_area range specification for blocks that automatically select parts.
     Provides no implementation, only defines the specification parameter.
 
     Some common areas for SMD parts:
@@ -33,7 +33,7 @@ class SelectorArea(PartsTablePart):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.filter_area = self.ArgParameter(filter_area)
-        self.footprint_area = self.ArgParameter(footprint_area)
+        self.footprint_area = self.ArgParameter(footprint_area)  # deprecated
 
     @classmethod
     def _footprint_area(cls, footprint_name: str) -> float:
@@ -51,8 +51,8 @@ class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
     @override
     def generate(self) -> None:
         super().generate()
-        if self.get(self.filter_area) != Range.all():
-            warnings.warn(f"area replaced with filter_area", DeprecationWarning)
+        if self.get(self.footprint_area) != Range.all():
+            warnings.warn(f"footprint_area replaced with filter_area", DeprecationWarning)
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:

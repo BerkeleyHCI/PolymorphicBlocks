@@ -22,16 +22,16 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
         *args: Any,
         series: IntLike = 24,
         tolerance: FloatLike = 0.01,
-        footprint_spec: StringLike = "",
+        filter_footprints: ArrayStringLike = [],
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.series = self.ArgParameter(series)
         self.tolerance = self.ArgParameter(tolerance)
-        self.footprint_spec = self.ArgParameter(footprint_spec)
+        self.filter_footprints = self.ArgParameter(filter_footprints)
 
         self.generator_param(
-            self.resistance, self.power, self.series, self.tolerance, self.footprint_spec, self.footprint_area
+            self.resistance, self.power, self.series, self.tolerance, self.filter_footprints, self.filter_area
         )
 
     @override
@@ -58,8 +58,8 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
             (package_power, package)
             for package_power, package in self.PACKAGE_POWER
             if package_power >= self.get(self.power).upper
-            and (not self.get(self.footprint_spec) or package == self.get(self.footprint_spec))
-            and (Range.exact(self._footprint_area(package)).fuzzy_in(self.get(self.footprint_area)))
+            and (not self.get(self.filter_footprints) or package in self.get(self.filter_footprints))
+            and (Range.exact(self._footprint_area(package)).fuzzy_in(self.get(self.filter_area)))
         ]
         if not suitable_packages:
             raise ValueError("no suitable resistor packages")

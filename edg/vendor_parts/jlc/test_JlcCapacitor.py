@@ -34,7 +34,7 @@ class CapacitorTestCase(unittest.TestCase):
 
     def test_capacitor_min_package(self) -> None:
         compiled = ScalaCompiler.compile(
-            JlcCapacitorTestTop, Refinements(instance_values=[(["dut", "footprint_area"], Range.from_lower(4.0))])
+            JlcCapacitorTestTop, Refinements(instance_values=[(["dut", "filter_area"], Range.from_lower(4.0))])
         )
         self.assertEqual(compiled.get_value(["dut", "fp_footprint"]), "Capacitor_SMD:C_0603_1608Metric")
         self.assertEqual(compiled.get_value(["dut", "fp_part"]), "0603B103K500NT")
