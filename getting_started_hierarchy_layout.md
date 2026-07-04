@@ -109,6 +109,8 @@ Group the switch cell footprints: select them, right click, Grouping > Group Ite
 
    ![pcb_switchmatrix_replicated.png](docs/kicad/pcb_switchmatrix_replicated.png)
 
+4. You can re-replicate if you change the switch cell layout, it will update the other instances including clearing out the previous traces.
+
 ### Option 2: KiCad Design Blocks
 
 _KiCad 10+ required._
@@ -141,7 +143,6 @@ _KiCad 10+ required._
    ![kicad_designblocks_replicate.png](docs/kicad/kicad_designblocks_replicate.png)
 
    > This may shift the position of footprints and you may need to reposition the group.
-7. Move the switch cell groups into the right positions.
 
 ### Snaking
 
