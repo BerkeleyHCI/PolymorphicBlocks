@@ -84,6 +84,8 @@ self.connect(self.block1.port, self.block2.port, ...)
 - Optionally assign a name to the `Connection` by assigning to a `self` variable.
 - Connections must be between ports of compatible type.
   Typed ports (like `Ground` or `VoltageSink`) are distinct from `Passive` ports and not connectable without adapters.
+- Only the block's ports and inner blocks' ports can be connected.
+  Connections cannot be made arbitrarily deep in the block hierarchy.
 
 #### Implicit Connection Blocks
 
@@ -226,6 +228,35 @@ class CustomUartConnector(Block):
 - Ports take electrical modeling parameters (like voltage and current limits) as parameters, empty parameter generally means an ideal port.
 - `PassiveConnector` is an abstract class for connectors with a parameterizable number of passive-typed pins, including 2.54mm headers, FPCs, and more.
 - `PassiveConnector.connected(...)` automatically adapts typed ports to the connector's Passive ports.
+
+### Multipacking
+
+Multipacking allows multiple components, potentially spread across the design hierarchy, to be combined into one component.
+This is an optimization that may save board area and cost.
+Example: quad-pack resistor networks, dual-pack opamps, RGB LEDs.
+
+```python
+class MyBoard(SimpleBoardTop):
+  def contents(self) -> None:
+      ...
+  
+  def multipack(self) -> None:
+    self.res_pack = self.PackedBlock(ResistorArray())
+    self.pack(self.res_pack.elements.request('0'), ['led[0]', 'res'])
+    self.pack(self.res_pack.elements.request('1'), ['led[1]', 'res'])
+    self.pack(self.res_pack.elements.request('2'), ['led[2]', 'res'])
+    self.pack(self.res_pack.elements.request('3'), ['led[3]', 'res'])
+```
+
+- `multipack()` is a blend of `contents()` (in that `PackedBlocks` are declared within) and `refinements()` (in that it uses `List[str]` to reference blocks in the design hierarchy).
+- `self.PackedBlock(...)` is similar to `self.Block(...)`.
+- `self.pack(...)` takes two arguments:
+  - `multipack_part`: the multipack element that is part of the packed block, either a block or an element of a dynamically-sized packed block array.
+  - `path`: the path to the block which this replaces, as a list of strings.
+- This remains correct ERC model-wise, elements of the packed block are modeled as being 'inside' the replaced block.  
+- Each multipack element has its own ports, including for shared pins like the common power pins of a dualpack opamp.
+  A compiler assertion checks that these are all connected to the same netlist net.
+- Multipacking can only be defined at the BoardTop level.
 
 ### Sub-boards and Connector Pairs
 
