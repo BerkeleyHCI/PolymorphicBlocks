@@ -83,7 +83,7 @@ class PcbBot(JlcBoardTop):
         ) as imp:
             self.mcu = imp.Block(IoController())
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             # single onboard debugging LED
             (self.led,), _ = self.chain(self.mcu.gpio.request("led"), imp.Block(IndicatorLed(Led.Red)))

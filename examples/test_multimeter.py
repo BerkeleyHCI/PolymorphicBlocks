@@ -244,7 +244,7 @@ class Multimeter(JlcBoardTop):
                 self.mcu.adc.request("vbatsense"),
             )
 
-            (self.usb_esd,), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.data_usb.usb, self.mcu.usb.request())
             self.connect(self.mcu.pwr_usb, self.data_usb.pwr)
 
             self.chain(self.gate.btn_out, self.mcu.gpio.request("sw0"))

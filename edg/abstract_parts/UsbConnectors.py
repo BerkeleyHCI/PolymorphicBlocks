@@ -12,10 +12,13 @@ class UsbConnector(Connector):
 
 @abstract_block
 class UsbHostConnector(UsbConnector):
-    """Abstract base class for a USB 2.0 device-side port connector"""
+    """Abstract base class for a USB 2.0 device-side port connector."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
         super().__init__()
+
+        self.generate_esd_diode = self.ArgParameter(generate_esd_diode)
+
         self.pwr = self.Port(VoltageSink.empty(), optional=True)
         self.gnd = self.Port(Ground.empty())
 
@@ -24,10 +27,13 @@ class UsbHostConnector(UsbConnector):
 
 @abstract_block
 class UsbDeviceConnector(UsbConnector, PowerSource):
-    """Abstract base class for a USB 2.0 device-side port connector"""
+    """Abstract base class for a USB 2.0 device-side port connector."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
         super().__init__()
+
+        self.generate_esd_diode = self.ArgParameter(generate_esd_diode)
+
         self.pwr = self.Port(VoltageSource.empty(), optional=True)
         self.gnd = self.Port(Ground.empty())
 

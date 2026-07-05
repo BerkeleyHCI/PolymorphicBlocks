@@ -33,7 +33,7 @@ class UsbAReceptacle(UsbHostConnector, FootprintBlock):
 
 
 class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    """Raw USB Type-C Receptacle
+    """Raw generic USB Type-C Receptacle
     Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
     up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
 
@@ -44,8 +44,8 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
     ) -> None:
         super().__init__()
-        self.pwr = self.Port(VoltageSource(voltage=voltage, current_limits=current_limits), optional=True)
         self.gnd = self.Port(Ground())
+        self.pwr = self.Port(VoltageSource(voltage=voltage, current_limits=current_limits), optional=True)
 
         self.usb = self.Port(UsbHostPort(), optional=True)
         self.shield = self.Port(Ground(), optional=True)
@@ -72,9 +72,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 "B5": self.cc.cc2,
                 "S1": self.shield,
             },
-            mfr="Sparkfun",
-            part="COM-15111",
-            datasheet="https://cdn.sparkfun.com/assets/8/6/b/4/5/A40-00119-A52-12.pdf",
+            part="USB-C Receptacle",
             pnp_rot=0,
             pnp_offset=(0, -1.25),
         )
@@ -88,20 +86,31 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
         self,
         voltage: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
+        *,
+        generate_esd_diode: BoolLike = True,
     ) -> None:
-        super().__init__()
+        super().__init__(generate_esd_diode=generate_esd_diode)
 
         self.conn = self.Block(UsbCReceptacle_Device(voltage=voltage, current_limits=current_limits))
-        self.connect(self.pwr, self.conn.pwr)
         self.connect(self.gnd, self.conn.gnd)
+        self.connect(self.pwr, self.conn.pwr)
         self.connect(self.usb, self.conn.usb)
         self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
 
-        self.generator_param(self.pwr.is_connected(), self.cc.is_connected())
+        self.generator_param(
+            self.pwr.is_connected(), self.usb.is_connected(), self.cc.is_connected(), self.generate_esd_diode
+        )
 
     @override
     def generate(self) -> None:
         super().generate()
+
+        if self.usb.is_connected():
+            if self.get(self.generate_esd_diode):
+                self.esd = self.Block(UsbEsdDiode())
+                self.connect(self.esd.gnd, self.gnd)
+                self.connect(self.esd.usb, self.usb)
+
         if self.get(self.cc.is_connected()):  # if CC externally connected, connect directly to USB port
             self.connect(self.cc, self.conn.cc)
             self.require(
@@ -145,17 +154,19 @@ class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
         )
 
 
-class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
+class Molex_105017_0001_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
+        self.gnd = self.Port(Ground())
+        self.pwr = self.Port(
+            VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
+        )
+        self.usb = self.Port(UsbHostPort())
+        self.shield = self.Port(Ground(), optional=True)
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.pwr.init_from(VoltageSource(voltage=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
-        self.gnd.init_from(Ground())
-        self.usb.init_from(UsbHostPort())
-
         self.footprint(
             "J",
             "Connector_USB:USB_Micro-B_Molex-105017-0001",
@@ -165,12 +176,37 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
                 "2": self.usb.dm,
                 "3": self.usb.dp,
                 # '4': TODO: ID pin
-                "6": self.gnd,  # shield
+                "6": self.shield,
             },
             mfr="Molex",
             part="105017-0001",
             datasheet="https://www.molex.com/pdm_docs/sd/1050170001_sd.pdf",
         )
+
+
+class UsbMicroBReceptacle(UsbDeviceConnector, GeneratorBlock):
+    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
+        super().__init__(generate_esd_diode=generate_esd_diode)
+
+        self.conn = self.Block(Molex_105017_0001_Device())
+        self.connect(self.gnd, self.conn.gnd)
+        self.connect(self.pwr, self.conn.pwr)
+        self.connect(self.usb, self.conn.usb)
+
+        self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        if self.usb.is_connected():
+            if self.get(self.generate_esd_diode):
+                self.esd = self.Block(UsbEsdDiode())
+                self.connect(self.esd.gnd, self.gnd)
+                self.connect(self.esd.usb, self.usb)
+
+        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
+        self.connect(self.gnd, self.conn.shield)
 
 
 class UsbCcPulldownResistor(InternalSubcircuit, Block):

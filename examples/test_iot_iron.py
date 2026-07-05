@@ -95,7 +95,7 @@ class IotIron(JlcBoardTop):
             self.connect(self.mcu.gpio.request("pd_int"), self.pd.int)
             self.connect(self.i2c, self.pd.i2c)
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             (self.vusb_sense,), _ = self.chain(
                 self.vusb,

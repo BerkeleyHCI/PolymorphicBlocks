@@ -50,7 +50,7 @@ class EspProgrammer(JlcBoardTop):
             self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6) * Volt))
 
             self.usbconv = imp.Block(Cp2102())
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
+            self.connect(self.usb_uart.usb, self.usbconv.usb)
 
             # for target power only
             self.reg_3v3 = imp.Block(LinearRegulator(output_voltage=3.3 * Volt(tol=0.05)))

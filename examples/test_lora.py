@@ -84,8 +84,7 @@ class EspLora(JlcBoardTop):
         ) as imp:
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerBle())
-
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             (self.ledr,), _ = self.chain(self.mcu.gpio.request("ledr"), imp.Block(IndicatorLed(Led.Red)))
             (self.ledg,), _ = self.chain(self.mcu.gpio.request("ledg"), imp.Block(IndicatorLed(Led.Yellow)))

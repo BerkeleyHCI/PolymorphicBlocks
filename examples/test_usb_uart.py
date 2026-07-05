@@ -41,7 +41,7 @@ class UsbUart(JlcBoardTop):
             self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6) * Volt))
 
             self.usbconv = imp.Block(Cp2102())
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
+            self.connect(self.usb_uart.usb, self.usbconv.usb)
             (self.led,), _ = self.chain(self.usbconv.nsuspend, imp.Block(IndicatorLed(Led.White)))
 
             # for target power only

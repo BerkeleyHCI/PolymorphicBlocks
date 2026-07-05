@@ -53,7 +53,7 @@ class UsbFpgaProgrammer(JlcBoardTop):
             self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6) * Volt))
 
             self.ft232 = imp.Block(Ft232hl())
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
+            self.connect(self.usb.usb, self.ft232.usb)
             (self.led0,), _ = self.chain(self.ft232.acbus.request("0"), imp.Block(IndicatorLed(Led.White)))  # TXDEN
             (self.led1,), _ = self.chain(self.ft232.acbus.request("3"), imp.Block(IndicatorLed(Led.Green)))  # RXLED
             (self.led2,), _ = self.chain(self.ft232.acbus.request("4"), imp.Block(IndicatorLed(Led.Yellow)))  # TXLED

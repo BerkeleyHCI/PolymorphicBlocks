@@ -122,7 +122,7 @@ class SwdDebugger(JlcBoardTop):
         ) as imp:
             self.mcu = imp.Block(IoController())
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             (self.led_tgt,), _ = self.chain(self.mcu.gpio.request(f"led_target"), imp.Block(IndicatorLed(Led.Yellow)))
             (self.led_usb,), _ = self.chain(self.mcu.gpio.request(f"led_usb"), imp.Block(IndicatorLed(Led.White)))
@@ -240,7 +240,7 @@ class PicoProbe(JlcBoardTop):
         ) as imp:
             self.mcu = imp.Block(IoController())
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             (self.led_tgt,), _ = self.chain(self.mcu.gpio.request(f"led_target"), imp.Block(IndicatorLed(Led.Yellow)))
             (self.led_usb,), _ = self.chain(self.mcu.gpio.request(f"led_usb"), imp.Block(IndicatorLed(Led.White)))
