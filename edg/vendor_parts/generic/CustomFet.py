@@ -6,19 +6,18 @@ from ...abstract_parts import *
 
 
 class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
+
     def __init__(
         self,
         *args: Any,
+        part: StringLike = "",
         footprint_spec: StringLike = "",
-        manufacturer_spec: StringLike = "",
-        part_spec: StringLike = "",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
-        self.manufacturer_spec = self.ArgParameter(manufacturer_spec)
-        self.part_spec = self.ArgParameter(part_spec)
+        self.part = self.ArgParameter(part)
 
+        self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
         self.generator_param(self.footprint_spec)
 
         # use ideal specs, which can be overridden with refinements
@@ -36,8 +35,5 @@ class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
             self._standard_footprint().REFDES_PREFIX,
             self.footprint_spec,
             self._standard_footprint()._make_pinning(self, self.get(self.footprint_spec)),
-            mfr=self.manufacturer_spec,
-            part=self.part_spec,
-            value=self.part_spec,
-            datasheet="",
+            part=self.part,
         )

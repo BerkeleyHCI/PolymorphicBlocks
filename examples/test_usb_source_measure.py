@@ -1055,9 +1055,9 @@ class UsbSourceMeasure(JlcBoardTop):
                 (["control", "isense", "ranges[2]", "isense", "res", "res", "require_basic_part"], False),
                 (["control", "driver", "res", "count"], 10),
                 (["control", "driver", "high_fet", "footprint_spec"], "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"),
-                (["control", "driver", "high_fet", "part_spec"], "IRF540N"),
+                (["control", "driver", "high_fet", "part"], "IRF540N"),
                 (["control", "driver", "low_fet", "footprint_spec"], "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"),
-                (["control", "driver", "low_fet", "part_spec"], "IRF9540"),  # has a 30V/4A SOA
+                (["control", "driver", "low_fet", "part"], "IRF9540"),  # has a 30V/4A SOA
                 (["prot_vusb", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
                 (["prot_conv", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
                 (["prot_3v3", "diode", "filter_footprints"], ["Diode_SMD:D_SMA"]),
