@@ -2,23 +2,28 @@ const board = new PCB();
 
 // jlc_th.th1
 const IH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.408, 3.059), rotate: 0,
+  translate: pt(3.218, 3.059), rotate: 0,
   id: 'IH1'
 })
 // jlc_th.th2
 const IH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.448, 3.059), rotate: 0,
+  translate: pt(3.257, 3.059), rotate: 0,
   id: 'IH2'
 })
 // jlc_th.th3
 const IH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.408, 3.099), rotate: 0,
+  translate: pt(3.218, 3.099), rotate: 0,
   id: 'IH3'
 })
 // usb.conn
 const IJ1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(3.321, 1.905), rotate: 0,
   id: 'IJ1'
+})
+// usb.esd
+const IU1 = board.add(SOT_23, {
+  translate: pt(3.187, 2.198), rotate: 0,
+  id: 'IU1'
 })
 // tp_pwr.tp
 const ITP1 = board.add(TestPoint_TE_RCT_0805, {
@@ -31,9 +36,9 @@ const ITP2 = board.add(TestPoint_TE_RCT_0805, {
   id: 'ITP2'
 })
 // reg_3v3.ic
-const IU1 = board.add(SOT_23_6, {
+const IU2 = board.add(SOT_23_6, {
   translate: pt(2.331, 1.807), rotate: 0,
-  id: 'IU1'
+  id: 'IU2'
 })
 // reg_3v3.fb.div.top_res
 const IR1 = board.add(R_0603_1608Metric, {
@@ -91,9 +96,9 @@ const ID1 = board.add(D_SOD_323, {
   id: 'ID1'
 })
 // reg_gate.ic
-const IU2 = board.add(SOT_89_3, {
+const IU3 = board.add(SOT_89_3, {
   translate: pt(3.761, 1.839), rotate: 0,
-  id: 'IU2'
+  id: 'IU3'
 })
 // reg_gate.in_cap.cap
 const IC6 = board.add(C_0805_2012Metric, {
@@ -116,9 +121,9 @@ const IJ2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
   id: 'IJ2'
 })
 // mcu.ic
-const IU3 = board.add(ESP32_S3_WROOM_1, {
+const IU4 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
-  id: 'IU3'
+  id: 'IU4'
 })
 // mcu.vcc_cap0.cap
 const IC8 = board.add(C_1206_3216Metric, {
@@ -151,9 +156,9 @@ const IR6 = board.add(R_0603_1608Metric, {
   id: 'IR6'
 })
 // pd.ic
-const IU4 = board.add(WQFN_14_1EP_2_5x2_5mm_P0_5mm_EP1_45x1_45mm, {
+const IU5 = board.add(WQFN_14_1EP_2_5x2_5mm_P0_5mm_EP1_45x1_45mm, {
   translate: pt(0.890, 2.705), rotate: 0,
-  id: 'IU4'
+  id: 'IU5'
 })
 // pd.vdd_cap[0].cap
 const IC11 = board.add(C_0603_1608Metric, {
@@ -164,11 +169,6 @@ const IC11 = board.add(C_0603_1608Metric, {
 const IC12 = board.add(C_0603_1608Metric, {
   translate: pt(1.031, 2.846), rotate: 0,
   id: 'IC12'
-})
-// usb_esd
-const IU5 = board.add(SOT_23, {
-  translate: pt(3.293, 3.126), rotate: 0,
-  id: 'IU5'
 })
 // vusb_sense.div.top_res
 const IR7 = board.add(R_0603_1608Metric, {
@@ -372,7 +372,7 @@ const ITP7 = board.add(TestPoint_TE_RCT_0805, {
 })
 // touch_sink
 const IU10 = board.add(Symbol_DucklingSolid, {
-  translate: pt(3.566, 3.059), rotate: 0,
+  translate: pt(3.375, 3.059), rotate: 0,
   id: 'IU10'
 })
 // iron.conn
@@ -472,32 +472,32 @@ const IC31 = board.add(C_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "vusb", pads: [["IJ1", "A4"], ["IJ1", "A9"], ["IJ1", "B4"], ["IJ1", "B9"], ["ITP1", "1"], ["IU1", "3"], ["IC1", "1"], ["IC3", "1"], ["IC4", "1"], ["IR3", "1"], ["IU2", "3"], ["IC6", "1"], ["IU4", "2"], ["IR7", "1"], ["IC22", "1"], ["IC23", "1"], ["IQ2", "5"], ["IQ2", "6"], ["IQ2", "7"], ["IQ2", "8"]]},
-  {name: "gnd", pads: [["IJ1", "A1"], ["IJ1", "A12"], ["IJ1", "B1"], ["IJ1", "B12"], ["IJ1", "S1"], ["ITP2", "1"], ["IU1", "1"], ["IR2", "2"], ["IC1", "2"], ["IC3", "2"], ["IC4", "2"], ["IC5", "2"], ["ID1", "2"], ["IU2", "2"], ["IC6", "2"], ["IC7", "2"], ["IJ2", "5"], ["IU3", "1"], ["IU3", "40"], ["IU3", "41"], ["IC8", "2"], ["IC9", "2"], ["IC10", "2"], ["IU4", "15"], ["IU4", "8"], ["IU4", "9"], ["IC11", "2"], ["IC12", "2"], ["IU5", "3"], ["IR8", "2"], ["IU6", "2"], ["IC13", "2"], ["ISW1", "C"], ["ISW1", "S2"], ["IJ3", "1"], ["IJ3", "10"], ["IJ3", "12"], ["IJ3", "13"], ["IJ3", "15"], ["IJ3", "16"], ["IJ3", "17"], ["IJ3", "21"], ["IJ3", "22"], ["IJ3", "23"], ["IJ3", "24"], ["IJ3", "25"], ["IJ3", "29"], ["IJ3", "30"], ["IJ3", "8"], ["IR9", "1"], ["IC16", "2"], ["IC17", "2"], ["IC18", "2"], ["IC19", "2"], ["IU8", "11"], ["IU8", "15"], ["IU8", "17"], ["IU8", "3"], ["IC20", "2"], ["IC21", "2"], ["IC22", "2"], ["IC23", "2"], ["IC24", "2"], ["IU9", "7"], ["IC25", "2"], ["IQ1", "1"], ["IQ1", "2"], ["IQ1", "3"], ["IR13", "1"], ["IC27", "2"], ["IR15", "1"], ["IC28", "2"], ["IR17", "1"], ["IR19", "2"], ["IC29", "2"], ["IR22", "2"], ["IC30", "2"], ["IR27", "1"], ["IU11", "4"], ["IC31", "2"]]},
-  {name: "v3v3", pads: [["IR1", "1"], ["IL1", "2"], ["IC5", "1"], ["ITP3", "1"], ["ID1", "1"], ["IJ2", "1"], ["IU3", "2"], ["IC8", "1"], ["IC9", "1"], ["IR4", "1"], ["IR5", "1"], ["IR6", "1"], ["IU4", "3"], ["IU4", "4"], ["IC11", "1"], ["IC12", "1"], ["IU6", "5"], ["IC13", "1"], ["IJ3", "11"], ["IJ3", "6"], ["IJ3", "9"], ["IC17", "1"], ["IC18", "1"], ["IU8", "4"], ["IU8", "7"], ["IU8", "8"], ["IC20", "1"], ["IC21", "1"], ["ID2", "2"], ["IU11", "8"], ["IC31", "1"]]},
-  {name: "vgate", pads: [["IU2", "1"], ["IC7", "1"], ["ITP4", "1"], ["IU9", "1"], ["IC25", "1"]]},
+  {name: "vusb", pads: [["IJ1", "A4"], ["IJ1", "A9"], ["IJ1", "B4"], ["IJ1", "B9"], ["ITP1", "1"], ["IU2", "3"], ["IC1", "1"], ["IC3", "1"], ["IC4", "1"], ["IR3", "1"], ["IU3", "3"], ["IC6", "1"], ["IU5", "2"], ["IR7", "1"], ["IC22", "1"], ["IC23", "1"], ["IQ2", "5"], ["IQ2", "6"], ["IQ2", "7"], ["IQ2", "8"]]},
+  {name: "gnd", pads: [["IJ1", "A1"], ["IJ1", "A12"], ["IJ1", "B1"], ["IJ1", "B12"], ["IJ1", "S1"], ["IU1", "3"], ["ITP2", "1"], ["IU2", "1"], ["IR2", "2"], ["IC1", "2"], ["IC3", "2"], ["IC4", "2"], ["IC5", "2"], ["ID1", "2"], ["IU3", "2"], ["IC6", "2"], ["IC7", "2"], ["IJ2", "5"], ["IU4", "1"], ["IU4", "40"], ["IU4", "41"], ["IC8", "2"], ["IC9", "2"], ["IC10", "2"], ["IU5", "15"], ["IU5", "8"], ["IU5", "9"], ["IC11", "2"], ["IC12", "2"], ["IR8", "2"], ["IU6", "2"], ["IC13", "2"], ["ISW1", "C"], ["ISW1", "S2"], ["IJ3", "1"], ["IJ3", "10"], ["IJ3", "12"], ["IJ3", "13"], ["IJ3", "15"], ["IJ3", "16"], ["IJ3", "17"], ["IJ3", "21"], ["IJ3", "22"], ["IJ3", "23"], ["IJ3", "24"], ["IJ3", "25"], ["IJ3", "29"], ["IJ3", "30"], ["IJ3", "8"], ["IR9", "1"], ["IC16", "2"], ["IC17", "2"], ["IC18", "2"], ["IC19", "2"], ["IU8", "11"], ["IU8", "15"], ["IU8", "17"], ["IU8", "3"], ["IC20", "2"], ["IC21", "2"], ["IC22", "2"], ["IC23", "2"], ["IC24", "2"], ["IU9", "7"], ["IC25", "2"], ["IQ1", "1"], ["IQ1", "2"], ["IQ1", "3"], ["IR13", "1"], ["IC27", "2"], ["IR15", "1"], ["IC28", "2"], ["IR17", "1"], ["IR19", "2"], ["IC29", "2"], ["IR22", "2"], ["IC30", "2"], ["IR27", "1"], ["IU11", "4"], ["IC31", "2"]]},
+  {name: "v3v3", pads: [["IR1", "1"], ["IL1", "2"], ["IC5", "1"], ["ITP3", "1"], ["ID1", "1"], ["IJ2", "1"], ["IU4", "2"], ["IC8", "1"], ["IC9", "1"], ["IR4", "1"], ["IR5", "1"], ["IR6", "1"], ["IU5", "3"], ["IU5", "4"], ["IC11", "1"], ["IC12", "1"], ["IU6", "5"], ["IC13", "1"], ["IJ3", "11"], ["IJ3", "6"], ["IJ3", "9"], ["IC17", "1"], ["IC18", "1"], ["IU8", "4"], ["IU8", "7"], ["IU8", "8"], ["IC20", "1"], ["IC21", "1"], ["ID2", "2"], ["IU11", "8"], ["IC31", "1"]]},
+  {name: "vgate", pads: [["IU3", "1"], ["IC7", "1"], ["ITP4", "1"], ["IU9", "1"], ["IC25", "1"]]},
   {name: "conv_out", pads: [["IL2", "2"], ["IC24", "1"], ["ITP5", "1"], ["IJ5", "2"], ["IR18", "1"]]},
-  {name: "usb_chain_0.d_P", pads: [["IJ1", "A6"], ["IJ1", "B6"], ["IU3", "14"], ["IU5", "2"]]},
-  {name: "usb_chain_0.d_N", pads: [["IJ1", "A7"], ["IJ1", "B7"], ["IU3", "13"], ["IU5", "1"]]},
-  {name: "usb.cc.cc1", pads: [["IJ1", "A5"], ["IU4", "10"], ["IU4", "11"]]},
-  {name: "usb.cc.cc2", pads: [["IJ1", "B5"], ["IU4", "1"], ["IU4", "14"]]},
-  {name: "reg_3v3.ic.sw", pads: [["IU1", "2"], ["IC2", "2"], ["IL1", "1"]]},
-  {name: "reg_3v3.ic.fb", pads: [["IU1", "4"], ["IR1", "2"], ["IR2", "1"]]},
-  {name: "reg_3v3.ic.boot", pads: [["IU1", "6"], ["IC2", "1"]]},
-  {name: "reg_3v3.ic.en", pads: [["IU1", "5"], ["IR3", "2"]]},
-  {name: "mcu.program_uart_node.a_tx", pads: [["IJ2", "4"], ["IU3", "36"]]},
-  {name: "mcu.program_uart_node.b_tx", pads: [["IJ2", "3"], ["IU3", "37"]]},
-  {name: "mcu.program_en_node", pads: [["IJ2", "6"], ["IU3", "3"], ["IR4", "2"], ["IC10", "1"]]},
-  {name: "mcu.program_boot_node", pads: [["IJ2", "2"], ["IU3", "27"], ["IR10", "2"]]},
-  {name: "i2c_pull.i2c.scl", pads: [["IU3", "35"], ["IR5", "2"], ["IU4", "6"], ["IU6", "6"], ["IJ3", "18"]]},
-  {name: "i2c_pull.i2c.sda", pads: [["IU3", "34"], ["IR6", "2"], ["IU4", "7"], ["IU6", "1"], ["IJ3", "19"], ["IJ3", "20"]]},
-  {name: "pd.int", pads: [["IU3", "38"], ["IU4", "5"]]},
-  {name: "pd.ic.vconn", pads: [["IU4", "12"], ["IU4", "13"]]},
-  {name: "vusb_sense.output", pads: [["IU3", "39"], ["IR7", "2"], ["IR8", "1"]]},
-  {name: "enc.a", pads: [["IU3", "10"], ["ISW1", "A"]]},
-  {name: "enc.b", pads: [["IU3", "9"], ["ISW1", "B"]]},
-  {name: "enc.sw", pads: [["IU3", "8"], ["ISW1", "S1"]]},
-  {name: "oled.reset", pads: [["IU3", "11"], ["IJ3", "14"]]},
+  {name: "usb.usb.dp", pads: [["IJ1", "A6"], ["IJ1", "B6"], ["IU1", "2"], ["IU4", "14"]]},
+  {name: "usb.usb.dm", pads: [["IJ1", "A7"], ["IJ1", "B7"], ["IU1", "1"], ["IU4", "13"]]},
+  {name: "usb.cc.cc1", pads: [["IJ1", "A5"], ["IU5", "10"], ["IU5", "11"]]},
+  {name: "usb.cc.cc2", pads: [["IJ1", "B5"], ["IU5", "1"], ["IU5", "14"]]},
+  {name: "reg_3v3.ic.sw", pads: [["IU2", "2"], ["IC2", "2"], ["IL1", "1"]]},
+  {name: "reg_3v3.ic.fb", pads: [["IU2", "4"], ["IR1", "2"], ["IR2", "1"]]},
+  {name: "reg_3v3.ic.boot", pads: [["IU2", "6"], ["IC2", "1"]]},
+  {name: "reg_3v3.ic.en", pads: [["IU2", "5"], ["IR3", "2"]]},
+  {name: "mcu.program_uart_node.a_tx", pads: [["IJ2", "4"], ["IU4", "36"]]},
+  {name: "mcu.program_uart_node.b_tx", pads: [["IJ2", "3"], ["IU4", "37"]]},
+  {name: "mcu.program_en_node", pads: [["IJ2", "6"], ["IU4", "3"], ["IR4", "2"], ["IC10", "1"]]},
+  {name: "mcu.program_boot_node", pads: [["IJ2", "2"], ["IU4", "27"], ["IR10", "2"]]},
+  {name: "i2c_pull.i2c.scl", pads: [["IU4", "35"], ["IR5", "2"], ["IU5", "6"], ["IU6", "6"], ["IJ3", "18"]]},
+  {name: "i2c_pull.i2c.sda", pads: [["IU4", "34"], ["IR6", "2"], ["IU5", "7"], ["IU6", "1"], ["IJ3", "19"], ["IJ3", "20"]]},
+  {name: "pd.int", pads: [["IU4", "38"], ["IU5", "5"]]},
+  {name: "pd.ic.vconn", pads: [["IU5", "12"], ["IU5", "13"]]},
+  {name: "vusb_sense.output", pads: [["IU4", "39"], ["IR7", "2"], ["IR8", "1"]]},
+  {name: "enc.a", pads: [["IU4", "10"], ["ISW1", "A"]]},
+  {name: "enc.b", pads: [["IU4", "9"], ["ISW1", "B"]]},
+  {name: "enc.sw", pads: [["IU4", "8"], ["ISW1", "S1"]]},
+  {name: "oled.reset", pads: [["IU4", "11"], ["IJ3", "14"]]},
   {name: "oled.device.vcc", pads: [["IJ3", "28"], ["IC19", "1"]]},
   {name: "oled.device.iref", pads: [["IJ3", "26"], ["IR9", "2"]]},
   {name: "oled.device.vcomh", pads: [["IJ3", "27"], ["IC16", "1"]]},
@@ -505,9 +505,9 @@ board.setNetlist([
   {name: "oled.device.c1n", pads: [["IJ3", "5"], ["IC14", "2"]]},
   {name: "oled.device.c2p", pads: [["IJ3", "2"], ["IC15", "1"]]},
   {name: "oled.device.c2n", pads: [["IJ3", "3"], ["IC15", "2"]]},
-  {name: "spk_drv.i2s.sck", pads: [["IU3", "32"], ["IU8", "16"]]},
-  {name: "spk_drv.i2s.ws", pads: [["IU3", "31"], ["IU8", "14"]]},
-  {name: "spk_drv.i2s.sd", pads: [["IU3", "33"], ["IU8", "1"]]},
+  {name: "spk_drv.i2s.sck", pads: [["IU4", "32"], ["IU8", "16"]]},
+  {name: "spk_drv.i2s.ws", pads: [["IU4", "31"], ["IU8", "14"]]},
+  {name: "spk_drv.i2s.sd", pads: [["IU4", "33"], ["IU8", "1"]]},
   {name: "spk_drv.out.a", pads: [["IU8", "9"], ["IJ4", "1"]]},
   {name: "spk_drv.out.b", pads: [["IU8", "10"], ["IJ4", "2"]]},
   {name: "ledr.package.k", pads: [["ID2", "1"], ["IR10", "1"]]},
@@ -519,16 +519,16 @@ board.setNetlist([
   {name: "conv.sw.driver.ic.hb", pads: [["IU9", "2"], ["IC26", "1"]]},
   {name: "conv.sw.low_fet.gate", pads: [["IQ1", "4"], ["IR11", "2"]]},
   {name: "conv.sw.high_fet.gate", pads: [["IQ2", "4"], ["IR12", "2"]]},
-  {name: "low_pull.io", pads: [["IU3", "4"], ["IR13", "2"], ["IR14", "1"]]},
-  {name: "high_pull.io", pads: [["IU3", "5"], ["IR15", "2"], ["IR16", "1"]]},
-  {name: "touch_sink.pad", pads: [["IU3", "15"], ["IU10", "1"]]},
+  {name: "low_pull.io", pads: [["IU4", "4"], ["IR13", "2"], ["IR14", "1"]]},
+  {name: "high_pull.io", pads: [["IU4", "5"], ["IR15", "2"], ["IR16", "1"]]},
+  {name: "touch_sink.pad", pads: [["IU4", "15"], ["IU10", "1"]]},
   {name: "iron.thermocouple", pads: [["IJ5", "3"], ["IR25", "1"], ["ITP10", "1"]]},
   {name: "iron.isense", pads: [["IJ5", "1"], ["IR17", "2"], ["IR24", "1"], ["IU11", "3"]]},
   {name: "vsense.output", pads: [["IR18", "2"], ["IR19", "1"], ["ITP8", "1"], ["IR20", "1"]]},
-  {name: "vfilt.output", pads: [["IU3", "6"], ["IR20", "2"], ["IC29", "1"]]},
+  {name: "vfilt.output", pads: [["IU4", "6"], ["IR20", "2"], ["IC29", "1"]]},
   {name: "ifilt.output", pads: [["IR21", "1"], ["IR23", "1"], ["IU11", "1"]]},
-  {name: "tp_i.output", pads: [["IU3", "7"], ["IR23", "2"], ["IC30", "1"], ["ITP9", "1"]]},
-  {name: "tamp.output", pads: [["IU3", "12"], ["IR26", "1"], ["IU11", "7"]]},
+  {name: "tp_i.output", pads: [["IU4", "7"], ["IR23", "2"], ["IC30", "1"], ["ITP9", "1"]]},
+  {name: "tamp.output", pads: [["IU4", "12"], ["IR26", "1"], ["IU11", "7"]]},
   {name: "packed_opamp.inp.1", pads: [["IR25", "2"], ["IR27", "2"], ["IU11", "5"]]},
   {name: "packed_opamp.inn.0", pads: [["IR21", "2"], ["IR22", "1"], ["IU11", "2"]]},
   {name: "packed_opamp.inn.1", pads: [["IR24", "2"], ["IR26", "2"], ["IU11", "6"]]}
