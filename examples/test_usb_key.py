@@ -6,6 +6,30 @@ from edg import *
 from .util import run_test_board
 
 
+class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.pwr.init_from(VoltageSource(voltage=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
+        self.gnd.init_from(Ground())
+        self.usb.init_from(UsbHostPort())
+
+        self.footprint(
+            "J",
+            "edg:USB_A_Pads",
+            {
+                "1": self.pwr,
+                "2": self.usb.dm,
+                "3": self.usb.dp,
+                "4": self.gnd,
+            },
+            part="USB A pads",
+        )
+
+
 class StTscSenseChannel(Block):
     """Sense channel for STM micros' TSC peripheral."""
 

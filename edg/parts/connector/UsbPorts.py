@@ -105,11 +105,10 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
 
-        if self.usb.is_connected():
-            if self.get(self.generate_esd_diode):
-                self.esd = self.Block(UsbEsdDiode())
-                self.connect(self.esd.gnd, self.gnd)
-                self.connect(self.esd.usb, self.usb)
+        if self.get(self.usb.is_connected()) and self.get(self.generate_esd_diode):
+            self.esd = self.Block(UsbEsdDiode())
+            self.connect(self.esd.gnd, self.gnd)
+            self.connect(self.esd.usb, self.usb)
 
         if self.get(self.cc.is_connected()):  # if CC externally connected, connect directly to USB port
             self.connect(self.cc, self.conn.cc)
@@ -128,30 +127,6 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
 
         # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
         self.connect(self.gnd, self.conn.shield)
-
-
-class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
-    def __init__(self) -> None:
-        super().__init__()
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-        self.pwr.init_from(VoltageSource(voltage=self.USB2_VOLTAGE_RANGE, current_limits=self.USB2_CURRENT_LIMITS))
-        self.gnd.init_from(Ground())
-        self.usb.init_from(UsbHostPort())
-
-        self.footprint(
-            "J",
-            "edg:USB_A_Pads",
-            {
-                "1": self.pwr,
-                "2": self.usb.dm,
-                "3": self.usb.dp,
-                "4": self.gnd,
-            },
-            part="USB A pads",
-        )
 
 
 class Molex_105017_0001_Device(InternalSubcircuit, FootprintBlock):
@@ -199,11 +174,10 @@ class UsbMicroBReceptacle(UsbDeviceConnector, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
 
-        if self.usb.is_connected():
-            if self.get(self.generate_esd_diode):
-                self.esd = self.Block(UsbEsdDiode())
-                self.connect(self.esd.gnd, self.gnd)
-                self.connect(self.esd.usb, self.usb)
+        if self.get(self.usb.is_connected()) and self.get(self.generate_esd_diode):
+            self.esd = self.Block(UsbEsdDiode())
+            self.connect(self.esd.gnd, self.gnd)
+            self.connect(self.esd.usb, self.usb)
 
         # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
         self.connect(self.gnd, self.conn.shield)
