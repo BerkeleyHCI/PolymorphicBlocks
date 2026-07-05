@@ -47,7 +47,7 @@ class BaseBoardTop(DesignTop):
                 (Neopixel, Ws2812b),
             ],
             class_values=[
-                (SelectorArea, ["footprint_area"], Range.from_lower(4.0)),  # at least 0603
+                (SelectorArea, ["filter_area"], Range.from_lower(4.0)),  # at least 0603
             ],
         )
 

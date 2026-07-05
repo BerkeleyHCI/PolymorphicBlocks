@@ -6,9 +6,11 @@ from ...circuits import *
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
-class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTablePart, GeneratorBlock, FootprintBlock):
-    def __init__(self) -> None:
+class Max98357a_Device(InternalSubcircuit, JlcPart, GeneratorBlock, FootprintBlock):
+    def __init__(self, *, part: StringLike = "") -> None:
         super().__init__()
+
+        self.part = self.ArgParameter(part)
 
         self.vdd = self.Port(
             VoltageSink(
@@ -28,15 +30,12 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
         self.out = self.Port(SpeakerDriverPort(AnalogSource()), [Output])
 
-        self.generator_param(self.part, self.footprint_spec)
+        self.generator_param(self.part)
 
     @override
     def generate(self) -> None:
         super().generate()
-        if (
-            not self.get(self.footprint_spec)
-            or self.get(self.footprint_spec) == "Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm"
-        ):
+        if not self.get(self.part) or self.get(self.part) == "MAX98357AETE+T":
             footprint = "Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm"
             pinning: Dict[str, Union[Passive, HasPassivePort]] = {
                 "4": self.vdd,  # hard tied to left mode only TODO selectable SD_MODE
@@ -56,10 +55,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             part = "MAX98357AETE+T"
             jlc_part = "C910544"
             pnp_rot = -90
-        elif (
-            self.get(self.footprint_spec)
-            == "Package_BGA:Maxim_WLP-9_1.595x1.415_Layout3x3_P0.4mm_Ball0.27mm_Pad0.25mm_NSMD"
-        ):
+        elif self.get(self.part) == "MAX98357AEWL+T":
             footprint = "Package_BGA:Maxim_WLP-9_1.595x1.415_Layout3x3_P0.4mm_Ball0.27mm_Pad0.25mm_NSMD"
             pinning = {
                 "A1": self.vdd,  # hard tied to left mode only TODO selectable SD_MODE

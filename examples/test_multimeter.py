@@ -398,18 +398,15 @@ class Multimeter(JlcBoardTop):
                     Range(float("-inf"), float("inf")),
                 ),  # allow the regulator to go into tracking mode
                 (["reg_5v", "fb", "div", "series"], 12),  # JLC has limited resistors
-                (["measure", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),  # beefy input resistor
+                (["measure", "res", "filter_footprints"], ["Resistor_SMD:R_2512_6332Metric"]),  # beefy input resistor
                 (["measure", "res", "fp_mfr"], "Bourns Inc."),
                 (["measure", "res", "fp_part"], "CHV2512-F*-1004***"),
                 # IMPORTANT! Most 2512 resistors are rated to ~200V working voltage, this one is up to 3kV.
                 # pin footprints to re-select parts with newer parts tables
-                (["driver", "fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-23"),  # Q3
-                (["driver", "fet", "manufacturer_spec"], "Infineon Technologies"),
-                (["driver", "fet", "part_spec"], "BSR92PH6327XTSA1"),
-                (["driver", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
-                (["driver", "diode", "manufacturer_spec"], "Micro Commercial Co"),
-                (["driver", "diode", "part_spec"], "GS1G-LTP"),
-                # (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
+                (["driver", "fet", "part_footprint"], "Package_TO_SOT_SMD:SOT-23"),  # Q3
+                (["driver", "fet", "part"], "BSR92PH6327XTSA1"),
+                (["driver", "diode", "part_footprint"], "Diode_SMD:D_SMA"),
+                (["driver", "diode", "part"], "GS1G-LTP"),
                 # JLC does not have frequency specs, must be checked TODO
                 (["reg_5v", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
             ],

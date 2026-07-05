@@ -192,7 +192,7 @@ class SwdDebugger(JlcBoardTop):
                 (["target_reg", "out_cap", "cap", "capacitance"], Range.from_tolerance(4.7e-6, 0.2)),
             ],
             class_values=[
-                (SelectorArea, ["footprint_area"], Range.from_lower(1.5)),  # at least 0402
+                (SelectorArea, ["filter_area"], Range.from_lower(1.5)),  # at least 0402
             ],
         )
 
@@ -309,7 +309,7 @@ class PicoProbe(JlcBoardTop):
                 (TagConnect, TagConnectNonLegged),
             ],
             class_values=[
-                (SelectorArea, ["footprint_area"], Range.from_lower(1.5)),  # at least 0402
+                (SelectorArea, ["filter_area"], Range.from_lower(1.5)),  # at least 0402
             ],
         )
 

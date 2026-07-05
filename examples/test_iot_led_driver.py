@@ -186,15 +186,15 @@ class IotLedDriver(JlcBoardTop):
                 (["reg_3v3", "power_path", "in_cap", "cap", "voltage_margin"], 1.25),  # use a 1206 25 or 35v part
                 (["qwiic", "pwr", "current_draw"], Range(0.0, 0.08)),  # use 1210 inductor
                 (
-                    ["mcu", "pi", "c1", "footprint_area"],
+                    ["mcu", "pi", "c1", "filter_area"],
                     Range(4.0, float("inf")),
                 ),  # use 0603 consistently since that's what's available
-                (["mcu", "pi", "c2", "footprint_area"], Range(4.0, float("inf"))),
-                (["mcu", "pi", "l", "footprint_area"], Range(4.0, float("inf"))),
-                (["reg_3v3", "fb", "div", "top_res", "footprint_area"], Range(4.0, float("inf"))),
-                (["reg_3v3", "fb", "div", "bottom_res", "footprint_area"], Range(4.0, float("inf"))),
-                (["v12_sense", "div", "top_res", "footprint_area"], Range(4.0, float("inf"))),
-                (["v12_sense", "div", "bottom_res", "footprint_area"], Range(4.0, float("inf"))),
+                (["mcu", "pi", "c2", "filter_area"], Range(4.0, float("inf"))),
+                (["mcu", "pi", "l", "filter_area"], Range(4.0, float("inf"))),
+                (["reg_3v3", "fb", "div", "top_res", "filter_area"], Range(4.0, float("inf"))),
+                (["reg_3v3", "fb", "div", "bottom_res", "filter_area"], Range(4.0, float("inf"))),
+                (["v12_sense", "div", "top_res", "filter_area"], Range(4.0, float("inf"))),
+                (["v12_sense", "div", "bottom_res", "filter_area"], Range(4.0, float("inf"))),
                 (["reg_3v3", "en_res", "resistance"], Range(100e3, 1e6)),  # wider selection of resistors
             ],
             class_refinements=[
@@ -206,7 +206,7 @@ class IotLedDriver(JlcBoardTop):
                 (TagConnect, TagConnectNonLegged),
             ],
             class_values=[
-                (SelectorArea, ["footprint_area"], Range.from_lower(1.5)),  # at least 0402
+                (SelectorArea, ["filter_area"], Range.from_lower(1.5)),  # at least 0402
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),  # RH-5015, which is actually in stock
             ],
         )

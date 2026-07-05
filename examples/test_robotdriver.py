@@ -225,7 +225,7 @@ class RobotDriver(JlcBoardTop):
                     ],
                 ),
                 (["isense", "out", "signal"], Range(0.1, 2.45)),  # trade range for resolution
-                (["isense", "sense", "res", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),
+                (["isense", "sense", "res", "res", "filter_footprints"], ["Resistor_SMD:R_2512_6332Metric"]),
                 (["isense", "sense", "res", "res", "require_basic_part"], False),
                 # JLC does not have frequency specs, must be checked TODO
                 (["reg_3v3", "power_path", "inductor", "frequency"], Range(0, 0)),

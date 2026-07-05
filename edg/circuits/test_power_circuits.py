@@ -27,8 +27,8 @@ class RampLimiterTestTop(DesignTop):
                 (SwitchFet, CustomFet),
             ],
             instance_values=[
-                (["dut", "drv", "footprint_spec"], "Package_TO_SOT_SMD:SOT-23"),
-                (["dut", "ctl_fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-23"),
+                (["dut", "drv", "part_footprint"], "Package_TO_SOT_SMD:SOT-23"),
+                (["dut", "ctl_fet", "part_footprint"], "Package_TO_SOT_SMD:SOT-23"),
                 (["dut", "drv", "actual_gate_drive"], Range(1.0, 12)),
             ],
         )

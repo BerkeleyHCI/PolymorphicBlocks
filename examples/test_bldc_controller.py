@@ -230,22 +230,22 @@ class BldcController(JlcBoardTop):
                 ),
                 (["isense", "sense", "res", "res", "require_basic_part"], False),
                 (["bldc_drv", "pgnd_res[1]", "res", "res", "require_basic_part"], False),
-                (["bldc_drv", "pgnd_res[1]", "res", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),
+                (["bldc_drv", "pgnd_res[1]", "res", "res", "filter_footprints"], ["Resistor_SMD:R_2512_6332Metric"]),
                 (
                     ["bldc_drv", "pgnd_res[2]", "res", "res", "require_basic_part"],
                     ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "require_basic_part"]),
                 ),
                 (
-                    ["bldc_drv", "pgnd_res[2]", "res", "res", "footprint_spec"],
-                    ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "footprint_spec"]),
+                    ["bldc_drv", "pgnd_res[2]", "res", "res", "filter_footprints"],
+                    ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "filter_footprints"]),
                 ),
                 (
                     ["bldc_drv", "pgnd_res[3]", "res", "res", "require_basic_part"],
                     ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "require_basic_part"]),
                 ),
                 (
-                    ["bldc_drv", "pgnd_res[3]", "res", "res", "footprint_spec"],
-                    ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "footprint_spec"]),
+                    ["bldc_drv", "pgnd_res[3]", "res", "res", "filter_footprints"],
+                    ParamValue(["bldc_drv", "pgnd_res[1]", "res", "res", "filter_footprints"]),
                 ),
                 (["bldc_drv", "vm_cap_bulk", "cap", "voltage_margin"], 1.5),  # allow using a 50V cap
                 (["bldc_drv", "cp_cap", "voltage_margin"], 1.5),  # allow using a 50V cap

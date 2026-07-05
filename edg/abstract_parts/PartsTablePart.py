@@ -1,3 +1,4 @@
+import warnings
 from abc import abstractmethod
 from typing import Optional, Union, Any
 
@@ -56,8 +57,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.part)
-        self.generator_param(self.excluded_parts)
+        self.generator_param(self.part, self.excluded_parts)
 
     def _row_filter(self, row: PartsTableRow) -> bool:
         """Returns whether the candidate row satisfies the requirements (should be kept).
@@ -88,6 +88,8 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
     @override
     def generate(self) -> None:
+        super().generate()
+
         matching_table = self._get_table().filter(lambda row: self._row_filter(row))
         postprocessed_table = self._table_postprocess(matching_table)
         postprocessed_table = postprocessed_table.sort_by(self._row_sort_by)
@@ -101,14 +103,17 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 class SelectorFootprint(PartsTablePart):
     """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
 
-    def __init__(self, *args: Any, footprint_spec: StringLike = "", **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, filter_footprints: ArrayStringLike = [], footprint_spec: StringLike = "", **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
+        self.filter_footprints = self.ArgParameter(filter_footprints)  # actual_footprint left to the actual footprint
+        self.footprint_spec = self.ArgParameter(footprint_spec)  # deprecated, named because self.footprint taken
 
 
 @non_library
 class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
-    """A combination of PartsTableSelector with SelectorFootprint, with row filtering on footprint_spec.
+    """A combination of PartsTableSelector with SelectorFootprint, with row filtering on filter_footprints.
     Does not create the footprint itself, this can be used as a base class where footprint filtering is desired
     but an internal block is created instead."""
 
@@ -116,13 +121,20 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.footprint_spec)
+        self.generator_param(self.filter_footprints, self.footprint_spec)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+        if self.get(self.footprint_spec):
+            warnings.warn(f"footprint_spec replaced with filter_footprints taking an array", DeprecationWarning)
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        return super()._row_filter(row) and (
-            (not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT]
-        )
+        filter_footprints = self.get(self.filter_footprints)
+        if self.get(self.footprint_spec):
+            filter_footprints.append(self.get(self.footprint_spec))
+        return super()._row_filter(row) and ((not filter_footprints or row[self.KICAD_FOOTPRINT] in filter_footprints))
 
 
 @non_library

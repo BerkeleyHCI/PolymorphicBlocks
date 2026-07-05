@@ -37,17 +37,17 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
     MAX_CAP_PACKAGE = "Capacitor_SMD:C_1206_3216Metric"  # default package for largest possible capacitor
 
     def __init__(
-        self, *args: Any, footprint_spec: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs: Any
+        self, *args: Any, filter_footprints: ArrayStringLike = [], derating_coeff: FloatLike = 1.0, **kwargs: Any
     ) -> None:
         """
         footprint specifies an optional constraint on footprint
         derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.
         """
         super().__init__(*args, **kwargs)
-        self.footprint_spec = self.ArgParameter(footprint_spec)
+        self.filter_footprints = self.ArgParameter(filter_footprints)
         self.derating_coeff = self.ArgParameter(derating_coeff)
         self.generator_param(
-            self.capacitance, self.voltage, self.footprint_spec, self.footprint_area, self.derating_coeff
+            self.capacitance, self.voltage, self.filter_footprints, self.filter_area, self.derating_coeff
         )
 
         # Output values
@@ -119,18 +119,18 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
         :param voltage: user-specified voltage
         :param single_nominal_capacitance: used when no single cap with requested capacitance, must generate multiple parallel caps,
                                            actually refers to max capacitance for a given part
-        :param footprint_spec: user-specified package footprint
-        :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
+        :param filter_footprints: user-specified package footprint
+        :param derating_coeff: user-specified derating coefficient
         """
         super().generate()
-        footprint = self.get(self.footprint_spec)
+        filter_footprints = self.get(self.filter_footprints)
 
         def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
             package_options = [
                 spec
                 for spec in self.PACKAGE_SPECS
-                if (not footprint or spec.name == footprint)
-                and (Range.exact(self._footprint_area(spec.name)).fuzzy_in(self.get(self.footprint_area)))
+                if (not filter_footprints or spec.name in filter_footprints)
+                and (Range.exact(self._footprint_area(spec.name)).fuzzy_in(self.get(self.filter_area)))
             ]
 
             for package in package_options:
@@ -150,15 +150,13 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
 
             self.assign(self.selected_nominal_capacitance, num_caps * nominal_capacitance)
 
-            if footprint == "":
-                split_package = self.MAX_CAP_PACKAGE
-            else:
-                split_package = footprint
+            valid_footprint = select_package(self.SINGLE_CAP_MAX, self.get(self.voltage))
+            assert valid_footprint is not None, "cannot select a valid footprint"
 
             cap_model = DummyCapacitorFootprint(
                 capacitance=Range.exact(self.SINGLE_CAP_MAX),
                 voltage=self.voltage,
-                footprint=split_package,
+                footprint=valid_footprint,
                 value=f"{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F",
             )
             self.c = ElementDict[DummyCapacitorFootprint]()

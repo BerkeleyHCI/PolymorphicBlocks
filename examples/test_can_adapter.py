@@ -96,7 +96,7 @@ class CanAdapter(JlcBoardTop):
                 (["mcu", "programming"], "uart-auto"),
                 (["reg_3v3", "power_path", "inductor", "manual_frequency_rating"], Range(0, 9e6)),
                 (["reg_3v3", "power_path", "in_cap", "cap", "voltage_margin"], 1.0),
-                (["reg_3v3", "power_path", "inductor", "footprint_spec"], "Inductor_SMD:L_1210_3225Metric"),
+                (["reg_3v3", "power_path", "inductor", "filter_footprints"], ["Inductor_SMD:L_1210_3225Metric"]),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

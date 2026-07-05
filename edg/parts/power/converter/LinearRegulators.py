@@ -587,7 +587,7 @@ class Lp5907_Device(
         self.assign(self.actual_dropout, (50, 250) * mVolt)
 
         self.output_voltage = self.ArgParameter(output_voltage)
-        self.generator_param(self.output_voltage, self.part, self.footprint_spec)
+        self.generator_param(self.output_voltage, self.part, self.filter_footprints)
 
         self.en = self.Port(
             DigitalSink(
@@ -638,11 +638,11 @@ class Lp5907_Device(
         ]
         # TODO should prefer parts by closeness to nominal (center) specified voltage
         output_voltage_spec = self.get(self.output_voltage)
-        footprint_spec = self.get(self.footprint_spec)
+        filter_footprints = self.get(self.filter_footprints)
         suitable_parts = [
             part
             for part in parts
-            if part[0] in output_voltage_spec and (not footprint_spec or footprint_spec == part[2])
+            if part[0] in output_voltage_spec and (not filter_footprints or part[2] in filter_footprints)
         ]
         assert suitable_parts, "no regulator with compatible output"
         part_output_voltage, part_number, footprint, jlc_number = suitable_parts[0]

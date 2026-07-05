@@ -241,7 +241,7 @@ class IotFan(JlcBoardTop):
                         "i2c2.sda=6",  # LP_I2C_SDA on -C6
                     ],
                 ),
-                (["fan_drv", "drv", "footprint_spec"], "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"),
+                (["fan_drv", "drv", "filter_footprints"], ["Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"]),
                 # gate voltage limit parsing is very unreliable
                 (["fan_drv", "drv", "gate_voltage"], Range(0, 0)),
                 (["vin_sense", "Rs", "res", "res", "require_basic_part"], False),  # current sense resistor
@@ -267,7 +267,7 @@ class IotFan(JlcBoardTop):
                 (Esp32s3_Wroom_1, ["programming"], "uart-auto"),
                 (JlcInductor, ["manual_frequency_rating"], Range(0, 9e6)),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
-                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
+                (ProtectionZenerDiode, ["diode", "filter_footprints"], ["Diode_SMD:D_SOD-123"]),
                 (Fusb302b, ["ic", "vbus", "voltage_limits"], Range(4.0, 28.0)),  # abs max ratings
             ],
         )

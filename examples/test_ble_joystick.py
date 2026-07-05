@@ -304,7 +304,7 @@ class BleJoystick(JlcBoardTop):
                 (Switch, SmtSwitch),
             ],
             class_values=[
-                (ProtectionZenerDiode, ["diode", "footprint_spec"], "Diode_SMD:D_SOD-123"),
+                (ProtectionZenerDiode, ["diode", "filter_footprints"], ["Diode_SMD:D_SOD-123"]),
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),
             ],
         )
