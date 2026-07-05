@@ -5,13 +5,15 @@ from ...util import deprecated_param_remap
 from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
-class UsbAReceptacle(UsbHostConnector, FootprintBlock):
+class Molex_105057_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.pwr.init_from(VoltageSink(voltage_limits=self.USB2_VOLTAGE_RANGE, current_draw=self.USB2_CURRENT_LIMITS))
-        self.gnd.init_from(Ground())
-
-        self.usb.init_from(UsbDevicePort())
+        self.gnd = self.Port(Ground())
+        self.pwr = self.Port(
+            VoltageSink(voltage_limits=UsbConnector.USB2_VOLTAGE_RANGE, current_draw=UsbConnector.USB2_CURRENT_LIMITS)
+        )
+        self.usb = self.Port(UsbDevicePort(), optional=True)
+        self.shield = self.Port(Ground(), optional=True)
 
     @override
     def contents(self) -> None:
@@ -24,12 +26,34 @@ class UsbAReceptacle(UsbHostConnector, FootprintBlock):
                 "4": self.gnd,
                 "2": self.usb.dm,
                 "3": self.usb.dp,
-                "5": self.gnd,  # shield
+                "5": self.shield,  # shield
             },
             mfr="Molex",
             part="105057",
             datasheet="https://www.molex.com/pdm_docs/sd/1050570001_sd.pdf",
         )
+
+
+class UsbAReceptacle(UsbHostConnector, GeneratorBlock):
+    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
+        super().__init__(generate_esd_diode=generate_esd_diode)
+
+        self.conn = self.Block(Molex_105057_Device())
+        self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
+
+    @override
+    def generate(self) -> None:
+        super().generate()
+
+        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
+        self.connect(self.gnd, self.conn.gnd, self.conn.shield)
+        self.connect(self.pwr, self.conn.pwr)
+        self.connect(self.usb, self.conn.usb)
+
+        if self.get(self.usb.is_connected()) and self.get(self.generate_esd_diode):
+            self.esd = self.Block(UsbEsdDiode())
+            self.connect(self.esd.gnd, self.gnd)
+            self.connect(self.esd.usb, self.usb)
 
 
 class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
@@ -92,9 +116,6 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
         super().__init__(generate_esd_diode=generate_esd_diode)
 
         self.conn = self.Block(UsbCReceptacle_Device(voltage=voltage, current_limits=current_limits))
-        self.connect(self.gnd, self.conn.gnd)
-        self.connect(self.pwr, self.conn.pwr)
-        self.connect(self.usb, self.conn.usb)
         self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
 
         self.generator_param(
@@ -104,6 +125,11 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
     @override
     def generate(self) -> None:
         super().generate()
+
+        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
+        self.connect(self.gnd, self.conn.gnd, self.conn.shield)
+        self.connect(self.pwr, self.conn.pwr)
+        self.connect(self.usb, self.conn.usb)
 
         if self.get(self.usb.is_connected()) and self.get(self.generate_esd_diode):
             self.esd = self.Block(UsbEsdDiode())
@@ -124,9 +150,6 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
             )
             # note that the DFP (power source) can provide the max current, however the UFP (device)
             # should sense the voltage at CC to determine the amount of current allowed
-
-        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
-        self.connect(self.gnd, self.conn.shield)
 
 
 class Molex_105017_0001_Device(InternalSubcircuit, FootprintBlock):
@@ -164,23 +187,21 @@ class UsbMicroBReceptacle(UsbDeviceConnector, GeneratorBlock):
         super().__init__(generate_esd_diode=generate_esd_diode)
 
         self.conn = self.Block(Molex_105017_0001_Device())
-        self.connect(self.gnd, self.conn.gnd)
-        self.connect(self.pwr, self.conn.pwr)
-        self.connect(self.usb, self.conn.usb)
-
         self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
 
     @override
     def generate(self) -> None:
         super().generate()
 
+        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
+        self.connect(self.gnd, self.conn.gnd, self.conn.shield)
+        self.connect(self.pwr, self.conn.pwr)
+        self.connect(self.usb, self.conn.usb)
+
         if self.get(self.usb.is_connected()) and self.get(self.generate_esd_diode):
             self.esd = self.Block(UsbEsdDiode())
             self.connect(self.esd.gnd, self.gnd)
             self.connect(self.esd.usb, self.usb)
-
-        # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
-        self.connect(self.gnd, self.conn.shield)
 
 
 class UsbCcPulldownResistor(InternalSubcircuit, Block):
