@@ -86,7 +86,7 @@ class EspProgrammer(JlcBoardTop):
             class_refinements=[],
             class_values=[
                 (SelectorArea, ["filter_area"], Range.from_lower(1.5)),  # at least 0402
-                (TableBjt, "part", "BC846BW 1B"),  # default option is OOS
+                (TableBjt, ["part"], "BC846BW 1B"),  # default option is OOS
             ],
         )
 
