@@ -21,7 +21,7 @@ class DiodeMergeTestTop(DesignTop):
                 (Diode, CustomDiode),
             ],
             class_values=[
-                (CustomDiode, ["footprint_spec"], "Diode_SMD:D_SOD-123"),
+                (CustomDiode, ["part_footprint"], "Diode_SMD:D_SOD-123"),
             ],
         )
 

@@ -11,14 +11,14 @@ class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
         self,
         *args: Any,
         part: StringLike = "",
-        footprint_spec: StringLike = "",
+        part_footprint: StringLike = "",
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.part = self.ArgParameter(part)
 
-        self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
-        self.generator_param(self.footprint_spec)
+        self.part_footprint = self.ArgParameter(part_footprint)  # actual_footprint left to the actual footprint
+        self.generator_param(self.part_footprint)
 
         # use ideal specs, which can be overridden with refinements
         self.assign(self.actual_drain_voltage_rating, Range.all())
@@ -33,7 +33,7 @@ class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
     def generate(self) -> None:
         self.footprint(
             self._standard_footprint().REFDES_PREFIX,
-            self.footprint_spec,
-            self._standard_footprint()._make_pinning(self, self.get(self.footprint_spec)),
+            self.part_footprint,
+            self._standard_footprint()._make_pinning(self, self.get(self.part_footprint)),
             part=self.part,
         )

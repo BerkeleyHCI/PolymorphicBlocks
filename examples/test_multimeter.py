@@ -403,13 +403,10 @@ class Multimeter(JlcBoardTop):
                 (["measure", "res", "fp_part"], "CHV2512-F*-1004***"),
                 # IMPORTANT! Most 2512 resistors are rated to ~200V working voltage, this one is up to 3kV.
                 # pin footprints to re-select parts with newer parts tables
-                (["driver", "fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-23"),  # Q3
-                (["driver", "fet", "manufacturer_spec"], "Infineon Technologies"),
+                (["driver", "fet", "part_footprint"], "Package_TO_SOT_SMD:SOT-23"),  # Q3
                 (["driver", "fet", "part"], "BSR92PH6327XTSA1"),
-                (["driver", "diode", "footprint_spec"], "Diode_SMD:D_SMA"),
-                (["driver", "diode", "manufacturer_spec"], "Micro Commercial Co"),
+                (["driver", "diode", "part_footprint"], "Diode_SMD:D_SMA"),
                 (["driver", "diode", "part"], "GS1G-LTP"),
-                # (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
                 # JLC does not have frequency specs, must be checked TODO
                 (["reg_5v", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
             ],
