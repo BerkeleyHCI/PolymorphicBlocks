@@ -120,7 +120,7 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
         :param single_nominal_capacitance: used when no single cap with requested capacitance, must generate multiple parallel caps,
                                            actually refers to max capacitance for a given part
         :param filter_footprints: user-specified package footprint
-        :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
+        :param derating_coeff: user-specified derating coefficient
         """
         super().generate()
         filter_footprints = self.get(self.filter_footprints)

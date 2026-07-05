@@ -302,7 +302,7 @@ class Datalogger(BoardTop):
                         "swd_swo=PIO0_8",
                     ],
                 ),
-                (["pwr_5v", "power_path", "inductor", "filter_parts"], ["NR5040T220M"]),  # peg to prior part selection
+                (["pwr_5v", "power_path", "inductor", "part"], "NR5040T220M"),  # peg to prior part selection
                 (
                     ["pwr_5v", "power_path", "inductor_current_ripple"],
                     Range(0.01, 0.6),

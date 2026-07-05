@@ -45,14 +45,12 @@ class PartsTablePart(Block):
     def __init__(
         self,
         *args: Any,
-        filter_parts: ArrayStringLike = [],
-        excluded_parts: ArrayStringLike = [],
         part: StringLike = "",
+        excluded_parts: ArrayStringLike = [],
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.filter_parts = self.ArgParameter(filter_parts)
-        self.part = self.ArgParameter(part)  # deprecated
+        self.part = self.ArgParameter(part)
         self.excluded_parts = self.ArgParameter(excluded_parts)
         self.actual_part = self.Parameter(StringExpr())
         self.matching_parts = self.Parameter(ArrayStringExpr())
@@ -65,7 +63,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.generator_param(self.filter_parts, self.part)
+        self.generator_param(self.part)
         self.generator_param(self.excluded_parts)
 
     def _row_filter(self, row: PartsTableRow) -> bool:
@@ -73,11 +71,8 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
         Only called within generate(), so has access to GeneratorParam.get().
         Subclasses should chain this by and-ing with a super() call."""
         part = self.get(self.part)
-        filter_parts = self.get(self.filter_parts)
-        if part:
-            filter_parts.append(part)
         excluded_parts = self.get(self.excluded_parts)
-        return ((not filter_parts) or (row[self.PART_NUMBER_COL] in filter_parts)) and (
+        return ((not part) or (row[self.PART_NUMBER_COL] == part)) and (
             (not excluded_parts) or (row[self.PART_NUMBER_COL] not in excluded_parts)
         )
 
@@ -102,9 +97,6 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
     def generate(self) -> None:
         super().generate()
 
-        if self.get(self.part):
-            warnings.warn(f"part replaced with filter_parts taking an array", DeprecationWarning)
-
         matching_table = self._get_table().filter(lambda row: self._row_filter(row))
         postprocessed_table = self._table_postprocess(matching_table)
         postprocessed_table = postprocessed_table.sort_by(self._row_sort_by)
@@ -128,7 +120,7 @@ class SelectorFootprint(PartsTablePart):
 
 @non_library
 class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
-    """A combination of PartsTableSelector with SelectorFootprint, with row filtering on footprint_spec.
+    """A combination of PartsTableSelector with SelectorFootprint, with row filtering on filter_footprints.
     Does not create the footprint itself, this can be used as a base class where footprint filtering is desired
     but an internal block is created instead."""
 
@@ -146,10 +138,9 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 
     @override
     def _row_filter(self, row: PartsTableRow) -> bool:
-        footprint_spec = self.get(self.footprint_spec)
         filter_footprints = self.get(self.filter_footprints)
-        if footprint_spec:
-            filter_footprints.append(footprint_spec)
+        if self.get(self.footprint_spec):
+            filter_footprints.append(self.get(self.footprint_spec))
         return super()._row_filter(row) and ((not filter_footprints or row[self.KICAD_FOOTPRINT] in filter_footprints))
 
 

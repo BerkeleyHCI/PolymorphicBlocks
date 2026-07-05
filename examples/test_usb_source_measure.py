@@ -1042,7 +1042,7 @@ class UsbSourceMeasure(JlcBoardTop):
                     ["conv", "boost_sw", "low_fet", "filter_footprints"],
                     ["Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic"],
                 ),
-                (["conv", "boost_sw", "low_fet", "filter_parts"], ["BSC093N04LSG"]),  # lower total power
+                (["conv", "boost_sw", "low_fet", "part"], "BSC093N04LSG"),  # lower total power
                 # require all FETs to be the same; note boost must elaborate first
                 (["conv", "buck_sw", "low_fet", "part"], ParamValue(["conv", "boost_sw", "low_fet", "actual_part"])),
                 (["conv", "buck_sw", "high_fet", "part"], ParamValue(["conv", "boost_sw", "low_fet", "actual_part"])),
@@ -1105,7 +1105,7 @@ class UsbSourceMeasure(JlcBoardTop):
                     ParamValue(["control", "tvs_n", "lcsc_part"]),
                 ),  # note, 5v zener diode
                 # out of stock / unassembleable parts
-                (["conv", "power_path", "out_cap", "cap", "filter_parts"], ["C3216X5R1V226MTJ00E"]),
+                (["conv", "power_path", "out_cap", "cap", "part"], "C3216X5R1V226MTJ00E"),
             ],
             class_values=[
                 (CompactKeystone5015, ["lcsc_part"], "C5199798"),

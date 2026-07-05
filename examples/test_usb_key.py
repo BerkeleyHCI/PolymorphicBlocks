@@ -123,7 +123,7 @@ class UsbKey(JlcBoardTop):
             ],
             class_values=[
                 (SelectorArea, ["filter_area"], Range.from_lower(1.5)),  # at least 0402
-                (Lp5907, ["ic", "footprint_spec"], "Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm"),
+                (Lp5907, ["ic", "filter_footprints"], ["Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm"]),
             ],
         )
 

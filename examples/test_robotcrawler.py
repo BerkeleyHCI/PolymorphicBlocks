@@ -258,7 +258,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                     ],
                 ),
                 (["mcu", "programming"], "uart-auto"),
-                (["reg_14v", "inductor", "filter_parts"], ["CBC3225T220KR"]),
+                (["reg_14v", "inductor", "part"], "CBC3225T220KR"),
                 (["reg_14v", "inductor", "manual_frequency_rating"], Range(0, 17e6)),  # 17MHz self-resonant
                 (["reg_14v", "out_cap", "cap", "voltage_margin"], 1.1),
             ],
