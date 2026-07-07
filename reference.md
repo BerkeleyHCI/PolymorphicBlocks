@@ -266,6 +266,7 @@ class MyBoard(SimpleBoardTop):
 ```
 
 - `multipack()` is a blend of `contents()` (in that `PackedBlocks` are declared within) and `refinements()` (in that it uses `List[str]` to reference blocks in the design hierarchy).
+- All multipack Blocks, Blocks that allow other components to be packed into it, extend `MultipackBlock`.
 - `self.PackedBlock(...)` is similar to `self.Block(...)`.
 - `self.pack(...)` takes two arguments:
   - `multipack_part`: the multipack element that is part of the packed block, either a block or an element of a dynamically-sized packed block array.
