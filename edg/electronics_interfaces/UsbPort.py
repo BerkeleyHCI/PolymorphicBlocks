@@ -12,7 +12,7 @@ class UsbLink(Link):
     UsbFullSpeed = 12_000_000
     UsbHighSpeed = 480_000_000
 
-    AllUsb2Speeds = Range(UsbLowSpeed, UsbHighSpeed)  # all USB2.0 (since diffpair) speeds
+    AllUsb2Speeds = Range(UsbLowSpeed, UsbHighSpeed)  # all USB2.0 (single diffpair) speeds
     UsbFullSpeedOnly = Range.exact(UsbFullSpeed)
 
     def __init__(self) -> None:
