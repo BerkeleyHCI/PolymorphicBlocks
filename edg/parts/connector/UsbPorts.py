@@ -35,8 +35,8 @@ class Molex_105057_Device(InternalSubcircuit, FootprintBlock):
 
 
 class UsbAReceptacle(UsbHostConnector, GeneratorBlock):
-    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
-        super().__init__(generate_esd_diode=generate_esd_diode)
+    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, generate_esd_diode: BoolLike = True) -> None:
+        super().__init__(speed=speed, generate_esd_diode=generate_esd_diode)
 
         self.conn = self.Block(Molex_105057_Device())
         self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
