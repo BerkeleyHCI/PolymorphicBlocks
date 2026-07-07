@@ -12,7 +12,8 @@ class UsbConnector(Connector):
 
 @abstract_block
 class UsbHostConnector(UsbConnector):
-    """Abstract base class for a USB 2.0 device-side port connector."""
+    """Abstract base class for a USB 2.0 device-side port connector.
+    By default, generates a ESD diode on the data line if the data line is used."""
 
     def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
         super().__init__()
@@ -27,7 +28,8 @@ class UsbHostConnector(UsbConnector):
 
 @abstract_block
 class UsbDeviceConnector(UsbConnector, PowerSource):
-    """Abstract base class for a USB 2.0 device-side port connector."""
+    """Abstract base class for a USB 2.0 device-side port connector.
+    By default, generates a ESD diode on the data line if the data line is used."""
 
     def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
         super().__init__()

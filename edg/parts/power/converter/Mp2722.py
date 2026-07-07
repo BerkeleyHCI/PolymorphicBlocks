@@ -73,7 +73,9 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         # i2C up to 5v tolerant
         self.i2c = self.Port(I2cTarget(dio_model))
         self.cc = self.Port(UsbCcPort(), optional=True)
-        self.usb = self.Port(UsbDevicePort(), optional=True)  # BC protocol only
+        self.usb = self.Port(
+            UsbDevicePort(speed=Range.exact(UsbLink.UsbLowSpeed)), optional=True
+        )  # TODO: BC protocol only
 
     @override
     def contents(self) -> None:
