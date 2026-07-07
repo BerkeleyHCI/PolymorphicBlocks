@@ -187,7 +187,7 @@ class BleJoystick(JlcBoardTop):
         ) as imp:
             self.mcu = imp.Block(Holyiot_18010())  # nRF52 weirdly requires Vbus, so this can't be abstract
             self.connect(self.mcu.pwr_usb, self.vusb)
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             # debugging LEDs
             (self.ledr,), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request("led"))

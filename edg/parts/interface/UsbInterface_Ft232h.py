@@ -55,7 +55,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             CrystalDriver(frequency_limits=12 * MHertz(tol=30e-6), voltage=self.vccd.link().voltage)
         )  # assumed
         self.ref = self.Port(AnalogSource.from_supply(self.gnd, self.vcca))  # assumed, connect 12k 1% resistor to GND
-        self.usb = self.Port(UsbDevicePort())
+        self.usb = self.Port(UsbDevicePort(speed=(UsbLink.UsbFullSpeed, UsbLink.UsbHighSpeed)))
 
         self._dio_model = DigitalBidir.from_supply(  # except USB pins which are not 5v tolerant
             self.gnd,

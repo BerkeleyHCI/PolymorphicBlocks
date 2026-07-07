@@ -216,7 +216,9 @@ class Stm32g431_Device(
                         "swclk": ["PA14"],
                     },
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource(
+                    "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dm": ["PA11"], "dp": ["PA12"]}
+                ),
                 PeripheralFixedResource("USBCC", UsbCcPort(), {"cc1": ["PB6"], "cc2": ["PB4"]}),
             ]
         ).remap_pins(self._PIN_MAPPING)

@@ -2,72 +2,77 @@ const board = new PCB();
 
 // jlc_th.th1
 const LH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(4.100, 2.597), rotate: 0,
+  translate: pt(0.000, 2.904), rotate: 0,
   id: 'LH1'
 })
 // jlc_th.th2
 const LH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(4.140, 2.597), rotate: 0,
+  translate: pt(0.039, 2.904), rotate: 0,
   id: 'LH2'
 })
 // jlc_th.th3
 const LH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(4.100, 2.636), rotate: 0,
+  translate: pt(0.000, 2.943), rotate: 0,
   id: 'LH3'
 })
 // usb.conn
 const LJ1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(2.899, 1.905), rotate: 0,
+  translate: pt(3.364, 1.905), rotate: 0,
   id: 'LJ1'
+})
+// usb.esd
+const LU1 = board.add(SOT_23, {
+  translate: pt(3.688, 1.807), rotate: 0,
+  id: 'LU1'
 })
 // usb.cc_pull.cc1
 const LR1 = board.add(R_0603_1608Metric, {
-  translate: pt(2.748, 2.160), rotate: 0,
+  translate: pt(3.671, 1.942), rotate: 0,
   id: 'LR1'
 })
 // usb.cc_pull.cc2
 const LR2 = board.add(R_0603_1608Metric, {
-  translate: pt(2.904, 2.160), rotate: 0,
+  translate: pt(3.671, 2.039), rotate: 0,
   id: 'LR2'
 })
 // tp_gnd.tp
 const LTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.275, 2.634), rotate: 0,
+  translate: pt(1.525, 2.634), rotate: 0,
   id: 'LTP1'
 })
 // choke.fb
 const LFB1 = board.add(L_0603_1608Metric, {
-  translate: pt(3.264, 2.626), rotate: 0,
+  translate: pt(3.514, 2.626), rotate: 0,
   id: 'LFB1'
 })
 // tp_pwr.tp
 const LTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.525, 2.634), rotate: 0,
+  translate: pt(1.775, 2.634), rotate: 0,
   id: 'LTP2'
 })
 // reg_3v3.ic
-const LU1 = board.add(SOT_223_3_TabPin2, {
-  translate: pt(3.400, 1.882), rotate: 0,
-  id: 'LU1'
+const LU2 = board.add(SOT_223_3_TabPin2, {
+  translate: pt(2.863, 1.882), rotate: 0,
+  id: 'LU2'
 })
 // reg_3v3.in_cap.cap
 const LC1 = board.add(C_0603_1608Metric, {
-  translate: pt(3.458, 2.092), rotate: 0,
+  translate: pt(2.921, 2.092), rotate: 0,
   id: 'LC1'
 })
 // reg_3v3.out_cap.cap
 const LC2 = board.add(C_0805_2012Metric, {
-  translate: pt(3.294, 2.102), rotate: 0,
+  translate: pt(2.757, 2.102), rotate: 0,
   id: 'LC2'
 })
 // tp_3v3.tp
 const LTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.775, 2.634), rotate: 0,
+  translate: pt(2.026, 2.634), rotate: 0,
   id: 'LTP3'
 })
 // prot_3v3.diode
 const LD1 = board.add(D_SOD_323, {
-  translate: pt(2.023, 2.634), rotate: 0,
+  translate: pt(2.273, 2.634), rotate: 0,
   id: 'LD1'
 })
 // mcu.prog.conn
@@ -81,9 +86,9 @@ const LSW1 = board.add(SW_SPST_SKQG_WithoutStem, {
   id: 'LSW1'
 })
 // mcu.ic
-const LU2 = board.add(ESP32_S3_WROOM_1, {
+const LU3 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
-  id: 'LU2'
+  id: 'LU3'
 })
 // mcu.vcc_cap0.cap
 const LC3 = board.add(C_1206_3216Metric, {
@@ -105,39 +110,34 @@ const LC5 = board.add(C_0603_1608Metric, {
   translate: pt(1.987, 0.796), rotate: 0,
   id: 'LC5'
 })
-// usb_esd
-const LU3 = board.add(SOT_23, {
-  translate: pt(3.985, 2.664), rotate: 0,
-  id: 'LU3'
-})
 // ledr.package
 const LD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 2.626), rotate: 0,
+  translate: pt(0.309, 2.626), rotate: 0,
   id: 'LD2'
 })
 // ledr.res
 const LR4 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.723), rotate: 0,
+  translate: pt(0.309, 2.723), rotate: 0,
   id: 'LR4'
 })
 // ledg.package
 const LD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.293, 2.626), rotate: 0,
+  translate: pt(0.544, 2.626), rotate: 0,
   id: 'LD3'
 })
 // ledg.res
 const LR5 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 2.723), rotate: 0,
+  translate: pt(0.544, 2.723), rotate: 0,
   id: 'LR5'
 })
 // ledb.package
 const LD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.528, 2.626), rotate: 0,
+  translate: pt(0.779, 2.626), rotate: 0,
   id: 'LD4'
 })
 // ledb.res
 const LR6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.528, 2.723), rotate: 0,
+  translate: pt(0.778, 2.723), rotate: 0,
   id: 'LR6'
 })
 // lora.ic
@@ -267,57 +267,57 @@ const LJ3 = board.add(SMA_Amphenol_901_143_Horizontal, {
 })
 // tp_lora_spi.tp_sck.tp
 const LTP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.757, 1.778), rotate: 0,
+  translate: pt(3.948, 1.778), rotate: 0,
   id: 'LTP4'
 })
 // tp_lora_spi.tp_mosi.tp
 const LTP5 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.757, 1.892), rotate: 0,
+  translate: pt(3.948, 1.892), rotate: 0,
   id: 'LTP5'
 })
 // tp_lora_spi.tp_miso.tp
 const LTP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.757, 2.006), rotate: 0,
+  translate: pt(3.948, 2.006), rotate: 0,
   id: 'LTP6'
 })
 // tp_lora_cs.tp
 const LTP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.270, 2.634), rotate: 0,
+  translate: pt(2.521, 2.634), rotate: 0,
   id: 'LTP7'
 })
 // tp_lora_rst.tp
 const LTP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.521, 2.634), rotate: 0,
+  translate: pt(2.771, 2.634), rotate: 0,
   id: 'LTP8'
 })
 // tp_lora_dio.tp
 const LTP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.771, 2.634), rotate: 0,
+  translate: pt(3.021, 2.634), rotate: 0,
   id: 'LTP9'
 })
 // tp_lora_busy.tp
 const LTP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.021, 2.634), rotate: 0,
+  translate: pt(3.272, 2.634), rotate: 0,
   id: 'LTP10'
 })
 // i2c_pull.scl_res.res
 const LR9 = board.add(R_0603_1608Metric, {
-  translate: pt(0.763, 2.626), rotate: 0,
+  translate: pt(1.013, 2.626), rotate: 0,
   id: 'LR9'
 })
 // i2c_pull.sda_res.res
 const LR10 = board.add(R_0603_1608Metric, {
-  translate: pt(0.763, 2.722), rotate: 0,
+  translate: pt(1.013, 2.722), rotate: 0,
   id: 'LR10'
 })
 // i2c_tp.tp_scl.tp
 const LTP11 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.008, 1.778), rotate: 0,
+  translate: pt(0.066, 2.634), rotate: 0,
   id: 'LTP11'
 })
 // i2c_tp.tp_sda.tp
 const LTP12 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.008, 1.892), rotate: 0,
+  translate: pt(0.066, 2.748), rotate: 0,
   id: 'LTP12'
 })
 // oled.device.conn
@@ -367,12 +367,12 @@ const LC24 = board.add(C_0805_2012Metric, {
 })
 // oled_rst.ic
 const LU7 = board.add(SOT_23, {
-  translate: pt(1.015, 2.664), rotate: 0,
+  translate: pt(1.265, 2.664), rotate: 0,
   id: 'LU7'
 })
 // oled_pull.res
 const LR12 = board.add(R_0603_1608Metric, {
-  translate: pt(3.499, 2.626), rotate: 0,
+  translate: pt(3.749, 2.626), rotate: 0,
   id: 'LR12'
 })
 // sd
@@ -522,36 +522,36 @@ const LC43 = board.add(C_0603_1608Metric, {
 })
 // tx_cpack.cap
 const LC44 = board.add(C_0603_1608Metric, {
-  translate: pt(3.733, 2.626), rotate: 0,
+  translate: pt(3.984, 2.626), rotate: 0,
   id: 'LC44'
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["LJ1", "A1"], ["LJ1", "A12"], ["LJ1", "B1"], ["LJ1", "B12"], ["LJ1", "S1"], ["LR1", "1"], ["LR2", "1"], ["LTP1", "1"], ["LU1", "1"], ["LC1", "2"], ["LC2", "2"], ["LD1", "2"], ["LJ2", "5"], ["LSW1", "2"], ["LU2", "1"], ["LU2", "40"], ["LU2", "41"], ["LC3", "2"], ["LC4", "2"], ["LC5", "2"], ["LU3", "3"], ["LR4", "2"], ["LR5", "2"], ["LR6", "2"], ["LU4", "2"], ["LU4", "20"], ["LU4", "25"], ["LU4", "5"], ["LU4", "8"], ["LX1", "2"], ["LX1", "4"], ["LC6", "2"], ["LC7", "2"], ["LC8", "2"], ["LC9", "2"], ["LC10", "2"], ["LU5", "2"], ["LC14", "2"], ["LC16", "2"], ["LC17", "2"], ["LC18", "2"], ["LJ3", "2"], ["LJ4", "1"], ["LJ4", "10"], ["LJ4", "12"], ["LJ4", "13"], ["LJ4", "15"], ["LJ4", "16"], ["LJ4", "17"], ["LJ4", "21"], ["LJ4", "22"], ["LJ4", "23"], ["LJ4", "24"], ["LJ4", "25"], ["LJ4", "29"], ["LJ4", "30"], ["LJ4", "8"], ["LR11", "1"], ["LC21", "2"], ["LC22", "2"], ["LC23", "2"], ["LC24", "2"], ["LU7", "1"], ["LJ5", "11"], ["LJ5", "6"], ["LU8", "1"], ["LU8", "20"], ["LU8", "3"], ["LU8", "4"], ["LU8", "41"], ["LU8", "9"], ["LC25", "2"], ["LC26", "2"], ["LC27", "2"], ["LC28", "2"], ["LC29", "2"], ["LC30", "2"], ["LC31", "2"], ["LC32", "2"], ["LC33", "2"], ["LX2", "2"], ["LX2", "4"], ["LC34", "2"], ["LC35", "2"], ["LC38", "2"], ["LC39", "2"], ["LC42", "2"], ["LC43", "2"], ["LC44", "2"]]},
-  {name: "pwr", pads: [["LFB1", "2"], ["LTP2", "1"], ["LU1", "3"], ["LC1", "1"], ["LU8", "12"], ["LU8", "13"], ["LU8", "28"], ["LC25", "1"], ["LC26", "1"], ["LC27", "1"]]},
-  {name: "v3v3", pads: [["LU1", "2"], ["LC2", "1"], ["LTP3", "1"], ["LD1", "1"], ["LJ2", "1"], ["LU2", "2"], ["LC3", "1"], ["LC4", "1"], ["LR3", "1"], ["LU4", "1"], ["LU4", "10"], ["LU4", "11"], ["LC7", "1"], ["LC8", "1"], ["LR7", "1"], ["LR9", "1"], ["LR10", "1"], ["LJ4", "11"], ["LJ4", "6"], ["LJ4", "9"], ["LC22", "1"], ["LC23", "1"], ["LU7", "3"], ["LR12", "1"], ["LJ5", "4"], ["LU8", "6"], ["LC32", "1"]]},
-  {name: "usb_chain_0.d_P", pads: [["LJ1", "A6"], ["LJ1", "B6"], ["LU2", "14"], ["LU3", "2"]]},
-  {name: "usb_chain_0.d_N", pads: [["LJ1", "A7"], ["LJ1", "B7"], ["LU2", "13"], ["LU3", "1"]]},
+  {name: "gnd", pads: [["LJ1", "A1"], ["LJ1", "A12"], ["LJ1", "B1"], ["LJ1", "B12"], ["LJ1", "S1"], ["LU1", "3"], ["LR1", "1"], ["LR2", "1"], ["LTP1", "1"], ["LU2", "1"], ["LC1", "2"], ["LC2", "2"], ["LD1", "2"], ["LJ2", "5"], ["LSW1", "2"], ["LU3", "1"], ["LU3", "40"], ["LU3", "41"], ["LC3", "2"], ["LC4", "2"], ["LC5", "2"], ["LR4", "2"], ["LR5", "2"], ["LR6", "2"], ["LU4", "2"], ["LU4", "20"], ["LU4", "25"], ["LU4", "5"], ["LU4", "8"], ["LX1", "2"], ["LX1", "4"], ["LC6", "2"], ["LC7", "2"], ["LC8", "2"], ["LC9", "2"], ["LC10", "2"], ["LU5", "2"], ["LC14", "2"], ["LC16", "2"], ["LC17", "2"], ["LC18", "2"], ["LJ3", "2"], ["LJ4", "1"], ["LJ4", "10"], ["LJ4", "12"], ["LJ4", "13"], ["LJ4", "15"], ["LJ4", "16"], ["LJ4", "17"], ["LJ4", "21"], ["LJ4", "22"], ["LJ4", "23"], ["LJ4", "24"], ["LJ4", "25"], ["LJ4", "29"], ["LJ4", "30"], ["LJ4", "8"], ["LR11", "1"], ["LC21", "2"], ["LC22", "2"], ["LC23", "2"], ["LC24", "2"], ["LU7", "1"], ["LJ5", "11"], ["LJ5", "6"], ["LU8", "1"], ["LU8", "20"], ["LU8", "3"], ["LU8", "4"], ["LU8", "41"], ["LU8", "9"], ["LC25", "2"], ["LC26", "2"], ["LC27", "2"], ["LC28", "2"], ["LC29", "2"], ["LC30", "2"], ["LC31", "2"], ["LC32", "2"], ["LC33", "2"], ["LX2", "2"], ["LX2", "4"], ["LC34", "2"], ["LC35", "2"], ["LC38", "2"], ["LC39", "2"], ["LC42", "2"], ["LC43", "2"], ["LC44", "2"]]},
+  {name: "pwr", pads: [["LFB1", "2"], ["LTP2", "1"], ["LU2", "3"], ["LC1", "1"], ["LU8", "12"], ["LU8", "13"], ["LU8", "28"], ["LC25", "1"], ["LC26", "1"], ["LC27", "1"]]},
+  {name: "v3v3", pads: [["LU2", "2"], ["LC2", "1"], ["LTP3", "1"], ["LD1", "1"], ["LJ2", "1"], ["LU3", "2"], ["LC3", "1"], ["LC4", "1"], ["LR3", "1"], ["LU4", "1"], ["LU4", "10"], ["LU4", "11"], ["LC7", "1"], ["LC8", "1"], ["LR7", "1"], ["LR9", "1"], ["LR10", "1"], ["LJ4", "11"], ["LJ4", "6"], ["LJ4", "9"], ["LC22", "1"], ["LC23", "1"], ["LU7", "3"], ["LR12", "1"], ["LJ5", "4"], ["LU8", "6"], ["LC32", "1"]]},
   {name: "usb.pwr", pads: [["LJ1", "A4"], ["LJ1", "A9"], ["LJ1", "B4"], ["LJ1", "B9"], ["LFB1", "1"]]},
+  {name: "usb.usb.dp", pads: [["LJ1", "A6"], ["LJ1", "B6"], ["LU1", "2"], ["LU3", "14"]]},
+  {name: "usb.usb.dm", pads: [["LJ1", "A7"], ["LJ1", "B7"], ["LU1", "1"], ["LU3", "13"]]},
   {name: "usb.conn.cc.cc1", pads: [["LJ1", "A5"], ["LR1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["LJ1", "B5"], ["LR2", "2"]]},
-  {name: "mcu.program_uart_node.a_tx", pads: [["LJ2", "4"], ["LU2", "36"]]},
-  {name: "mcu.program_uart_node.b_tx", pads: [["LJ2", "3"], ["LU2", "37"]]},
-  {name: "mcu.program_en_node", pads: [["LJ2", "6"], ["LU2", "3"], ["LR3", "2"], ["LC5", "1"]]},
-  {name: "mcu.program_boot_node", pads: [["LJ2", "2"], ["LSW1", "1"], ["LU2", "27"]]},
-  {name: "ledr.signal", pads: [["LU2", "34"], ["LD2", "2"]]},
+  {name: "mcu.program_uart_node.a_tx", pads: [["LJ2", "4"], ["LU3", "36"]]},
+  {name: "mcu.program_uart_node.b_tx", pads: [["LJ2", "3"], ["LU3", "37"]]},
+  {name: "mcu.program_en_node", pads: [["LJ2", "6"], ["LU3", "3"], ["LR3", "2"], ["LC5", "1"]]},
+  {name: "mcu.program_boot_node", pads: [["LJ2", "2"], ["LSW1", "1"], ["LU3", "27"]]},
+  {name: "ledr.signal", pads: [["LU3", "34"], ["LD2", "2"]]},
   {name: "ledr.package.k", pads: [["LD2", "1"], ["LR4", "1"]]},
-  {name: "ledg.signal", pads: [["LU2", "35"], ["LD3", "2"]]},
+  {name: "ledg.signal", pads: [["LU3", "35"], ["LD3", "2"]]},
   {name: "ledg.package.k", pads: [["LD3", "1"], ["LR5", "1"]]},
-  {name: "ledb.signal", pads: [["LU2", "39"], ["LD4", "2"]]},
+  {name: "ledb.signal", pads: [["LU3", "39"], ["LD4", "2"]]},
   {name: "ledb.package.k", pads: [["LD4", "1"], ["LR6", "1"]]},
-  {name: "lora.reset", pads: [["LU2", "12"], ["LU4", "15"], ["LTP8", "1"]]},
-  {name: "lora.spi.sck", pads: [["LU2", "5"], ["LU4", "18"], ["LTP4", "1"]]},
-  {name: "lora.spi.mosi", pads: [["LU2", "6"], ["LU4", "17"], ["LTP5", "1"]]},
-  {name: "lora.spi.miso", pads: [["LU2", "15"], ["LU4", "16"], ["LTP6", "1"]]},
-  {name: "lora.cs", pads: [["LU2", "7"], ["LU4", "19"], ["LTP7", "1"]]},
-  {name: "lora.irq", pads: [["LU2", "31"], ["LU4", "13"], ["LTP9", "1"]]},
-  {name: "lora.busy", pads: [["LU2", "33"], ["LU4", "14"], ["LTP10", "1"]]},
+  {name: "lora.reset", pads: [["LU3", "12"], ["LU4", "15"], ["LTP8", "1"]]},
+  {name: "lora.spi.sck", pads: [["LU3", "5"], ["LU4", "18"], ["LTP4", "1"]]},
+  {name: "lora.spi.mosi", pads: [["LU3", "6"], ["LU4", "17"], ["LTP5", "1"]]},
+  {name: "lora.spi.miso", pads: [["LU3", "15"], ["LU4", "16"], ["LTP6", "1"]]},
+  {name: "lora.cs", pads: [["LU3", "7"], ["LU4", "19"], ["LTP7", "1"]]},
+  {name: "lora.irq", pads: [["LU3", "31"], ["LU4", "13"], ["LTP9", "1"]]},
+  {name: "lora.busy", pads: [["LU3", "33"], ["LU4", "14"], ["LTP10", "1"]]},
   {name: "lora.ic.vreg", pads: [["LU4", "7"], ["LC6", "1"], ["LL1", "2"]]},
   {name: "lora.ic.dcc_sw", pads: [["LU4", "9"], ["LL1", "1"]]},
   {name: "lora.ic.xtal.xtal_in", pads: [["LU4", "3"], ["LX1", "1"]]},
@@ -570,8 +570,8 @@ board.setNetlist([
   {name: "lora.tx_dcblock.neg", pads: [["LC11", "2"], ["LC14", "1"], ["LL4", "2"]]},
   {name: "lora.rfc_dcblock.pos", pads: [["LC12", "1"], ["LC17", "1"], ["LL6", "1"]]},
   {name: "lora.ant_pi.output", pads: [["LC18", "1"], ["LL6", "2"], ["LJ3", "1"]]},
-  {name: "i2c_pull.i2c.scl", pads: [["LU2", "10"], ["LR9", "2"], ["LTP11", "1"], ["LJ4", "18"], ["LU8", "7"]]},
-  {name: "i2c_pull.i2c.sda", pads: [["LU2", "11"], ["LR10", "2"], ["LTP12", "1"], ["LJ4", "19"], ["LJ4", "20"], ["LU8", "5"]]},
+  {name: "i2c_pull.i2c.scl", pads: [["LU3", "10"], ["LR9", "2"], ["LTP11", "1"], ["LJ4", "18"], ["LU8", "7"]]},
+  {name: "i2c_pull.i2c.sda", pads: [["LU3", "11"], ["LR10", "2"], ["LTP12", "1"], ["LJ4", "19"], ["LJ4", "20"], ["LU8", "5"]]},
   {name: "oled.reset", pads: [["LJ4", "14"], ["LU7", "2"], ["LR12", "2"]]},
   {name: "oled.device.vcc", pads: [["LJ4", "28"], ["LC24", "1"]]},
   {name: "oled.device.iref", pads: [["LJ4", "26"], ["LR11", "2"]]},
@@ -580,12 +580,12 @@ board.setNetlist([
   {name: "oled.device.c1n", pads: [["LJ4", "5"], ["LC19", "2"]]},
   {name: "oled.device.c2p", pads: [["LJ4", "2"], ["LC20", "1"]]},
   {name: "oled.device.c2n", pads: [["LJ4", "3"], ["LC20", "2"]]},
-  {name: "sd.spi.sck", pads: [["LU2", "22"], ["LJ5", "5"]]},
-  {name: "sd.spi.mosi", pads: [["LU2", "19"], ["LJ5", "3"]]},
-  {name: "sd.spi.miso", pads: [["LU2", "38"], ["LJ5", "7"]]},
-  {name: "sd.cs", pads: [["LU2", "21"], ["LJ5", "2"]]},
-  {name: "nfc.reset", pads: [["LU2", "32"], ["LU8", "10"]]},
-  {name: "nfc.irq", pads: [["LU2", "24"], ["LU8", "8"]]},
+  {name: "sd.spi.sck", pads: [["LU3", "22"], ["LJ5", "5"]]},
+  {name: "sd.spi.mosi", pads: [["LU3", "19"], ["LJ5", "3"]]},
+  {name: "sd.spi.miso", pads: [["LU3", "38"], ["LJ5", "7"]]},
+  {name: "sd.cs", pads: [["LU3", "21"], ["LJ5", "2"]]},
+  {name: "nfc.reset", pads: [["LU3", "32"], ["LU8", "10"]]},
+  {name: "nfc.irq", pads: [["LU3", "24"], ["LU8", "8"]]},
   {name: "nfc.ic.vdd", pads: [["LU8", "26"], ["LU8", "27"], ["LU8", "31"], ["LC28", "1"], ["LC29", "1"]]},
   {name: "nfc.ic.vddmid", pads: [["LU8", "17"], ["LC33", "1"]]},
   {name: "nfc.ic.vddtx", pads: [["LU8", "14"], ["LU8", "18"], ["LU8", "22"], ["LC30", "1"], ["LC31", "1"]]},
@@ -607,7 +607,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(4.25767716535433, 2.8696850393700797);
+const limit1 = pt(4.1600393700787395, 3.061417322834646);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

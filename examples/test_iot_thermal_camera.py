@@ -648,7 +648,7 @@ class IotThermalCamera(JlcBoardTop):
             self.connect(self.mcu.gpio.request("eth_cs"), self.phy.cs)
             self.connect(int_line, self.phy.int)
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             self.i2c = self.mcu.i2c.request("i2c")
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(

@@ -31,7 +31,7 @@ class Keyboard(SimpleBoardTop):
             ImplicitConnect(self.reg.gnd, [Common]),
         ) as imp:
             self.mcu = imp.Block(IoController())
-            (self.usb_esd,), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             # debugging LEDs
             (self.ledr,), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led"))

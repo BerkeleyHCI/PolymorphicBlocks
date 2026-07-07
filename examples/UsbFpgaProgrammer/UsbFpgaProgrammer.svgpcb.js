@@ -2,43 +2,48 @@ const board = new PCB();
 
 // jlc_th.th1
 const FH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.000, 1.224), rotate: 0,
+  translate: pt(0.479, 1.284), rotate: 0,
   id: 'FH1'
 })
 // jlc_th.th2
 const FH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.039, 1.224), rotate: 0,
+  translate: pt(0.519, 1.284), rotate: 0,
   id: 'FH2'
 })
 // jlc_th.th3
 const FH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.000, 1.263), rotate: 0,
+  translate: pt(0.479, 1.323), rotate: 0,
   id: 'FH3'
 })
 // usb.conn
 const FJ1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(1.224, 0.165), rotate: 0,
+  translate: pt(0.209, 0.979), rotate: 0,
   id: 'FJ1'
+})
+// usb.esd
+const FU1 = board.add(SOT_23, {
+  translate: pt(0.534, 0.881), rotate: 0,
+  id: 'FU1'
 })
 // usb.cc_pull.cc1
 const FR1 = board.add(R_0603_1608Metric, {
-  translate: pt(1.072, 0.420), rotate: 0,
+  translate: pt(0.517, 1.016), rotate: 0,
   id: 'FR1'
 })
 // usb.cc_pull.cc2
 const FR2 = board.add(R_0603_1608Metric, {
-  translate: pt(1.228, 0.420), rotate: 0,
+  translate: pt(0.517, 1.113), rotate: 0,
   id: 'FR2'
 })
 // vusb_protect.diode
 const FD1 = board.add(D_SOD_323, {
-  translate: pt(1.225, 0.852), rotate: 0,
+  translate: pt(0.298, 1.321), rotate: 0,
   id: 'FD1'
 })
 // ft232.ic
-const FU1 = board.add(LQFP_48_7x7mm_P0_5mm, {
+const FU2 = board.add(LQFP_48_7x7mm_P0_5mm, {
   translate: pt(0.203, 0.203), rotate: 0,
-  id: 'FU1'
+  id: 'FU2'
 })
 // ft232.vbus_fb.fb
 const FFB1 = board.add(L_0603_1608Metric, {
@@ -126,9 +131,9 @@ const FC12 = board.add(C_0603_1608Metric, {
   id: 'FC12'
 })
 // ft232.eeprom.ic
-const FU2 = board.add(SOT_23_6, {
+const FU3 = board.add(SOT_23_6, {
   translate: pt(0.730, 0.067), rotate: 0,
-  id: 'FU2'
+  id: 'FU3'
 })
 // ft232.eeprom.vcc_cap.cap
 const FC13 = board.add(C_0603_1608Metric, {
@@ -145,93 +150,88 @@ const FR5 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 0.667), rotate: 0,
   id: 'FR5'
 })
-// usb_esd
-const FU3 = board.add(SOT_23, {
-  translate: pt(1.481, 0.881), rotate: 0,
-  id: 'FU3'
-})
 // led0.package
 const FD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.515, 0.843), rotate: 0,
+  translate: pt(1.243, 0.843), rotate: 0,
   id: 'FD2'
 })
 // led0.res
 const FR6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.515, 0.940), rotate: 0,
+  translate: pt(1.243, 0.940), rotate: 0,
   id: 'FR6'
 })
 // led1.package
 const FD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.750, 0.843), rotate: 0,
+  translate: pt(1.478, 0.843), rotate: 0,
   id: 'FD3'
 })
 // led1.res
 const FR7 = board.add(R_0603_1608Metric, {
-  translate: pt(0.750, 0.940), rotate: 0,
+  translate: pt(1.477, 0.940), rotate: 0,
   id: 'FR7'
 })
 // led2.package
 const FD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.985, 0.843), rotate: 0,
+  translate: pt(0.058, 1.313), rotate: 0,
   id: 'FD4'
 })
 // led2.res
 const FR8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.985, 0.940), rotate: 0,
+  translate: pt(0.058, 1.410), rotate: 0,
   id: 'FR8'
 })
 // out.conn
 const FJ2 = board.add(PinHeader_2x05_P1_27mm_Vertical_SMD, {
-  translate: pt(0.169, 0.960), rotate: 0,
+  translate: pt(0.897, 0.960), rotate: 0,
   id: 'FJ2'
 })
 
 board.setNetlist([
   {name: "vusb", pads: [["FJ1", "A4"], ["FJ1", "A9"], ["FJ1", "B4"], ["FJ1", "B9"], ["FD1", "1"], ["FFB1", "1"]]},
-  {name: "gnd", pads: [["FJ1", "A1"], ["FJ1", "A12"], ["FJ1", "B1"], ["FJ1", "B12"], ["FJ1", "S1"], ["FR1", "1"], ["FR2", "1"], ["FD1", "2"], ["FU1", "10"], ["FU1", "11"], ["FU1", "22"], ["FU1", "23"], ["FU1", "35"], ["FU1", "36"], ["FU1", "4"], ["FU1", "41"], ["FU1", "42"], ["FU1", "47"], ["FU1", "48"], ["FU1", "9"], ["FC1", "2"], ["FC2", "2"], ["FC3", "2"], ["FC4", "2"], ["FC5", "2"], ["FC6", "2"], ["FC7", "2"], ["FC8", "2"], ["FC9", "2"], ["FC10", "2"], ["FR3", "1"], ["FX1", "2"], ["FX1", "4"], ["FC11", "2"], ["FC12", "2"], ["FU2", "2"], ["FC13", "2"], ["FU3", "3"], ["FR6", "2"], ["FR7", "2"], ["FR8", "2"], ["FJ2", "3"], ["FJ2", "5"], ["FJ2", "9"]]},
-  {name: "usb_chain_0.d_P", pads: [["FJ1", "A6"], ["FJ1", "B6"], ["FU1", "7"], ["FU3", "2"]]},
-  {name: "usb_chain_0.d_N", pads: [["FJ1", "A7"], ["FJ1", "B7"], ["FU1", "6"], ["FU3", "1"]]},
+  {name: "gnd", pads: [["FJ1", "A1"], ["FJ1", "A12"], ["FJ1", "B1"], ["FJ1", "B12"], ["FJ1", "S1"], ["FU1", "3"], ["FR1", "1"], ["FR2", "1"], ["FD1", "2"], ["FU2", "10"], ["FU2", "11"], ["FU2", "22"], ["FU2", "23"], ["FU2", "35"], ["FU2", "36"], ["FU2", "4"], ["FU2", "41"], ["FU2", "42"], ["FU2", "47"], ["FU2", "48"], ["FU2", "9"], ["FC1", "2"], ["FC2", "2"], ["FC3", "2"], ["FC4", "2"], ["FC5", "2"], ["FC6", "2"], ["FC7", "2"], ["FC8", "2"], ["FC9", "2"], ["FC10", "2"], ["FR3", "1"], ["FX1", "2"], ["FX1", "4"], ["FC11", "2"], ["FC12", "2"], ["FU3", "2"], ["FC13", "2"], ["FR6", "2"], ["FR7", "2"], ["FR8", "2"], ["FJ2", "3"], ["FJ2", "5"], ["FJ2", "9"]]},
+  {name: "usb.usb.dp", pads: [["FJ1", "A6"], ["FJ1", "B6"], ["FU1", "2"], ["FU2", "7"]]},
+  {name: "usb.usb.dm", pads: [["FJ1", "A7"], ["FJ1", "B7"], ["FU1", "1"], ["FU2", "6"]]},
   {name: "usb.conn.cc.cc1", pads: [["FJ1", "A5"], ["FR1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["FJ1", "B5"], ["FR2", "2"]]},
-  {name: "ft232.mpsse.sck", pads: [["FU1", "13"], ["FJ2", "4"]]},
-  {name: "ft232.mpsse.mosi", pads: [["FU1", "14"], ["FJ2", "6"]]},
-  {name: "ft232.mpsse.miso", pads: [["FU1", "15"], ["FJ2", "8"]]},
-  {name: "ft232.acbus.1", pads: [["FU1", "25"]]},
-  {name: "ft232.acbus.2", pads: [["FU1", "26"]]},
-  {name: "ft232.acbus.5", pads: [["FU1", "29"]]},
-  {name: "ft232.acbus.6", pads: [["FU1", "30"]]},
-  {name: "ft232.acbus.7", pads: [["FU1", "31"]]},
-  {name: "ft232.acbus.8", pads: [["FU1", "32"]]},
-  {name: "ft232.acbus.9", pads: [["FU1", "33"]]},
-  {name: "ft232.ic.vregin", pads: [["FU1", "40"], ["FFB1", "2"], ["FC1", "1"], ["FC2", "1"]]},
-  {name: "ft232.ic.vccd", pads: [["FU1", "12"], ["FU1", "24"], ["FU1", "34"], ["FU1", "39"], ["FU1", "46"], ["FFB2", "1"], ["FFB3", "1"], ["FC7", "1"], ["FC8", "1"], ["FC9", "1"], ["FC10", "1"], ["FU2", "6"], ["FC13", "1"], ["FR4", "1"]]},
-  {name: "ft232.ic.vcccore", pads: [["FU1", "38"], ["FC5", "1"]]},
-  {name: "ft232.ic.vcca", pads: [["FU1", "37"], ["FC6", "1"]]},
-  {name: "ft232.ic.vphy", pads: [["FU1", "3"], ["FFB2", "2"], ["FC3", "1"]]},
-  {name: "ft232.ic.vpll", pads: [["FU1", "8"], ["FFB3", "2"], ["FC4", "1"]]},
-  {name: "ft232.ic.osc.xtal_in", pads: [["FU1", "1"], ["FX1", "1"], ["FC11", "1"]]},
-  {name: "ft232.ic.osc.xtal_out", pads: [["FU1", "2"], ["FX1", "3"], ["FC12", "1"]]},
-  {name: "ft232.ic.ref", pads: [["FU1", "5"], ["FR3", "2"]]},
-  {name: "ft232.ic.eecs", pads: [["FU1", "45"], ["FU2", "5"]]},
-  {name: "ft232.ic.eeclk", pads: [["FU1", "44"], ["FU2", "4"]]},
-  {name: "ft232.ic.eedata", pads: [["FU1", "43"], ["FU2", "3"], ["FR5", "2"]]},
-  {name: "ft232.ic.adbus.3", pads: [["FU1", "16"]]},
-  {name: "ft232.ic.adbus.5", pads: [["FU1", "18"]]},
-  {name: "ft232.ic.adbus.6", pads: [["FU1", "19"]]},
-  {name: "ft232.eeprom.spi.miso", pads: [["FU2", "1"], ["FR4", "2"], ["FR5", "1"]]},
-  {name: "led0.signal", pads: [["FU1", "21"], ["FD2", "2"]]},
+  {name: "ft232.mpsse.sck", pads: [["FU2", "13"], ["FJ2", "4"]]},
+  {name: "ft232.mpsse.mosi", pads: [["FU2", "14"], ["FJ2", "6"]]},
+  {name: "ft232.mpsse.miso", pads: [["FU2", "15"], ["FJ2", "8"]]},
+  {name: "ft232.acbus.1", pads: [["FU2", "25"]]},
+  {name: "ft232.acbus.2", pads: [["FU2", "26"]]},
+  {name: "ft232.acbus.5", pads: [["FU2", "29"]]},
+  {name: "ft232.acbus.6", pads: [["FU2", "30"]]},
+  {name: "ft232.acbus.7", pads: [["FU2", "31"]]},
+  {name: "ft232.acbus.8", pads: [["FU2", "32"]]},
+  {name: "ft232.acbus.9", pads: [["FU2", "33"]]},
+  {name: "ft232.ic.vregin", pads: [["FU2", "40"], ["FFB1", "2"], ["FC1", "1"], ["FC2", "1"]]},
+  {name: "ft232.ic.vccd", pads: [["FU2", "12"], ["FU2", "24"], ["FU2", "34"], ["FU2", "39"], ["FU2", "46"], ["FFB2", "1"], ["FFB3", "1"], ["FC7", "1"], ["FC8", "1"], ["FC9", "1"], ["FC10", "1"], ["FU3", "6"], ["FC13", "1"], ["FR4", "1"]]},
+  {name: "ft232.ic.vcccore", pads: [["FU2", "38"], ["FC5", "1"]]},
+  {name: "ft232.ic.vcca", pads: [["FU2", "37"], ["FC6", "1"]]},
+  {name: "ft232.ic.vphy", pads: [["FU2", "3"], ["FFB2", "2"], ["FC3", "1"]]},
+  {name: "ft232.ic.vpll", pads: [["FU2", "8"], ["FFB3", "2"], ["FC4", "1"]]},
+  {name: "ft232.ic.osc.xtal_in", pads: [["FU2", "1"], ["FX1", "1"], ["FC11", "1"]]},
+  {name: "ft232.ic.osc.xtal_out", pads: [["FU2", "2"], ["FX1", "3"], ["FC12", "1"]]},
+  {name: "ft232.ic.ref", pads: [["FU2", "5"], ["FR3", "2"]]},
+  {name: "ft232.ic.eecs", pads: [["FU2", "45"], ["FU3", "5"]]},
+  {name: "ft232.ic.eeclk", pads: [["FU2", "44"], ["FU3", "4"]]},
+  {name: "ft232.ic.eedata", pads: [["FU2", "43"], ["FU3", "3"], ["FR5", "2"]]},
+  {name: "ft232.ic.adbus.3", pads: [["FU2", "16"]]},
+  {name: "ft232.ic.adbus.5", pads: [["FU2", "18"]]},
+  {name: "ft232.ic.adbus.6", pads: [["FU2", "19"]]},
+  {name: "ft232.eeprom.spi.miso", pads: [["FU3", "1"], ["FR4", "2"], ["FR5", "1"]]},
+  {name: "led0.signal", pads: [["FU2", "21"], ["FD2", "2"]]},
   {name: "led0.package.k", pads: [["FD2", "1"], ["FR6", "1"]]},
-  {name: "led1.signal", pads: [["FU1", "27"], ["FD3", "2"]]},
+  {name: "led1.signal", pads: [["FU2", "27"], ["FD3", "2"]]},
   {name: "led1.package.k", pads: [["FD3", "1"], ["FR7", "1"]]},
-  {name: "led2.signal", pads: [["FU1", "28"], ["FD4", "2"]]},
+  {name: "led2.signal", pads: [["FU2", "28"], ["FD4", "2"]]},
   {name: "led2.package.k", pads: [["FD4", "1"], ["FR8", "1"]]},
   {name: "out.pwr", pads: [["FJ2", "1"]]},
-  {name: "out.cs", pads: [["FU1", "17"], ["FJ2", "2"]]},
-  {name: "out.reset", pads: [["FU1", "20"], ["FJ2", "10"]]}
+  {name: "out.cs", pads: [["FU2", "17"], ["FJ2", "2"]]},
+  {name: "out.reset", pads: [["FU2", "20"], ["FJ2", "10"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(1.5962598425196852, 1.3811023622047247);
+const limit1 = pt(1.653937007874016, 1.5566929133858267);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

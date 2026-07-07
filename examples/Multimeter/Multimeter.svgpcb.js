@@ -2,17 +2,17 @@ const board = new PCB();
 
 // jlc_th.th1
 const H1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(2.913, 2.253), rotate: 0,
+  translate: pt(3.256, 2.354), rotate: 0,
   id: 'H1'
 })
 // jlc_th.th2
 const H2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(2.952, 2.253), rotate: 0,
+  translate: pt(3.296, 2.354), rotate: 0,
   id: 'H2'
 })
 // jlc_th.th3
 const H3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(2.913, 2.292), rotate: 0,
+  translate: pt(3.256, 2.393), rotate: 0,
   id: 'H3'
 })
 // bat
@@ -22,17 +22,22 @@ const U1 = board.add(BatteryHolder_Keystone_2460_1xAA, {
 })
 // data_usb.conn
 const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(2.365, 0.932), rotate: 0,
+  translate: pt(2.898, 1.545), rotate: 0,
   id: 'J1'
+})
+// data_usb.esd
+const U2 = board.add(SOT_23, {
+  translate: pt(3.223, 1.447), rotate: 0,
+  id: 'U2'
 })
 // data_usb.cc_pull.cc1
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(2.213, 1.187), rotate: 0,
+  translate: pt(3.206, 1.582), rotate: 0,
   id: 'R1'
 })
 // data_usb.cc_pull.cc2
 const R2 = board.add(R_0603_1608Metric, {
-  translate: pt(2.369, 1.187), rotate: 0,
+  translate: pt(3.206, 1.679), rotate: 0,
   id: 'R2'
 })
 // gate.pwr_gate.pull_res
@@ -71,94 +76,94 @@ const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
   id: 'SW1'
 })
 // reg_5v.ic
-const U2 = board.add(SOT_23_5, {
-  translate: pt(2.770, 1.447), rotate: 0,
-  id: 'U2'
+const U3 = board.add(SOT_23_5, {
+  translate: pt(3.497, 1.447), rotate: 0,
+  id: 'U3'
 })
 // reg_5v.power_path.inductor
 const L1 = board.add(L_0603_1608Metric, {
-  translate: pt(2.920, 1.582), rotate: 0,
+  translate: pt(3.648, 1.582), rotate: 0,
   id: 'L1'
 })
 // reg_5v.power_path.in_cap.cap
 const C1 = board.add(C_0805_2012Metric, {
-  translate: pt(2.957, 1.419), rotate: 0,
+  translate: pt(3.684, 1.419), rotate: 0,
   id: 'C1'
 })
 // reg_5v.power_path.out_cap.cap
 const C2 = board.add(C_0805_2012Metric, {
-  translate: pt(2.756, 1.592), rotate: 0,
+  translate: pt(3.483, 1.592), rotate: 0,
   id: 'C2'
 })
 // reg_5v.ce_res.res
 const R5 = board.add(R_0603_1608Metric, {
-  translate: pt(2.747, 1.699), rotate: 0,
+  translate: pt(3.475, 1.699), rotate: 0,
   id: 'R5'
 })
 // tp_5v.tp
 const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.554, 2.306), rotate: 0,
+  translate: pt(1.088, 2.407), rotate: 0,
   id: 'TP1'
 })
 // prot_5v.diode
 const D3 = board.add(D_MiniMELF, {
-  translate: pt(2.011, 2.296), rotate: 0,
+  translate: pt(2.545, 2.397), rotate: 0,
   id: 'D3'
 })
 // reg_3v3.ic
-const U3 = board.add(SOT_23_5, {
-  translate: pt(0.081, 1.971), rotate: 0,
-  id: 'U3'
+const U4 = board.add(SOT_23_5, {
+  translate: pt(0.627, 1.971), rotate: 0,
+  id: 'U4'
 })
 // reg_3v3.in_cap.cap
 const C3 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 2.106), rotate: 0,
+  translate: pt(0.605, 2.106), rotate: 0,
   id: 'C3'
 })
 // reg_3v3.out_cap.cap
 const C4 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 2.106), rotate: 0,
+  translate: pt(0.761, 2.106), rotate: 0,
   id: 'C4'
 })
 // tp_3v3.tp
 const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.841, 2.306), rotate: 0,
+  translate: pt(1.375, 2.407), rotate: 0,
   id: 'TP2'
 })
 // prot_3v3.diode
 const D4 = board.add(D_SOD_323, {
-  translate: pt(2.297, 2.290), rotate: 0,
+  translate: pt(2.831, 2.391), rotate: 0,
   id: 'D4'
 })
 // reg_analog.ic
-const U4 = board.add(SOT_23_5, {
-  translate: pt(0.471, 1.971), rotate: 0,
-  id: 'U4'
+const U5 = board.add(SOT_23_5, {
+  translate: pt(1.018, 1.971), rotate: 0,
+  id: 'U5'
 })
 // reg_analog.in_cap.cap
 const C5 = board.add(C_0603_1608Metric, {
-  translate: pt(0.449, 2.106), rotate: 0,
+  translate: pt(0.995, 2.106), rotate: 0,
   id: 'C5'
 })
 // reg_analog.out_cap.cap
 const C6 = board.add(C_0603_1608Metric, {
-  translate: pt(0.605, 2.106), rotate: 0,
+  translate: pt(1.151, 2.106), rotate: 0,
   id: 'C6'
 })
 // tp_analog.tp
 const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.129, 2.306), rotate: 0,
+  translate: pt(1.663, 2.407), rotate: 0,
   id: 'TP3'
 })
 // prot_analog.diode
 const D5 = board.add(D_SOD_323, {
-  translate: pt(2.541, 2.290), rotate: 0,
+  translate: pt(3.075, 2.391), rotate: 0,
   id: 'D5'
 })
 // mcu.ic
-const U5 = board.add(Raytac_MDBT50Q, {
+const U6 = board.add(Raytac_MDBT50Q, {
   translate: pt(0.226, 0.325), rotate: 0,
-  id: 'U5'
+  id: 'U6'
 })
 // mcu.vcc_cap.cap
 const C7 = board.add(C_0805_2012Metric, {
@@ -187,137 +192,132 @@ const R7 = board.add(R_0603_1608Metric, {
 })
 // vbatsense.div.top_res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(3.628, 1.933), rotate: 0,
+  translate: pt(0.357, 2.382), rotate: 0,
   id: 'R8'
 })
 // vbatsense.div.bottom_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(3.628, 2.030), rotate: 0,
+  translate: pt(0.357, 2.479), rotate: 0,
   id: 'R9'
-})
-// usb_esd
-const U6 = board.add(SOT_23, {
-  translate: pt(2.798, 2.320), rotate: 0,
-  id: 'U6'
 })
 // rgb.package
 const D6 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(2.677, 1.959), rotate: 0,
+  translate: pt(3.223, 1.959), rotate: 0,
   id: 'D6'
 })
 // rgb.red_res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(2.816, 1.933), rotate: 0,
+  translate: pt(3.362, 1.933), rotate: 0,
   id: 'R10'
 })
 // rgb.green_res
 const R11 = board.add(R_0603_1608Metric, {
-  translate: pt(2.694, 2.082), rotate: 0,
+  translate: pt(3.240, 2.082), rotate: 0,
   id: 'R11'
 })
 // rgb.blue_res
 const R12 = board.add(R_0603_1608Metric, {
-  translate: pt(2.850, 2.082), rotate: 0,
+  translate: pt(3.396, 2.082), rotate: 0,
   id: 'R12'
 })
 // sw1.package
 const SW2 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(1.507, 2.016), rotate: 0,
+  translate: pt(2.054, 2.016), rotate: 0,
   id: 'SW2'
 })
 // sw2.package
 const SW3 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(1.960, 2.016), rotate: 0,
+  translate: pt(2.507, 2.016), rotate: 0,
   id: 'SW3'
 })
 // lcd.device.conn
 const J3 = board.add(Hirose_FH12_8S_0_5SH_1x08_1MP_P0_50mm_Horizontal, {
-  translate: pt(2.891, 0.961), rotate: 0,
+  translate: pt(2.354, 0.961), rotate: 0,
   id: 'J3'
 })
 // lcd.led_res
 const R13 = board.add(R_0603_1608Metric, {
-  translate: pt(2.750, 1.147), rotate: 0,
+  translate: pt(2.213, 1.147), rotate: 0,
   id: 'R13'
 })
 // lcd.vdd_cap.cap
 const C9 = board.add(C_0603_1608Metric, {
-  translate: pt(2.906, 1.147), rotate: 0,
+  translate: pt(2.369, 1.147), rotate: 0,
   id: 'C9'
 })
 // spk_dac.rc.r
 const R14 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.281), rotate: 0,
+  translate: pt(0.592, 2.382), rotate: 0,
   id: 'R14'
 })
 // spk_dac.rc.c
 const C10 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 2.378), rotate: 0,
+  translate: pt(0.592, 2.479), rotate: 0,
   id: 'C10'
 })
 // spk_tp.tp
 const TP4 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.416, 2.306), rotate: 0,
+  translate: pt(1.950, 2.407), rotate: 0,
   id: 'TP4'
 })
 // spk_drv.ic
 const U7 = board.add(MSOP_8_1EP_3x3mm_P0_65mm_EP1_68x1_88mm_ThermalVias, {
-  translate: pt(3.265, 1.449), rotate: 0,
+  translate: pt(0.123, 1.973), rotate: 0,
   id: 'U7'
 })
 // spk_drv.pwr_cap.cap
 const C11 = board.add(C_0603_1608Metric, {
-  translate: pt(3.200, 1.586), rotate: 0,
+  translate: pt(0.058, 2.110), rotate: 0,
   id: 'C11'
 })
 // spk_drv.bulk_cap.cap
 const C12 = board.add(C_0805_2012Metric, {
-  translate: pt(3.494, 1.419), rotate: 0,
+  translate: pt(0.352, 1.943), rotate: 0,
   id: 'C12'
 })
 // spk_drv.inp_res.res
 const R15 = board.add(R_0603_1608Metric, {
-  translate: pt(3.356, 1.586), rotate: 0,
+  translate: pt(0.214, 2.110), rotate: 0,
   id: 'R15'
 })
 // spk_drv.inp_cap.cap
 const C13 = board.add(C_0603_1608Metric, {
-  translate: pt(3.512, 1.586), rotate: 0,
+  translate: pt(0.370, 2.110), rotate: 0,
   id: 'C13'
 })
 // spk_drv.inn_res.res
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(3.200, 1.683), rotate: 0,
+  translate: pt(0.058, 2.207), rotate: 0,
   id: 'R16'
 })
 // spk_drv.inn_cap.cap
 const C14 = board.add(C_0603_1608Metric, {
-  translate: pt(3.356, 1.683), rotate: 0,
+  translate: pt(0.214, 2.207), rotate: 0,
   id: 'C14'
 })
 // spk.conn
 const J4 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.342, 2.034), rotate: 0,
+  translate: pt(2.889, 2.034), rotate: 0,
   id: 'J4'
 })
 // ref_div.div.top_res
 const R17 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 2.281), rotate: 0,
+  translate: pt(0.827, 2.382), rotate: 0,
   id: 'R17'
 })
 // ref_div.div.bottom_res
 const R18 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 2.378), rotate: 0,
+  translate: pt(0.827, 2.479), rotate: 0,
   id: 'R18'
 })
 // ref_buf.amp.ic
 const U8 = board.add(SOT_23_6, {
-  translate: pt(0.862, 1.971), rotate: 0,
+  translate: pt(1.408, 1.971), rotate: 0,
   id: 'U8'
 })
 // ref_buf.amp.vdd_cap.cap
 const C15 = board.add(C_0603_1608Metric, {
-  translate: pt(0.839, 2.106), rotate: 0,
+  translate: pt(1.386, 2.106), rotate: 0,
   id: 'C15'
 })
 // inn
@@ -327,12 +327,12 @@ const J5 = board.add(CLIFF_FCR7350, {
 })
 // inn_mux.device.ic
 const U9 = board.add(SOT_363_SC_70_6, {
-  translate: pt(3.089, 1.959), rotate: 0,
+  translate: pt(3.635, 1.959), rotate: 0,
   id: 'U9'
 })
 // inn_mux.device.vdd_cap.cap
 const C16 = board.add(C_0603_1608Metric, {
-  translate: pt(3.084, 2.082), rotate: 0,
+  translate: pt(3.631, 2.082), rotate: 0,
   id: 'C16'
 })
 // inp
@@ -392,17 +392,17 @@ const R22 = board.add(R_0603_1608Metric, {
 })
 // measure_buffer.amp.ic
 const U13 = board.add(SOT_23_6, {
-  translate: pt(1.141, 1.971), rotate: 0,
+  translate: pt(1.688, 1.971), rotate: 0,
   id: 'U13'
 })
 // measure_buffer.amp.vdd_cap.cap
 const C20 = board.add(C_0603_1608Metric, {
-  translate: pt(1.119, 2.106), rotate: 0,
+  translate: pt(1.665, 2.106), rotate: 0,
   id: 'C20'
 })
 // tp_measure.tp
 const TP5 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.704, 2.306), rotate: 0,
+  translate: pt(2.237, 2.407), rotate: 0,
   id: 'TP5'
 })
 // adc.ic
@@ -527,65 +527,65 @@ const D7 = board.add(D_SMA, {
 })
 // driver_dac.rc.r
 const R29 = board.add(R_0603_1608Metric, {
-  translate: pt(3.328, 2.063), rotate: 0,
+  translate: pt(0.058, 2.512), rotate: 0,
   id: 'R29'
 })
 // driver_dac.rc.c
 const C31 = board.add(C_1206_3216Metric, {
-  translate: pt(3.361, 1.949), rotate: 0,
+  translate: pt(0.091, 2.399), rotate: 0,
   id: 'C31'
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["U1", "2"], ["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["R4", "1"], ["Q2", "2"], ["SW1", "2"], ["U2", "2"], ["C1", "2"], ["C2", "2"], ["D3", "2"], ["U3", "2"], ["C3", "2"], ["C4", "2"], ["D4", "2"], ["U4", "2"], ["C5", "2"], ["C6", "2"], ["D5", "2"], ["U5", "1"], ["U5", "15"], ["U5", "2"], ["U5", "33"], ["U5", "55"], ["C7", "2"], ["J2", "5"], ["C8", "2"], ["R9", "2"], ["U6", "3"], ["SW2", "2"], ["SW3", "2"], ["J3", "2"], ["C9", "2"], ["C10", "2"], ["U7", "7"], ["U7", "9"], ["C11", "2"], ["C12", "2"], ["C14", "2"], ["R18", "2"], ["U8", "2"], ["C15", "2"], ["U9", "2"], ["U9", "3"], ["C16", "2"], ["U10", "2"], ["C17", "2"], ["U11", "2"], ["C18", "2"], ["U12", "2"], ["C19", "2"], ["U13", "2"], ["C20", "2"], ["U14", "19"], ["U14", "2"], ["U14", "3"], ["C21", "2"], ["C22", "2"], ["C23", "2"], ["C24", "2"], ["C25", "2"], ["U15", "2"], ["C26", "2"], ["U16", "2"], ["C27", "2"], ["U17", "2"], ["C28", "2"], ["U18", "2"], ["C29", "2"], ["U19", "2"], ["C30", "2"], ["C31", "2"]]},
+  {name: "gnd", pads: [["U1", "2"], ["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["U2", "3"], ["R1", "1"], ["R2", "1"], ["R4", "1"], ["Q2", "2"], ["SW1", "2"], ["U3", "2"], ["C1", "2"], ["C2", "2"], ["D3", "2"], ["U4", "2"], ["C3", "2"], ["C4", "2"], ["D4", "2"], ["U5", "2"], ["C5", "2"], ["C6", "2"], ["D5", "2"], ["U6", "1"], ["U6", "15"], ["U6", "2"], ["U6", "33"], ["U6", "55"], ["C7", "2"], ["J2", "5"], ["C8", "2"], ["R9", "2"], ["SW2", "2"], ["SW3", "2"], ["J3", "2"], ["C9", "2"], ["C10", "2"], ["U7", "7"], ["U7", "9"], ["C11", "2"], ["C12", "2"], ["C14", "2"], ["R18", "2"], ["U8", "2"], ["C15", "2"], ["U9", "2"], ["U9", "3"], ["C16", "2"], ["U10", "2"], ["C17", "2"], ["U11", "2"], ["C18", "2"], ["U12", "2"], ["C19", "2"], ["U13", "2"], ["C20", "2"], ["U14", "19"], ["U14", "2"], ["U14", "3"], ["C21", "2"], ["C22", "2"], ["C23", "2"], ["C24", "2"], ["C25", "2"], ["U15", "2"], ["C26", "2"], ["U16", "2"], ["C27", "2"], ["U17", "2"], ["C28", "2"], ["U18", "2"], ["C29", "2"], ["U19", "2"], ["C30", "2"], ["C31", "2"]]},
   {name: "vbat", pads: [["U1", "1"], ["R3", "1"], ["Q1", "2"]]},
-  {name: "v5v", pads: [["U2", "4"], ["C2", "1"], ["TP1", "1"], ["D3", "1"], ["U3", "1"], ["U3", "3"], ["C3", "1"], ["U4", "1"], ["U4", "3"], ["C5", "1"], ["U7", "1"], ["U7", "6"], ["C11", "1"], ["C12", "1"]]},
-  {name: "v3v3", pads: [["U3", "5"], ["C4", "1"], ["TP2", "1"], ["D4", "1"], ["U5", "28"], ["U5", "30"], ["C7", "1"], ["J2", "1"], ["D6", "2"], ["J3", "7"], ["R13", "1"], ["C9", "1"], ["R24", "1"]]},
-  {name: "vanalog", pads: [["U4", "5"], ["C6", "1"], ["TP3", "1"], ["D5", "1"], ["R17", "1"], ["U8", "5"], ["U8", "6"], ["C15", "1"], ["U9", "5"], ["C16", "1"], ["U10", "5"], ["C17", "1"], ["U11", "5"], ["C18", "1"], ["U12", "5"], ["C19", "1"], ["U13", "5"], ["U13", "6"], ["C20", "1"], ["R23", "1"], ["U15", "5"], ["U15", "6"], ["C26", "1"], ["U16", "5"], ["C27", "1"], ["U17", "5"], ["C28", "1"], ["U18", "5"], ["C29", "1"], ["R25", "1"], ["R26", "1"], ["R27", "1"], ["R28", "1"], ["U19", "5"], ["C30", "1"]]},
+  {name: "v5v", pads: [["U3", "4"], ["C2", "1"], ["TP1", "1"], ["D3", "1"], ["U4", "1"], ["U4", "3"], ["C3", "1"], ["U5", "1"], ["U5", "3"], ["C5", "1"], ["U7", "1"], ["U7", "6"], ["C11", "1"], ["C12", "1"]]},
+  {name: "v3v3", pads: [["U4", "5"], ["C4", "1"], ["TP2", "1"], ["D4", "1"], ["U6", "28"], ["U6", "30"], ["C7", "1"], ["J2", "1"], ["D6", "2"], ["J3", "7"], ["R13", "1"], ["C9", "1"], ["R24", "1"]]},
+  {name: "vanalog", pads: [["U5", "5"], ["C6", "1"], ["TP3", "1"], ["D5", "1"], ["R17", "1"], ["U8", "5"], ["U8", "6"], ["C15", "1"], ["U9", "5"], ["C16", "1"], ["U10", "5"], ["C17", "1"], ["U11", "5"], ["C18", "1"], ["U12", "5"], ["C19", "1"], ["U13", "5"], ["U13", "6"], ["C20", "1"], ["R23", "1"], ["U15", "5"], ["U15", "6"], ["C26", "1"], ["U16", "5"], ["C27", "1"], ["U17", "5"], ["C28", "1"], ["U18", "5"], ["C29", "1"], ["R25", "1"], ["R26", "1"], ["R27", "1"], ["R28", "1"], ["U19", "5"], ["C30", "1"]]},
   {name: "vcenter", pads: [["U8", "1"], ["U8", "4"], ["U9", "1"]]},
-  {name: "spk_chain_0", pads: [["U5", "36"], ["R14", "1"]]},
+  {name: "spk_chain_0", pads: [["U6", "36"], ["R14", "1"]]},
   {name: "spk_chain_1", pads: [["R14", "2"], ["C10", "1"], ["TP4", "1"], ["C13", "2"]]},
   {name: "spk_chain_2.a", pads: [["U7", "8"], ["J4", "1"]]},
   {name: "spk_chain_2.b", pads: [["U7", "5"], ["J4", "2"]]},
   {name: "meas_chain_0", pads: [["R19", "2"], ["R20", "1"], ["R21", "1"], ["R22", "1"], ["U13", "3"]]},
   {name: "meas_chain_1", pads: [["U13", "1"], ["U13", "4"], ["TP5", "1"], ["U14", "5"]]},
-  {name: "data_usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U5", "32"], ["C8", "1"]]},
-  {name: "data_usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["R6", "1"], ["U6", "2"]]},
-  {name: "data_usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["R7", "1"], ["U6", "1"]]},
+  {name: "data_usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U6", "32"], ["C8", "1"]]},
+  {name: "data_usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["U2", "2"], ["R6", "1"]]},
+  {name: "data_usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "1"], ["R7", "1"]]},
   {name: "data_usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "data_usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
-  {name: "gate.pwr_out", pads: [["Q1", "3"], ["U2", "3"], ["L1", "1"], ["C1", "1"], ["R5", "1"], ["R8", "1"]]},
-  {name: "gate.btn_out", pads: [["D2", "2"], ["U5", "50"]]},
-  {name: "gate.control", pads: [["R4", "2"], ["Q2", "1"], ["U5", "49"]]},
+  {name: "gate.pwr_out", pads: [["Q1", "3"], ["U3", "3"], ["L1", "1"], ["C1", "1"], ["R5", "1"], ["R8", "1"]]},
+  {name: "gate.btn_out", pads: [["D2", "2"], ["U6", "50"]]},
+  {name: "gate.control", pads: [["R4", "2"], ["Q2", "1"], ["U6", "49"]]},
   {name: "gate.pwr_gate.btn_in", pads: [["D1", "1"], ["D2", "1"], ["SW1", "1"]]},
   {name: "gate.pwr_gate.pull_res.b", pads: [["R3", "2"], ["Q1", "1"], ["Q2", "3"], ["D1", "2"]]},
-  {name: "reg_5v.ic.ce", pads: [["U2", "1"], ["R5", "2"]]},
-  {name: "reg_5v.ic.sw", pads: [["U2", "5"], ["L1", "2"]]},
-  {name: "mcu.gpio.rgb_red", pads: [["U5", "4"], ["R10", "2"]]},
-  {name: "mcu.gpio.rgb_green", pads: [["U5", "5"], ["R11", "2"]]},
-  {name: "mcu.gpio.rgb_blue", pads: [["U5", "6"], ["R12", "2"]]},
-  {name: "mcu.gpio.inn_control_0", pads: [["U5", "41"], ["U9", "6"]]},
-  {name: "mcu.gpio.measure_select_0_0", pads: [["U5", "42"], ["U10", "6"], ["U11", "6"]]},
-  {name: "mcu.gpio.measure_select_1_0", pads: [["U5", "43"], ["U12", "6"]]},
-  {name: "mcu.gpio.driver_select_0_0", pads: [["U5", "46"], ["U16", "6"], ["U17", "6"]]},
-  {name: "mcu.gpio.driver_select_1_0", pads: [["U5", "44"], ["U18", "6"]]},
-  {name: "mcu.swd_node.swdio", pads: [["U5", "51"], ["J2", "2"]]},
-  {name: "mcu.swd_node.swclk", pads: [["U5", "53"], ["J2", "4"]]},
-  {name: "mcu.reset_node", pads: [["U5", "40"], ["J2", "3"]]},
-  {name: "mcu.swd.swo", pads: [["U5", "47"], ["J2", "6"]]},
-  {name: "mcu.usb_res.interior.dp", pads: [["U5", "35"], ["R6", "2"]]},
-  {name: "mcu.usb_res.interior.dm", pads: [["U5", "34"], ["R7", "2"]]},
-  {name: "vbatsense.output", pads: [["U5", "9"], ["R8", "2"], ["R9", "1"]]},
+  {name: "reg_5v.ic.ce", pads: [["U3", "1"], ["R5", "2"]]},
+  {name: "reg_5v.ic.sw", pads: [["U3", "5"], ["L1", "2"]]},
+  {name: "mcu.gpio.rgb_red", pads: [["U6", "4"], ["R10", "2"]]},
+  {name: "mcu.gpio.rgb_green", pads: [["U6", "5"], ["R11", "2"]]},
+  {name: "mcu.gpio.rgb_blue", pads: [["U6", "6"], ["R12", "2"]]},
+  {name: "mcu.gpio.inn_control_0", pads: [["U6", "41"], ["U9", "6"]]},
+  {name: "mcu.gpio.measure_select_0_0", pads: [["U6", "42"], ["U10", "6"], ["U11", "6"]]},
+  {name: "mcu.gpio.measure_select_1_0", pads: [["U6", "43"], ["U12", "6"]]},
+  {name: "mcu.gpio.driver_select_0_0", pads: [["U6", "46"], ["U16", "6"], ["U17", "6"]]},
+  {name: "mcu.gpio.driver_select_1_0", pads: [["U6", "44"], ["U18", "6"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U6", "51"], ["J2", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U6", "53"], ["J2", "4"]]},
+  {name: "mcu.reset_node", pads: [["U6", "40"], ["J2", "3"]]},
+  {name: "mcu.swd.swo", pads: [["U6", "47"], ["J2", "6"]]},
+  {name: "mcu.usb_res.interior.dp", pads: [["U6", "35"], ["R6", "2"]]},
+  {name: "mcu.usb_res.interior.dm", pads: [["U6", "34"], ["R7", "2"]]},
+  {name: "vbatsense.output", pads: [["U6", "9"], ["R8", "2"], ["R9", "1"]]},
   {name: "rgb.package.k_red", pads: [["D6", "3"], ["R10", "1"]]},
   {name: "rgb.package.k_green", pads: [["D6", "4"], ["R11", "1"]]},
   {name: "rgb.package.k_blue", pads: [["D6", "1"], ["R12", "1"]]},
-  {name: "sw1.out", pads: [["U5", "16"], ["SW2", "1"]]},
-  {name: "sw2.out", pads: [["U5", "3"], ["SW3", "1"]]},
-  {name: "lcd.reset", pads: [["U5", "8"], ["J3", "3"]]},
-  {name: "lcd.rs", pads: [["U5", "10"], ["J3", "4"]]},
-  {name: "lcd.cs", pads: [["U5", "17"], ["J3", "8"]]},
-  {name: "lcd.spi.sck", pads: [["U5", "18"], ["J3", "6"]]},
-  {name: "lcd.spi.mosi", pads: [["U5", "19"], ["J3", "5"]]},
+  {name: "sw1.out", pads: [["U6", "16"], ["SW2", "1"]]},
+  {name: "sw2.out", pads: [["U6", "3"], ["SW3", "1"]]},
+  {name: "lcd.reset", pads: [["U6", "8"], ["J3", "3"]]},
+  {name: "lcd.rs", pads: [["U6", "10"], ["J3", "4"]]},
+  {name: "lcd.cs", pads: [["U6", "17"], ["J3", "8"]]},
+  {name: "lcd.spi.sck", pads: [["U6", "18"], ["J3", "6"]]},
+  {name: "lcd.spi.mosi", pads: [["U6", "19"], ["J3", "5"]]},
   {name: "lcd.device.leda", pads: [["J3", "1"], ["R13", "2"]]},
   {name: "spk_drv.ic.inp", pads: [["U7", "4"], ["R15", "2"]]},
   {name: "spk_drv.ic.inn", pads: [["U7", "3"], ["R16", "2"]]},
@@ -607,15 +607,15 @@ board.setNetlist([
   {name: "adc.vins.5", pads: [["U14", "10"]]},
   {name: "adc.vins.6", pads: [["U14", "11"]]},
   {name: "adc.vins.7", pads: [["U14", "12"]]},
-  {name: "adc.spi.sck", pads: [["U5", "37"], ["U14", "14"]]},
-  {name: "adc.spi.mosi", pads: [["U5", "26"], ["U14", "15"]]},
-  {name: "adc.spi.miso", pads: [["U5", "24"], ["U14", "16"]]},
-  {name: "adc.cs", pads: [["U5", "39"], ["U14", "13"]]},
+  {name: "adc.spi.sck", pads: [["U6", "37"], ["U14", "14"]]},
+  {name: "adc.spi.mosi", pads: [["U6", "26"], ["U14", "15"]]},
+  {name: "adc.spi.miso", pads: [["U6", "24"], ["U14", "16"]]},
+  {name: "adc.cs", pads: [["U6", "39"], ["U14", "13"]]},
   {name: "adc.ic.avdd", pads: [["U14", "1"], ["R23", "2"], ["C21", "1"], ["C22", "1"]]},
   {name: "adc.ic.dvdd", pads: [["U14", "20"], ["R24", "2"], ["C23", "1"], ["C24", "1"]]},
   {name: "adc.ic.vrefp", pads: [["U14", "4"], ["C25", "1"]]},
   {name: "driver.control", pads: [["U15", "3"], ["R29", "2"], ["C31", "1"]]},
-  {name: "driver.enable", pads: [["U5", "48"], ["U19", "6"]]},
+  {name: "driver.enable", pads: [["U6", "48"], ["U19", "6"]]},
   {name: "driver.fet.source", pads: [["Q3", "2"], ["U15", "4"], ["U18", "4"], ["U19", "3"]]},
   {name: "driver.fet.drain", pads: [["Q3", "3"], ["D7", "2"]]},
   {name: "driver.fet.gate", pads: [["Q3", "1"], ["U19", "4"]]},
@@ -626,11 +626,11 @@ board.setNetlist([
   {name: "driver.range.res[1].b", pads: [["U16", "1"], ["R26", "2"]]},
   {name: "driver.range.res[2].b", pads: [["U17", "3"], ["R27", "2"]]},
   {name: "driver.range.res[3].b", pads: [["U17", "1"], ["R28", "2"]]},
-  {name: "driver_dac.input", pads: [["U5", "45"], ["R29", "1"]]}
+  {name: "driver_dac.input", pads: [["U6", "45"], ["R29", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(3.863779527559055, 2.525196850393701);
+const limit1 = pt(3.8692913385826775, 2.6590551181102366);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

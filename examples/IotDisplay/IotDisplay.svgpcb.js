@@ -2,107 +2,112 @@ const board = new PCB();
 
 // jlc_th.th1
 const H1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.002, 2.210), rotate: 0,
+  translate: pt(3.046, 2.360), rotate: 0,
   id: 'H1'
 })
 // jlc_th.th2
 const H2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.041, 2.210), rotate: 0,
+  translate: pt(3.085, 2.360), rotate: 0,
   id: 'H2'
 })
 // jlc_th.th3
 const H3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(3.002, 2.249), rotate: 0,
+  translate: pt(3.046, 2.399), rotate: 0,
   id: 'H3'
 })
 // usb.conn
 const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(0.209, 1.905), rotate: 0,
+  translate: pt(3.328, 1.049), rotate: 0,
   id: 'J1'
+})
+// usb.esd
+const U1 = board.add(SOT_23, {
+  translate: pt(3.194, 1.343), rotate: 0,
+  id: 'U1'
 })
 // batt.conn
 const J2 = board.add(JST_PH_S2B_PH_K_1x02_P2_00mm_Horizontal, {
-  translate: pt(0.633, 2.006), rotate: 0,
+  translate: pt(0.772, 2.006), rotate: 0,
   id: 'J2'
 })
 // tp_pwr.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.874, 2.247), rotate: 0,
+  translate: pt(1.109, 2.397), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.124, 2.247), rotate: 0,
+  translate: pt(1.359, 2.397), rotate: 0,
   id: 'TP2'
 })
 // vbat_prot.fet
 const Q1 = board.add(SOT_23, {
-  translate: pt(0.076, 2.277), rotate: 0,
+  translate: pt(0.310, 2.427), rotate: 0,
   id: 'Q1'
 })
 // reg_3v3.ic
-const U1 = board.add(SOT_23_6, {
-  translate: pt(3.419, 0.952), rotate: 0,
-  id: 'U1'
+const U2 = board.add(SOT_23_6, {
+  translate: pt(0.301, 1.807), rotate: 0,
+  id: 'U2'
 })
 // reg_3v3.fb.div.top_res
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(3.617, 1.131), rotate: 0,
+  translate: pt(0.499, 1.986), rotate: 0,
   id: 'R1'
 })
 // reg_3v3.fb.div.bottom_res
 const R2 = board.add(R_0603_1608Metric, {
-  translate: pt(3.176, 1.261), rotate: 0,
+  translate: pt(0.058, 2.116), rotate: 0,
   id: 'R2'
 })
 // reg_3v3.hf_in_cap.cap
 const C1 = board.add(C_0603_1608Metric, {
-  translate: pt(3.332, 1.261), rotate: 0,
+  translate: pt(0.214, 2.116), rotate: 0,
   id: 'C1'
 })
 // reg_3v3.boot_cap.cap
 const C2 = board.add(C_0603_1608Metric, {
-  translate: pt(3.488, 1.261), rotate: 0,
+  translate: pt(0.370, 2.116), rotate: 0,
   id: 'C2'
 })
 // reg_3v3.power_path.inductor
 const L1 = board.add(L_Sunlord_SWPA4030S, {
-  translate: pt(3.209, 0.974), rotate: 0,
+  translate: pt(0.091, 1.829), rotate: 0,
   id: 'L1'
 })
 // reg_3v3.power_path.in_cap.cap
 const C3 = board.add(C_1206_3216Metric, {
-  translate: pt(3.209, 1.147), rotate: 0,
+  translate: pt(0.091, 2.003), rotate: 0,
   id: 'C3'
 })
 // reg_3v3.power_path.out_cap.cap
 const C4 = board.add(C_1206_3216Metric, {
-  translate: pt(3.429, 1.147), rotate: 0,
+  translate: pt(0.311, 2.003), rotate: 0,
   id: 'C4'
 })
 // reg_3v3.en_res.res
 const R3 = board.add(R_0603_1608Metric, {
-  translate: pt(3.176, 1.357), rotate: 0,
+  translate: pt(0.058, 2.213), rotate: 0,
   id: 'R3'
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.375, 2.247), rotate: 0,
+  translate: pt(1.609, 2.397), rotate: 0,
   id: 'TP3'
 })
 // vbat_sense_gate.pre
 const Q2 = board.add(SOT_23, {
-  translate: pt(1.487, 1.807), rotate: 0,
+  translate: pt(1.625, 1.807), rotate: 0,
   id: 'Q2'
 })
 // vbat_sense_gate.pull
 const R4 = board.add(R_0603_1608Metric, {
-  translate: pt(1.660, 1.942), rotate: 0,
+  translate: pt(1.798, 1.942), rotate: 0,
   id: 'R4'
 })
 // vbat_sense_gate.drv
 const Q3 = board.add(SOT_23, {
-  translate: pt(1.487, 1.980), rotate: 0,
+  translate: pt(1.625, 1.980), rotate: 0,
   id: 'Q3'
 })
 // mcu.prog.conn
@@ -116,9 +121,9 @@ const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
   id: 'SW1'
 })
 // mcu.ic
-const U2 = board.add(ESP32_S3_WROOM_1, {
+const U3 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
-  id: 'U2'
+  id: 'U3'
 })
 // mcu.vcc_cap0.cap
 const C5 = board.add(C_1206_3216Metric, {
@@ -140,74 +145,69 @@ const C7 = board.add(C_0603_1608Metric, {
   translate: pt(1.987, 0.796), rotate: 0,
   id: 'C7'
 })
-// usb_esd
-const U3 = board.add(SOT_23, {
-  translate: pt(2.887, 2.277), rotate: 0,
-  id: 'U3'
-})
 // ledr.package
 const D1 = board.add(LED_0603_1608Metric, {
-  translate: pt(2.848, 1.769), rotate: 0,
+  translate: pt(2.987, 1.769), rotate: 0,
   id: 'D1'
 })
 // ledr.res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(2.848, 1.866), rotate: 0,
+  translate: pt(2.987, 1.866), rotate: 0,
   id: 'R6'
 })
 // ledg.package
 const D2 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.083, 1.769), rotate: 0,
+  translate: pt(3.222, 1.769), rotate: 0,
   id: 'D2'
 })
 // ledg.res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(3.083, 1.866), rotate: 0,
+  translate: pt(3.221, 1.866), rotate: 0,
   id: 'R7'
 })
 // ledb.package
 const D3 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.318, 1.769), rotate: 0,
+  translate: pt(3.456, 1.769), rotate: 0,
   id: 'D3'
 })
 // ledb.res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(3.318, 1.866), rotate: 0,
+  translate: pt(3.456, 1.866), rotate: 0,
   id: 'R8'
 })
 // sw.package
 const SW2 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(2.504, 1.852), rotate: 0,
+  translate: pt(2.643, 1.852), rotate: 0,
   id: 'SW2'
 })
 // vbat_sense.div.top_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(3.553, 1.769), rotate: 0,
+  translate: pt(0.058, 2.389), rotate: 0,
   id: 'R9'
 })
 // vbat_sense.div.bottom_res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(3.553, 1.866), rotate: 0,
+  translate: pt(0.058, 2.485), rotate: 0,
   id: 'R10'
 })
 // touch_duck
 const U4 = board.add(Symbol_DucklingSolid, {
-  translate: pt(3.159, 2.210), rotate: 0,
+  translate: pt(3.203, 2.360), rotate: 0,
   id: 'U4'
 })
 // touch_lemur
 const U5 = board.add(Symbol_LemurSolid, {
-  translate: pt(3.198, 2.210), rotate: 0,
+  translate: pt(3.243, 2.360), rotate: 0,
   id: 'U5'
 })
 // epd_gate.drv
 const Q4 = board.add(SOT_23, {
-  translate: pt(0.345, 2.277), rotate: 0,
+  translate: pt(0.580, 2.427), rotate: 0,
   id: 'Q4'
 })
 // mem_gate.drv
 const Q5 = board.add(SOT_23, {
-  translate: pt(0.614, 2.277), rotate: 0,
+  translate: pt(0.849, 2.427), rotate: 0,
   id: 'Q5'
 })
 // epd.device.conn.conn
@@ -307,37 +307,37 @@ const R12 = board.add(R_0603_1608Metric, {
 })
 // tp_epd.tp_sck.tp
 const TP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 1.778), rotate: 0,
+  translate: pt(2.041, 1.778), rotate: 0,
   id: 'TP4'
 })
 // tp_epd.tp_mosi.tp
 const TP5 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 1.892), rotate: 0,
+  translate: pt(2.041, 1.892), rotate: 0,
   id: 'TP5'
 })
 // tp_epd.tp_miso.tp
 const TP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 2.006), rotate: 0,
+  translate: pt(2.041, 2.006), rotate: 0,
   id: 'TP6'
 })
 // tp_erst.tp
 const TP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.625, 2.247), rotate: 0,
+  translate: pt(1.860, 2.397), rotate: 0,
   id: 'TP7'
 })
 // tp_dc.tp
 const TP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.876, 2.247), rotate: 0,
+  translate: pt(2.110, 2.397), rotate: 0,
   id: 'TP8'
 })
 // tp_epd_cs.tp
 const TP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.126, 2.247), rotate: 0,
+  translate: pt(2.361, 2.397), rotate: 0,
   id: 'TP9'
 })
 // tp_busy.tp
 const TP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.376, 2.247), rotate: 0,
+  translate: pt(2.611, 2.397), rotate: 0,
   id: 'TP10'
 })
 // sd
@@ -347,77 +347,77 @@ const J5 = board.add(microSD_HC_Molex_104031_0811, {
 })
 // flash.ic
 const U6 = board.add(SOIC_8_5_23x5_23mm_P1_27mm, {
-  translate: pt(1.110, 1.853), rotate: 0,
+  translate: pt(1.248, 1.853), rotate: 0,
   id: 'U6'
 })
 // flash.vcc_cap.cap
 const C19 = board.add(C_0603_1608Metric, {
-  translate: pt(0.985, 2.033), rotate: 0,
+  translate: pt(1.124, 2.033), rotate: 0,
   id: 'C19'
 })
 // tp_sd.tp_sck.tp
 const TP11 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 1.778), rotate: 0,
+  translate: pt(2.291, 1.778), rotate: 0,
   id: 'TP11'
 })
 // tp_sd.tp_mosi.tp
 const TP12 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 1.892), rotate: 0,
+  translate: pt(2.291, 1.892), rotate: 0,
   id: 'TP12'
 })
 // tp_sd.tp_miso.tp
 const TP13 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 2.006), rotate: 0,
+  translate: pt(2.291, 2.006), rotate: 0,
   id: 'TP13'
 })
 // tp_sd_cs.tp
 const TP14 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.627, 2.247), rotate: 0,
+  translate: pt(2.861, 2.397), rotate: 0,
   id: 'TP14'
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["J2", "1"], ["TP2", "1"], ["Q1", "1"], ["U1", "1"], ["R2", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["Q2", "2"], ["J3", "5"], ["SW1", "2"], ["U2", "1"], ["U2", "40"], ["U2", "41"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["U3", "3"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["SW2", "2"], ["R10", "2"], ["J4", "17"], ["J4", "8"], ["C8", "2"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["R11", "2"], ["C15", "2"], ["D6", "1"], ["C17", "2"], ["C18", "2"], ["R12", "1"], ["J5", "11"], ["J5", "6"], ["U6", "4"], ["C19", "2"]]},
-  {name: "vbat", pads: [["Q1", "2"], ["U1", "3"], ["C1", "1"], ["C3", "1"], ["R3", "1"], ["R4", "1"], ["Q3", "2"]]},
-  {name: "v3v3", pads: [["R1", "1"], ["L1", "2"], ["C4", "1"], ["TP3", "1"], ["J3", "1"], ["U2", "2"], ["C5", "1"], ["C6", "1"], ["R5", "1"], ["Q4", "2"], ["Q5", "2"]]},
-  {name: "usb_chain_0.d_P", pads: [["J1", "A6"], ["J1", "B6"], ["U2", "14"], ["U3", "2"]]},
-  {name: "usb_chain_0.d_N", pads: [["J1", "A7"], ["J1", "B7"], ["U2", "13"], ["U3", "1"]]},
+  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["U1", "3"], ["J2", "1"], ["TP2", "1"], ["Q1", "1"], ["U2", "1"], ["R2", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["Q2", "2"], ["J3", "5"], ["SW1", "2"], ["U3", "1"], ["U3", "40"], ["U3", "41"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["SW2", "2"], ["R10", "2"], ["J4", "17"], ["J4", "8"], ["C8", "2"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["R11", "2"], ["C15", "2"], ["D6", "1"], ["C17", "2"], ["C18", "2"], ["R12", "1"], ["J5", "11"], ["J5", "6"], ["U6", "4"], ["C19", "2"]]},
+  {name: "vbat", pads: [["Q1", "2"], ["U2", "3"], ["C1", "1"], ["C3", "1"], ["R3", "1"], ["R4", "1"], ["Q3", "2"]]},
+  {name: "v3v3", pads: [["R1", "1"], ["L1", "2"], ["C4", "1"], ["TP3", "1"], ["J3", "1"], ["U3", "2"], ["C5", "1"], ["C6", "1"], ["R5", "1"], ["Q4", "2"], ["Q5", "2"]]},
   {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"]]},
+  {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["U1", "2"], ["U3", "14"]]},
+  {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["U1", "1"], ["U3", "13"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"]]},
   {name: "batt.pwr", pads: [["J2", "2"], ["TP1", "1"], ["Q1", "3"]]},
-  {name: "reg_3v3.ic.sw", pads: [["U1", "2"], ["C2", "2"], ["L1", "1"]]},
-  {name: "reg_3v3.ic.fb", pads: [["U1", "4"], ["R1", "2"], ["R2", "1"]]},
-  {name: "reg_3v3.ic.boot", pads: [["U1", "6"], ["C2", "1"]]},
-  {name: "reg_3v3.ic.en", pads: [["U1", "5"], ["R3", "2"]]},
-  {name: "vbat_sense_gate.control", pads: [["Q2", "1"], ["U2", "6"]]},
+  {name: "reg_3v3.ic.sw", pads: [["U2", "2"], ["C2", "2"], ["L1", "1"]]},
+  {name: "reg_3v3.ic.fb", pads: [["U2", "4"], ["R1", "2"], ["R2", "1"]]},
+  {name: "reg_3v3.ic.boot", pads: [["U2", "6"], ["C2", "1"]]},
+  {name: "reg_3v3.ic.en", pads: [["U2", "5"], ["R3", "2"]]},
+  {name: "vbat_sense_gate.control", pads: [["Q2", "1"], ["U3", "6"]]},
   {name: "vbat_sense_gate.output", pads: [["Q3", "3"], ["R9", "1"]]},
   {name: "vbat_sense_gate.pre.drain", pads: [["Q2", "3"], ["R4", "2"], ["Q3", "1"]]},
-  {name: "mcu.program_uart_node.a_tx", pads: [["J3", "4"], ["U2", "36"]]},
-  {name: "mcu.program_uart_node.b_tx", pads: [["J3", "3"], ["U2", "37"]]},
-  {name: "mcu.program_en_node", pads: [["J3", "6"], ["U2", "3"], ["R5", "2"], ["C7", "1"]]},
-  {name: "mcu.program_boot_node", pads: [["J3", "2"], ["SW1", "1"], ["U2", "27"]]},
-  {name: "ledr.signal", pads: [["U2", "39"], ["D1", "2"]]},
+  {name: "mcu.program_uart_node.a_tx", pads: [["J3", "4"], ["U3", "36"]]},
+  {name: "mcu.program_uart_node.b_tx", pads: [["J3", "3"], ["U3", "37"]]},
+  {name: "mcu.program_en_node", pads: [["J3", "6"], ["U3", "3"], ["R5", "2"], ["C7", "1"]]},
+  {name: "mcu.program_boot_node", pads: [["J3", "2"], ["SW1", "1"], ["U3", "27"]]},
+  {name: "ledr.signal", pads: [["U3", "39"], ["D1", "2"]]},
   {name: "ledr.package.k", pads: [["D1", "1"], ["R6", "1"]]},
-  {name: "ledg.signal", pads: [["U2", "38"], ["D2", "2"]]},
+  {name: "ledg.signal", pads: [["U3", "38"], ["D2", "2"]]},
   {name: "ledg.package.k", pads: [["D2", "1"], ["R7", "1"]]},
-  {name: "ledb.signal", pads: [["U2", "4"], ["D3", "2"]]},
+  {name: "ledb.signal", pads: [["U3", "4"], ["D3", "2"]]},
   {name: "ledb.package.k", pads: [["D3", "1"], ["R8", "1"]]},
-  {name: "sw.out", pads: [["U2", "5"], ["SW2", "1"]]},
-  {name: "vbat_sense.output", pads: [["U2", "7"], ["R9", "2"], ["R10", "1"]]},
-  {name: "touch_duck.pad", pads: [["U2", "21"], ["U4", "1"]]},
-  {name: "touch_lemur.pad", pads: [["U2", "22"], ["U5", "1"]]},
+  {name: "sw.out", pads: [["U3", "5"], ["SW2", "1"]]},
+  {name: "vbat_sense.output", pads: [["U3", "7"], ["R9", "2"], ["R10", "1"]]},
+  {name: "touch_duck.pad", pads: [["U3", "21"], ["U4", "1"]]},
+  {name: "touch_lemur.pad", pads: [["U3", "22"], ["U5", "1"]]},
   {name: "epd_gate.output", pads: [["Q4", "3"], ["J4", "10"], ["J4", "9"], ["C8", "1"], ["L2", "1"], ["C15", "1"]]},
-  {name: "epd_gate.control", pads: [["U2", "10"], ["Q4", "1"]]},
+  {name: "epd_gate.control", pads: [["U3", "10"], ["Q4", "1"]]},
   {name: "mem_gate.output", pads: [["Q5", "3"], ["J5", "4"], ["U6", "3"], ["U6", "7"], ["U6", "8"], ["C19", "1"]]},
-  {name: "mem_gate.control", pads: [["U2", "23"], ["Q5", "1"]]},
-  {name: "epd.reset", pads: [["U2", "8"], ["J4", "15"], ["TP7", "1"]]},
-  {name: "epd.spi.sck", pads: [["U2", "33"], ["J4", "12"], ["TP4", "1"]]},
-  {name: "epd.spi.mosi", pads: [["U2", "35"], ["J4", "11"], ["TP5", "1"]]},
+  {name: "mem_gate.control", pads: [["U3", "23"], ["Q5", "1"]]},
+  {name: "epd.reset", pads: [["U3", "8"], ["J4", "15"], ["TP7", "1"]]},
+  {name: "epd.spi.sck", pads: [["U3", "33"], ["J4", "12"], ["TP4", "1"]]},
+  {name: "epd.spi.mosi", pads: [["U3", "35"], ["J4", "11"], ["TP5", "1"]]},
   {name: "epd.spi.miso", pads: [["TP6", "1"]]},
-  {name: "epd.cs", pads: [["U2", "32"], ["J4", "13"], ["TP9", "1"]]},
-  {name: "epd.dc", pads: [["U2", "31"], ["J4", "14"], ["TP8", "1"]]},
-  {name: "epd.busy", pads: [["U2", "9"], ["J4", "16"], ["TP10", "1"]]},
+  {name: "epd.cs", pads: [["U3", "32"], ["J4", "13"], ["TP9", "1"]]},
+  {name: "epd.dc", pads: [["U3", "31"], ["J4", "14"], ["TP8", "1"]]},
+  {name: "epd.busy", pads: [["U3", "9"], ["J4", "16"], ["TP10", "1"]]},
   {name: "epd.device.vdd1v8", pads: [["J4", "7"], ["C9", "1"]]},
   {name: "epd.device.gdr", pads: [["J4", "23"], ["Q6", "1"], ["R12", "2"]]},
   {name: "epd.device.rese", pads: [["J4", "22"], ["Q6", "2"], ["R11", "1"]]},
@@ -430,15 +430,15 @@ board.setNetlist([
   {name: "epd.device.vcom", pads: [["J4", "1"], ["C14", "1"]]},
   {name: "epd.boost.fet.drain", pads: [["Q6", "3"], ["L2", "2"], ["D4", "2"], ["C16", "1"]]},
   {name: "epd.boost.boot_neg_diode.cathode", pads: [["D5", "1"], ["D6", "2"], ["C16", "2"]]},
-  {name: "sd.spi.sck", pads: [["U2", "17"], ["J5", "5"], ["U6", "6"], ["TP11", "1"]]},
-  {name: "sd.spi.mosi", pads: [["U2", "18"], ["J5", "3"], ["U6", "5"], ["TP12", "1"]]},
-  {name: "sd.spi.miso", pads: [["U2", "15"], ["J5", "7"], ["U6", "2"], ["TP13", "1"]]},
-  {name: "sd.cs", pads: [["U2", "19"], ["J5", "2"], ["TP14", "1"]]},
-  {name: "flash.cs", pads: [["U2", "20"], ["U6", "1"]]}
+  {name: "sd.spi.sck", pads: [["U3", "17"], ["J5", "5"], ["U6", "6"], ["TP11", "1"]]},
+  {name: "sd.spi.mosi", pads: [["U3", "18"], ["J5", "3"], ["U6", "5"], ["TP12", "1"]]},
+  {name: "sd.spi.miso", pads: [["U3", "15"], ["J5", "7"], ["U6", "2"], ["TP13", "1"]]},
+  {name: "sd.cs", pads: [["U3", "19"], ["J5", "2"], ["TP14", "1"]]},
+  {name: "flash.cs", pads: [["U3", "20"], ["U6", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(3.7937007874015753, 2.4618110236220474);
+const limit1 = pt(3.6551181102362214, 2.632283464566929);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

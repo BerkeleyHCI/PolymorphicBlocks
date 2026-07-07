@@ -10,7 +10,9 @@ class UsbSeriesResistor(InternalSubcircuit, Block):
         super().__init__()
         self.resistance = self.ArgParameter(resistance)
         self.interior = self.Port(UsbHostPort(), [Input])
-        self.exterior = self.Port(UsbDevicePort(), [Output])
+        self.exterior = self.Port(
+            UsbDevicePort(speed=self.interior.link().speed, _passive_speed=self.interior.link().passive_speed), [Output]
+        )
 
     @override
     def contents(self) -> None:

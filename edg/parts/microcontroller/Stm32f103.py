@@ -210,7 +210,9 @@ class Stm32f103_Device(
                     CanControllerPort(DigitalBidir.empty()),
                     {"txd": ["PA12", "PD1", "PB9"], "rxd": ["PA11", "PD0", "PB8"]},
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource(
+                    "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dm": ["PA11"], "dp": ["PA12"]}
+                ),
                 PeripheralFixedPin(
                     "SWD",
                     SwdTargetPort(dio_std_model),

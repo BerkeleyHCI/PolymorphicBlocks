@@ -681,7 +681,7 @@ class UsbSourceMeasure(JlcBoardTop):
                 imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request("led")
             )  # debugging LED
 
-            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
             int_i2c = self.mcu.i2c.request("int_i2c")
             self.i2c_tp = self.Block(I2cTestPoint("i2c")).connected(int_i2c)
@@ -872,7 +872,7 @@ class UsbSourceMeasure(JlcBoardTop):
                 "analog": "reg_analog, reg_vcontrol, reg_vcontroln, reg_vref, ref_div, ref_buf, ref_cap, vcen_rc, "
                 "dac_ferrite, dac, mv_rc, mi_rc, adc, control, "
                 "outn, outp, outd",
-                "mcu": "mcu, led, touch_duck, ioe_ctl, usb_esd, i2c_pull, qwiic_pull, qwiic, dutio",
+                "mcu": "mcu, led, touch_duck, ioe_ctl, i2c_pull, qwiic_pull, qwiic, dutio",
                 "sensing": "conv_temp, pass_temp",
                 "ui": "ioe_ui, enc, dir, rgb, reg_v12, oled, oled_rc, spk_drv, spk",
                 "tp": "tp_vusb, tp_gnd, tp_3v3, tp_v5, tp_v12, tp_conv, tp_analog, tp_vcontrol, tp_vcontroln, tp_vref, tp_lsrc, tp_lsnk, "
