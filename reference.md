@@ -163,11 +163,19 @@ def refinements(self) -> Refinements:
 
 - Some blocks, particularly discrete components like `Resistor`s and `Fet`s, are implemented as automatic selection from a parts table.
 - These are some common top-level refinements:
-  - Class refinement `(SelectorArea, ["footprint_area"], Range.from_lower(1.5))`: require a minimum footprint courtyard area, in mm²
-    - Common minimum areas for passives, in mm²: 01005=0.72, 0201=0.98, 0402=1.74, 0603=4.32, 0805=6.38, 1206=10.21.
+  - Class refinement `(SelectorArea, ["filter_area"], Range.from_lower(1.5))`: require a minimum footprint courtyard area, in mm²
+  
+    | Package | Minimum Area (mm²) |
+    |---------|------------------|
+    | 01005   | 0.72             |
+    | 0201    | 0.98             |
+    | 0402    | 1.74             |
+    | 0603    | 4.32             |
+    | 0805    | 6.38             |
+    | 1206    | 10.21            |
   - Instance refinement `(["part_table_block", "excluded_parts"], ["1N2127"])`: exclude parts from selection, e.g., if they're out-of-stock.
   - Instance refinement `(["part_table_block", "part"], "1N2127")`: require a particular part.
-  - Instance refinement `(["part_table_block", "footprint_spec"], "Diode_SMD:D_SMA")`: require a particular footprint.
+  - Instance refinement `(["part_table_block", "filter_footprints"], ["Diode_SMD:D_SMA"])`: require specific footprints.
 
 
 ### IoController
