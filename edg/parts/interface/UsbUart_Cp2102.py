@@ -27,7 +27,7 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             )
         )
 
-        self.usb = self.Port(UsbDevicePort())
+        self.usb = self.Port(UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly))
 
         dio_model = DigitalBidir.from_supply(
             self.gnd,

@@ -195,7 +195,11 @@ class Lpc1549Base_Device(
                     I2cTarget(DigitalBidir.empty()),
                     {"scl": ["PIO0_22"], "sda": ["PIO0_23"]},  # TODO shared resource w/ I2C controller
                 ),
-                PeripheralFixedPin("USB", UsbDevicePort(), {"dp": "USB_DP", "dm": "USB_DM"}),
+                PeripheralFixedPin(
+                    "USB",
+                    UsbDevicePort(speed=(UsbLink.UsbLowSpeed, UsbLink.UsbFullSpeed)),
+                    {"dp": "USB_DP", "dm": "USB_DM"},
+                ),
                 # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK
                 PeripheralFixedResource(
                     "SWD",

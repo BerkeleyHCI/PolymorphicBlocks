@@ -221,7 +221,10 @@ class Rp2040_Device(
                     PinResource("GPIO28", {"GPIO28": self._dio_std_model, "ADC2": adc_model}),
                     PinResource("GPIO29", {"GPIO29": self._dio_std_model, "ADC3": adc_model}),
                     # fixed-pin peripherals
-                    PeripheralFixedPin("USB", UsbDevicePort(), {"dm": "USB_DM", "dp": "USB_DP"}),
+                    # note, USB device in full speed only, USB host in low and full speed
+                    PeripheralFixedPin(
+                        "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dm": "USB_DM", "dp": "USB_DP"}
+                    ),
                     # reassignable peripherals
                     PeripheralFixedResource(
                         "UART0",

@@ -1,3 +1,5 @@
+from typing import Any
+
 from typing_extensions import override
 
 from ...circuits import *
@@ -12,7 +14,7 @@ class Molex_105057_Device(InternalSubcircuit, FootprintBlock):
         self.pwr = self.Port(
             VoltageSink(voltage_limits=UsbConnector.USB2_VOLTAGE_RANGE, current_draw=UsbConnector.USB2_CURRENT_LIMITS)
         )
-        self.usb = self.Port(UsbDevicePort(), optional=True)
+        self.usb = self.Port(UsbDevicePort(speed=UsbLink.AllUsb2Speeds), optional=True)
         self.shield = self.Port(Ground(), optional=True)
 
     @override
@@ -35,8 +37,8 @@ class Molex_105057_Device(InternalSubcircuit, FootprintBlock):
 
 
 class UsbAReceptacle(UsbHostConnector, GeneratorBlock):
-    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, generate_esd_diode: BoolLike = True) -> None:
-        super().__init__(speed=speed, generate_esd_diode=generate_esd_diode)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.conn = self.Block(Molex_105057_Device())
         self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
@@ -71,7 +73,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.gnd = self.Port(Ground())
         self.pwr = self.Port(VoltageSource(voltage=voltage, current_limits=current_limits), optional=True)
 
-        self.usb = self.Port(UsbHostPort(), optional=True)
+        self.usb = self.Port(UsbHostPort(speed=UsbLink.AllUsb2Speeds), optional=True)
         self.shield = self.Port(Ground(), optional=True)
 
         self.cc = self.Port(UsbCcPort(), optional=True)
@@ -110,10 +112,9 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
         self,
         voltage: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
         current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
-        *,
-        generate_esd_diode: BoolLike = True,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(generate_esd_diode=generate_esd_diode)
+        super().__init__(**kwargs)
 
         self.conn = self.Block(UsbCReceptacle_Device(voltage=voltage, current_limits=current_limits))
         self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
@@ -159,7 +160,7 @@ class Molex_105017_0001_Device(InternalSubcircuit, FootprintBlock):
         self.pwr = self.Port(
             VoltageSource(voltage=UsbConnector.USB2_VOLTAGE_RANGE, current_limits=UsbConnector.USB2_CURRENT_LIMITS)
         )
-        self.usb = self.Port(UsbHostPort())
+        self.usb = self.Port(UsbHostPort(speed=UsbLink.AllUsb2Speeds))
         self.shield = self.Port(Ground(), optional=True)
 
     @override
@@ -183,8 +184,8 @@ class Molex_105017_0001_Device(InternalSubcircuit, FootprintBlock):
 
 
 class UsbMicroBReceptacle(UsbDeviceConnector, GeneratorBlock):
-    def __init__(self, *, generate_esd_diode: BoolLike = True) -> None:
-        super().__init__(generate_esd_diode=generate_esd_diode)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.conn = self.Block(Molex_105017_0001_Device())
         self.generator_param(self.usb.is_connected(), self.generate_esd_diode)
@@ -231,7 +232,7 @@ class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
         # PESD5V0X1BT,215 (different architecture, but USB listed as application)
         super().contents()
         self.gnd.init_from(Ground())
-        self.usb.init_from(UsbPassivePort())
+        self.usb.init_from(UsbPassivePort(speed=UsbLink.AllUsb2Speeds))  # up to 6 GBps
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-23",
@@ -253,7 +254,7 @@ class Pesd5v0x1bt(UsbEsdDiode, FootprintBlock, JlcPart):
     def contents(self) -> None:
         super().contents()
         self.gnd.init_from(Ground())
-        self.usb.init_from(UsbPassivePort())
+        self.usb.init_from(UsbPassivePort(speed=UsbLink.AllUsb2Speeds))
         self.assign(self.lcsc_part, "C456094")
         self.assign(self.actual_basic_part, False)
         self.footprint(
@@ -277,7 +278,7 @@ class Pgb102st23(UsbEsdDiode, FootprintBlock, JlcPart):
     def contents(self) -> None:
         super().contents()
         self.gnd.init_from(Ground())
-        self.usb.init_from(UsbPassivePort())
+        self.usb.init_from(UsbPassivePort(speed=UsbLink.AllUsb2Speeds))
         self.assign(self.lcsc_part, "C126830")
         self.assign(self.actual_basic_part, False)
         self.footprint(

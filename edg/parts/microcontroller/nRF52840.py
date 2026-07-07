@@ -251,7 +251,7 @@ class Mdbt50q_1mv2_Device(
                             "swdio": "SWDIO",
                         },
                     ),
-                    PeripheralFixedPin("USBD", UsbDevicePort(), {"dp": "D+", "dm": "D-"}),
+                    PeripheralFixedPin("USBD", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dp": "D+", "dm": "D-"}),
                     PeripheralFixedResource(
                         "SPIM0",
                         spi_model,

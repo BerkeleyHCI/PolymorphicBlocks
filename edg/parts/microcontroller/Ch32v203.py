@@ -236,7 +236,9 @@ class Ch32v203_Device(
                 # unavailable on K8
                 # PeripheralFixedResource("USART3", uart_model, {"tx": ["PB10"], "rx": ["PB11"]}),
                 # PeripheralFixedResource("USART4", uart_model, {"tx": ["PB0", "PA5"], "rx": ["PB1", "PB5"]}),
-                PeripheralFixedResource("USB", UsbDevicePort(), {"dm": ["PA11"], "dp": ["PA12"]}),
+                PeripheralFixedResource(
+                    "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dm": ["PA11"], "dp": ["PA12"]}
+                ),
                 # PeripheralFixedResource("USBFS", UsbDevicePort(DigitalBidir.empty()), {"dm": ["PB6"], "dp": ["PB7"]}),
                 PeripheralFixedResource("I2C1", i2c_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),
                 PeripheralFixedResource("I2C1_T", i2c_target_model, {"scl": ["PB6", "PB8"], "sda": ["PB7", "PB9"]}),

@@ -179,7 +179,9 @@ class Stm32l432_Device(
                 PeripheralFixedResource(
                     "CAN", CanControllerPort(DigitalBidir.empty()), {"tx": ["PA12"], "rx": ["PA11"]}
                 ),
-                PeripheralFixedResource("USB", UsbDevicePort.empty(), {"dp": ["PA12"], "dm": ["PA11"]}),
+                PeripheralFixedResource(
+                    "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dp": ["PA12"], "dm": ["PA11"]}
+                ),
                 PeripheralFixedResource("SPI3", spi_model, {"sck": ["PB3"], "miso": ["PB4"], "mosi": ["PB5"]}),
                 PeripheralFixedResource("USART1", uart_model, {"tx": ["PB6"], "rx": ["PB7"]}),
                 PeripheralFixedResource(

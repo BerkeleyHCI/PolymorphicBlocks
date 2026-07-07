@@ -13,6 +13,7 @@ class UsbLink(Link):
     UsbHighSpeed = 480_000_000
 
     AllUsb2Speeds = Range(UsbLowSpeed, UsbHighSpeed)  # all USB2.0 (since diffpair) speeds
+    UsbFullSpeedOnly = Range.exact(UsbFullSpeed)
 
     def __init__(self) -> None:
         super().__init__()
@@ -51,7 +52,7 @@ class UsbHostBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
         self.outer_port = self.Port(UsbHostPort.empty())
-        self.inner_link = self.Port(UsbDevicePort.empty())
+        self.inner_link = self.Port(UsbDevicePort(speed=Range.all()))  # dummy
 
     @override
     def contents(self) -> None:
@@ -65,12 +66,15 @@ class UsbHostBridge(PortBridge):
         self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
         self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
+        self.assign(self.outer_port.speed, self.inner_link.link().speed)
+        self.assign(self.outer_port._passive_speed, self.inner_link.link().passive_speed)
+
 
 class UsbHostPort(Port[UsbLink]):
     link_type = UsbLink
     bridge_type = UsbHostBridge
 
-    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, _passive_speed=RangeExpr.ALL) -> None:
+    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, _passive_speed: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         self.speed = self.Parameter(RangeExpr(speed))
         self._passive_speed = self.Parameter(RangeExpr(_passive_speed))  # used to propagate through bridges
@@ -82,7 +86,7 @@ class UsbDeviceBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
         self.outer_port = self.Port(UsbDevicePort.empty())
-        self.inner_link = self.Port(UsbHostPort.empty())
+        self.inner_link = self.Port(UsbHostPort(speed=Range.all()))  # dummy
 
     @override
     def contents(self) -> None:
@@ -96,14 +100,15 @@ class UsbDeviceBridge(PortBridge):
         self.connect(self.outer_port.dp, self.dp_bridge.outer_port)
         self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
-        self.assign(self.outer_port._passive_speed, self.inner_link._passive_speed)
+        self.assign(self.outer_port.speed, self.inner_link.link().speed)
+        self.assign(self.outer_port._passive_speed, self.inner_link.link().passive_speed)
 
 
 class UsbDevicePort(Port[UsbLink]):
     link_type = UsbLink
     bridge_type = UsbDeviceBridge
 
-    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, _passive_speed=RangeExpr.ALL) -> None:
+    def __init__(self, *, speed: RangeLike = UsbLink.AllUsb2Speeds, _passive_speed: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         self.speed = self.Parameter(RangeExpr(speed))
         self._passive_speed = self.Parameter(RangeExpr(_passive_speed))  # used to propagate through bridges

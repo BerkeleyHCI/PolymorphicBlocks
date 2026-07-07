@@ -220,7 +220,9 @@ class Esp32s3_Wroom_1_Device(
                     PeripheralAnyResource(
                         "DVP", dvp8_model
                     ),  # TODO this also eats an I2S port, also available as 16-bit
-                    PeripheralFixedResource("USB", UsbDevicePort(), {"dp": ["GPIO20"], "dm": ["GPIO19"]}),
+                    PeripheralFixedResource(
+                        "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dp": ["GPIO20"], "dm": ["GPIO19"]}
+                    ),
                 ]
             )
             .remap_pins(self._PIN_MAPPING)
