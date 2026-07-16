@@ -13,13 +13,18 @@ Abstract component interfaces enable these libraries to be general across applic
 
 Generates stable KiCad netlists to be routed in the KiCad PCB Editor.
 
+
+### Built Boards
+
 Many boards have been built with this system, from mechanical keyboard macropads, to battery-powered IoT devices, to a USB source-measure unit. 
 Check out the [examples page](examples.md)!
 
 
-### Example by Keyboard
+### Example: from HDL to Keyboard
 
 A simplified version of the [getting started tutorial](getting-started.md) is this snippet for a 3x4 mechanical keyboard:
+
+**Overall flow**: write HDL -> generate netlist -> import into KiCad PCB editor -> place and route (optionally iterating with HDL) -> export BoM and Gerbers -> optionally generate JLC PCBA data.
 
 ```python
 class Keyboard(SimpleBoardTop):
@@ -126,6 +131,12 @@ This HDL addresses those limitations with two mechanisms:
 
 Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
 We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry. 
+
+### Parts Data
+
+Most passive parts / discretes are selected from a 2022 JLCPCB parts table (included in this repository).
+This parts table still mostly works, though basic parts have drifted and some pats may be out of stock.
+JLC no longer makes parts tables publicly available.
 
 ### Contributing
 We take pull requests and would love to see contributions and collaborations!
