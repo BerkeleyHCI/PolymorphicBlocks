@@ -115,7 +115,7 @@ Designs that do not decompose neatly(ish) into subcircuits blocks are a poor fit
 There is no support for high-speed digital design (like DDR memories).
 There are some experimental RF subcircuits.
 
-### Compared to hierarchical schematics
+### Compared to Hierarchical Schematics
 
 The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
 
@@ -123,14 +123,22 @@ While graphical schematic tools support hierarchical sheets, direct re-use is li
 Different users may have different requirements (e.g., different resistors for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
 
 This HDL addresses those limitations with two mechanisms:
-- _Generators_ allow the implementation of the subcircuit to depend on high-level parameters.
+- **Generators** allow the implementation of the subcircuit to depend on high-level parameters.
   A LED circuit could automatically size its resistor based on the input voltage.
-- _Abstract parts_ allow the subcircuit to use generic parts with generic interfaces, which many parts can implement.
+- **Abstract parts** allow the subcircuit to use generic parts with generic interfaces, which many parts can implement.
   An abstract resistor interface could be implemented by through-hole and surface-mount resistors, enabling a generic LED circuit and deferring the choice.
   The top-level designer can then specify _refinements_ to make the specific choice of parts.
 
 Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
 We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry. 
+
+### Parameter Engine
+
+This system has a concept of parameters (variables, think voltages and currents) that can be attacked to blocks and propagate through ports.
+This is strictly limited to directed assignments.
+
+Solving may happen within a single block with arbitrary Python code (for example, find the best set of E12 resistor values to implement a divider), but not across multiple blocks.
+Search involving multiple blocks must be handled by the block exposing tuning knobs and the user turning those knobs with recompilation.
 
 ### Parts Data
 
