@@ -25,7 +25,7 @@ _This is a new board, bring-up is a work in progress._
 
 An nRF52840 based air-mouse with an XBox joystick and d-pad.
 
-Example of a three-part multi-board assembly: the buttons daughterboard connects to the main board via a FFC, and the joystick itself is on a FPC "board".
+Example of a three board assembly with connector-pairs managed by the system: the buttons daughterboard connects to the main board via a FFC, and the joystick itself is on a FPC "board".
 
 
 ## USB Source-Measure

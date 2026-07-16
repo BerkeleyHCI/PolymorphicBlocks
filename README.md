@@ -5,10 +5,11 @@
 ![](https://img.shields.io/github/license/BerkeleyHCI/PolymorphicBlocks.svg)
 ![Python](https://img.shields.io/badge/python-3.9-blue.svg)
 
+_subcircuit generator library based hardware description language for circuit board design_
 
-Polymorphic Blocks is an open-source, Python-based [hardware description language (HDL)](https://en.wikipedia.org/wiki/Hardware_description_language) for [printed circuit boards (PCBs)](https://en.wikipedia.org/wiki/Printed_circuit_board).
-By making use of programming concepts and capabilities, this project aims to **make circuit design faster and easier through high-level subcircuit library blocks** much like what makes software development so productive and approachable.
-Underlying language features enable these libraries to be general across many applications and provide a high degree of design automation.
+Polymorphic Blocks is an open-source, Python-based [hardware description language (HDL)](https://en.wikipedia.org/wiki/Hardware_description_language) for schematic-equivalent design of printed circuit boards (PCBs).
+Its library of components provide a high-level abstraction for circuit design while subcircuit generators automate the calculation of fine details.
+Abstract component interfaces enable these libraries to be general across applications and component vendors.
 
 Many boards have been built with this system, from mechanical keyboard macropads, to battery-powered IoT devices, to a USB source-measure unit. 
 Check out the [examples page](examples.md)!
@@ -16,72 +17,96 @@ Check out the [examples page](examples.md)!
 
 ### Example by Keyboard
 
-An example of all this in action is this design for a USB keyboard with a 3x2 switch matrix:
-
-<table>
-<tr>
-<td><b>User input</b></td>
-<td><b>What this tool does</b></td>
-</tr>
-
-<tr style="vertical-align:top">
-<td>
-
-The board is defined using high-level library subcircuits blocks, including parameterized ones like the switch matrix.
-Choices for internal components can also be specified as refinements, for example generic switches (used in the switch matrix) are refined to Kailh mechanical keyswitch sockets.
+A simplified version of the [getting started tutorial](getting-started.md) is this snippet for a 3x4 mechanical keyboard:
 
 ```python
 class Keyboard(SimpleBoardTop):
-  def contents(self) -> None:
-    super().contents()
+    def contents(self) -> None:
+        super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
-    self.reg = self.Block(Ldl1117(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.reg.gnd)
-    self.connect(self.usb.pwr, self.reg.pwr_in)
+        self.usb = self.Block(UsbCReceptacle())
+        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
+        self.connect(self.usb.pwr, self.reg.pwr_in)
 
-    with self.implicit_connect(
+        with self.implicit_connect(
             ImplicitConnect(self.reg.pwr_out, [Power]),
             ImplicitConnect(self.reg.gnd, [Common]),
-    ) as imp:
-      self.mcu = imp.Block(Stm32f103())
-      self.connect(self.usb.usb, self.mcu.usb.request())
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
-      self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector())
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+            self.sw = self.Block(SwitchMatrix(ncols=3, nrows=4))
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector("sw_col"))
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector("sw_row"))
 
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Switch, KailhSocket),
-      ],
-    )
+            self.enc = imp.Block(DigitalRotaryEncoder())
+            self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
+            self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
+            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
+
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (IoController, Ch32v203),
+                (Switch, KailhSocket),
+            ])
 ```
 
-These library blocks contain logic to adjust the subcircuit based on how it is used or its parameters.
-For example, the USB-C port generates the required CC pulldown resistors if a power delivery controller is not attached, and the STM32 generates the required crystal oscillator if USB is used.
-This helps eliminate gotchas for the system designer and makes the overall board more correct-by-construction.
+The system:
+- provides a library of subcircuit generators, like switch matrices and USB-C ports, that automatically include supporting components like decoupling capacitors and pullup resistors
+- automatically selects generic parts like resistors and diodes against builtin parts tables
+- performs basic electrical checks on the design, including voltage and current limits, automating some common datasheet parameter checking
 
-</td>
-<td>
+This generates:
+- a netlist that can be imported into the KiCad PCB editor
+  - ... including hierarchical data, allowing subcircuit replication / channelization
+  - ... and have stable tstamps, allowing incremental updates to in-progress board layouts
+- a JLCPCB-compatible BoM
+  - including a [postprocessing script](edg/tools/jlc_pcba/__main__.py) to shift part rotations from KiCad-generated component placements for JLC PCBA
 
-Compiling the design produces a netlist that can be imported into KiCad for board layout and ultimately Gerber generation for manufacturing:
-![](docs/keyboard.png)
-_Placement and routing are out of scope of this project, components were manually placed._
-
-Additionally, the compiler...
-- generates stable netlists, allowing incremental updates to in-progress board layouts
-- checks electrical properties like voltage and current limits
-- automatically selects generic parts like resistors and diodes against a parts table
-- generates a BoM for factory assembly 
-
-</td>
-</tr>
-</table>
+Advanced capabilities include:
+- multi-board support including connector-pair management
+- cross-hierarchy packing of multi-pack devices like dual op-amps and quad resistors
+- standard abstract component interfaces, allowing for custom implementations of parts like resistors (including from a parts table), and microcontrollers
+- full support for user component definition; very little is hard-coded into the infrastructure
 
 
-### Under the Hood
+## Getting Started
+See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
+
+**Setup tl;dr**: install the Python package from pip: `pip install edg`, and optionally run the [IDE plugin with block diagram visualizer](setup.md#ide-setup).
+
+Also check out the [reference documentation](reference.md) for a concise list of capabilities.
+
+
+## Additional Notes 
+
+### Project Status
+**This is functional has been used to [produce a wide variety of boards](examples.md) over the years.**
+While the core is reasonably stable, as a pre-v1.0-release there are no formal guarantees of API stability.
+In practice, deprecation shims are / will be maintained for common features if APIs change.
+
+### Scope
+The current libraries best support intermediate-level and simple PCB designs.
+This includes circuits with discrete microcontrollers, microcontroller modules (like ESP32s), and socketed dev boards.
+Libraries include common subcircuits like switch matrices, digitally attached peripherals like I2C sensors, voltage converters, and some analog signal conditioning circuit.
+Check out the [component library folder](edg/parts/).
+ESPHome boards are a great fit.
+
+There is no prescribed architecture and microcontrollers are not required.
+
+Designs that do not decompose into subcircuits blocks are a poor fit.
+
+There is no support for high-speed digital design (like DDR memories).
+There are some experimental RF subcircuits.
+
+### Developing
+We take pull requests and would love to see contributions and collaborations!
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### How this works
 
 While degrees of library-based design are possible in graphical schematic tools, either informally with copy-paste or with hierarchical sheets, the main limitation is that these subcircuits are static and tuned for one particular application.
 Baked-in choices like component values, footprint, and part number selection may not meet requirements for a different application that might, for example, call for through-hole components instead of surface-mount, or has different voltage rails.
@@ -100,42 +125,12 @@ _Refinements_ allow the system designer to choose how parts are replaced with su
 An _electronics model_ performs basic checks on the design, including voltage limits, current limits, and signal level compatibility.
 Advanced features like cross-hierarchy packing allows the use of multipack devices, like dual-pack op-amps and quad-pack resistors to optimize for space and cost.
 
-
-## Getting Started
-See the [setup documentation](setup.md), then work through building a blinky board in the [getting started tutorial](getting-started.md).
-
-**Setup tl;dr**: install the Python package from pip: `pip install edg`, and optionally run the [IDE plugin with block diagram visualizer](setup.md#ide-setup).
-
-Building from source: `pip install .` at the repository root.
-
-
-## Additional Notes 
-
-### Developing
-**If you're interested in collaborating or contributing, please reach out to us**, and we do take pull requests.
-Ultimately, we'd like to see an open-source PCB HDL that increases design automation, reduces tedious work, and makes electronics more accessible to everyone.
-
-See [developing.md](developing.md) for developer documentation.
-
 ### Papers
 This started as an academic project, though with the goal of broader adoption.
 Check out our papers (all open-access), which have more details:
-- [System overview, UIST'20](http://dx.doi.org/10.1145/3379337.3415860)
+- [System overview, UIST'20](http://dx.doi.org/10.1145/3379337.3415860) (some details may be out of date)
 - [Mixed block-diagram / textual code IDE, UIST'21](https://dl.acm.org/doi/10.1145/3472749.3474804)
 - [Array ports and multi-packed devices, SCF'22](https://doi.org/10.1145/3559400.3561997)
-
-### Project Status and Scope
-**This is functional and produces boards, but is still a continuing work-in-progress.**
-APIs and libraries may continue to change, though the core has largely stabilized.
-
-If you're looking for a mature PCB design tool that just works, this currently isn't it (yet).
-For a mature and open-source graphical schematic capture and board layout tool, check out [KiCad](https://kicad-pcb.org/), though existing design tools generally have nowhere near the design automation capabilities our system provides.
-**However, if you are interested in trying something new, we're happy to help you and answer questions.**
-
-Current development focuses on supporting intermediate-level PCB projects, like those an advanced hobbyist would make.
-Typical systems would involve power conditioning circuits, a microcontroller, and supporting peripherals (possibly including analog blocks).
-There is no hard-coded architecture (a microcontroller is not needed), and pure analog boards are possible.
-The system should also be able to handle projects that are much more or much less complex, especially if supporting libraries exist.
 
 ### Misc
 - **_What is EDG?_**:
