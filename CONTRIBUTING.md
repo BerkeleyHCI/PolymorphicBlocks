@@ -15,18 +15,19 @@ As such, good candidates for inclusion in this repository are:
 - parts with good support among the maker and open-source community, such as support in ESPHome or high quality Arduino or Rust libraries
 - parts with breakout boards available, such as by Sparkfun or Adafruit
 - parts available from many distributors, including JLC assembly (particularly basic parts), Mouser, and Digi-Key 
-- parts useful in many applications
+- parts with wide applicability
 
-Parts that are bad candidates for inclusion are:
+Parts that are poor candidates for inclusion are:
 - parts that cannot be sourced by individuals
-- anything with non-public documentation (community-provided documentation counts)
+- parts with no public documentation (community-provided documentation counts)
 - parts that cannot be hand-soldered (including with hot air), primarily BGA 
 - extremely integrated parts which do not have a clean block boundary or interface
 - niche parts
 
 Borderline case? Feel free to open a PR and we can discuss.
 
-For parts that may not be a good fit for this repository: consider creating a separate repository and publishing it on pip with a dependency on this project.
+There will be many useful parts that are not a good fit for inclusion here.
+Consider creating a separate repository and publishing it on pip with a dependency on this project.
 
 
 ## Compiler / Infrastructure Contributions

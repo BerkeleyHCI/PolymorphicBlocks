@@ -11,6 +11,8 @@ Polymorphic Blocks is an open-source, Python-based [hardware description languag
 Its library of components provide a high-level abstraction for circuit design while subcircuit generators automate the calculation of fine details.
 Abstract component interfaces enable these libraries to be general across applications and component vendors.
 
+Generates stable KiCad netlists to be routed in the KiCad PCB Editor.
+
 Many boards have been built with this system, from mechanical keyboard macropads, to battery-powered IoT devices, to a USB source-measure unit. 
 Check out the [examples page](examples.md)!
 
@@ -77,9 +79,13 @@ Advanced capabilities include:
 ## Getting Started
 See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
-**Setup tl;dr**: install the Python package from pip: `pip install edg`, and optionally run the [IDE plugin with block diagram visualizer](setup.md#ide-setup).
+**Setup tl;dr**: install from pip, published as `edg`: `pip install edg`.
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.
+
+Some documentation is available for library parts construction.
+Be warned, this is more complex and less polished. 
+See the [library block definition tutorial using KiCad schematic import](getting_started_schimport.md) abd te [library construction reference](reference_library.md).
 
 
 ## Additional Notes 
@@ -90,25 +96,21 @@ While the core is reasonably stable, as a pre-v1.0-release there are no formal g
 In practice, deprecation shims are / will be maintained for common features if APIs change.
 
 ### Scope
-The current libraries best support intermediate-level and simple PCB designs.
+The current libraries best support intermediate-level (and simpler) PCB designs.
 This includes circuits with discrete microcontrollers, microcontroller modules (like ESP32s), and socketed dev boards.
-Libraries include common subcircuits like switch matrices, digitally attached peripherals like I2C sensors, voltage converters, and some analog signal conditioning circuit.
-Check out the [component library folder](edg/parts/).
-ESPHome boards are a great fit.
+Libraries include common subcircuits like switch matrices, digitally attached peripherals like I2C sensors, voltage converters, and some analog signal conditioning circuits.
+Check out the [subcircuits library folder](edg/circuits/) and [parts library folder](edg/parts/).
 
 There is no prescribed architecture and microcontrollers are not required.
 
-Designs that do not decompose into subcircuits blocks are a poor fit.
+ESPHome boards are a great fit.
+
+Designs that do not decompose neatly(ish) into subcircuits blocks are a poor fit.
 
 There is no support for high-speed digital design (like DDR memories).
 There are some experimental RF subcircuits.
 
-### Contributing
-We take pull requests and would love to see contributions and collaborations!
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-### How this works
+### Compared to hierarchical schematics
 
 The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
 
@@ -124,6 +126,11 @@ This HDL addresses those limitations with two mechanisms:
 
 Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
 We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry. 
+
+### Contributing
+We take pull requests and would love to see contributions and collaborations!
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### Papers
 This started as an academic project, though with the goal of broader adoption.
