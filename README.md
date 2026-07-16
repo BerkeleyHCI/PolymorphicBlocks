@@ -65,6 +65,8 @@ This generates:
 - a JLCPCB-compatible BoM
   - including a [postprocessing script](edg/tools/jlc_pcba/__main__.py) to shift part rotations from KiCad-generated component placements for JLC PCBA
 
+![keyboard.webp](docs/boards/keyboard.webp)
+
 Advanced capabilities include:
 - multi-board support including connector-pair management
 - cross-hierarchy packing of multi-pack devices like dual op-amps and quad resistors

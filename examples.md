@@ -4,6 +4,9 @@ This is a small, curated list of example boards built with this HDL framework.
 
 
 ## Mechanical Macropad
+
+![keyboard.webp](docs/boards/keyboard.webp)
+
 [test_keyboard.py](examples/test_keyboard.py), [Keyboard.kicad_pcb](examples/Keyboard/Keyboard.kicad_pcb)
 
 [Minimal Rust firmware](https://github.com/ducky64/edg-pcbs/tree/main/KeyboardExample) (note, RMK crashes on this device, possibly an issue with mutex implementation on the CH32V203 HAL).
@@ -19,6 +22,8 @@ A variation of the design in the [getting started tutorial](getting-started.md).
 
 _This is a new board, bring-up is a work in progress._
 
+![ble_joystick.webp](docs/boards/ble_joystick.webp)
+
 [test_ble_joystick.py](examples/test_ble_joystick.py), [BleJoystick.kicad_pcb](examples/BleJoystick/BleJoystick.kicad_pcb) (main board), [BleJoystick_btns.kicad_pcb](examples/BleJoystick/BleJoystick_btns.kicad_pcb) (buttons sub-board), [BleJoystick_stick.kicad_pcb](examples/BleJoystick/BleJoystick_stick.kicad_pcb) (joystick FPC)
 
 [Rust firmware](https://github.com/ducky64/blejoystick-rs)
@@ -29,6 +34,8 @@ Example of a three board assembly with connector-pairs managed by the system: th
 
 
 ## USB Source-Measure
+
+![usb_smu.webp](docs/boards/usb_smu.webp)
 
 [test_usb_source_measure.py](examples/test_usb_source_measure.py), [UsbSourceMeasure.kicad_pcb](examples/UsbSourceMeasure/UsbSourceMeasure.kicad_pcb)
 
@@ -62,6 +69,8 @@ A few of these are deployed outside the UCLA ECE departmental meeting rooms as r
 
 ## SWD and ESP Programmers
 
+![swd_esp_programmers.webp](docs/boards/swd_esp_programmers.webp)
+
 [test_swd_debugger.py](examples/test_swd_debugger.py), [SwdDebugger.kicad_pcb](examples/SwdDebugger.kicad_pcb), [PicoProbe.kicad_pcb](examples/PicoProbe/PicoProbe.kicad_pcb),
 
 [test_esp_programmer.py](examples/test_esp_programmer.py), [EspProgrammer.kicad_pcb](examples/EspProgrammer/EspProgrammer.kicad_pcb)
@@ -74,6 +83,8 @@ The ESP programmer is a CP2102 USB-UART bridge with no microcontroller.
 
 
 ## LoRa and NFC Demonstrator
+
+![esp_lora.webp](docs/boards/esp_lora.webp)
 
 [test_lora.py](examples/test_lora.py), [EspLora.kicad_pcb](examples/EspLora/EspLora.kicad_pcb)
 
