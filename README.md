@@ -101,29 +101,27 @@ Designs that do not decompose into subcircuits blocks are a poor fit.
 There is no support for high-speed digital design (like DDR memories).
 There are some experimental RF subcircuits.
 
-### Developing
+### Contributing
 We take pull requests and would love to see contributions and collaborations!
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### How this works
 
-While degrees of library-based design are possible in graphical schematic tools, either informally with copy-paste or with hierarchical sheets, the main limitation is that these subcircuits are static and tuned for one particular application.
-Baked-in choices like component values, footprint, and part number selection may not meet requirements for a different application that might, for example, call for through-hole components instead of surface-mount, or has different voltage rails.
+The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
 
-The HDL provides two mechanisms to enable general subcircuit libraries: _generators_ and _abstract parts_.
-Defining the subcircuit as code enables the library to contain logic to _generate_ the implementation to support many applications.
-For instance, instead of a keyboard switch matrix with a fixed number of rows and columns, the library can take in user-specified `nrows` and `ncols` parameters and generate the matrix for that configuration.
-A more complex example would be a buck converter generator, which automatically sizes its inductor and capacitors based on the current draw of connected components.
+While graphical schematic tools support hierarchical sheets, direct re-use is limited because the sheets encode a lot of per-design information, like a specific resistor values or footprints.
+Different users may have different requirements (e.g., different resistors for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
 
-While generators enable the subcircuit to adapt to its environment, _abstract parts_ formalize and automate the concept of generic parts within subcircuits.
-Instead of requiring baked in part numbers and footprints in subcircuits, library builders can instead place an abstract part like generic resistors, generic diodes, and even generic microcontrollers.
-These only define the parts' interface but have no implementation; instead other library blocks can implement (subtype) the interface.
-For example, the abstract interface can be implemented by a SMT resistor generator, a through-hole resistor generator, or a resistor that picks from a vendor part table.
-_Refinements_ allow the system designer to choose how parts are replaced with subtypes.
+This HDL addresses those limitations with two mechanisms:
+- _Generators_ allow the implementation of the subcircuit to depend on high-level parameters.
+  A LED circuit could automatically size its resistor based on the input voltage.
+- _Abstract parts_ allow the subcircuit to use generic parts with generic interfaces, which many parts can implement.
+  An abstract resistor interface could be implemented by through-hole and surface-mount resistors, enabling a generic LED circuit and deferring the choice.
+  The top-level designer can then specify _refinements_ to make the specific choice of parts.
 
-An _electronics model_ performs basic checks on the design, including voltage limits, current limits, and signal level compatibility.
-Advanced features like cross-hierarchy packing allows the use of multipack devices, like dual-pack op-amps and quad-pack resistors to optimize for space and cost.
+Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
+We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry. 
 
 ### Papers
 This started as an academic project, though with the goal of broader adoption.
