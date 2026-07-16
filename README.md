@@ -10,9 +10,11 @@ Polymorphic Blocks is an open-source, Python-based [hardware description languag
 By making use of programming concepts and capabilities, this project aims to **make circuit design faster and easier through high-level subcircuit library blocks** much like what makes software development so productive and approachable.
 Underlying language features enable these libraries to be general across many applications and provide a high degree of design automation.
 
-We've been using this system to create a variety of boards of varying complexity, [examples](#examples) range from a charlieplexed LED matrix to a USB source-measure unit.
+Many boards have been built with this system, from mechanical keyboard macropads, to battery-powered IoT devices, to a USB source-measure unit. 
+Check out the [examples page](examples.md)!
 
-### A Keyboard Example
+
+### Example by Keyboard
 
 An example of all this in action is this design for a USB keyboard with a 3x2 switch matrix:
 
@@ -78,6 +80,7 @@ Additionally, the compiler...
 </tr>
 </table>
 
+
 ### Under the Hood
 
 While degrees of library-based design are possible in graphical schematic tools, either informally with copy-paste or with hierarchical sheets, the main limitation is that these subcircuits are static and tuned for one particular application.
@@ -107,57 +110,6 @@ Building from source: `pip install .` at the repository root.
 
 
 ## Additional Notes 
-
-### Examples
-Example boards, including layouts, are available in the [examples/](examples/) directory, structured as unit tests and including board layouts:
-
-<table>
-<tr>
-<td>
-<img src="docs/boards/ledmatrix.webp" width="240" align="center"/>
-
-**[LED Matrix](examples/test_ledmatrix.py)**: a 6x5 LED matrix using a [charlieplexed](https://en.wikipedia.org/wiki/Charlieplexing) circuit generator that drives 30 LEDs off of just 7 IO pins.
-
-</td>
-<td>
-<img src="docs/boards/simon.webp" width="240" align="center"/>
-
-[Simon](examples/test_simon.py): a [Simon memory game](https://en.wikipedia.org/wiki/Simon_(game)) implementation with a speaker and [12v illuminated dome buttons](https://www.sparkfun.com/products/9181).
-
-</td>
-</tr>
-
-<tr>
-<td>
-<img src="docs/boards/iotfandriver.webp" width="640" align="center"/>
-
-**[IoT Fan Driver](examples/test_iot_fan.py)**: an [ESPHome](https://esphome.io/index.html)-based internet-of-things fan controller, controlling and monitoring up to two computer fans from a web page or [home automation dashboard](https://www.home-assistant.io/).
-
-</td>
-<td>
-<img src="docs/boards/candapter.webp" width="480" align="center"/>
-
-**[CAN Adapter](examples/test_can_adapter.py)**: an isolated [CANbus](https://en.wikipedia.org/wiki/CAN_bus) to USB-C adapter.
-
-</td>
-</tr>
-
-<tr>
-<td>
-<img src="docs/boards/multimeter.webp" width="640" align="center"/>
-
-**[BLE Multimeter](examples/test_multimeter.py)**: a BLE (Bluetooth Low Energy) compact (stick form factor) multimeter, supporting volts / ohms / diode / continuity test mode, for low voltage applications.
-
-</td>
-<td>
-<img src="docs/boards/usb_smu.webp" width="640" align="center"/>
-
-**[USB Source-Measure Unit](examples/test_usb_source_measure.py)**: a USB PD (type-C power delivery) source-measure unit -- which can both act as a DC power supply with configurable voltage and current, and as a DC load. More precisely, it's a digitally-controlled 2-quadrant (positive voltage, positive or negative current) power source.
-
-</td>
-</tr>
-
-</table>
 
 ### Developing
 **If you're interested in collaborating or contributing, please reach out to us**, and we do take pull requests.
