@@ -45,7 +45,7 @@ A portable 2-quadrant (positive voltage only, sourcing or sinking current) DC po
 Design target of 0 - 30V output, -3 - +3A current (electrical limits, thermal limits lower), three current ranges (30mA, 300mA, 3A).
 Buck-boost (four-switch) pre-regulator and linear analog feedback stage.
 
-Example of a fairly complex device with significant analog circuitry.
+Example of a fairly complex device with dual-pack opamps and significant analog circuitry.
 The analog feedback circuitry is a high-level KiCad-schematic-defined-block:
 
 ![UsbSmuControl.png](docs/boards/UsbSmuControl.png)
