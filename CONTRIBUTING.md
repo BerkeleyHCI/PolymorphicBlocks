@@ -24,10 +24,13 @@ Parts that are poor candidates for inclusion are:
 - extremely integrated parts which do not have a clean block boundary or interface
 - niche parts
 
-Borderline case? Feel free to open a PR and we can discuss.
+Borderline case? Feel free to open an issue or PR for discussion.
+
+We may require that parts be proven functional in a built PCB before merging.
 
 There will be many useful parts that are not a good fit for inclusion here.
 Consider creating a separate repository and publishing it on pip with a dependency on this project.
+We may maintain a list of high quality third-party parts libraries.
 
 
 ## Compiler / Infrastructure Contributions
