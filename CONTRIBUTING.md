@@ -38,7 +38,7 @@ We'd prefer to figure out and nail down an architecture and plan before any deta
 
 ## Third Party Tools
 
-If you build a tool that integrates with / makes use of this HDL, feel free to open an issue to request we add it to a list of such tool.
+If you build a tool that integrates with / makes use of this HDL, feel free to open an issue to request we add it to a list of such tools.
 We may review such tools for quality and readiness before listing.
 
 We are also open to collaborating and discussing on how we can better support third party tooling, particularly community-driven open-source projects.

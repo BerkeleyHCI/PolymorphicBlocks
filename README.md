@@ -27,6 +27,8 @@ Check out the [examples page](examples.md)!
 A simplified version of the [getting started tutorial](getting-started.md) is this snippet for a 3x4 mechanical keyboard:
 
 ```python
+from edg import *
+
 class Keyboard(SimpleBoardTop):
     def contents(self) -> None:
         super().contents()
@@ -58,6 +60,8 @@ class Keyboard(SimpleBoardTop):
                 (IoController, Ch32v203),
                 (Switch, KailhSocket),
             ])
+
+compile_board_inplace(Keyboard)
 ```
 
 The system:
@@ -86,13 +90,13 @@ Advanced capabilities include:
 See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
 **Setup tl;dr**: install from pip, published as `edg`: `pip install edg`.
-You will need a Java 11+ JRE / JDK.
+You will need a Java 11+ JRE / JDK, for the core compiler / solver.
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.
 
 Some documentation is available for library parts construction.
 Be warned, this is more complex and less polished. 
-See the [library block definition tutorial using KiCad schematic import](getting_started_schimport.md) abd te [library construction reference](reference_library.md).
+See the [library block definition tutorial using KiCad schematic import](getting_started_schimport.md) and the [library construction reference](reference_library.md).
 
 
 ## Additional Notes 
@@ -130,7 +134,7 @@ More advanced parameters, especially performance characteristics not related to 
 The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
 
 While graphical schematic tools support hierarchical sheets, direct re-use is limited because the sheets encode a lot of per-design information, like a specific resistor values or footprints.
-Different users may have different requirements (e.g., different resistors for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
+Different users may have different requirements (e.g., different resistor values for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
 
 This HDL addresses those limitations with two mechanisms:
 - **Generators** allow the implementation of the subcircuit to depend on high-level parameters.
