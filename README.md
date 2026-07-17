@@ -102,6 +102,8 @@ See the [library block definition tutorial using KiCad schematic import](getting
 While the core is reasonably stable, as a pre-v1.0-release there are no formal guarantees of API stability.
 In practice, deprecation shims are / will be maintained for common features if APIs change.
 
+This started as an academic research project and continues to be developed as a personal project post-graduation, including for designing circuit boards for fun.
+
 Though many functional boards have been built with this system, there may still be bugs and edge cases.
 You are recommended to sanity check generated designs during layout.
 
