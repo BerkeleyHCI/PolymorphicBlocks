@@ -69,7 +69,7 @@ A few of these are deployed outside the UCLA ECE departmental meeting rooms as r
 
 ## SWD and ESP Programmers
 
-![swd_esp_programmers.webp](docs/boards/swd_esp_programmers.webp)
+![debuggers.webp](docs/boards/debuggers.webp)
 
 [test_swd_debugger.py](examples/test_swd_debugger.py), [SwdDebugger.kicad_pcb](examples/SwdDebugger.kicad_pcb), [PicoProbe.kicad_pcb](examples/PicoProbe/PicoProbe.kicad_pcb),
 
