@@ -19,7 +19,7 @@ As such, good candidates for inclusion in this repository are:
 
 Parts that are poor candidates for inclusion are:
 - parts that cannot be sourced by individuals
-- parts with no public documentation (community-provided documentation counts)
+- parts with no public documentation (community-provided documentation and libraries count)
 - parts that cannot be hand-soldered (including with hot air), primarily BGA 
 - extremely integrated parts which do not have a clean block boundary or interface
 - niche parts
@@ -33,7 +33,15 @@ Consider creating a separate repository and publishing it on pip with a dependen
 ## Compiler / Infrastructure Contributions
 
 If you're thinking of implementing a significant feature or refactor, please discuss the plan with us first.
-We'd prefer to figure out and nail down the architecture before any detailed coding.
+We'd prefer to figure out and nail down an architecture and plan before any detailed coding.
+
+
+## Third Party Tools
+
+If you build a tool that integrates with / makes use of this HDL, feel free to open an issue to request we add it to a list of such tool.
+We may review such tools for quality and readiness before listing.
+
+We are also open to collaborating and discussing on how we can better support third party tooling, particularly community-driven open-source projects.
 
 
 ## Example Boards

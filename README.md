@@ -16,15 +16,15 @@ Generates stable KiCad netlists to be routed in the KiCad PCB Editor.
 
 ### Built Boards
 
-Many boards have been built with this system, from mechanical keyboard macropads, to battery-powered IoT devices, to a USB source-measure unit. 
+Many boards have been built with this system, from a mechanical keyboard macropad, to battery-powered IoT devices, to a USB source-measure unit.
 Check out the [examples page](examples.md)!
 
 
 ### Example: from HDL to Keyboard
 
-A simplified version of the [getting started tutorial](getting-started.md) is this snippet for a 3x4 mechanical keyboard:
+**Overall flow**: write HDL -> generate netlist -> import into KiCad PCB editor -> place and route (optionally iterating with HDL) -> export BoM and Gerbers -> optionally generate JLC PCBA data
 
-**Overall flow**: write HDL -> generate netlist -> import into KiCad PCB editor -> place and route (optionally iterating with HDL) -> export BoM and Gerbers -> optionally generate JLC PCBA data.
+A simplified version of the [getting started tutorial](getting-started.md) is this snippet for a 3x4 mechanical keyboard:
 
 ```python
 class Keyboard(SimpleBoardTop):
@@ -71,6 +71,7 @@ This generates:
   - ... and have stable tstamps, allowing incremental updates to in-progress board layouts
 - a JLCPCB-compatible BoM
   - including a [postprocessing script](edg/tools/jlc_pcba/__main__.py) to shift part rotations from KiCad-generated component placements for JLC PCBA
+- a [JSON representation of the full design](edg/core/CompiledDesignExport.py), including connectivity and solved circuit values, to integrate with custom / third-party tooling
 
 ![keyboard.webp](docs/boards/keyboard.webp)
 
@@ -145,7 +146,7 @@ Compilation is intended to be fully deterministic.
 ### Parts Data
 
 Most passive parts / discretes are selected from a 2022 JLCPCB parts table (included in this repository).
-This parts table still mostly works, though basic parts have drifted and some pats may be out of stock.
+This parts table still mostly works, though basic parts have drifted and some parts may be out of stock.
 JLC no longer makes parts tables publicly available.
 
 ### Contributing
