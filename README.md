@@ -86,6 +86,7 @@ Advanced capabilities include:
 See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
 **Setup tl;dr**: install from pip, published as `edg`: `pip install edg`.
+You will need a Java 11+ JRE / JDK.
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.
 
@@ -101,6 +102,9 @@ See the [library block definition tutorial using KiCad schematic import](getting
 While the core is reasonably stable, as a pre-v1.0-release there are no formal guarantees of API stability.
 In practice, deprecation shims are / will be maintained for common features if APIs change.
 
+Though many functional boards have been built with this system, there may still be bugs and edge cases.
+You are recommended to sanity check generated designs during layout.
+
 ### Scope
 The current libraries best support intermediate-level (and simpler) PCB designs.
 This includes circuits with discrete microcontrollers, microcontroller modules (like ESP32s), and socketed dev boards.
@@ -115,6 +119,9 @@ Designs that do not decompose neatly(ish) into subcircuits blocks are a poor fit
 
 There is no support for high-speed digital design (like DDR memories).
 There are some experimental RF subcircuits.
+
+The electrical checks are not a design assurance tool and only automate some of the most common datasheet checks.
+More advanced parameters, especially performance characteristics not related to maximum ratings, are currently out of scope of the electronics model.
 
 ### Compared to Hierarchical Schematics
 
@@ -146,8 +153,10 @@ Compilation is intended to be fully deterministic.
 ### Parts Data
 
 Most passive parts / discretes are selected from a 2022 JLCPCB parts table (included in this repository).
-This parts table still mostly works, though basic parts have drifted and some parts may be out of stock.
 JLC no longer makes parts tables publicly available.
+
+This parts table still mostly works and boards have been built using this table as recently as 2026.
+Some basic parts have drifted and some parts may be no longer stocked.
 
 ### Contributing
 We take pull requests and would love to see contributions and collaborations!
