@@ -16,6 +16,7 @@ As such, good candidates for inclusion in this repository are:
 - parts with breakout boards available, such as by Sparkfun or Adafruit
 - parts available from many distributors, including JLC assembly (particularly basic parts), Mouser, and Digi-Key 
 - parts with wide applicability
+- parts using footprints in the standard KiCad libraries, or in PCM libraries
 
 Parts that are poor candidates for inclusion are:
 - parts that cannot be sourced by individuals
@@ -26,7 +27,8 @@ Parts that are poor candidates for inclusion are:
 
 Borderline case? Feel free to open an issue or PR for discussion.
 
-We may require that parts be proven functional in a built PCB before merging.
+We prefer parts that have been tested functional in a real PCB.
+Consider opening a PR after you've brought up your device.
 
 There will be many useful parts that are not a good fit for inclusion here.
 Consider creating a separate repository and publishing it on pip with a dependency on this project.
@@ -35,7 +37,7 @@ We may maintain a list of high quality third-party parts libraries.
 
 ## Compiler / Infrastructure Contributions
 
-If you're thinking of implementing a significant feature or refactor, please discuss the plan with us first.
+If you're thinking of implementing a significant feature or refactor, please discuss the plan with us first such as through an issue.
 We'd prefer to figure out and nail down an architecture and plan before any detailed coding.
 
 
@@ -51,4 +53,5 @@ We are also open to collaborating and discussing on how we can better support th
 
 Third party designs should go in their own repositories, unless you feel it makes sense as an integration test here.
 
-We may link high quality designs, feel free to open an issue or PR.
+We may link high quality designs.
+Feel free to open an issue or PR.
