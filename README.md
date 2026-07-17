@@ -73,7 +73,7 @@ This generates:
   - including a [postprocessing script](edg/tools/jlc_pcba/__main__.py) to shift part rotations from KiCad-generated component placements for JLC PCBA
 - a [JSON representation of the full design](edg/core/CompiledDesignExport.py), including connectivity and solved circuit values, to integrate with custom / third-party tooling
 
-![keyboard.webp](docs/boards/keyboard.webp)
+![macropad.webp](docs/boards/macropad.webp)
 
 Advanced capabilities include:
 - multi-board support including connector-pair management

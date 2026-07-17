@@ -5,7 +5,7 @@ This is a small, curated list of example boards built with this HDL framework.
 
 ## Mechanical Macropad
 
-![keyboard.webp](docs/boards/keyboard.webp)
+![macropad.webp](docs/boards/macropad.webp)
 
 [test_keyboard.py](examples/test_keyboard.py), [Keyboard.kicad_pcb](examples/Keyboard/Keyboard.kicad_pcb)
 
@@ -22,7 +22,7 @@ A variation of the design in the [getting started tutorial](getting-started.md).
 
 _This is a new board, bring-up is a work in progress._
 
-![ble_joystick.webp](docs/boards/ble_joystick.webp)
+![blejoystick_combined.webp](docs/boards/blejoystick_combined.webp)
 
 [test_ble_joystick.py](examples/test_ble_joystick.py), [BleJoystick.kicad_pcb](examples/BleJoystick/BleJoystick.kicad_pcb) (main board), [BleJoystick_btns.kicad_pcb](examples/BleJoystick/BleJoystick_btns.kicad_pcb) (buttons sub-board), [BleJoystick_stick.kicad_pcb](examples/BleJoystick/BleJoystick_stick.kicad_pcb) (joystick FPC)
 
