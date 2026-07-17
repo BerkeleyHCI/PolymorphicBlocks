@@ -151,6 +151,8 @@ We suspect this will also make it easier for novices to design boards, reducing 
 This system has a concept of parameters (variables, think voltages and currents) that can be attached to blocks and propagate through ports.
 This is strictly limited to directed assignments.
 
+Assertions are supported on parameters to enforce electrical correctness checks.
+
 Solving may happen within a single block with arbitrary Python code (for example, find the best set of E12 resistor values to implement a divider), but not across multiple blocks.
 Search involving multiple blocks must be handled by the block exposing tuning knobs and the user turning those knobs with recompilation.
 
