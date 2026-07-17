@@ -68,6 +68,7 @@ The system:
 - provides a library of subcircuit generators, like switch matrices and USB-C ports, that automatically include supporting components like decoupling capacitors and pullup resistors
 - automatically selects generic parts like resistors and diodes against builtin parts tables
 - performs basic electrical checks on the design, including voltage and current limits, automating some common datasheet parameter checking
+- runs fully locally
 
 This generates:
 - a netlist that can be imported into the KiCad PCB editor
