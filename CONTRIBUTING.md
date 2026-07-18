@@ -52,5 +52,5 @@ We are also open to collaborating and discussing on how we can better support th
 
 Third party designs should go in their own repositories, unless you feel it makes sense as an integration test here.
 
-We may link high quality designs.
+We may link high quality example / built-with designs.
 Feel free to open an issue or PR.
