@@ -3,7 +3,7 @@
 ![](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-python.yml/badge.svg?branch=master)
 ![](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-scala.yml/badge.svg?branch=master)
 ![](https://img.shields.io/github/license/BerkeleyHCI/PolymorphicBlocks.svg)
-![Python](https://img.shields.io/badge/python-3.10--3.13-blue.svg?logo=python)
+![Python](https://img.shields.io/badge/python-3.10--3.13-blue.svg?logo=python&logoColor=white)
 
 _subcircuit generator library based hardware description language for circuit board design_
 
