@@ -20,7 +20,7 @@ Many boards have been built with this system, from a mechanical keyboard macropa
 Check out the [examples page](examples.md)!
 
 
-### Example: from HDL to Keyboard
+## Example: from HDL to Keyboard
 
 **Overall flow**: write HDL -> generate netlist -> import into KiCad PCB editor -> place and route (optionally iterating with HDL) -> export BoM and Gerbers -> optionally generate JLC PCBA data
 
@@ -91,13 +91,41 @@ Advanced capabilities include:
 See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
 **Setup tl;dr**: install from pip, published as `edg`: `pip install edg`.
-You will need a Java 11+ JRE / JDK, for the core compiler / solver.
+You will need a Java 11+ JRE / JDK, to run the Scala-based core compiler.
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.
 
 Some documentation is available for library parts construction.
 Be warned, this is more complex and less polished. 
 See the [library block definition tutorial using KiCad schematic import](getting_started_schimport.md) and the [library construction reference](reference_library.md).
+
+
+## Compared to Hierarchical Schematics
+
+The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
+
+While graphical schematic tools support hierarchical sheets, direct re-use is limited because the sheets encode a lot of per-design information, like a specific resistor values or footprints.
+Different users may have different requirements (e.g., different resistor values for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
+
+This HDL addresses those limitations with two mechanisms:
+- **Generators** allow the implementation of the subcircuit to depend on high-level parameters.
+  A LED circuit could automatically size its resistor based on the input voltage.
+- **Abstract parts** allow the subcircuit to use generic parts with generic interfaces, which many parts can implement.
+  An abstract resistor interface could be implemented by through-hole and surface-mount resistors, enabling a generic LED circuit and deferring the choice.
+  The top-level designer can then specify _refinements_ to make the specific choice of parts.
+
+Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
+We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry.
+
+### Graphical Tooling
+
+The fundamental design structure is the hierarchical block diagram, and we expect graphical tooling can layer cleanly on top of the HDL core.
+Our current focus is on the HDL core and parts libraries, but we are open to collaborations with those interested in building graphical tooling.
+We suspect this may be particularly useful for novice users.
+
+We built a proof-of-concept mixed textual / graphical [IDE plugin for IntelliJ / PyCharm](https://github.com/BerkeleyHCI/edg-ide).
+It has some nifty concepts (including [design space sweep](https://doi.org/10.1145/3613904.3642009)) but is rough around the edges and only sees basic maintenance.
+It could be a good source for ideas for community developers.
 
 
 ## Additional Notes 
@@ -114,7 +142,7 @@ Many functional boards have been built with this system and most of the library 
 You are recommended to sanity check generated designs during layout.
 
 Be prepared for things to be rough around the edges.
-The error messages in particular are not great.
+The error messages in particular are not great and need work.
 
 Building boards with the included libraries should be relatively straightforward, but building custom library parts is a more complex process.
 
@@ -136,41 +164,23 @@ There are some experimental RF subcircuits.
 The electrical checks are not a design assurance tool and only automate some of the most common datasheet checks.
 More advanced parameters, especially performance characteristics not related to maximum ratings, are currently out of scope of the electronics model.
 
-### Compared to Hierarchical Schematics
-
-The main goal of this HDL is to enable the creation of _general_ subcircuit libraries that can be reused across many applications.
-
-While graphical schematic tools support hierarchical sheets, direct re-use is limited because the sheets encode a lot of per-design information, like a specific resistor values or footprints.
-Different users may have different requirements (e.g., different resistor values for a LED based on its input voltage, or preference for through-hole vs. surface-mount components).
-
-This HDL addresses those limitations with two mechanisms:
-- **Generators** allow the implementation of the subcircuit to depend on high-level parameters.
-  A LED circuit could automatically size its resistor based on the input voltage.
-- **Abstract parts** allow the subcircuit to use generic parts with generic interfaces, which many parts can implement.
-  An abstract resistor interface could be implemented by through-hole and surface-mount resistors, enabling a generic LED circuit and deferring the choice.
-  The top-level designer can then specify _refinements_ to make the specific choice of parts.
-
-Both of these combined also present a higher level of abstraction for the board designer, more at the system architecture level-of-design than schematics.
-We suspect this will also make it easier for novices to design boards, reducing the knowledge barrier to entry. 
-
 ### Parameter Engine
 
 This system has a concept of parameters (variables, think voltages and currents) that can be attached to blocks and propagate through ports.
-This is strictly limited to directed assignments.
+This is limited to directed assignments, with the goal of deterministic, predictable compilation.
 
 Assertions are supported on parameters to enforce electrical correctness checks.
 
 Solving may happen within a single block with arbitrary Python code (for example, find the best set of E12 resistor values to implement a divider), but not across multiple blocks.
 Search involving multiple blocks must be handled by the block exposing tuning knobs and the user turning those knobs with recompilation.
 
-Compilation is intended to be fully deterministic.
 
 ### Parts Data
 
 Most passive parts / discretes are selected from a 2022 JLCPCB parts table (included in this repository).
 JLC no longer makes parts tables publicly available.
 
-This parts table still mostly works and boards have been built using this table as recently as 2026.
+This parts table still works well and boards have been built using this table as recently as 2026.
 Some basic parts have drifted and some parts may be no longer stocked.
 
 ### Contributing
@@ -184,6 +194,7 @@ Check out our papers (all open-access), which have more details:
 - [System overview, UIST'20](http://dx.doi.org/10.1145/3379337.3415860) (some details may be out of date)
 - [Mixed block-diagram / textual code IDE, UIST'21](https://dl.acm.org/doi/10.1145/3472749.3474804)
 - [Array ports and multi-packed devices, SCF'22](https://doi.org/10.1145/3559400.3561997)
+- [Design space sweep / exploration, CHI'24](https://doi.org/10.1145/3613904.3642009)
 
 ### Misc
 - **_What is EDG?_**:
