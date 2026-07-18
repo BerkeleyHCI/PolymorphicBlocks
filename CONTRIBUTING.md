@@ -9,6 +9,7 @@ All pull requests are thoroughly reviewed for code quality.
 
 This repository maintains a curated parts library since:
 - parts represent a continuing maintenance commitment
+- we want libraries to produce working boards with reasonably high confidence
 - we want to avoid choice overload for users
 
 As such, good candidates for inclusion in this repository are:
@@ -17,6 +18,7 @@ As such, good candidates for inclusion in this repository are:
 - parts available from many distributors, including JLC assembly (particularly basic parts), Mouser, and Digi-Key 
 - parts with wide applicability
 - parts using footprints in the standard KiCad libraries, or in PCM libraries
+- have been tested functional in a real PCB, consider opening PRs after you've brought up your device
 
 Parts that are poor candidates for inclusion are:
 - parts that cannot be sourced by individuals
@@ -27,10 +29,7 @@ Parts that are poor candidates for inclusion are:
 
 Borderline case? Feel free to open an issue or PR for discussion.
 
-We prefer parts that have been tested functional in a real PCB.
-Consider opening a PR after you've brought up your device.
-
-There will be many useful parts that are not a good fit for inclusion here.
+There will be many useful parts that are not a good fit for inclusion on this repository.
 Consider creating a separate repository and publishing it on pip with a dependency on this project.
 We may maintain a list of high quality third-party parts libraries.
 

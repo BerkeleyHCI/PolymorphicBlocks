@@ -107,10 +107,16 @@ See the [library block definition tutorial using KiCad schematic import](getting
 While the core is reasonably stable, as a pre-v1.0-release there are no formal guarantees of API stability.
 In practice, deprecation shims are / will be maintained for common features if APIs change.
 
-This started as an academic research project and continues to be developed as a personal project post-graduation, including for designing circuit boards for fun.
+This started as an academic research project and continues to be developed as a personal project post-graduation, including for designing boards for fun.
 
-Though many functional boards have been built with this system, there may still be bugs and edge cases.
+### (Some) Dragons Be Ahead
+Many functional boards have been built with this system and most of the library parts have been physically tested (some across many designs), but there may still be bugs and edge cases.
 You are recommended to sanity check generated designs during layout.
+
+Be prepared for things to be rough around the edges.
+The error messages in particular are not great.
+
+Building boards with the included libraries should be relatively straightforward, but building custom library parts is a more complex process.
 
 ### Scope
 The current libraries best support intermediate-level (and simpler) PCB designs.
