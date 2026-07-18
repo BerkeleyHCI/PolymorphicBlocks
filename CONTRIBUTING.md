@@ -22,7 +22,7 @@ Good candidates for inclusion in this repository are:
 - parts available from many distributors, including JLC assembly (particularly basic parts), Mouser, and Digi-Key 
 - parts with wide applicability
 - parts using footprints in the standard KiCad libraries, or in PCM libraries
-- have been tested functional in a real PCB, consider opening PRs after you've brought up your device
+- parts that have been tested functional in a real PCB, consider opening PRs after you've brought up your device
 
 Parts that are poor candidates for inclusion are:
 - parts that cannot be sourced by individuals
