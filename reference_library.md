@@ -6,10 +6,62 @@ New? Consider reading through the [getting started guide](getting-started.md), i
 
 Also see the [top-level board design reference](reference.md).
 
+This document describes primitives and design patterns, also check out the many examples in the parts libraries. 
 
 ## Dragons be Ahead
 
 The library design experience is much less polished and more intricate than the top-level board design experience.
+
+
+## Blocks
+
+### Port Interfaces
+
+Modeling conventions
+
+### Parameters
+
+### Footprints
+
+## Schematic-Defined Blocks
+
+## Generators
+
+## Abstract Blocks
+
+### Mixins
+
+### Parts Tables and Passives
+
+## Design Patterns
+
+### _Device Footprint and Subcircuit
+
+### Passive and Typed Layers
+
+### PassiveConnector
+
+
+
+## Custom Ports and Links
+
+### Links
+
+Design patterns: aggregation and assertion
+
+### Bridges
+
+Design pattern: propagation
+
+### Adapters
+
+
+
+
+
+
+
+
 
 ## Under Construction
 
