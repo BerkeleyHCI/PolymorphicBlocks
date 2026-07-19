@@ -5,6 +5,16 @@ We take pull requests!
 All pull requests are thoroughly reviewed for code quality.
 
 
+## Licensing
+
+The "outbound" license of this repository as a whole remains BSD 3-clause, as was set up at repository creation.
+New code ("inbound") is required to be dual-licensed under both BSD 3-clause and Apache License, Version 2.0.
+This requirement is so new contributions can be used with a more modern license without messy relicensing of older code.
+
+By contributing to this project, you agree to dual-license your contributions under both BSD 3-clause and Apache License, Version 2.0.
+The pull request template includes text to confirm this.
+
+
 ## Parts Contributions
 
 This repository maintains a curated parts library since:

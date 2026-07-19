@@ -1,0 +1,24 @@
+name: CLA Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  enforce-cla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dual-License Agreement
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Use a regex match to look for the exact checked markdown box
+          if echo "$PR_BODY" | grep -qE '\-\s*\[x\]\s*\*?\*?I agree to dual\-license this contribution under both BSD 3\-clause and Apache License, Version 2\.0\.'; then
+            echo "CLA OK"
+          else
+            echo "You must check the dual-licensing agreement box in the PR description to pass this check."
+            exit 1
+          fi
