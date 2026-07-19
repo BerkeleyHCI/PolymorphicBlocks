@@ -6,7 +6,8 @@ New? Consider reading through the [getting started guide](getting-started.md), i
 
 Also see the [top-level board design reference](reference.md).
 
-This document describes primitives and design patterns, also check out the many examples in the parts libraries. 
+This document provides a quick reference and list of common primitives and design patterns.
+However, your best resource is going to be all the examples in the parts libraries. 
 
 ## Dragons be Ahead
 
@@ -23,7 +24,7 @@ class IndicatorLed(Block):
         super().__init__()
         self.current_draw = self.ArgParameter(current_draw)
         self.actual_current_draw = self.Parameter(RangeExpr())
-        self.gnd = self.Port(Ground())
+        self.gnd = self.Port(Ground(), [Common])
         self.signal = self.Port(DigitalSink(...))
 
     def contents() -> None:
@@ -38,7 +39,11 @@ class IndicatorLed(Block):
 
 ### Port Interfaces
 
-- Boundary ports must be defined in `__init__`.
+- Boundary ports are defined with `self.Port(PortType(...)` and must be defined in `__init__`.
+  - Boundary ports may optionally have `tags=[...]` to support implicit connections.
+    Common tags are `Power` (v+), `Common` (gnd).
+    Tags to support `chain` are `Input`, `Output`, and `InOut`.
+  - Boundary ports may optionally define `optional=True` to indicate that the port may be left unconnected.
 - Ports are connected with `self.connect(...)`; these may be part of a connect:
   - Boundary ports (as a unit) or their bundle inner ports (separately).
   - Boundary ports of sub-blocks (as a unit only).
@@ -96,10 +101,68 @@ Parameters are variables that can be passed into and through blocks.
 - Access parameters on the link of ports using `port.link().link_param`.
   Links contain the aggregated parameter of all connected ports, for example the voltage.
 
+Quirks:
+- `port.link().link_param` will be undefined for an unconnected port.
+  For optional ports, gate checks with `port.is_connected().else_then(..., ...)`.
+  This may be fixed eventually, see [#360](https://github.com/BerkeleyHCI/PolymorphicBlocks/issues/360).
 
 ### Footprints
 
+The `FootprintBlock` base class is a `Block` that defines at most one footprint.
+
+```python
+class Sk6812Mini_E(FootprintBlock):
+    def __init__(self) -> None:
+        super().__init__()
+        self.gnd = self.Port(Ground())
+        self.vdd = self.Port(VoltageSink(...))
+        self.din = self.Port(DigitalSink(...))
+        self.dout = self.Port(DigitalSource(...))
+
+    def contents(self) -> None:
+        self.footprint(
+            "D",
+            "edg:LED_SK6812MINI-E",
+            {"1": self.vdd, "2": self.dout, "3": self.gnd, "4": self.din},
+            mfr="Opsco Optoelectronics",
+            part="SK6812MINI-E",
+            datasheet="https://cdn-shop.adafruit.com/product-files/4960/4960_SK6812MINI-E_REV02_EN.pdf",
+        )
+```
+
+- `self.footprint(...)` defines the footprint associated with this block and its pinning and takes these arguments:
+  - `refdes`
+  - `footprint`: KiCad footprint name.
+  - `pinning`: dictionary mapping footprint pin numbers to ports.
+    - Pin numbers must be `str` or `Tuple[str, ...]` (for multi-pin pads).
+    - Ports must be `Passive` or `HasPassive`.
+  - Optional metadata `mfr`, `part`, `value`, `datasheet`.
+  - Optional pick-and-place metadata `pnp_rot`, `pnp_offset` for KiCad footprint to JLC PCBA PnP data. 
+- While not (yet) forbidden, `FootprintBlock`s should not have inner sub-`Block`s.
+
 ## Schematic-Defined Blocks
+
+`KiCadSchematicBlock` is a `Block` that is defined by a KiCad schematic sheet.
+
+```python
+class MySchematicDefinedBlock(KiCadSchematicBlock):
+    def __init__(self) -> None:
+        super().__init__()
+        self.gnd = self.Port(Ground())
+        self.pwr = self.Port(VoltageSink())
+        
+    def contents(self) -> None:
+        super().contents()
+        self.import_kicad(self.file_path(f"{self.__class__.__name__}.kicad_sch"))
+```
+
+- The HDL stub is required to define the boundary ports and parameters.
+- 
+
+Guidance:
+- Good uses include analog subcircuits where the graphical connectivity is meaningful.
+- This can be used to construct both library subcircuits as well a higher-level subcircuits like signal-processing chains using amplifier subcircuits.
+- We typically do not use this to implement chip subcircuits, instead preferring a full HDL definition.
 
 ## Generators
 
