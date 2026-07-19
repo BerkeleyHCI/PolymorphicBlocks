@@ -222,7 +222,7 @@ class MySchematicDefinedBlock(KiCadSchematicBlock):
 Guidance:
 - Good uses include analog subcircuits where the graphical connectivity is complex and meaningful.
 - This can be used to construct both library subcircuits as well a higher-level subcircuits like signal-processing chains using amplifier subcircuits.
-- We typically do not use this to implement chip subcircuits, instead preferring a full HDL definition.
+- Most chip subcircuits are defined purely in HDL.
 
 ## Generators
 
