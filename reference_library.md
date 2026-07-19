@@ -320,177 +320,64 @@ Look at some example implementations to for the `PartsTable` API and utilities.
 
 ## Design Patterns and Conventions
 
-### _Device Footprint and Subcircuit
+These are design patterns and conventions used in the included parts library.
+
+### `_Device` Footprint and Subcircuit
+
+The `x_Device` `Block` defines the footprint only, while the application circuit `Block` is the user-friendly name and instantiates `x_Device`.
+`x_Device` is not exported in `__init__.py`.
 
 ### Passive and Typed Layers
-use passive .net and adapt_to
 
-
-### Link Circular Dependencies
-Be cognizant of circular dependencies on links, e.g. something depending on a link's current to calculate its voltage will play badly with another block on the link that calculates its voltage based on the link's current.
+Passive components are `Passive` port typed, and applications of them are separate `Block`s that instantiate the `Passive` typed `Block`s. 
+This allows different implementation of the same `Passive` device, eg, `PullupResistor`, `PulldownResistor`.
+Subcircuits follow this pattern too, with them instantiating the `Passive` typed `Block`, connecting the `Passive` ports internally and to the `Passive` `.net` of the electrically-typed boundary `Port`s.
 
 ### Target and Actual Parameters
 
+Most parameters are defined as a target requirement.
+
+The actual expected operating value may be calculated as a readout parameter and is prefixed `actual_`. 
 
 ### PassiveConnector
 
+Devices that use a standard connector (like FPCs) should instantiate the appropriate `PassiveConnector` subclass to allow the system designer to make choices for the concrete connector.
+`PassiveConnector` supports parameterized pin counts.
+
+### Circular Dependencies
+
+There is currently no structural prevention of circular parameter dependencies.
+
+This may happen when a `Block` has a parameter that is calculated from a `Port`'s link, and the `Port`'s link is calculated from the `Block`'s parameter.
+For example, the LED calculates current from the link's voltage, while a source block that calculates voltage from the link's current would be unsolvable.
+
+We typically resolve this by using the user-specified range for one of the parameters and accepting that it will be a wider range than the actual operating range.
 
 
 ## Custom Ports and Links
 
-### Links
+Custom `Port`s and `Link`s can be defined.
 
-Design patterns: aggregation and assertion
+`Port`s should define properties of that `Port` only, not properties influenced by any other connected `Port`.
+The `Link` aggregates parameters on the connected `Ports` and optionally defines constraints as assertions.
 
-### Bridges
+`Port`s can contain other `Port`s, such as:
+- bundles of `Port`s, like `SpiController`
+- an inner `Passive` that provides the connectivity layer 
 
-Design pattern: propagation
-
-### Adapters
-
-
-
-
-
-
-
-
-
-
-These are properties of Blocks:
-- The Block type hierarchy defines allowed refinements
-- `@abstract_block` decorates a block as abstract, which will error on netlisting
-
-These can be called inside `__init__(...)`:
-- `self.Parameter(ParameterType(optional_value))`: declare parameters, optionally with a value
-- `self.Port(PortType(...))`: declare ports 
-  - Optional arguments: `tags=[ImplicitTags], optional=False`
-  - `self.Export(self.subblock.port)`: export a subblock's port
-- `@init_in_parent` decorator is needed if `__init__(...)` takes Parameter arguments and must generate constraints in the parent Block  
-  
-These can be called inside `contents()`:
-- `self.Block(BlockType(...))`: declare sub-blocks
-  - Also allowed inside `__init__(...)`, to allow the use of `Export`s 
-- `self.constrain(...)`: constrain some `BoolExpr` (which can be an inline expression, eg `self.param1 == self.param2`) to be true
-- `self.connect(self.subblock1.port, self.subblock2.port, ...)`: connect own ports and/or subblock's ports
-  - Naming is optional.
-- `with self.implicit_connect(...) as imp:`: open an implicit connection scope
-  - Implicit connection arguments of the form `ImplicitConnect(connect_to_port, [MatchingTags])`
-  - `imp.Block(BlockType(...))`: similar to `self.Block(...)` but implicitly connects ports with matching tags
-- `self.chain(self.Block(BlockType(...)), self.Block(BlockType(...)), ...)`: chain-connect between blocks, in `contents`
-  - Return of `self.chain` can be unpacked into a tuple of chained blocks, and the chain object (itself).
-    Naming of the chain object is optional.
-  - Elements are chained from left (outputs) to right (inputs)
-  - The first argument to chain may be a port or block with an `InOut` or `Output`-tagged port.
-  - Middle elements must be a block with an `InOut`-tagged port, or `Input`- and `Output`-tagged ports.
-  - The last argument to chain may be a port or block with an `InOut` or `Input`-tagged port.
-- Assign names to components by assigning the object to a `self` variable:
-  - `self.subblock_name = self.Block(BlockType(...))`
-  - `(self.subblock_name1, self.subblock_name2, ...), self.chain_name = self.chain(...)`
-
-### Generators
-Generators allow some Python code to run that has access to the solved values of some parameters.
-TODO - write this section pending generator refactoring, in the meantime see the port array section of the getting started tutorial.
-
-
-### Footprint
-FootprintBlock is a block that is associated with a PCB footprint.
-
-All primitives that can be called inside `Block`'s  `__init__(...)` can be called inside `__init__(...)`
-
-These can be called inside `contents()`:
-- `self.footprint(refdes='R', footprint='Resistor_SMD:R_0603_1608Metric', pinning={...})`: associates a footprint with this block
-  - Pinning argument format: `{'pin_name': self.port, ...}`: associates footprint pins with ports or subports
-  - Optional arguments: `mfr='Manufacturer A', part='Part Number', value='1kOhm', datasheet='www.example.net'`
-
-  
-
-## Block Libraries
-The IDE's library tab provides a categorized list of available library blocks.
-Many blocks also have a short descriptive docstring.
-
-
-## Advanced Core Primitives
-These are core primitives needed to model new ports and links
-
-### Ports
-Ports can have parameters and may be connected to each other via a Link.
-
-Skeleton structure:
-```python
-class MyPort(Port[MyPortLinkType]):
-  link_type = MyPortLinkType  # required
-  bridge_type = MyPortBridgeType  # optional, if a bridge is needed
-  
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare elements like parameters here
-```
-
-These are properties of Ports:
-- The Port type hierarchy currently is not used. However, inheritance may still be useful for code re-use / de-duplication.
-
-These can be called inside `__init__(...)`:
-- `__init__(...)` may take arguments, and no decorators (as with Block) are needed
-- `self.Parameter(ParameterType(optional_value))`: declare parameters, optionally with a value 
-
-### Bundles
-Bundles are a special type of Port that is made up of constituent sub-Ports.
-
-Skeleton structure:
-```python
-class MyBundle(Bundle):
-  link_type = MyBundleLinkType
-  bridge_type = MyBundleBridgeType  # optional, if a bridge is needed
-  
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare elements like parameters here
-```
-
-In addition to the primitives that can be called inside `Port`'s `__init__(...)`, these can be called inside `Bundle`'s  `__init__(...)`:
-- `self.Port(PortType(...))`: declare bundle sub-port
-
-### Links
-Links define propagation rules for connected Ports.
-
-Links are structured the same as Blocks, with similar primitives (see the Block documentation for details):
-```python
-class MyPortLink(Link):
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare ports here
-
-  def contents(self) -> None:
-    super().contents()  # essential to call the superclass method beforehand to initialize state
-    # declare constraints and internal connections here
-```
-
-These are properties of Links:
-- Each Port can have one type of associated link.
-- The Link type hierarchy currently is not used. However, inheritance may still be useful for code re-use / de-duplication.
-- Extend `CircuitLink` instead of `Link` to copper-connect all ports.
-
-These can be called inside `__init__()`:
-- `__init__()` cannot have arguments, since links are always inferred
-- `self.Parameter(ParameterType(optional_value))`
-- `self.Port(PortType(...))` (without tags, but can have optional)
-  
-These can be called inside `contents()`:
-- `self.connect(self.port1.subport, self.port2.subport, ...)`: for Bundle ports, connect sub-ports and infer inner link
-  - Naming is optional.
-- `self.constrain(...)`
+Look at examples in the standard interfaces library for details.
 
 ### Bridges
-Bridges are a special type of `Block` that adapts from a Link-facing (inner, `self.inner_link`) port to a Block edge (outer, `self.outer_port`) port.
-Extend `CircuitPortBridge` instead of `PortBridge` to copper-connect all ports.
 
-In `__init__()` (may not take arguments), declare these two required ports.
-In `contents()`, add constraints as needed.
+`PortBridge` are a quirk of the hierarchical model: how to expose a single boundary `Port` of a `Block` that is internally connecting multiple internal `Port`s.
 
-### Adapters
-PortAdapters are a special type of `Block` that adapts / converts from a source (`self.src`) port to a destination (`self.dst`) port.
-Extend `CircuitPortAdapter` instead of `PortAdapter` to copper-connect all ports.
+`PortBridge` "aggregate" the `inner_link` (by connecting to a `Port` on that `Link`) and expose a single `outer_port`.
 
-In `__init__(...)` (may take arguments, must decorate with `@init_in_parent` if arguments), declare these two required ports.
-In `contents()`, add constraints as needed.
+General design patterns:
+- Parameters always propagate outward, never inward.
+- Checks that require context at the outer level are handled by propagating the relevant parameters outward. 
+- If needed, define additional internal parameters (`_`-prefixed) on the `Port` to propagate all the relevant data outward.
+
+### Mixins
+
+Mixins on `Port`s may be an interesting concept to support opt-in specialized parameter propagation without an excessive base (see [#333](https://github.com/BerkeleyHCI/PolymorphicBlocks/issues/333)) but do not have an implementation plan yet.
