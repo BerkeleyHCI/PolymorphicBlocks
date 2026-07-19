@@ -15,11 +15,87 @@ The library design experience is much less polished and more intricate than the 
 
 ## Blocks
 
+`Block`s are a subcircuit that contain boundary ports, optional parameters, internal sub-blocks, and connections between them.
+
+```python
+class IndicatorLed(Block):
+    def __init__(self, current_draw: RangeLike = (1, 10) * mAmp) -> None:
+        super().__init__()
+        self.current_draw = self.ArgParameter(current_draw)
+        self.actual_current_draw = self.Parameter(RangeExpr())
+        self.gnd = self.Port(Ground())
+        self.signal = self.Port(DigitalSink(...))
+
+    def contents() -> None:
+        super().contents()
+        self.led = self.Block(Led(...))
+        self.res = self.Block(Resistor(resistance=self.signal.link().voltage / self.current_draw))
+        self.assign(self.actual_current_draw, self.signal.voltage / self.res.resistance)
+        self.connect(self.signal.net, self.led.a)
+        self.connect(self.res.a, self.led.k)
+        self.connect(self.gnd.net, self.res.b)
+```
+
 ### Port Interfaces
 
-Modeling conventions
+- Boundary ports must be defined in `__init__`.
+- Ports are connected with `self.connect(...)`; these may be part of a connect:
+  - Boundary ports (as a unit) or their bundle inner ports (separately).
+  - Boundary ports of sub-blocks (as a unit only).
+
+> <details>
+> <summary>Common Port Types</summary>
+>
+> - `Passive`: a single netlist pin without electrical modeling, a building block for ports with electrical modeling on top
+>
+> Single Wire Port that wrap (has-a) `Passive`:
+> - `VoltageSource`, `VoltageSink`: models voltage and current, and their limits.
+> - `DigitalSource`, `DigitalSink`, `DigitalBidir`: models voltage, voltage thresholds, current, and their limits.
+>   Checks for multiple-driver conflicts, with multiple `DigitalBidir` drivers are allowed.
+> - `AnalogSource`, `AnalogSink`: models voltage, current, and input/output impedance, and their limits.
+>   Arbitrary requirement that the source has 1/10 the parallel impedance of sinks.
+> 
+> Bundle Ports
+> - `I2cController`, `I2cTarget`: models I2C as two digital ports and address.
+>   Checks for address conflicts.
+> - `SpiController`, `SpiPeripheral`: models the shared SPI lines (excluding CS) as three digital ports.
+> - `UartPort`: models UART TX/RX as two digital ports.
+>   Connections generate a crossover connection.
+> - `UsbHostPort`, `UsbDevicePort`: USB D+/D- ports
+> - `CanControllerPort`, `CanTransceiverPort`: controller-side and transceiver-side RXD and TXD ports.
+> - `CanDiffPort`: differential-side CAN (CANH, CANL) ports
+> 
+> See their class docstring and constructor for details.
+> 
+> See Design Patterns below for adapting between (some) port types.
+> 
+> </details>
 
 ### Parameters
+
+Parameters are variables that can be passed into and through blocks.
+
+- Parameters are defined purely symbolically and concrete values are not available to (non-generator) `Block`s.
+- Parameters are restricted to a set of types supported by the compiler and the operations on them:
+  - `BoolExpr` / `BoolLike`: boolean (true / false) variable
+  - `IntExpr` / `IntLike`: numeric variable
+  - `FloatExpr` / `FloatLike`: numeric variable
+  - `RangeExpr` / `RangeLike`: range (interval) variable
+  - `StringExpr` / `StringLike`: string (text) variable
+  - See the `xExpr` class definition for supported operations.
+  - See the generator section for how to use arbitrary Python code for calculations.
+- Parameters must be defined in `__init__`, either with:
+  - `self.ArgParameter(arg)`, to wrap `__init__` argument `arg`.
+    Use the `xLike` type for `__init__` arguments, which also allow the literal Python value.
+  - `self.Parameter(ParameterType())` (for a parameter without a value, to be assigned in `contents()`).
+    Use the `xExpr` type in `Parameter(...)` to declare a parameter without a value, to be assigned in `contents()`.
+- `RangeExpr` types are used to represent a device tolerance or toleranced specification
+  - Most operations between `RangeExpr` types are tolerance-expanding (computes the worst-case range of the inputs)
+  - `a = c.shrink_multiply(b)` returns `a` such  that tolerance-expanding `a * b` is equal to `c`.
+    Example: for `v = i * r`, to solve for allowable (target) `r` given requirement `i` and contributing tolerance `v`, use `r = (1/i).shrink_multiply(v)`
+- Access parameters on the link of ports using `port.link().link_param`.
+  Links contain the aggregated parameter of all connected ports, for example the voltage.
+
 
 ### Footprints
 
@@ -33,11 +109,17 @@ Modeling conventions
 
 ### Parts Tables and Passives
 
-## Design Patterns
+## Design Patterns and Conventions
+
+### Link Circular Dependencies
+Be cognizant of circular dependencies on links, e.g. something depending on a link's current to calculate its voltage will play badly with another block on the link that calculates its voltage based on the link's current.
+
+### Target and Actual Parameters
 
 ### _Device Footprint and Subcircuit
 
 ### Passive and Typed Layers
+use passive .net and adapt_to
 
 ### PassiveConnector
 
@@ -69,14 +151,7 @@ Parts of this reference are outdated.
 
 
 ## Parameters
-- `BoolExpr`: boolean (true / false) variable
-  - Supports standard boolean operations
-- `FloatExpr`: numeric variable
-  - Supports standard numeric operations
-- `RangeExpr`: range (interval) variable
-  - Supports standard numeric operations (multiplication and division are undefined), some set operations (`.within(other)`, `.contains(other)`, `.intersect(other)`), and get operations (`.lower()`, `.upper()`)
-- `StringExpr`: string (text) variable
-  - Supports equality operations only
+
 
 ## Blocks
 Blocks represent a subcircuit (or hierarchical schematic sheet), and consist of boundary ports and internal subblocks and connections (links) between ports on those subblocks. 
@@ -139,54 +214,7 @@ These can be called inside `contents()`:
   - Pinning argument format: `{'pin_name': self.port, ...}`: associates footprint pins with ports or subports
   - Optional arguments: `mfr='Manufacturer A', part='Part Number', value='1kOhm', datasheet='www.example.net'`
 
-
-## Port and Link Libraries
-
-### Single-wire Ports
-- `VoltageLink`: voltage rail
-  - `VoltageSource(voltage, current_limits)`: voltage source
-  - `VoltageSink(voltage_limits, current_draw)`: voltage sink (power input)
-- `DigitalLink`: low-speed (up to ~100 MHz) digital signals, modeling voltage limits and input / output thresholds
-  - `DigitalSource(voltage, current_limits, output_thresholds)`: digital output-only pin
-    - `output_thresholds` is the range of (maximum low output, minimum high output) 
-  - `DigitalSink(voltage_limits, current_draw, input_thresholds)`: digital input-only pin
-    - `input_thresholds` is the range of (maximum low input, minimum high input)
-  - `DigitalBidir(...)`: digital bidirectional (eg, GPIO) pin 
-     - Has all arguments of `DigitalSource` and `DigitalSink`
-- `AnalogLink`: analog signal that models input and output impedance
-  - `AnalogSource(voltage, current_limits, impedance)`: analog output
-  - `AnalogSink(voltage_limits, current_draw, impedance)`: analog signal input
-- `PassiveLink`: connected copper that contains no additional data
-  - `Passive`: single wire port that contains no additional data, but can be adapted to other types (eg, with `.as_voltage_source(...)`).
-    Useful for low-level elements (eg, resistors) that can be used in several ways in higher-level constructs (eg, pull-up resistor for digital applications).
-
-### Bundle Ports
-- `I2cLink`: I2C net, consisting of `.scl` and `.sda` Digital sub-ports.
-  - `I2CMaster(model)`: I2C master port
-    - `model`: DigitalBidir model for both SCL and SDA sub-ports
-  - `I2CSlave(model)`: I2C slave port
-- `SpiLink`: SPI net, consisting of `.sck`, `.miso`, and `.mosi` Digital sub-ports. CS must be handled separately. 
-  - `SpiMaster(model, frequency)`: SPI master port
-    - `frequency`: range of allowable frequencies, generally including zero
-  - `SpiSlave(model, frequency)`: SPI slave port
-- `UartLink`: UART net, consisting of `.tx` and `.rx` Digital sub-ports in a crossover point-to-point connection.
-  - `UartPort(model)`: UART port
-- `UsbLink`: USB data net, consisting of `.dp` (D+) and `.dm` (D-) Digital sub-ports in a point-to-point connection.
-  - `UsbHostPort`: USB host
-  - `UsbDevicePort`: USB device
-  - `UsbPassivePort`: other components (eg, TVS diode) on the USB line
-- `CanLogicLink`: CAN logic-level (TXD/RXD) net, consisting of `.txd` and `.rxd` Digital sub-ports in a point-to-point connection.
-  - `CanControllerPort(model)`: CAN controller-side port 
-  - `CanTransceiverPort(model)`: CAN transceiver-side port
-- `CanDiffLink`: CAN differential (CANH/CANL) net, consisting of `.canh` and `.canl` Digital sub-ports in a bus connection.
-  - `CanDiffPort(model)`: CAN node port
-- `SwdLink`: SWD programming net, consisting of `.swdio`, `.swclk`, `.swo`, and `.reset` Digital sub-ports in a point-to-point connection.
-  - `SwdHostPort(model)`: SWD host-side (programmer) port
-  - `SwdTargetPort(model)`: SWD target-side (DUT) port 
-- `CrystalLink`: crystal net, consisting of `.xi` and `.xo` sub-ports in a point-to-point connection.
-  - `CrystalDriver(frequency_limits, voltage_out)`: driver-side port
-  - `CrystalPort(frequency)`: crystal-side port, indicating the frequency of the crystal 
-
+  
 
 ## Block Libraries
 The IDE's library tab provides a categorized list of available library blocks.
