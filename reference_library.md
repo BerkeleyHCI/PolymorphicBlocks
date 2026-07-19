@@ -37,6 +37,8 @@ class IndicatorLed(Block):
         self.connect(self.gnd.net, self.res.b)
 ```
 
+- The `Block` API for top-level board design is also available in subcircuit `Block`s.
+
 ### Port Interfaces
 
 - Boundary ports are defined with `self.Port(PortType(...)` and must be defined in `__init__`.
@@ -44,6 +46,7 @@ class IndicatorLed(Block):
     Common tags are `Power` (v+), `Common` (gnd).
     Tags to support `chain` are `Input`, `Output`, and `InOut`.
   - Boundary ports may optionally define `optional=True` to indicate that the port may be left unconnected.
+  - Use `PortType.empty()` to define a port without modeling, where its modeling is defined by the inner port it is connected to.
 - Ports are connected with `self.connect(...)`; these may be part of a connect:
   - Boundary ports (as a unit) or their bundle inner ports (separately).
   - Boundary ports of sub-blocks (as a unit only).
@@ -149,18 +152,75 @@ class MySchematicDefinedBlock(KiCadSchematicBlock):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.pwr = self.Port(VoltageSink())
-        
+        self.pwr = self.Port(VoltageSink(...))
+
     def contents(self) -> None:
         super().contents()
-        self.import_kicad(self.file_path(f"{self.__class__.__name__}.kicad_sch"))
+        self.import_kicad(
+          self.file_path(f"{self.__class__.__name__}.kicad_sch"),
+          conversions={'pwr': VoltageSink(...), 'gnd': Ground()},
+          auto_adapt=True
+        )
 ```
 
 - The HDL stub is required to define the boundary ports and parameters.
-- 
+- Graphical schematic components map as follows:
+  - Labels, including symbols like GND and VCC, connect internally  
+  - Hierarchical labels connect to the boundary ports
+  - True global labels (that connect design-wide) are not supported)
+  - Components map to `Block`s, with rhe refdes mapping to the `Block` name.
+  - Wires map to `connect`s.
+  - Pins must be connected at a wire end or bend.
+- Components can be defined as:
+  - Using a `KiCadInstantiableBlock` (which defines the symbol to port mapping), and the symbol has no footprint:
+    - **Value parsing**: some blocks can parse the symbol value to parameters, see the table below.
+    - **HDL instantiation**: the block is instantiated in HDL and the symbol refdes matches the HDL `Block` name and has no value.
+    - **Inline HDL**: the symbol value starts with a `#` and contains Python code to instantiate the `Block`.
+      Multi-line values supported using the `Value2`, `Value3`, ... fields.
+  - **Blackboxing**, where the symbol has a footprint specified and is created as a `Block` with all `Passive` ports.
+- Port connections are direct and types of connected pins must be compatible.
+  - Use `conversions` to optionally specify a electrically typed `Port` model for a `Passive` `Port`.
+  - Use `auto_adapt` to automatically insert ideal adapters from `Passive` `Port`s to the HDL-defined electrically typed boundary ports.
+
+> <details>
+> <summary>Common `KiCadInstantiableBlock`s</summary>
+>
+> With Passive-typed Ports, typically for constructing basic (sub)circuits:
+> 
+> | Symbol                             | HDL Block          | Value Parsing    |
+> |------------------------------------|--------------------|------------------|
+> | Device:C, Device:C_Polarized       | Capacitor          | e.g. `10uF 10V`* |
+> | Device:R                           | Resistor           | e.g. `100`       |
+> | Device:L                           | Inductor           |                  |
+> | Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |                  |
+> | Device:D                           | Diode              |                  |
+> | Device:D_Zener                     | ZenerDiode         |                  |
+> | Device:L_Ferrite                   | FerriteBead        |                  |
+> | Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |                  |
+> | Switch:SW_SPST                     | Switch             |                  |
+> * Capacitor voltage is required and is specified as the expected operating voltage, not a rating.
+> 
+> Where value parsing is empty, the Block can only be defined by HDL instantiation or inline HDL.
+> 
+> In many cases, the `_Small` (like `Device:C_Small`) symbol can also be used.
+>
+> With electrically-typed ports, typically used in higher-level subcircuits like analog signal-processing chains:
+> 
+> | Symbol                               | HDL Block             |
+> |--------------------------------------|-----------------------|
+> | Simulation_SPICE:OPAMP               | Opamp*                |
+> | edg_importable:Amplifier             | Amplifier             |
+> | edg_importable:DifferentialAmplifier | DifferentialAmplifier |
+> | edg_importable:IntegratorInverting   | IntegratorInverting   |
+> | edg_importable:OpampCurrentSensor    | OpampCurrentSensor    |
+> * `Opamp`s include any datasheet-required supporting circuitry like decoupling capacitors.
+> 
+> Search for all subclasses of `KiCadImportableBlock` for a complete listing.
+> 
+> </details>
 
 Guidance:
-- Good uses include analog subcircuits where the graphical connectivity is meaningful.
+- Good uses include analog subcircuits where the graphical connectivity is complex and meaningful.
 - This can be used to construct both library subcircuits as well a higher-level subcircuits like signal-processing chains using amplifier subcircuits.
 - We typically do not use this to implement chip subcircuits, instead preferring a full HDL definition.
 
@@ -208,28 +268,6 @@ Design pattern: propagation
 
 
 
-## Under Construction
-
-Parts of this reference are outdated.
-
-
-## Parameters
-
-
-## Blocks
-Blocks represent a subcircuit (or hierarchical schematic sheet), and consist of boundary ports and internal subblocks and connections (links) between ports on those subblocks. 
-
-Skeleton structure:
-```python
-class MyBlock(Block):
-  def __init__(self) -> None:
-    super().__init__()  # essential to call the superclass method beforehand to initialize state
-    # declare ports here, and subblocks whose ports are exported
-
-  def contents(self) -> None:
-    super().contents()  # essential to call the superclass method beforehand to initialize state
-    # declare subblocks and connections here
-```
 
 These are properties of Blocks:
 - The Block type hierarchy defines allowed refinements
