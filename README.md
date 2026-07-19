@@ -124,7 +124,7 @@ Our current focus is on the HDL core and parts libraries, but we are open to col
 We suspect this may be particularly useful for novice users.
 
 We built a proof-of-concept mixed textual / graphical [IDE plugin for IntelliJ / PyCharm](https://github.com/BerkeleyHCI/edg-ide).
-It has some nifty concepts (including [design space sweep](https://doi.org/10.1145/3613904.3642009)) but is rough around the edges and only sees basic maintenance.
+It has some nifty concepts (including a block diagram visualizer and [design space sweep](https://doi.org/10.1145/3613904.3642009)) but is rough around the edges and only sees basic maintenance.
 It could be a good source for ideas for community developers.
 
 
