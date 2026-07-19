@@ -30,8 +30,11 @@ _Runs natively on Windows, Linux, and Mac._
 
 
 ## IDE Setup
-_Using the IDE is recommended since it provides a design browser and block diagram visualizer, but it's optional._
-_Currently, the IDE must be built from source (it's pretty straightforward), but in the future we may make pre-compiled versions available._
+An IDE is available as a PyCharm plugin.
+It only sees basic maintenance but still works.
+It currently must be built and run from source, but as a Scala / sbt project with fully managed dependencies, this should be pretty straightforward.
+
+Over the basic Python command-line interface, the IDE provides block diagram visualization, block compilation caching, and an experimental mixed graphical + textual editing interface for the HDL.
 
 1. Download [sbt](https://www.scala-sbt.org/download.html), the Scala build tool.
 2. Download or clone the IDE plugin sources from https://github.com/BerkeleyHCI/edg-ide.
@@ -56,6 +59,6 @@ _Currently, the IDE must be built from source (it's pretty straightforward), but
    - The location can be anywhere.
    - The default environment type of Virtualenv is fine.
    - **Make sure to check "inherit global site-packages"**, so that the pip-installed package will be visible.
-   > A prior version of this setup guide had the IDE open the PolymorphicBlocks repository and develop directly on it.
-   > Unless you are developing the core HDL or core libraries, this pip package + new project setup flow is recommended.
-   > However, the IDE does also support working with the PolymorphicBlocks project.
+5. You may need to disable slow operations assertion if you're getting a lot of "Slow operations are prohibited on EDT" errors.
+    - Go to Tools > Internal Actions > Registry (or Ctrl+Shift+A), find the item `idea.slow.operations.assertion`, and untick it.
+    - Background: more recent versions of PyCharm seem to be stricter and noisier about what can be called on the GUI (EDT) thread.
