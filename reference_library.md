@@ -226,23 +226,111 @@ Guidance:
 
 ## Generators
 
+`GeneratorBlock` is a `Block` that can retrieve the concrete value of its parameters and run arbitrary Python code to create its inner definition, including structural circuitry and parameters.
+
+```python
+class IndicatorLedArray(GeneratorBlock):
+    def __init__(self, count: IntLike):
+        super().__init__()
+        self.count = self.ArgParameter(count)
+        self.generator_param(self.count)
+        
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.signals = self.Port(Vector(DigitalSink.empty()))
+    
+    def generate(self) -> None:
+        super().generate()
+        self.led = ElementDict[IndicatorLed]()
+        for led_i in range(self.get(self.count)):
+          led = self.led[str(led_i)] = self.Block(IndicatorLed())
+          self.connect(...)
+```
+
+- `self.generator_param(...)` is required to declare parameters that the generator needs.
+  - Only `ArgParameter`s, `port.is_connected()` and `port.elements()` are allowed.
+- `self.get(...)` can be invoked in `generate()` to retrieve the concrete value of a parameter.
+
+Guidance:
+- Generators are necessary for parametric structural circuit construction.
+- Prefer using non-generator expression operations for parameter calculations where possible.
+  Generators should only be used where the expression operations are insufficient. 
+
 ## Abstract Blocks
+
+`abstract_block`s are `Blocks` that define an interface that can be implemented by (concrete) subclasses.
+They can be instantiated but will error during compilation if not refined.
+
+```python
+@abstract_block
+class Led(Block):
+    def __init__(self):
+        self.a = self.Port(Passive.empty())
+        self.k = self.Port(Passive.empty())
+```
+
+- Boundary ports and parameters are defined as usual.
+- Ports are defined with `PortType.empty()` to allow subclasses flexibility in modeling.
+  - Subclasses can specify modeling with `self.port.init_from(PortType(...))`.
+    Replacing the port object is not allowed.
+- A default refinement can be attached to the `abstract_block` with `@abstract_block_default(lambda: DefaultRefinementBlock)`. 
+  - The `lambda` is required to break circular definitions.
+  - Top-level designers can still override these refinements.
+
+Guidance:
+- Use `abstract_block`s to define a common interface for `Block`s that are drop-in interchangeable.
+- You can always refactor to pull out a common `abstract_block` later.
 
 ### Mixins
 
-### Parts Tables and Passives
+`BlockInterfaceMixin`s define an interface that can be added to an `abstract_block`.
+
+```python
+# mixin interface definition
+class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.sw = self.Port(Passive.empty(), optional=True)
+
+# concrete class implementing the mixin
+class Ec11eWithSwitch(RotaryEncoderSwitch, RotaryEncoder):
+    ...
+```
+
+- A `Block` definition can inherit multiple mixins (the `Block` implements multiple mixins).
+- A `Block` instantiation can use multiple mixins (requiring the concrete `Block` refinement to implement those mixins).
+- Mixin interface ports are typically `optional` to allow usage without the mixin.
+  This may be a generator that provides a default connection in a basic usage configuration.
+
+### Abstract Passives and Parts Tables
+
+Many common passive and discrete parts (like `Resistor`, `Capacitor`, `Diode`) are `abstract_blocks` and support different (including user-defined) implementations, e.g. to support different vendors and distributors.
+
+Many of these include a utility subclass for selecting a part from a table (like `TableResistor`, `TableCapacitor`, `TableDiode`).
+
+These also provide a separate utility subclass that defines KiCad footprint to port mappings that implement the `HasStandardFootprint` interface (like `ResistorStandardFootprint`, `CapacitorStandardFootprint`, `DiodeStandardFootprint`).
+
+These classes provide utility functions for parts table selectors:
+- `PartsTablePart`: interface parameters (part requirement, excluded parts, and more) for part selected from a parts table.
+- `PartsTableSelector`: utility code to select a part from a `PartsTable`, implementing `PartsTableSelector`.
+- `SelectorFootprint`: interface parameters to allow filtering by footprint.
+- `PartsTableFootprintFilter`: utility code to filter a parts table by footprint, implementing `SelectorFootprint`.
+- `PartsTableSelectorFootprint`: utility code to construct the footprint, for a `HasStandardFootprint`. 
+
+Look at some example implementations to for the `PartsTable` API and utilities.
 
 ## Design Patterns and Conventions
+
+### _Device Footprint and Subcircuit
+
+### Passive and Typed Layers
+use passive .net and adapt_to
+
 
 ### Link Circular Dependencies
 Be cognizant of circular dependencies on links, e.g. something depending on a link's current to calculate its voltage will play badly with another block on the link that calculates its voltage based on the link's current.
 
 ### Target and Actual Parameters
 
-### _Device Footprint and Subcircuit
-
-### Passive and Typed Layers
-use passive .net and adapt_to
 
 ### PassiveConnector
 
