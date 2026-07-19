@@ -209,37 +209,9 @@ However, instead of using `auto_adapt`, we can instead define `conversions` on a
 > ```
 
 
-## Reference
+## References
 
-These common symbols can be used in schematic import and map to the following passive-typed HDL blocks:
-
-| Symbol                             | HDL Block          | Value Parsing   | Notes                            |
-|------------------------------------|--------------------|-----------------|----------------------------------|
-| Device:C, Device:C_Polarized       | Capacitor          | e.g. `10uF 10V` | Voltage rating must be specified |
-| Device:R                           | Resistor           | e.g. `100`      |                                  |
-| Device:L                           | Inductor           |                 |                                  |
-| Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |                 |                                  |
-| Device:D                           | Diode              |                 |                                  |
-| Device:D_Zener                     | ZenerDiode         |                 |                                  |
-| Device:L_Ferrite                   | FerriteBead        |                 |                                  |
-| Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |                 |                                  |
-| Switch:SW_SPST                     | Switch             |                 |                                  |
-
-Notes:
-- Blocks are Passive-typed unless otherwise noted.
-- If Value Parsing is empty, the Block can only be defined by HDL instantiation or inline HDL.
-- All Blocks that can be used in schematic import can be found by searching for all subclasses of `KiCadImportableBlock`.
-- In many cases, the `_Small` (like `Device:C_Small`) symbol can also be used.
-
-These higher-level symbols have typed pins (like VoltageSink, Ground, and AnalogSink) and can be used to make higher-level analog signal chains:
-
-| Symbol                               | HDL Block             | Notes                                                                                                                     |
-|--------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------|
-| Simulation_SPICE:OPAMP               | Opamp                 | Supports value parsing (with empty value); is the full application circuit for an opamp (including decoupling capacitors) |
-| edg_importable:Amplifier             | Amplifier             |                                                                                                                           |
-| edg_importable:DifferentialAmplifier | DifferentialAmplifier |                                                                                                                           |
-| edg_importable:IntegratorInverting   | IntegratorInverting   |                                                                                                                           |
-| edg_importable:OpampCurrentSensor    | OpampCurrentSensor    |                                                                                                                           | 
+See the [library construction reference](reference_library.md) for a list of KiCad symbols.
 
 
 ## Defining Library Parts
