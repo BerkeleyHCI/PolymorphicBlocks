@@ -27,7 +27,7 @@ class IndicatorLed(Block):
         self.gnd = self.Port(Ground(), [Common])
         self.signal = self.Port(DigitalSink(...))
 
-    def contents() -> None:
+    def contents(self) -> None:
         super().contents()
         self.led = self.Block(Led(...))
         self.res = self.Block(Resistor(resistance=self.signal.link().voltage / self.current_draw))
@@ -99,7 +99,7 @@ Parameters are variables that can be passed into and through blocks.
     Use the `xExpr` type in `Parameter(...)` to declare a parameter without a value, to be assigned in `contents()`.
 - `RangeExpr` types are used to represent a device tolerance or toleranced specification
   - Most operations between `RangeExpr` types are tolerance-expanding (computes the worst-case range of the inputs)
-  - `a = c.shrink_multiply(b)` returns `a` such  that tolerance-expanding `a * b` is equal to `c`.
+  - `a = c.shrink_multiply(b)` is a tolerance-shrinking operation to calculate the maximum allowable toleranced `a`, such that tolerance-expanding `a * b` is equal to `c`.
     Example: for `v = i * r`, to solve for allowable (target) `r` given requirement `i` and contributing tolerance `v`, use `r = (1/i).shrink_multiply(v)`
 - Access parameters on the link of ports using `port.link().link_param`.
   Links contain the aggregated parameter of all connected ports, for example the voltage.
@@ -165,10 +165,10 @@ class MySchematicDefinedBlock(KiCadSchematicBlock):
 
 - The HDL stub is required to define the boundary ports and parameters.
 - Graphical schematic components map as follows:
-  - Labels, including symbols like GND and VCC, connect internally  
-  - Hierarchical labels connect to the boundary ports
-  - True global labels (that connect design-wide) are not supported)
-  - Components map to `Block`s, with rhe refdes mapping to the `Block` name.
+  - Labels, including symbols like GND and VCC, connect internally.  
+  - Hierarchical labels connect to the boundary ports.
+  - True global labels (that connect design-wide) are not supported.
+  - Components map to `Block`s, with the refdes mapping to the `Block` name.
   - Wires map to `connect`s.
   - Pins must be connected at a wire end or bend.
 - Components can be defined as:
@@ -316,7 +316,7 @@ These classes provide utility functions for parts table selectors:
 - `PartsTableFootprintFilter`: utility code to filter a parts table by footprint, implementing `SelectorFootprint`.
 - `PartsTableSelectorFootprint`: utility code to construct the footprint, for a `HasStandardFootprint`. 
 
-Look at some example implementations to for the `PartsTable` API and utilities.
+Look at some example implementations for the `PartsTable` API and utilities.
 
 ## Design Patterns and Conventions
 
@@ -362,8 +362,16 @@ Custom `Port`s and `Link`s can be defined.
 The `Link` aggregates parameters on the connected `Ports` and optionally defines constraints as assertions.
 
 `Port`s can contain other `Port`s, such as:
-- bundles of `Port`s, like `SpiController`
-- an inner `Passive` that provides the connectivity layer 
+- Bundles of `Port`s, like `SpiController`
+- An inner `Passive` that provides the connectivity layer 
+
+The design convention for whether bundle `Port`s are `Passive` or electrically typed is:
+- Protocols that define an electrical specification are `Passive` typed.
+  The electrical modeling is functionally redundant and connections between any parts should be compatible.
+  Example: CAN, USB.
+- Protocols that only define the signal specification are electrically typed.
+  Electrical modeling is needed to check for compatibility.
+  Examples: SPI, I2C, which use `DigitalSource` / `DigitalSink` / `DigitalBidir` internally.
 
 Look at examples in the standard interfaces library for details.
 
