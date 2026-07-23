@@ -53,3 +53,5 @@ class BadGeneratorTestCase(unittest.TestCase):
     def test_generator_raises(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(GeneratorErrorTop)
+        # TODO: inspect the exception, note that it is consumed by the Scala compiler
+        # and not summarized in the CompilerCheckError
