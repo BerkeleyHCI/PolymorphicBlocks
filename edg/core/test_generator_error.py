@@ -7,6 +7,7 @@ from .HdlUserExceptions import BlockDefinitionError
 
 
 class GeneratorErrorTop(DesignTop):
+    @override
     def contents(self) -> None:
         super().contents()
         self.generator = self.Block(GeneratorRaises(42, "bad"))
