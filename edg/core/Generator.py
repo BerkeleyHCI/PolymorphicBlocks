@@ -142,7 +142,16 @@ class GeneratorBlock(Block):
                     self._generator_param_values[param] = param._from_lit(
                         generate_values_map[ref_map[param].SerializeToString()]
                     )
-                self.generate()
+                try:
+                    self.generate()
+                except Exception as e:
+                    params_list_str = ", ".join(
+                        f"{self._name_of_child(param, self, allow_unknown=True)}={self._generator_param_values[param]}"
+                        for param in self._generator_params_list
+                    )
+                    raise RuntimeError(
+                        f"Generator {self.__class__.__name__} with parameters {{{params_list_str}}} raised exception"
+                    ) from e
             elif self._generator is not None:  # legacy generator style
                 fn_args = [
                     arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
