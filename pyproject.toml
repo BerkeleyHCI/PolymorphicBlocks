@@ -47,6 +47,10 @@ strict = true
 implicit_reexport = true
 
 [[tool.mypy.overrides]]
+module = ["jdk"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = ["edg.edgir.*", "edg.edgrpc.*"]  # generated code
 ignore_errors = true
 
