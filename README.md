@@ -93,6 +93,8 @@ Advanced capabilities include:
 pip install edg
 ```
 
+On first run, the system will automatically download a compatible Java runtime for the core compiler.
+
 Then, work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.

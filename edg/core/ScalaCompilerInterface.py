@@ -90,7 +90,8 @@ class CompiledDesign:
 class ScalaCompilerInstance:
     kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
     kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
-    kInstallJrePath = Path.home() / ".edg" / "jre-25"
+    kJreVersion = 17
+    kInstallJrePath = Path.home() / ".edg" / f"jre-{kJreVersion}"
 
     def __init__(self) -> None:
         self.process: Optional[Any] = None
@@ -110,7 +111,7 @@ class ScalaCompilerInstance:
                         if len(items) != 1:
                             raise RuntimeError(f"Expected one JRE in {self.kInstallJrePath}, delete extras and re-run.")
                         java_bin_path = items[0] / "bin"
-                        if not java_bin_path.exists():
+                        if not java_bin_path.exists() or not java_bin_path.is_dir():
                             raise RuntimeError(f"Expected JRE bin folder {java_bin_path} to exist.")
                         java_bin = java_bin_path / "java"  # can't test this since it has os-specific extensions
 
@@ -119,7 +120,7 @@ class ScalaCompilerInstance:
                         raise RuntimeError("Internal error, failed to install JRE")
                     print("Installing JRE for compiler core...")
                     self.kInstallJrePath.mkdir(parents=True, exist_ok=True)
-                    jdk.install("25", path=str(self.kInstallJrePath), jre=True)
+                    jdk.install(str(self.kJreVersion), path=str(self.kInstallJrePath), jre=True)
                     installed = True
 
             dev_path = os.path.join(os.path.dirname(__file__), self.kDevRelpath)
@@ -133,7 +134,7 @@ class ScalaCompilerInstance:
                 raise ValueError(f"No EDG Compiler JAR found")
 
             self.process = subprocess.Popen(
-                [str(java_bin), "-jar", jar_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                [str(java_bin), "-jar", jar_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE
             )
 
     def compile(

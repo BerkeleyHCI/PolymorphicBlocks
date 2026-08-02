@@ -57,6 +57,8 @@ You can also write custom links and ports, though this will be unnecessary for m
 pip install edg
 ```
 
+On first run, the system will automatically download a compatible Java runtime for the core compiler.
+
 ### Reference Document
 While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
 
