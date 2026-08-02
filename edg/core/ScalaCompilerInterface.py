@@ -113,7 +113,8 @@ class ScalaCompilerInstance:
                         java_bin_path = items[0] / "bin"
                         if not java_bin_path.exists() or not java_bin_path.is_dir():
                             raise RuntimeError(f"Expected JRE bin folder {java_bin_path} to exist.")
-                        java_bin = java_bin_path / "java"  # can't test this since it has os-specific extensions
+                        java_exe = "java.exe" if os.name == "nt" else "java"
+                        java_bin = java_bin_path / java_exe
 
                 if java_bin is None:
                     if installed:
