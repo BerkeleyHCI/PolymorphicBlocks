@@ -52,10 +52,12 @@ You can also write custom links and ports, though this will be unnecessary for m
 
 
 ### Setup
-Instructions for setting up the IDE and compiler are in the [setup document](setup.md).
 
-The rest of this tutorial requires that you have this `edg` package (available on `pip`) installed.
+```
+pip install edg
+```
 
+On first run, the system will automatically download a compatible Java runtime for the core compiler.
 
 ### Reference Document
 While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
@@ -74,7 +76,10 @@ Specifically, it:
 - provides schematic-like graphical edit actions to insert HDL
 
 The graphical edit actions have significant limitations (and probably bugs / unhandled edge cases) compared to the full HDL and are best suited for simple designs or as a learning tool.
-**Consider it more of a tech demonstrator and proof-of-concept** but do give it a try.
+It sees only minimal maintenance.
+**Consider it more of a tech demonstrator and proof-of-concept**.
+
+If you want to try it, see its [README](https://github.com/BerkeleyHCI/edg-ide/blob/main/README.md) for setup instructions. 
 
 ![Annotated IDE screen](docs/ide/overview.png)
 

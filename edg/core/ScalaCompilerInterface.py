@@ -1,8 +1,10 @@
+from pathlib import Path
 from typing import Optional, Any, Type, Iterable, Union, Dict, List, Tuple
 
 import os
 import subprocess
 import sys
+import jdk
 
 from .. import edgir
 from .. import edgrpc
@@ -88,12 +90,40 @@ class CompiledDesign:
 class ScalaCompilerInstance:
     kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
     kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
+    kJreVersion = 17
+    kInstallJrePath = Path.home() / ".edg" / f"jre-{kJreVersion}"
 
     def __init__(self) -> None:
         self.process: Optional[Any] = None
 
     def check_started(self) -> None:
         if self.process is None:
+            installed = False
+            java_bin: Optional[Path] = None
+            while java_bin is None:
+                if self.kInstallJrePath.exists():
+                    items = [
+                        item
+                        for item in self.kInstallJrePath.iterdir()
+                        if item.is_dir() and ("jre" in item.name or "jdk" in item.name)
+                    ]
+                    if len(items) > 0:
+                        if len(items) != 1:
+                            raise RuntimeError(f"Expected one JRE in {self.kInstallJrePath}, delete extras and re-run.")
+                        java_bin_path = items[0] / "bin"
+                        if not java_bin_path.exists() or not java_bin_path.is_dir():
+                            raise RuntimeError(f"Expected JRE bin folder {java_bin_path} to exist.")
+                        java_exe = "java.exe" if os.name == "nt" else "java"
+                        java_bin = java_bin_path / java_exe
+
+                if java_bin is None:
+                    if installed:
+                        raise RuntimeError("Internal error, failed to install JRE")
+                    print("Installing JRE for compiler core...")
+                    self.kInstallJrePath.mkdir(parents=True, exist_ok=True)
+                    jdk.install(str(self.kJreVersion), path=str(self.kInstallJrePath), jre=True)
+                    installed = True
+
             dev_path = os.path.join(os.path.dirname(__file__), self.kDevRelpath)
             precompiled_path = os.path.join(os.path.dirname(__file__), self.kPrecompiledRelpath)
             if os.path.exists(dev_path):
@@ -105,7 +135,7 @@ class ScalaCompilerInstance:
                 raise ValueError(f"No EDG Compiler JAR found")
 
             self.process = subprocess.Popen(
-                ["java", "-jar", jar_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                [str(java_bin), "-jar", jar_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE
             )
 
     def compile(
