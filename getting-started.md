@@ -2,6 +2,14 @@
 
 Introductory tutorial and example starter project, building towards a basic mechanical keyboard macropad.
 
+The overall workflow is:
+1. Write HDL code to define a top-level design, using library blocks.
+2. Compile the design to generate a netlist and BoM data.
+3. Load the netlist into KiCad PCB Editor for layout and routing.
+4. Optionally, iterate without losing layout progress.
+
+### Reference Document
+While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
 
 ## Goals
 The main goal of this HDL are:
@@ -12,6 +20,13 @@ The main goal of this HDL are:
 
 These capabilities will be shown throughout this tutorial. 
 
+## Setup
+
+```
+pip install edg
+```
+
+On first run, the system will automatically download a compatible Java runtime for the core compiler.
 
 ## Core concepts
 The core abstraction is the hierarchical block diagram, shown here using an example design of a microcontroller driving an LED.
@@ -50,25 +65,12 @@ You can also write custom links and ports, though this will be unnecessary for m
 
 </details>
 
-
-### Setup
-
-```
-pip install edg
-```
-
-On first run, the system will automatically download a compatible Java runtime for the core compiler.
-
-### Reference Document
-While this getting started guide is meant to be self-contained, you may also find the [reference document](reference.md) helpful, especially as you build designs outside this tutorial.
-
-
 ### Hardware Description Language (HDL)
 To support user-defined computation of parameters and generator blocks, the design system is implemented as a _hardware description language_ (HDL).
 That is, blocks are "placed" or instantiated, and their ports are connected, through lines in code instead of GUI actions in a graphical schematic.
 
 
-### Optional Integrated Development Environment (IDE) with Graphical Editor
+### Optional PyCharm IDE with Graphical Editor
 We have also built a basic IDE (as a PyCharm plugin, must be compiled locally) that provides some basic graphical integrations for working with HDL. 
 Specifically, it:
 - generates a block diagram visualization of the design
