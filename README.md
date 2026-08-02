@@ -88,10 +88,12 @@ Advanced capabilities include:
 
 
 ## Getting Started
-See the [setup documentation](setup.md), then work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
-**Setup tl;dr**: install from pip, published as `edg`: `pip install edg`.
-You will need a Java 11+ JRE / JDK, to run the Scala-based core compiler.
+```
+pip install edg
+```
+
+Then, work through building a mechanical keyboard (including subcircuit layout replication) in the [getting started tutorial](getting-started.md).
 
 Also check out the [reference documentation](reference.md) for a concise list of capabilities.
 
