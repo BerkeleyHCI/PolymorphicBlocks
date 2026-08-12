@@ -18,6 +18,9 @@ from .CrystalPort import CrystalPort, CrystalDriver, CrystalLink
 from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbLink
 from .DvpPort import Dvp8Host, Dvp8Camera, Dvp8Link
 from .I2sPort import I2sController, I2sTargetReceiver, I2sLink
+from .EthernetPort import EthernetMdiPairLink, EthernetMdiPhyPairPort, EthernetMdiMagPairPort
+from .EthernetPort import EthernetMdiLink, EthernetMdi100BaseTxPhyPort, EthernetMdi100BaseTxMagPort
+from .EthernetPort import PoeLink, PoePowerPort, PoeDevicePort
 
 # model-breaking constructs, including for unit testing
 from .GroundDummy import DummyGround

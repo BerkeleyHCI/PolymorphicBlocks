@@ -1,9 +1,6 @@
-from typing import *
-
 from typing_extensions import override
 
 from ..electronics_model import *
-from .DigitalPorts import DigitalBidir
 from ..electronics_model.PassivePort import PassiveBridge
 
 

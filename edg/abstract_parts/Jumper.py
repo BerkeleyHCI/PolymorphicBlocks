@@ -67,3 +67,20 @@ class DigitalJumper(TypedJumper, Block):
         self.assign(self.input.current_draw, self.output.link().current_draw)  # for model purposes, treat as connected
         self.connect(self.input.net, self.device.a)
         self.connect(self.output.net, self.device.b)
+
+
+class PoeJumper(TypedJumper, Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.jack = self.Port(PoeDevicePort(), [Input])  # jack-facing, device-presenting port
+        self.device = self.Port(PoePowerPort(), [Output])  # device-facing, power-presenting port
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.pos = self.Block(Jumper())
+        self.connect(self.jack.pos, self.pos.a)
+        self.connect(self.device.pos, self.pos.b)
+        self.neg = self.Block(Jumper())
+        self.connect(self.jack.neg, self.neg.a)
+        self.connect(self.device.neg, self.neg.b)
