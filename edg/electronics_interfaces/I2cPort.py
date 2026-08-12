@@ -24,6 +24,7 @@ class I2cLink(Link):
         self.addresses = self.Parameter(
             ArrayIntExpr(self.targets.flatten(lambda x: x.addresses).concat(self.controller.addresses))
         )
+        self.frequency = self.Parameter(RangeExpr())
 
         self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
@@ -35,6 +36,10 @@ class I2cLink(Link):
         self.require(self.controller.has_pullup.implies(self.pull.length() == 0), "redundant pullup with controller")
 
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
+        self.assign(
+            self.frequency, self.controller.frequency.intersect(self.targets.intersection(lambda x: x.frequency_limit))
+        )
+
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),
             self.controller.scl,
@@ -92,7 +97,12 @@ class I2cController(Port[I2cLink]):
     bridge_type = I2cControllerBridge
 
     def __init__(
-        self, model: Optional[DigitalBidir] = None, *, has_pullup: BoolLike = False, addresses: ArrayIntLike = []
+        self,
+        model: Optional[DigitalBidir] = None,
+        *,
+        has_pullup: BoolLike = False,
+        addresses: ArrayIntLike = [],
+        frequency: RangeLike = RangeExpr.ALL,
     ) -> None:
         super().__init__()
         if model is None:
@@ -101,7 +111,7 @@ class I2cController(Port[I2cLink]):
         self.sda = self.Port(model)
 
         self.addresses = self.Parameter(ArrayIntExpr(addresses))
-        self.frequency = self.Parameter(RangeExpr(RangeExpr.ZERO))
+        self.frequency = self.Parameter(RangeExpr(frequency))
         self.has_pullup = self.Parameter(BoolExpr(has_pullup))
 
 
@@ -131,15 +141,21 @@ class I2cTarget(Port[I2cLink]):
     link_type = I2cLink
     bridge_type = I2cTargetBridge
 
-    def __init__(self, model: Optional[DigitalBidir] = None, addresses: ArrayIntLike = []) -> None:
-        """Addresses specified excluding the R/W bit (as a 7-bit number, as directly used by Arduino)"""
+    def __init__(
+        self,
+        model: Optional[DigitalBidir] = None,
+        *,
+        addresses: ArrayIntLike = [],
+        frequency_limit: RangeLike = RangeExpr.ALL,
+    ) -> None:
+        """Addresses specified excluding the R/W bit (as a 7-bit number, as directly used by Arduino and Rust embedded-hal)"""
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
         self.scl = self.Port(DigitalSink.from_bidir(model))
         self.sda = self.Port(model)
 
-        self.frequency_limit = self.Parameter(RangeExpr(RangeExpr.ALL))  # range of acceptable frequencies
+        self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))  # range of acceptable frequencies
         self.addresses = self.Parameter(ArrayIntExpr(addresses))
 
 
