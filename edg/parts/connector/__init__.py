@@ -53,6 +53,8 @@ from .Rf import Bwipx_1_001e, Amphenol901143
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
 
+from .Ethernet import Hy931147c
+
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 

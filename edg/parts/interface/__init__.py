@@ -7,6 +7,9 @@ from .UsbPd_Fusb302b import Fusb302b
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 
+from .Ethernet_W5500 import W5500
+from .Poe_Tps2378 import Tps2378
+
 from .Isolator_Cbmud1200 import Cbmud1200l
 
 # Expanders
