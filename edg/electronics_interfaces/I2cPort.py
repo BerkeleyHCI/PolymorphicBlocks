@@ -3,6 +3,7 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalBidirBridge, DigitalSinkBridge
+from ..util import deprecated_param_remap
 
 
 class I2cLink(Link):
@@ -126,7 +127,7 @@ class I2cTargetBridge(PortBridge):
     def contents(self) -> None:
         super().contents()
 
-        self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), self.inner_link.link().addresses))
+        self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), addresses=self.inner_link.link().addresses))
 
         self.scl_bridge = self.Block(DigitalSinkBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
@@ -141,6 +142,7 @@ class I2cTarget(Port[I2cLink]):
     link_type = I2cLink
     bridge_type = I2cTargetBridge
 
+    @deprecated_param_remap((2, "addresses"))
     def __init__(
         self,
         model: Optional[DigitalBidir] = None,

@@ -34,7 +34,7 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.master_clk = self.Port(DigitalSink.from_bidir(dio_model))  # 25MHz clock
         self.spi = self.Port(SpiPeripheral(dio_model, (0, 20) * MHertz))
         self.cs = self.Port(DigitalSink.from_bidir(dio_model))
-        self.cci = self.Port(I2cTarget(dio_model, [0x2A]))  # frequency up to 1MHz
+        self.cci = self.Port(I2cTarget(dio_model, addresses=[0x2A]))  # frequency up to 1MHz
 
         self.reset_l = self.Port(DigitalSink.from_bidir(dio_model))
         self.pwr_dwn_l = self.Port(DigitalSink.from_bidir(dio_model))

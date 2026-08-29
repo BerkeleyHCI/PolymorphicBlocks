@@ -13,7 +13,7 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.vdd, input_threshold_factor=(0.3, 0.7))
-        self.i2c = self.Port(I2cTarget(dio_model, [0x40]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x40]))
 
     @override
     def contents(self) -> None:
