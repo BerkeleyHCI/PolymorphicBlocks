@@ -28,8 +28,8 @@ def deprecated_param_remap(*params: Tuple[Union[int, str], str]) -> Callable[[Ca
                         raise ValueError(
                             f"both old positional argument {old_param} and new {new_param} parameter specified"
                         )
-                    kwargs[new_param] = list(args).pop(old_param)
-
+                    kwargs[new_param] = args[old_param]
+                    args = args[:old_param] + args[old_param + 1 :]
                 elif isinstance(old_param, str) and old_param in kwargs:
                     warnings.warn(
                         f"{old_param} is deprecated and replaced with {new_param}",
