@@ -132,16 +132,14 @@ class Esp32s3_Wroom_1_Device(
             # TODO: impedance / leakage - not specified by datasheet
         )
 
-        uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
-        spi_model = SpiController(
-            DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz
-        )  # section 3.5.2, 80MHz in controller, 60MHz in peripheral
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
-        i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
-        i2c_target_model = I2cController(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 5) * MHertz)  # section 3.5.5
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz)  # section 3.5.2
+        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz)
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)  # section 3.5.6
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)
         touch_model = TouchDriver()
-        can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
-        i2s_model = I2sController(DigitalBidir.empty())
+        can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(1, 1000) * kHertz)
+        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0.01, 40) * MHertz)
         dvp8_model = Dvp8Host(DigitalBidir.empty())
 
         return (
