@@ -3,6 +3,7 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
+from ..util import deprecated_param_remap
 
 
 class SpiLink(Link):
@@ -37,7 +38,8 @@ class SpiLink(Link):
 class SpiController(Port[SpiLink]):
     link_type = SpiLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None, frequency: RangeLike = RangeExpr.ZERO) -> None:
+    @deprecated_param_remap(("frequency", "frequency_limit"), (2, "frequency_limit"))
+    def __init__(self, model: Optional[DigitalBidir] = None, *, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
@@ -45,7 +47,7 @@ class SpiController(Port[SpiLink]):
         self.mosi = self.Port(DigitalSource.from_bidir(model))
         self.miso = self.Port(DigitalSink.from_bidir(model))
 
-        self.frequency = self.Parameter(RangeExpr(frequency))
+        self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))
         self.mode = self.Parameter(RangeExpr())  # modes supported, in [0, 3]  TODO: what about sparse modes?
 
 

@@ -35,12 +35,13 @@ class CanLogicLink(Link):
 class CanControllerPort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self, model: Optional[DigitalBidir] = None, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:  # ideal by default
             model = DigitalBidir()
         self.txd = self.Port(DigitalSource.from_bidir(model))
         self.rxd = self.Port(DigitalSink.from_bidir(model))
+        self.bitrate_limit = self.Parameter(RangeExpr(bitrate_limit))
 
 
 class CanTransceiverPort(Port[CanLogicLink]):

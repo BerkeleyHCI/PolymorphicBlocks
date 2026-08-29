@@ -168,7 +168,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
 
         # hard macros, not tied to any particular pin
         i2c_model = I2cController(DigitalBidir.empty())  # user I2C, table 4.7
-        spi_model = SpiController(DigitalBidir.empty(), (0, 45) * MHertz)  # user SPI, table 4.10
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 45) * MHertz)  # user SPI, table 4.10
 
         return PinMapUtil(
             [  # names consistent with pinout spreadsheet

@@ -152,7 +152,7 @@ class Esp32c3_Device(
 
         uart_model = UartPort(DigitalBidir.empty())
         spi_model = SpiController(
-            DigitalBidir.empty(), (0, 60) * MHertz
+            DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz
         )  # section 3.4.2, max block in GP controller mode
         spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
         i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s

@@ -134,7 +134,7 @@ class Esp32s3_Wroom_1_Device(
 
         uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
         spi_model = SpiController(
-            DigitalBidir.empty(), (0, 80) * MHertz
+            DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz
         )  # section 3.5.2, 80MHz in controller, 60MHz in peripheral
         spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
         i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s

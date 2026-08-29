@@ -38,7 +38,8 @@ class I2cLink(Link):
 
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
         self.assign(
-            self.frequency, self.controller.frequency.intersect(self.targets.intersection(lambda x: x.frequency_limit))
+            self.frequency,
+            self.controller.frequency_limit.intersect(self.targets.intersection(lambda x: x.frequency_limit)),
         )
 
         self.scl = self.connect(
@@ -97,13 +98,14 @@ class I2cController(Port[I2cLink]):
     link_type = I2cLink
     bridge_type = I2cControllerBridge
 
+    @deprecated_param_remap(("frequency", "frequency_limit"))
     def __init__(
         self,
         model: Optional[DigitalBidir] = None,
         *,
         has_pullup: BoolLike = False,
         addresses: ArrayIntLike = [],
-        frequency: RangeLike = RangeExpr.ALL,
+        frequency_limit: RangeLike = RangeExpr.ALL,
     ) -> None:
         super().__init__()
         if model is None:
@@ -112,7 +114,7 @@ class I2cController(Port[I2cLink]):
         self.sda = self.Port(model)
 
         self.addresses = self.Parameter(ArrayIntExpr(addresses))
-        self.frequency = self.Parameter(RangeExpr(frequency))
+        self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))
         self.has_pullup = self.Parameter(BoolExpr(has_pullup))
 
 

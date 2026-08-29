@@ -162,10 +162,10 @@ class Ch32v003_Device(
         )
 
         uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 24) * MHertz)
         # TODO SPI peripherals, which have fixed-pin CS lines
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 400) * kHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 400) * kHertz)
 
         return PinMapUtil(
             [  # table 2-1

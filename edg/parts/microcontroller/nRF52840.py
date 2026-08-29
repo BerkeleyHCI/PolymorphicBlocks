@@ -155,7 +155,7 @@ class Mdbt50q_1mv2_Device(
         )
 
         uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty(), (125, 32000) * kHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(125, 32000) * kHertz)
         spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (125, 32000) * kHertz)  # tristated by CS pin
         i2c_model = I2cController(DigitalBidir.empty())
         i2c_target_model = I2cTarget(DigitalBidir.empty())
