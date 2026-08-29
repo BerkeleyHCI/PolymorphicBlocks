@@ -150,7 +150,7 @@ class Esp32_Wroom_32_Device(
 
         uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 5) * MHertz)
         spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz)  # section 4.1.17
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
+        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz)
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 5000) * kHertz)  # section 4.1.11
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 5000) * kHertz)
         touch_model = TouchDriver()
