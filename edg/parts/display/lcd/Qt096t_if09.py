@@ -29,7 +29,8 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
         self.rs = self.Port(din_model)  # data / command selection pin
         self.cs = self.Port(din_model)
 
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        # up to 15 MHz in write mode
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 6.6) * MHertz))
         self.leda = self.Port(Passive())
 
         self.conn = self.Block(Fpc050Bottom(length=8)).connected(
@@ -47,7 +48,7 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
 
 
 class Qt096t_if09(Lcd, Resettable, Block):
-    """ST7735S-based LCD module with a 8-pin 0.5mm-pitch FPC connector"""
+    """ST7735S-based LCD module with a 8-pin 0.5mm-pitch FPC connector, like ER-TFT0.96-4."""
 
     def __init__(self) -> None:
         super().__init__()

@@ -154,7 +154,7 @@ class Esp32c3_Device(
         spi_model = SpiController(
             DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz
         )  # section 3.4.2, max block in GP controller mode
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
+        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz)
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)  # section 3.4.4
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)
         i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0.01, 40) * MHertz)

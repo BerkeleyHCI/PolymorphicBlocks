@@ -47,7 +47,8 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.rs = self.Port(din_model)
 
         # Control pins
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        # SPI up to 100 MHz in write mode
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 6.6) * MHertz))
         self.cs = self.Port(din_model)
         self.rst = self.Port(din_model)
 

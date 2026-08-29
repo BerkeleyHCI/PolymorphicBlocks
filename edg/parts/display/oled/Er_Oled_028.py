@@ -59,7 +59,7 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
 
         self.bs0 = self.Port(din_model)  # 3-wire (1) / 4-wire (0) serial
 
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 3.3) * MHertz))
 
         self.dc = self.Port(din_model)  # ground if unused
         self.cs = self.Port(din_model)

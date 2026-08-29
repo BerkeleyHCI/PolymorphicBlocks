@@ -54,7 +54,8 @@ class SpiController(Port[SpiLink]):
 class SpiPeripheral(Port[SpiLink]):
     link_type = SpiLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
+    @deprecated_param_remap((2, "frequency_limit"))
+    def __init__(self, model: Optional[DigitalBidir] = None, *, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default

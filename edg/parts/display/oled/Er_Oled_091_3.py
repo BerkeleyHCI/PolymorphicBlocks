@@ -66,7 +66,7 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         )
         din_model = DigitalSink.from_bidir(dio_model)
 
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 10) * MHertz))
         self.dc = self.Port(din_model)
         self.res = self.Port(din_model)
         self.cs = self.Port(din_model)
