@@ -134,10 +134,12 @@ class Stm32g431_Device(
             )
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty())  # baud limit not directly specified
+        lpuart_model = UartPort(DigitalBidir.empty())  # baud limit not directly specified
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 75) * MHertz)  # 41 Mbps in peripheral mode
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        fdcan_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 8) * MHertz)
 
         return PinMapUtil(
             [  # for 32 pins only for now
@@ -195,7 +197,7 @@ class Stm32g431_Device(
                         ],
                     },
                 ),
-                PeripheralFixedResource("LPUART1", uart_model, {"tx": ["PA2", "PB11"], "rx": ["PA3", "PB10"]}),
+                PeripheralFixedResource("LPUART1", lpuart_model, {"tx": ["PA2", "PB11"], "rx": ["PA3", "PB10"]}),
                 PeripheralFixedResource(
                     "I2C1", i2c_model, {"scl": ["PA13", "PA15", "PB8"], "sda": ["PA14", "PB7", "PB9"]}
                 ),
@@ -205,9 +207,7 @@ class Stm32g431_Device(
                 PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PA9"], "sda": ["PA8", "PF0"]}),
                 PeripheralFixedResource("I2C2_T", i2c_target_model, {"scl": ["PA9"], "sda": ["PA8", "PF0"]}),
                 PeripheralFixedResource("I2C3", i2c_model, {"scl": ["PA8"], "sda": ["PB5"]}),
-                PeripheralFixedResource(
-                    "FDCAN", CanControllerPort(DigitalBidir.empty()), {"tx": ["PA12", "PB9"], "rx": ["PA11", "PB8"]}
-                ),
+                PeripheralFixedResource("FDCAN", fdcan_model, {"tx": ["PA12", "PB9"], "rx": ["PA11", "PB8"]}),
                 PeripheralFixedResource(
                     "SWD",
                     SwdTargetPort(DigitalBidir.empty()),
