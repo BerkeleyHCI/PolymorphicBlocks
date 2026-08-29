@@ -20,7 +20,7 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         dio_model = DigitalBidir.from_supply(
             self.gnd, self.pwr, voltage_limit_abs=(-0.3, 5.5) * Volt, input_threshold_abs=(0.5, 1.4) * Volt
         )
-        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x36]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x36], frequency_limit=(0, 400) * kHertz))
 
         self.alrt = self.Port(
             DigitalSource.low_from_supply(self.gnd),

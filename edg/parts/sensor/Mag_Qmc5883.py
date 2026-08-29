@@ -22,7 +22,7 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             voltage_limit_abs=(-0.3 * Volt, self.vddio.voltage_limits.upper() + 0.3),
             input_threshold_factor=(0.3, 0.7),
         )
-        self.i2c = self.Port(I2cTarget(dio_model))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x0D], frequency_limit=(0, 400) * kHertz))
         self.drdy = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
 
         self.setp = self.Port(Passive())
@@ -106,7 +106,7 @@ class Qmc5883p_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # assumed form Vdd absolute maximum rating
             input_threshold_factor=(0.3, 0.7),
         )
-        self.i2c = self.Port(I2cTarget(dio_model))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x2C], frequency_limit=(0, 400) * kHertz))
         self.c1 = self.Port(VoltageSource(voltage=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
 
     @override

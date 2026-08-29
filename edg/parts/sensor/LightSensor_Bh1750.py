@@ -19,7 +19,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )  # reset pin
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.vcc, input_threshold_factor=(0.3, 0.7))
-        self.i2c = self.Port(I2cTarget(dio_model, [0x23]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x23], frequency_limit=(0, 400) * kHertz))
 
     @override
     def contents(self) -> None:

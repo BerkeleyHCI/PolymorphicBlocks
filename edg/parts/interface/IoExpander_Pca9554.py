@@ -25,7 +25,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             voltage_limit_tolerance=(-0.5, 0.5) * Volt,
             input_threshold_factor=(0.3, 0.7),
         )
-        self.i2c = self.Port(I2cTarget(i2c_model, addresses=ArrayIntExpr()))
+        self.i2c = self.Port(I2cTarget(i2c_model, addresses=ArrayIntExpr(), frequency_limit=(0, 400) * kHertz))
 
         self.io = self.Port(Vector(DigitalBidir.empty()), optional=True)
 

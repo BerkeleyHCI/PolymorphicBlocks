@@ -36,7 +36,8 @@ class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                     self.vdd,
                     voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
                     input_threshold_abs=(0.6, 1.12),
-                )
+                ),
+                frequency_limit=(0, 400) * kHertz,
             ),
             [Output],
         )

@@ -47,6 +47,7 @@ class Vl53l5cx_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                     ),
                 ),
                 addresses=[0x52],  # TODO software remappable
+                frequency_limit=(0, 1000) * kHertz,
             ),
             [Output],
         )
