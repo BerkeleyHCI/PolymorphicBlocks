@@ -104,11 +104,11 @@ class Stm32g031_Device(
             impedance=(50, float("inf")) * kOhm,  # max external impedance, at lowest listed sampling rate
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 8) * MHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 32) * MHertz)
         # TODO SPI peripherals, which have fixed-pin CS lines
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
 
         return PinMapUtil(
             [  # Table 12, partial table for up to 32-pin only

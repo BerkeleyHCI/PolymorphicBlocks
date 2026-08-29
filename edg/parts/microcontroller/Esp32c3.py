@@ -150,13 +150,15 @@ class Esp32c3_Device(
             # TODO: impedance / leakage - not specified by datasheet
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 5) * MHertz)
         spi_model = SpiController(
             DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz
         )  # section 3.4.2, max block in GP controller mode
         spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
-        i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)  # section 3.4.4
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)
+        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0.01, 40) * MHertz)
+        can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(1, 1000) * kHertz)  # aka TWAI
 
         return (
             PinMapUtil(
@@ -188,8 +190,8 @@ class Esp32c3_Device(
                     PeripheralAnyResource("I2C_T", i2c_target_model),  # TODO shared resource w/ I2C controller
                     PeripheralAnyResource("SPI2", spi_model),
                     PeripheralAnyResource("SPI2_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                    PeripheralAnyResource("I2S", I2sController.empty()),
-                    PeripheralAnyResource("TWAI", CanControllerPort.empty()),
+                    PeripheralAnyResource("I2S", i2s_model),
+                    PeripheralAnyResource("TWAI", can_model),
                 ]
             )
             .remap_pins(self.RESOURCE_PIN_REMAP)

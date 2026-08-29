@@ -26,13 +26,15 @@ class I2sController(Port[I2sLink]):
 
     link_type = I2sLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self, model: Optional[DigitalBidir] = None, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
         self.sck = self.Port(DigitalSource.from_bidir(model))
         self.ws = self.Port(DigitalSource.from_bidir(model))
         self.sd = self.Port(model)  # bidirectional
+
+        self.bitrate_limit = self.Parameter(RangeExpr(bitrate_limit))  # bitrate
 
 
 class I2sTargetReceiver(Port[I2sLink]):
