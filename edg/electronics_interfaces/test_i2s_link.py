@@ -60,7 +60,7 @@ class I2sBitsTest(DesignTop):
         self.controller = self.Block(I2sControllerBlock(bit_limit=(8, 16) * Bit))
         self.target = self.Block(I2sTargetReceiverBlock(bit_limit=(16, 32) * Bit))
         self.connect(self.controller.port, self.target.port)
-        self.require(self.controller.port.link().sample_rate_limit == (16, 16) * Bit, _unchecked=True)
+        self.require(self.controller.port.link().bit_limit == (16, 16) * Bit, _unchecked=True)
 
 
 class I2sBitsInvalidTest(DesignTop):
