@@ -32,7 +32,7 @@ class I2cTest(DesignTop):
         self.device2 = self.Block(I2cTargetBlock(2))
         self.link = self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
-        self.require(self.controller.port.link().addresses == [1, 2], unchecked=True)
+        self.require(self.controller.port.link().addresses == [1, 2], _unchecked=True)
 
 
 class I2cNoPullTest(DesignTop):
