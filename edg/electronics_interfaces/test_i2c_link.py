@@ -141,6 +141,16 @@ class I2cFrequencyInvalidTest(DesignTop):
         self.connect(self.controller.port, self.pull.port, self.device.port)
 
 
+class I2cFrequencyNestedTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock(frequency_limit=(0, 400) * kHertz))
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_freq_limit=(0, 100) * kHertz, dev2_freq_limit=(10, 400) * kHertz))
+        self.connect(self.controller.port, self.pull.port, self.devices.port)
+        self.require(self.controller.port.link().frequency_limit == (10, 100) * kHertz, _unchecked=True)
+
+
 class I2cTestCase(unittest.TestCase):
     def test_i2c(self) -> None:
         ScalaCompiler.compile(I2cTest)
@@ -173,3 +183,6 @@ class I2cTestCase(unittest.TestCase):
     def test_i2c_frequency_invalid(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(I2cFrequencyInvalidTest)
+
+    def test_i2c_frequency_nested(self) -> None:
+        ScalaCompiler.compile(I2cFrequencyNestedTest)
