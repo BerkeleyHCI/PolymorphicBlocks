@@ -16,7 +16,7 @@ class JiecangConnector(Block):
         self.pwr = self.Port(
             VoltageSource(voltage=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
         )  # reportedly drives at least 300mA
-        self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr)))
+        self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr), baud_limit=9600 * Hertz))
 
         self.conn = self.Block(PassiveConnector(length=6)).connected(
             {
@@ -40,9 +40,10 @@ class UartLevelShifter(Block):
     ) -> None:
         super().__init__()
         self.lv_pwr = self.Port(VoltageSink.empty())
-        self.lv_uart = self.Port(UartPort.empty())
+        self.lv_uart = self.Port(UartPort(DigitalBidir.empty(), baud_limit=RangeExpr.ALL))
         self.hv_pwr = self.Port(VoltageSink.empty())
-        self.hv_uart = self.Port(UartPort.empty())
+        # arbitrarily treated as outer for dataflow purposes
+        self.hv_uart = self.Port(UartPort(DigitalBidir.empty(), baud_limit=self.lv_uart.link().baud_limit))
 
         self.hv_tx_shift = self.Block(BidirectionalLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="hv"))
         self.lv_tx_shift = self.Block(BidirectionalLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="lv"))
