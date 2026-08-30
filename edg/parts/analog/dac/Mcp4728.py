@@ -29,7 +29,9 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
             input_threshold_factor=(0.3, 0.7),  # for Vdd >= 2.7v
         )
-        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x60]))  # TODO 3LSBs EEPROM programmable
+        self.i2c = self.Port(
+            I2cTarget(dio_model, addresses=[0x60], frequency_limit=(100, 3400) * kHertz)
+        )  # TODO 3LSBs EEPROM programmable
         self.ldac = self.Port(DigitalSink.from_bidir(dio_model))
         self.rdy = self.Port(DigitalSource.low_from_supply(self.vss), optional=True)
 

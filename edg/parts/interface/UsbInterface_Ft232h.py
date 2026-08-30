@@ -144,7 +144,8 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
         self.pwr = self.Port(VoltageSink.empty())
         self.eeclk = self.Port(DigitalSink.empty())
         self.eedata = self.Port(DigitalBidir.empty())
-        self.spi = self.Port(SpiController.empty())
+        # datasheet: 93LC56B or equivalent capable of 1 Mbit/s clock rate, assume driver at exactly 1 Mbit/s
+        self.spi = self.Port(SpiController(DigitalBidir.empty(), frequency_limit=(1, 1) * MHertz))
 
     @override
     def contents(self) -> None:
@@ -168,8 +169,8 @@ class Ft232hl(Interface, GeneratorBlock):
         self.usb = self.Export(self.ic.usb)
 
         # connect one of UART, MPSSE, or ADBUS pins
-        self.uart = self.Port(UartPort.empty(), optional=True)
-        self.mpsse = self.Port(SpiController.empty(), optional=True)
+        self.uart = self.Port(UartPort(DigitalBidir.empty(), baud_limit=(183, 12000000) * Hertz), optional=True)
+        self.mpsse = self.Port(SpiController(DigitalBidir.empty(), frequency_limit=(0, 30) * MHertz), optional=True)
         self.mpsse_cs = self.Port(DigitalSource.empty(), optional=True)
 
         self.adbus = self.Port(Vector(DigitalBidir.empty()))

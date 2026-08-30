@@ -178,11 +178,12 @@ class Nucleo_F303k8(
             self.gnd, vdd, signal_bound=(0.2 * Volt, -0.2 * Volt), impedance=15 * kOhm(tol=0)  # assumes buffer off
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 9) * MHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 18) * MHertz)
         # TODO SPI peripherals, which have fixed-pin CS lines
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz)
+        can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 1) * MHertz)
 
         return PinMapUtil(
             [  # Table 13, partial table for 48-pin only
@@ -233,9 +234,7 @@ class Nucleo_F303k8(
                     "USART3", uart_model, {"tx": ["PB10", "PC10", "PB9"], "rx": ["PB11", "PC11", "PB8"]}  # 1/3 check
                 ),
                 PeripheralFixedResource("USART1", uart_model, {"tx": ["PA9", "PB6"], "rx": ["PA10", "PB7"]}),
-                PeripheralFixedResource(
-                    "CAN", CanControllerPort(DigitalBidir.empty()), {"tx": ["PA12", "PB9"], "rx": ["PA11", "PB8"]}
-                ),
+                PeripheralFixedResource("CAN", can_model, {"tx": ["PA12", "PB9"], "rx": ["PA11", "PB8"]}),
                 PeripheralFixedResource(
                     "I2C1", i2c_model, {"scl": ["PA15", "PB6", "PB8"], "sda": ["PA14", "PB7", "PB9"]}
                 ),

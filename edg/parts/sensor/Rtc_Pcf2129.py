@@ -21,7 +21,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
             output_thresholds=(0, self.pwr.link().voltage.upper()),
         )
 
-        self.spi = self.Port(SpiPeripheral(dio_model), [Output])
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 6.5) * MHertz), [Output])
         self.cs = self.Port(DigitalSink.from_bidir(dio_model))
 
         opendrain_model = DigitalSource.low_from_supply(self.gnd, current_limits=(-1, 0) * mAmp)

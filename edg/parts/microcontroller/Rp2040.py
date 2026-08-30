@@ -182,10 +182,10 @@ class Rp2040_Device(
             impedance=(100, float("inf")) * kOhm,
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 921600) * Hertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 62.5) * MHertz)
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz)
 
         return (
             PinMapUtil(

@@ -54,7 +54,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         # formally this is SCCB (serial camera control bus), but is I2C compatible
         # https://e2e.ti.com/support/processors-group/processors/f/processors-forum/6092/sccb-vs-i2c
         # 0x60 for write, 0x61 for read, translated to the 7-bit address
-        self.sio = self.Port(I2cTarget(dio_model, [0x30]))
+        self.sio = self.Port(I2cTarget(dio_model, addresses=[0x30], frequency_limit=(0, 400) * kHertz))
 
         self.conn = self.Block(Fpc050Bottom(length=24)).connected(
             {

@@ -122,11 +122,13 @@ class Stm32l432_Device(
             impedance=(9.6, 13.8) * kOhm,  # DAC buffer off
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 10) * MHertz)
+        lpuart_model = UartPort(DigitalBidir.empty())  # different clock domain, baud limit not directly specified
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 40) * MHertz)  # 24 Mbps in peripheral mode
         # TODO SPI peripherals, which have fixed-pin CS lines
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 1) * MHertz)
 
         return PinMapUtil(
             [  # Table 12, partial table for up to 32-pin only
@@ -162,7 +164,7 @@ class Stm32l432_Device(
                     {"sck": ["PA1", "PA5", "PB3"], "miso": ["PA6", "PA11", "PB4"], "mosi": ["PA7", "PA12", "PB5"]},
                 ),
                 PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2"], "rx": ["PA3", "PA15"]}),
-                PeripheralFixedResource("LPUART1", uart_model, {"tx": ["PA2"], "rx": ["PA3"]}),
+                PeripheralFixedResource("LPUART1", lpuart_model, {"tx": ["PA2"], "rx": ["PA3"]}),
                 PeripheralFixedResource("I2C3", i2c_model, {"scl": ["PA7"], "sda": ["PB4"]}),
                 PeripheralFixedResource(
                     "I2C3_T",
@@ -176,9 +178,7 @@ class Stm32l432_Device(
                     {"scl": ["PA9", "PB6"], "sda": ["PA10", "PB7"]},  # TODO shared resource w/ I2C controller
                 ),
                 PeripheralFixedResource("USART2", uart_model, {"tx": ["PA9"], "rx": ["PA10"]}),
-                PeripheralFixedResource(
-                    "CAN", CanControllerPort(DigitalBidir.empty()), {"tx": ["PA12"], "rx": ["PA11"]}
-                ),
+                PeripheralFixedResource("CAN", can_model, {"tx": ["PA12"], "rx": ["PA11"]}),
                 PeripheralFixedResource(
                     "USB", UsbDevicePort(speed=UsbLink.UsbFullSpeedOnly), {"dp": ["PA12"], "dm": ["PA11"]}
                 ),

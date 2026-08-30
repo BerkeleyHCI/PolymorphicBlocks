@@ -84,7 +84,7 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         self.dc = self.Port(din_model, optional=True)
         self.csb = self.Port(din_model)
 
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 20) * MHertz))  # 2.5MHz read mode
 
         self.conn = self.Block(Fpc050Bottom(length=24)).connected(
             {

@@ -13,7 +13,7 @@ class Shtc3_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.vss = self.Port(Ground())
 
         dio_model = DigitalBidir.from_supply(self.vss, self.vdd, input_threshold_factor=(0.42, 0.7))
-        self.i2c = self.Port(I2cTarget(dio_model, [0x70]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x70], frequency_limit=(0, 1000) * kHertz))
 
     @override
     def contents(self) -> None:

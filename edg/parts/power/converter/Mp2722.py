@@ -71,7 +71,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.pg = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)  # requires 10k pullup
 
         # i2C up to 5v tolerant
-        self.i2c = self.Port(I2cTarget(dio_model))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x3F], frequency_limit=(0, 400) * kHertz))
         self.cc = self.Port(UsbCcPort(), optional=True)
         self.usb = self.Port(
             UsbDevicePort(speed=Range.exact(UsbLink.UsbLowSpeed)), optional=True

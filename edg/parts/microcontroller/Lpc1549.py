@@ -129,9 +129,11 @@ class Lpc1549Base_Device(
         )
 
         self.reset.init_from(DigitalSink.from_bidir(dio_5v_model))
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty())  # MISO driven when CS asserted
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 15) * MHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 17) * MHertz)
+        spi_peripheral_model = SpiPeripheral(
+            DigitalBidir.empty(), frequency_limit=(0, 17) * MHertz
+        )  # MISO driven when CS asserted
 
         return PinMapUtil(
             [  # partial table for 48- and 64-pin only
@@ -186,13 +188,15 @@ class Lpc1549Base_Device(
                 PeripheralAnyResource("SPI1", spi_model),
                 PeripheralAnyResource("SPI0_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
                 PeripheralAnyResource("SPI1_P", spi_peripheral_model),  # TODO shared resource w/ SPI controller
-                PeripheralAnyResource("CAN0", CanControllerPort(DigitalBidir.empty())),
+                PeripheralAnyResource("CAN0", CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 1) * MHertz)),
                 PeripheralFixedResource(
-                    "I2C0", I2cController(DigitalBidir.empty()), {"scl": ["PIO0_22"], "sda": ["PIO0_23"]}
+                    "I2C0",
+                    I2cController(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz),
+                    {"scl": ["PIO0_22"], "sda": ["PIO0_23"]},
                 ),
                 PeripheralFixedResource(
                     "I2C0_T",
-                    I2cTarget(DigitalBidir.empty()),
+                    I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1000) * kHertz),
                     {"scl": ["PIO0_22"], "sda": ["PIO0_23"]},  # TODO shared resource w/ I2C controller
                 ),
                 PeripheralFixedPin(

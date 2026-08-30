@@ -19,7 +19,7 @@ class As7341_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             input_threshold_abs=(0.54, 1.26) * Volt,
             output_threshold_abs=(0, float("inf")) * Volt,  # reflects pulldown
         )
-        self.i2c = self.Port(I2cTarget(dio_model, [0x39]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x39], frequency_limit=(0, 400) * kHertz))
 
     @override
     def contents(self) -> None:

@@ -47,13 +47,15 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.rs = self.Port(din_model)
 
         # Control pins
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        # SPI up to 100 MHz in write mode, slower (as modeled) in read mode
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 6.6) * MHertz))
         self.cs = self.Port(din_model)
         self.rst = self.Port(din_model)
 
         # Capacitive Touch Panel (CTP)
+        # CST816S, https://www.buydisplay.com/download/ic/DS-CST816S_DS_V1.3.pdf
         self.ctp_vdd = self.Port(VoltageSink(voltage_limits=(2.7, 3.6) * Volt, current_draw=(5 * uAmp, 2.5 * mAmp)))
-        self.ctp_i2c = self.Port(I2cTarget(dio_model, addresses=[0x15]))
+        self.ctp_i2c = self.Port(I2cTarget(dio_model, addresses=[0x15], frequency_limit=(10, 1000) * kHertz))
 
         self.ctp_rst = self.Port(din_model)
         self.ctp_int = self.Port(din_model)

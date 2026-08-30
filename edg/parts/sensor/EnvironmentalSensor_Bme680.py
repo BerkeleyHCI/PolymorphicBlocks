@@ -22,7 +22,8 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             voltage_limit_abs=(-0.3 * Volt, self.vddio.voltage_limits.upper() + 0.3),
             input_threshold_factor=(0.2, 0.8),
         )
-        self.i2c = self.Port(I2cTarget(dio_model, [0x76]))
+        # note, frequency limits for 1.2 VddIO
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x76], frequency_limit=(0, 2380) * kHertz))
 
     @override
     def contents(self) -> None:

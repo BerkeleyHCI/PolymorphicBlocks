@@ -13,7 +13,7 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.vdd, input_threshold_factor=(0.3, 0.7))
-        self.i2c = self.Port(I2cTarget(dio_model, [0x40]))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x40], frequency_limit=(10, 400) * kHertz))
 
     @override
     def contents(self) -> None:
@@ -63,7 +63,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
         )
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.vdd, input_threshold_factor=(0.3, 0.7))
-        self.i2c = self.Port(I2cTarget(dio_model, addresses=ArrayIntExpr()))
+        self.i2c = self.Port(I2cTarget(dio_model, addresses=ArrayIntExpr(), frequency_limit=(1, 2560) * kHertz))
         self.alert = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
         self.addr_lsb = self.ArgParameter(addr_lsb)

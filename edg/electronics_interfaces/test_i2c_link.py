@@ -20,7 +20,7 @@ class I2cPullupBlock(Block):
 class I2cTargetBlock(Block):
     def __init__(self, address: IntLike):
         super().__init__()
-        self.port = self.Port(I2cTarget(DigitalBidir(), [address]))
+        self.port = self.Port(I2cTarget(DigitalBidir(), addresses=[address]))
 
 
 class I2cTest(DesignTop):

@@ -45,7 +45,8 @@ class W5500_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             pullup_capable=True,
         )
 
-        self.spi = self.Port(SpiPeripheral(dio_model))
+        # "theoretical design speed" of 80 MHz, minimum guaranteed speed of 33.3 MHz
+        self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 33.3) * MHertz))
         self.scsn = self.Port(dio_pu_model)
         # according to some internet forum posts, a reset pulse is not needed
         self.rstn = self.Port(dio_pu_model, optional=True)

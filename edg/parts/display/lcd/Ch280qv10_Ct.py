@@ -71,8 +71,11 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.cs = self.Port(din_model)
         # pin 39 TE out unused
 
+        # CST026-A, https://cdn-shop.adafruit.com/product-files/1947/CST0x6_DS.pdf
         ctp_dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_abs=(1.0, 1.9) * Volt)
-        self.ctp_i2c = self.Port(I2cTarget(ctp_dio_model, [0x38]), optional=True)
+        self.ctp_i2c = self.Port(
+            I2cTarget(ctp_dio_model, addresses=[0x38], frequency_limit=(0, 400) * kHertz), optional=True
+        )
         # pin 46 is CTQ IRQ, unused (semantics not defined)
         self.ctp_res = self.Port(DigitalSink.from_bidir(ctp_dio_model))
         self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
@@ -123,7 +126,8 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
         self.device = self.Block(Ch280qv10_Ct_Device())
         self.gnd = self.Export(self.device.gnd, [Common])
         self.pwr = self.Export(self.device.iovcc, [Power])
-        self.spi = self.Port(SpiPeripheral.empty())
+        # SPI capable of 10 MHz in write mode, slower (as modeled) in read mode
+        self.spi = self.Port(SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 6.6) * MHertz))
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.wr_rs)
 

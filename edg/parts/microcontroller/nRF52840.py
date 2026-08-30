@@ -154,12 +154,14 @@ class Mdbt50q_1mv2_Device(
             impedance=Range.from_lower(1) * MOhm,
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty(), (125, 32000) * kHertz)
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (125, 32000) * kHertz)  # tristated by CS pin
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
-        i2s_model = I2sController(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 1000) * kHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 32) * MHertz)
+        spi_peripheral_model = SpiPeripheral(
+            DigitalBidir.empty(), frequency_limit=(0, 8) * MHertz
+        )  # tristated by CS pin
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 400) * kHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 400) * kHertz)
+        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0, 2000) * kHertz)
 
         hf_io_pins = [
             "P0.00",

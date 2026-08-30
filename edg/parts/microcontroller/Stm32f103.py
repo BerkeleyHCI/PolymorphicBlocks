@@ -145,11 +145,12 @@ class Stm32f103_Device(
             impedance=(100, float("inf")) * kOhm,
         )
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty())
+        uart1_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 4.5) * MHertz)  # faster APB2 clock
+        uart23_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 2.25) * MHertz)  # slower APB1 clock
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 18) * MHertz)
         # TODO SPI peripherals, which have fixed-pin CS lines
-        i2c_model = I2cController(DigitalBidir.empty())
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 400) * kHertz)
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 400) * kHertz)
 
         return PinMapUtil(
             [  # Table 5, partial table for 48-pin only
@@ -190,12 +191,12 @@ class Stm32f103_Device(
                 PinResource("PC13", {"PC13": dio_pc_13_14_15_model}),
                 PinResource("PC14", {"PC14": dio_pc_13_14_15_model, "OSC32_IN": Passive()}),
                 PinResource("PC15", {"PC15": dio_pc_13_14_15_model, "OSC32_OUT": Passive()}),
-                PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2", "PD5"], "rx": ["PA3", "PD6"]}),
+                PeripheralFixedResource("USART2", uart23_model, {"tx": ["PA2", "PD5"], "rx": ["PA3", "PD6"]}),
                 PeripheralFixedResource(
                     "SPI1", spi_model, {"sck": ["PA5", "PB3"], "miso": ["PA6", "PB4"], "mosi": ["PA7", "PB5"]}
                 ),
                 PeripheralFixedResource(
-                    "USART3", uart_model, {"tx": ["PB10", "PD8", "PC10"], "rx": ["PB11", "PD9", "PC11"]}
+                    "USART3", uart23_model, {"tx": ["PB10", "PD8", "PC10"], "rx": ["PB11", "PD9", "PC11"]}
                 ),
                 PeripheralFixedResource("I2C2", i2c_model, {"scl": ["PB10"], "sda": ["PB11"]}),
                 PeripheralFixedResource(
@@ -204,10 +205,10 @@ class Stm32f103_Device(
                     {"scl": ["PB10"], "sda": ["PB11"]},  # TODO shared resource w/ I2C controller
                 ),
                 PeripheralFixedResource("SPI2", spi_model, {"sck": ["PB13"], "miso": ["PB14"], "mosi": ["PB15"]}),
-                PeripheralFixedResource("USART1", uart_model, {"tx": ["PA9", "PB6"], "rx": ["PA10", "PB7"]}),
+                PeripheralFixedResource("USART1", uart1_model, {"tx": ["PA9", "PB6"], "rx": ["PA10", "PB7"]}),
                 PeripheralFixedResource(
                     "CAN",
-                    CanControllerPort(DigitalBidir.empty()),
+                    CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 1) * MHertz),
                     {"txd": ["PA12", "PD1", "PB9"], "rxd": ["PA11", "PD0", "PB8"]},
                 ),
                 PeripheralFixedResource(

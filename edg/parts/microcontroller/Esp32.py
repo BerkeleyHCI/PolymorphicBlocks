@@ -148,13 +148,13 @@ class Esp32_Wroom_32_Device(
 
         dac_model = AnalogSource.from_supply(self.gnd, self.pwr)  # TODO: no specs in datasheet?!
 
-        uart_model = UartPort(DigitalBidir.empty())
-        spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 4.1.17
-        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
-        i2c_model = I2cController(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
-        i2c_target_model = I2cTarget(DigitalBidir.empty())
+        uart_model = UartPort(DigitalBidir.empty(), baud_limit=(0, 5) * MHertz)
+        spi_model = SpiController(DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz)  # section 4.1.17
+        spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 80) * MHertz)
+        i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 5000) * kHertz)  # section 4.1.11
+        i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 5000) * kHertz)
         touch_model = TouchDriver()
-        can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
+        can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(12.5, 1000) * kHertz)  # aka TWAI
         i2s_model = I2sController(DigitalBidir.empty())
         dvp8_model = Dvp8Host(DigitalBidir.empty())
 

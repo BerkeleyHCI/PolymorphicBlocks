@@ -295,7 +295,9 @@ class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # digital interfaces
         self.i2c = self.Port(
             I2cTarget(
-                DigitalBidir.from_supply(self.vss, self.vddpad, input_threshold_factor=(0.3, 0.7)), addresses=[0x28]
+                DigitalBidir.from_supply(self.vss, self.vddpad, input_threshold_factor=(0.3, 0.7)),
+                addresses=[0x28],
+                frequency_limit=(0, 3400) * kHertz,
             )
         )  # in ADR = (0, 0)
 

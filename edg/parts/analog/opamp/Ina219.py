@@ -14,7 +14,9 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         self.vs = self.Port(VoltageSink(voltage_limits=(3, 5.5) * Volt, current_draw=(6 * uAmp, 1 * mAmp)))
         self.gnd = self.Port(Ground())
 
-        self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40 + self.addr_lsb]))
+        self.i2c = self.Port(
+            I2cTarget(DigitalBidir.empty(), addresses=[0x40 + self.addr_lsb], frequency_limit=(1, 2560) * kHertz)
+        )
         self.i2c.sda.init_from(
             DigitalBidir.from_supply(
                 self.gnd, self.vs, voltage_limit_abs=(-0.3, 6.0) * Volt, input_threshold_factor=(0.3, 0.7)

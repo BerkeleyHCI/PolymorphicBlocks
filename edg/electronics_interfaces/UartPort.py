@@ -22,12 +22,11 @@ class UartLink(Link):
 class UartPort(Port[UartLink]):
     link_type = UartLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self, model: Optional[DigitalBidir] = None, *, baud_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
         self.tx = self.Port(DigitalSource.from_bidir(model))
         self.rx = self.Port(DigitalSink.from_bidir(model))
 
-        self.baud = self.Parameter(RangeExpr(RangeExpr.ZERO))
-        self.baud_limit = self.Parameter(RangeExpr(RangeExpr.INF))
+        self.baud_limit = self.Parameter(RangeExpr(baud_limit))
