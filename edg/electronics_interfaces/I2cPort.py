@@ -83,6 +83,7 @@ class I2cControllerBridge(PortBridge):
                 DigitalBidir.empty(),
                 has_pullup=self.inner_link.link().has_pull,
                 addresses=self.inner_link.link().addresses,
+                frequency_limit=self.inner_link.link().frequency_limit,
             )
         )
 
@@ -129,7 +130,13 @@ class I2cTargetBridge(PortBridge):
     def contents(self) -> None:
         super().contents()
 
-        self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), addresses=self.inner_link.link().addresses))
+        self.outer_port.init_from(
+            I2cTarget(
+                DigitalBidir.empty(),
+                addresses=self.inner_link.link().addresses,
+                frequency_limit=self.inner_link.link().frequency_limit,
+            )
+        )
 
         self.scl_bridge = self.Block(DigitalSinkBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)
