@@ -98,7 +98,6 @@ class I2cController(Port[I2cLink]):
     link_type = I2cLink
     bridge_type = I2cControllerBridge
 
-    @deprecated_param_remap(("frequency", "frequency_limit"))
     def __init__(
         self,
         model: Optional[DigitalBidir] = None,
