@@ -21,7 +21,7 @@ class SpiLink(Link):
         self.controller = self.Port(SpiController(DigitalBidir.empty()))
         self.peripherals = self.Port(Vector(SpiPeripheral(DigitalBidir.empty())))
 
-        self.frequency = self.Parameter(RangeExpr())
+        self.frequency_limit = self.Parameter(RangeExpr())
 
     @override
     def contents(self) -> None:
@@ -36,10 +36,10 @@ class SpiLink(Link):
             self.controller.mosi, self.peripherals.map_extract(lambda device: device.mosi), flatten=True
         )
         self.assign(
-            self.frequency,
+            self.frequency_limit,
             self.controller.frequency_limit.intersect(self.peripherals.hull(lambda x: x.frequency_limit)),
         )
-        self.require(self.frequency != RangeExpr.EMPTY, "no compatible frequency between devices")
+        self.require(self.frequency_limit != RangeExpr.EMPTY, "no compatible frequency between devices")
 
 
 class SpiController(Port[SpiLink]):

@@ -92,7 +92,7 @@ class I2cFrequencyTest(DesignTop):
         self.device2 = self.Block(I2cTargetBlock(2, frequency_limit=(10, 400) * kHertz))
         self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
         # whole bus must run within all devices' limits
-        self.require(self.controller.port.link().frequency == (10, 100) * kHertz, _unchecked=True)
+        self.require(self.controller.port.link().frequency_limit == (10, 100) * kHertz, _unchecked=True)
 
 
 class I2cFrequencyInvalidTest(DesignTop):

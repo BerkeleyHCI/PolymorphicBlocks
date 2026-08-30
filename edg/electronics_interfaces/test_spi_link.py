@@ -34,7 +34,7 @@ class SpiFrequencyTest(DesignTop):
         self.device2 = self.Block(SpiPeripheralBlock(frequency_limit=(0.5, 5) * MHertz))
         self.connect(self.controller.port, self.device1.port, self.device2.port)
         # bus may run at any frequency the controller and any peripheral is capable of
-        self.require(self.controller.port.link().frequency == (1, 8) * MHertz, _unchecked=True)
+        self.require(self.controller.port.link().frequency_limit == (1, 8) * MHertz, _unchecked=True)
 
 
 class SpiFrequencyInvalidTest(DesignTop):

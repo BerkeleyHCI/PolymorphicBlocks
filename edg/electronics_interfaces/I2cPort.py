@@ -25,7 +25,7 @@ class I2cLink(Link):
         self.addresses = self.Parameter(
             ArrayIntExpr(self.targets.flatten(lambda x: x.addresses).concat(self.controller.addresses))
         )
-        self.frequency = self.Parameter(RangeExpr())
+        self.frequency_limit = self.Parameter(RangeExpr())
 
         self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
@@ -38,10 +38,10 @@ class I2cLink(Link):
 
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
         self.assign(
-            self.frequency,
+            self.frequency_limit,
             self.controller.frequency_limit.intersect(self.targets.intersection(lambda x: x.frequency_limit)),
         )
-        self.require(self.frequency != RangeExpr.EMPTY, "no compatible frequency between devices")
+        self.require(self.frequency_limit != RangeExpr.EMPTY, "no compatible frequency between devices")
 
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),
