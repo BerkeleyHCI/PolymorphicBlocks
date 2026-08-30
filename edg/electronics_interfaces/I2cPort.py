@@ -7,7 +7,7 @@ from ..util import deprecated_param_remap
 
 
 class I2cLink(Link):
-    """I2C connection, using terminology from the auhtoritative NXP specification at
+    """I2C connection, using terminology from the authoritative NXP specification at
     https://www.nxp.com/docs/en/user-guide/UM10204.pdf.
     """
 
