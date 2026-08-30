@@ -115,10 +115,12 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.gnd = self.Export(self.device.vss, [Common])
         self.vcc = self.Export(self.device.vcc)  # device power
         self.pwr = self.Export(self.device.vdd)  # logic power
-        self.spi = self.Port(SpiSlave.empty(), optional=True)
+        self.spi = self.Port(SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 10) * MHertz), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
-        self.i2c = self.Port(I2cSlave.empty(), optional=True)
+        self.i2c = self.Port(
+            I2cTarget(DigitalBidir.empty(), addresses=[0x3C], frequency_limit=(0, 400) * kHertz), optional=True
+        )
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
     @override
@@ -171,7 +173,6 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
             self.connect(self.device.dc, gnd_digital)  # addr, TODO support I2C addr
             self.connect(self.device.cs, gnd_digital)
             self.require(~self.spi.is_connected() & ~self.cs.is_connected() & ~self.dc.is_connected())
-            self.assign(self.i2c.addresses, [0x3C])
         elif self.get(self.spi.is_connected()):
             self.connect(self.device.bs1, gnd_digital)
             self.connect(self.spi.sck, self.device.d0)

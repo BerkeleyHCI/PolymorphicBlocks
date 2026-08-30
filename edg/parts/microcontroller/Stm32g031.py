@@ -109,6 +109,8 @@ class Stm32g031_Device(
         # TODO SPI peripherals, which have fixed-pin CS lines
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
+        # 192kHz specified sample rate * 2 channels * 32 bits data resolution
+        i2s_model = I2sController(DigitalBidir.empty(), sample_rate_limit=(0, 192) * kHertz, bit_limit=(16, 32) * Bit)
 
         return PinMapUtil(
             [  # Table 12, partial table for up to 32-pin only
@@ -159,7 +161,7 @@ class Stm32g031_Device(
                 ),
                 PeripheralFixedResource(
                     "I2S1",
-                    I2sController(DigitalBidir.empty()),
+                    i2s_model,
                     {"sck": ["PA1", "PA5", "PB3"], "ws": ["PA4", "PB0", "PA15"], "sd": ["PA2", "PA7", "PA12", "PB5"]},
                 ),
                 PeripheralFixedResource("USART2", uart_model, {"tx": ["PA2", "PA14"], "rx": ["PA3", "PA15"]}),

@@ -7,7 +7,7 @@ from ..util import deprecated_param_remap
 
 
 class I2cLink(Link):
-    """I2C connection, using terminology from the auhtoritative NXP specification at
+    """I2C connection, using terminology from the authoritative NXP specification at
     https://www.nxp.com/docs/en/user-guide/UM10204.pdf.
     """
 
@@ -25,7 +25,7 @@ class I2cLink(Link):
         self.addresses = self.Parameter(
             ArrayIntExpr(self.targets.flatten(lambda x: x.addresses).concat(self.controller.addresses))
         )
-        self.frequency = self.Parameter(RangeExpr())
+        self.frequency_limit = self.Parameter(RangeExpr())
 
         self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
@@ -38,9 +38,10 @@ class I2cLink(Link):
 
         self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
         self.assign(
-            self.frequency,
+            self.frequency_limit,
             self.controller.frequency_limit.intersect(self.targets.intersection(lambda x: x.frequency_limit)),
         )
+        self.require(self.frequency_limit != RangeExpr.EMPTY, "no compatible frequency between devices")
 
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),
@@ -82,6 +83,7 @@ class I2cControllerBridge(PortBridge):
                 DigitalBidir.empty(),
                 has_pullup=self.inner_link.link().has_pull,
                 addresses=self.inner_link.link().addresses,
+                frequency_limit=self.inner_link.link().frequency_limit,
             )
         )
 
@@ -128,7 +130,13 @@ class I2cTargetBridge(PortBridge):
     def contents(self) -> None:
         super().contents()
 
-        self.outer_port.init_from(I2cTarget(DigitalBidir.empty(), addresses=self.inner_link.link().addresses))
+        self.outer_port.init_from(
+            I2cTarget(
+                DigitalBidir.empty(),
+                addresses=self.inner_link.link().addresses,
+                frequency_limit=self.inner_link.link().frequency_limit,
+            )
+        )
 
         self.scl_bridge = self.Block(DigitalSinkBridge())
         self.connect(self.outer_port.scl, self.scl_bridge.outer_port)

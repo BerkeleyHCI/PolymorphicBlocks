@@ -6,9 +6,9 @@ from .I2cPort import I2cController, I2cPullupPort, I2cTarget
 
 
 class I2cControllerBlock(Block):
-    def __init__(self) -> None:
+    def __init__(self, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
-        self.port = self.Port(I2cController())
+        self.port = self.Port(I2cController(frequency_limit=frequency_limit))
 
 
 class I2cPullupBlock(Block):
@@ -18,9 +18,9 @@ class I2cPullupBlock(Block):
 
 
 class I2cTargetBlock(Block):
-    def __init__(self, address: IntLike):
+    def __init__(self, address: IntLike, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
-        self.port = self.Port(I2cTarget(DigitalBidir(), addresses=[address]))
+        self.port = self.Port(I2cTarget(DigitalBidir(), addresses=[address], frequency_limit=frequency_limit))
 
 
 class I2cTest(DesignTop):
@@ -32,7 +32,7 @@ class I2cTest(DesignTop):
         self.device2 = self.Block(I2cTargetBlock(2))
         self.link = self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
-        self.require(self.controller.port.link().addresses == [1, 2], unchecked=True)
+        self.require(self.controller.port.link().addresses == [1, 2], _unchecked=True)
 
 
 class I2cNoPullTest(DesignTop):
@@ -64,7 +64,22 @@ class I2cControllerNestedBlock(Block):
         self.link = self.connect(self.port, self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
 
-class I2cNestedTest(DesignTop):
+class I2cNestedBlock(Block):
+    def __init__(
+        self,
+        dev1_addr: IntLike = 0,
+        dev1_freq_limit: RangeLike = RangeExpr.ALL,
+        dev2_addr: IntLike = 1,
+        dev2_freq_limit: RangeLike = RangeExpr.ALL,
+    ) -> None:
+        super().__init__()
+        self.port = self.Port(I2cTarget.empty())
+        self.device1 = self.Block(I2cTargetBlock(dev1_addr, frequency_limit=dev1_freq_limit))
+        self.device2 = self.Block(I2cTargetBlock(dev2_addr, frequency_limit=dev2_freq_limit))
+        self.link = self.connect(self.port, self.device1.port, self.device2.port)
+
+
+class I2cControllerNestedTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
         self.controller = self.Block(I2cControllerNestedBlock())
@@ -83,6 +98,59 @@ class I2cNestedExtraPullTest(DesignTop):
         self.link = self.connect(self.controller.port, self.pull.port, self.device.port)
 
 
+class I2cNestedTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock())
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_addr=1, dev2_addr=2))
+        self.link = self.connect(self.controller.port, self.pull.port, self.devices.port)
+        self.require(self.controller.port.link().addresses == [1, 2], _unchecked=True)
+
+
+class I2cNestedConflictTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock())
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_addr=1, dev2_addr=1))
+        self.link = self.connect(self.controller.port, self.pull.port, self.devices.port)
+
+
+class I2cFrequencyTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock(frequency_limit=(0, 400) * kHertz))
+        self.pull = self.Block(I2cPullupBlock())
+        self.device1 = self.Block(I2cTargetBlock(1, frequency_limit=(0, 100) * kHertz))
+        self.device2 = self.Block(I2cTargetBlock(2, frequency_limit=(10, 400) * kHertz))
+        self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
+        # whole bus must run within all devices' limits
+        self.require(self.controller.port.link().frequency_limit == (10, 100) * kHertz, _unchecked=True)
+
+
+class I2cFrequencyInvalidTest(DesignTop):
+    """Checks that non-overlapping frequencies are an error.
+    This generally doesn't happen in practice, since devices tend to support low speeds"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock(frequency_limit=(400, 400) * kHertz))
+        self.pull = self.Block(I2cPullupBlock())
+        self.device = self.Block(I2cTargetBlock(1, frequency_limit=(100, 100) * kHertz))
+        self.connect(self.controller.port, self.pull.port, self.device.port)
+
+
+class I2cFrequencyNestedTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock(frequency_limit=(0, 400) * kHertz))
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_freq_limit=(0, 100) * kHertz, dev2_freq_limit=(10, 400) * kHertz))
+        self.connect(self.controller.port, self.pull.port, self.devices.port)
+        self.require(self.controller.port.link().frequency_limit == (10, 100) * kHertz, _unchecked=True)
+
+
 class I2cTestCase(unittest.TestCase):
     def test_i2c(self) -> None:
         ScalaCompiler.compile(I2cTest)
@@ -95,9 +163,26 @@ class I2cTestCase(unittest.TestCase):
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(I2cConflictTest)
 
-    def test_i2c_nested(self) -> None:
-        ScalaCompiler.compile(I2cNestedTest)
+    def test_i2c_nested_controller(self) -> None:
+        ScalaCompiler.compile(I2cControllerNestedTest)
 
     def test_i2c_nested_extrapull(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(I2cNestedExtraPullTest)
+
+    def test_i2c_nested(self) -> None:
+        ScalaCompiler.compile(I2cNestedTest)
+
+    def test_i2c_nested_conflict(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(I2cNestedConflictTest)
+
+    def test_i2c_frequency(self) -> None:
+        ScalaCompiler.compile(I2cFrequencyTest)
+
+    def test_i2c_frequency_invalid(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(I2cFrequencyInvalidTest)
+
+    def test_i2c_frequency_nested(self) -> None:
+        ScalaCompiler.compile(I2cFrequencyNestedTest)

@@ -161,7 +161,8 @@ class Mdbt50q_1mv2_Device(
         )  # tristated by CS pin
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 400) * kHertz)
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 400) * kHertz)
-        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0, 2000) * kHertz)
+        # 8-24 bits, with 24 is sign-extended to 32 on the wire
+        i2s_model = I2sController(DigitalBidir.empty(), sample_rate_limit=(0, 48) * kHertz, bit_limit=(8, 32) * Bit)
 
         hf_io_pins = [
             "P0.00",

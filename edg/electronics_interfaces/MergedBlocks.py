@@ -3,7 +3,7 @@ from typing_extensions import override
 
 from ..electronics_model import *
 from .VoltagePorts import VoltageSource, VoltageSink, VoltageLink
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalLink
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalLink, DigitalBidir
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .SpiPort import SpiController, SpiPeripheral, SpiLink
 
@@ -125,10 +125,12 @@ class MergedSpiController(DummyDevice, GeneratorBlock):
 
         self.ins.defined()
         for in_request in self.get(self.ins.requested()):
-            in_port = self.ins.append_elt(SpiPeripheral.empty(), in_request)
+            in_port = self.ins.append_elt(SpiPeripheral(DigitalBidir.empty()), in_request)
             self.connect(miso_net, in_port.miso)
             self.connect(self.sck_merge.ins.request(in_request), in_port.sck)
             self.connect(self.mosi_merge.ins.request(in_request), in_port.mosi)
+
+        self.assign(self.out.frequency_limit, self.ins.hull(lambda x: x.link().frequency_limit))
 
     def connected_from(self, *ins: Port[SpiLink]) -> "MergedSpiController":
         for in_port in ins:

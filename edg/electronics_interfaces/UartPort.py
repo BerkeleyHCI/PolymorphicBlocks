@@ -11,12 +11,17 @@ class UartLink(Link):
         self.a = self.Port(UartPort(DigitalBidir.empty()))
         self.b = self.Port(UartPort(DigitalBidir.empty()))
 
+        self.baud_limit = self.Parameter(RangeExpr())
+
     @override
     def contents(self) -> None:
         super().contents()
 
         self.a_tx = self.connect(self.a.tx, self.b.rx)
         self.b_tx = self.connect(self.b.tx, self.a.rx)
+
+        self.assign(self.baud_limit, self.a.baud_limit.intersect(self.b.baud_limit))
+        self.require(self.baud_limit != RangeExpr.EMPTY, "no compatible baud rate between devices")
 
 
 class UartPort(Port[UartLink]):

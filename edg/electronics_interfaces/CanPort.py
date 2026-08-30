@@ -16,13 +16,12 @@ class CanLogicLink(Link):
         self.transceiver = self.Port(CanTransceiverPort(DigitalBidir.empty()))
         self.passive = self.Port(Vector(CanPassivePort(DigitalBidir.empty())), optional=True)
 
-        # TODO write custom top level digital constraints
-        # TODO model frequency ... somewhere
+        # 0-1 Mbit/s are standard CANbus, 1-8 Mbit/s imply CAN-FD
+        self.bitrate_limit = self.Parameter(RangeExpr())
 
     @override
     def contents(self) -> None:
         super().contents()
-        # TODO future: digital constraints through link inference
 
         self.txd = self.connect(
             self.controller.txd, self.transceiver.txd, self.passive.map_extract(lambda port: port.txd), flatten=True
@@ -31,13 +30,14 @@ class CanLogicLink(Link):
             self.controller.rxd, self.transceiver.rxd, self.passive.map_extract(lambda port: port.rxd), flatten=True
         )
 
+        self.assign(self.bitrate_limit, self.controller.bitrate_limit.intersect(self.transceiver.bitrate_limit))
+        self.require(self.bitrate_limit != RangeExpr.EMPTY, "no compatible bitrate between devices")
+
 
 class CanControllerPort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
     def __init__(self, model: Optional[DigitalBidir] = None, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
-        # 0-1 Mbit/s are standard CANbus
-        # 1-8 Mbit/s imply CAN-FD
         super().__init__()
         if model is None:  # ideal by default
             model = DigitalBidir()
@@ -49,12 +49,13 @@ class CanControllerPort(Port[CanLogicLink]):
 class CanTransceiverPort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None) -> None:
+    def __init__(self, model: Optional[DigitalBidir] = None, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         if model is None:  # ideal by default
             model = DigitalBidir()
         self.txd = self.Port(DigitalSink.from_bidir(model))
         self.rxd = self.Port(DigitalSource.from_bidir(model))
+        self.bitrate_limit = self.Parameter(RangeExpr(bitrate_limit))
 
 
 class CanPassivePort(Port[CanLogicLink]):
@@ -75,8 +76,7 @@ class CanDiffLink(Link):
         super().__init__()
         self.nodes = self.Port(Vector(CanDiffPort.empty()))  # TODO mark as required
 
-        # TODO write custom top level digital constraints
-        # TODO future: digital constraints through link inference
+        self.bitrate_limit = self.Parameter(RangeExpr())
 
     @override
     def contents(self) -> None:
@@ -85,13 +85,16 @@ class CanDiffLink(Link):
         self.canh = self.connect(self.nodes.map_extract(lambda node: node.canh), flatten=True)
         self.canl = self.connect(self.nodes.map_extract(lambda node: node.canl), flatten=True)
 
+        self.assign(self.bitrate_limit, self.nodes.intersection(lambda x: x.bitrate_limit))
+        self.require(self.bitrate_limit != RangeExpr.EMPTY, "no compatible bitrate between devices")
+
 
 class CanDiffBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
         self.outer_port = self.Port(CanDiffPort.empty())
-        self.inner_link = self.Port(CanDiffPort.empty())
+        self.inner_link = self.Port(CanDiffPort())
 
     @override
     def contents(self) -> None:
@@ -105,12 +108,16 @@ class CanDiffBridge(PortBridge):
         self.connect(self.outer_port.canl, self.canl_bridge.outer_port)
         self.connect(self.canl_bridge.inner_link, self.inner_link.canl)
 
+        self.assign(self.outer_port.bitrate_limit, self.inner_link.link().bitrate_limit)
+
 
 class CanDiffPort(Port[CanDiffLink]):
     link_type = CanDiffLink
     bridge_type = CanDiffBridge
 
-    def __init__(self) -> None:
+    def __init__(self, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
         self.canh = self.Port(Passive())
         self.canl = self.Port(Passive())
+
+        self.bitrate_limit = self.Parameter(RangeExpr(bitrate_limit))

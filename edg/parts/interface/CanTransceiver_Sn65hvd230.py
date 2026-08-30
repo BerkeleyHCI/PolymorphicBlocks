@@ -18,11 +18,12 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                     current_limits=(-8, 8) * mAmp,  # driver pin actually -40-48mA
                     input_thresholds=(0.8, 2) * Volt,
                     output_thresholds=(0 * Volt, self.vcc.link().voltage.lower()),
-                )
+                ),
+                bitrate_limit=(0, 1) * MHertz,
             )
         )
 
-        self.can = self.Port(CanDiffPort())
+        self.can = self.Port(CanDiffPort(bitrate_limit=self.controller.link().bitrate_limit))
 
     @override
     def contents(self) -> None:

@@ -492,12 +492,12 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         for subexpr in constraint._get_exprs():
             check_subexpr(subexpr)
 
-    def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool = False) -> BoolExpr:
+    def require(self, constraint: BoolLike, name: Optional[str] = None, *, _unchecked: bool = False) -> BoolExpr:
         constraint_typed = BoolExpr._to_expr_type(constraint)
         if not isinstance(name, (str, type(None))):
             raise EdgTypeError(f"require(...) name", name, (str, None))
 
-        if not unchecked:  # before we have const prop need to manually set nested params
+        if not _unchecked:  # allow breaking structural / abstraction rules, used in some unit tests
             self._check_constraint(constraint_typed)
 
         self._constraints.register(constraint_typed)

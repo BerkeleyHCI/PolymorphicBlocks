@@ -13,6 +13,9 @@ class I2sLink(Link):
         self.target_receiver = self.Port(I2sTargetReceiver(DigitalSink.empty()))
         # TODO: multiple receivers, target transmitters, eg microphones
 
+        self.sample_rate_limit = self.Parameter(RangeExpr())
+        self.bit_limit = self.Parameter(RangeExpr())
+
     @override
     def contents(self) -> None:
         super().contents()
@@ -20,13 +23,26 @@ class I2sLink(Link):
         self.ws = self.connect(self.controller.ws, self.target_receiver.ws)
         self.sd = self.connect(self.controller.sd, self.target_receiver.sd)
 
+        self.assign(
+            self.sample_rate_limit, self.controller.sample_rate_limit.intersect(self.target_receiver.sample_rate_limit)
+        )
+        self.require(self.sample_rate_limit != RangeExpr.EMPTY, "no compatible sample rate between devices")
+        self.assign(self.bit_limit, self.controller.bit_limit.intersect(self.target_receiver.bit_limit))
+        self.require(self.bit_limit != RangeExpr.EMPTY, "no compatible sample bits (resolution) between devices")
+
 
 class I2sController(Port[I2sLink]):
     """Controller is both controller (drives SCK and WS lines) and transmitter (SD is output)"""
 
     link_type = I2sLink
 
-    def __init__(self, model: Optional[DigitalBidir] = None, *, bitrate_limit: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(
+        self,
+        model: Optional[DigitalBidir] = None,
+        *,
+        sample_rate_limit: RangeLike = RangeExpr.ALL,
+        bit_limit: RangeLike = RangeExpr.ALL,
+    ) -> None:
         super().__init__()
         if model is None:
             model = DigitalBidir()  # ideal by default
@@ -34,7 +50,8 @@ class I2sController(Port[I2sLink]):
         self.ws = self.Port(DigitalSource.from_bidir(model))
         self.sd = self.Port(model)  # bidirectional
 
-        self.bitrate_limit = self.Parameter(RangeExpr(bitrate_limit))  # bitrate
+        self.sample_rate_limit = self.Parameter(RangeExpr(sample_rate_limit))
+        self.bit_limit = self.Parameter(RangeExpr(bit_limit))
 
 
 class I2sTargetReceiver(Port[I2sLink]):
@@ -42,10 +59,19 @@ class I2sTargetReceiver(Port[I2sLink]):
 
     link_type = I2sLink
 
-    def __init__(self, model: Optional[DigitalSink] = None) -> None:
+    def __init__(
+        self,
+        model: Optional[DigitalSink] = None,
+        *,
+        sample_rate_limit: RangeLike = RangeExpr.ALL,
+        bit_limit: RangeLike = RangeExpr.ALL,
+    ) -> None:
         super().__init__()
         if model is None:
             model = DigitalSink()  # ideal by default
         self.sck = self.Port(model)
         self.ws = self.Port(model)
         self.sd = self.Port(model)
+
+        self.sample_rate_limit = self.Parameter(RangeExpr(sample_rate_limit))
+        self.bit_limit = self.Parameter(RangeExpr(bit_limit))
