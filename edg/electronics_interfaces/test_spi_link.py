@@ -8,7 +8,7 @@ from .SpiPort import SpiController, SpiPeripheral
 class SpiControllerBlock(Block):
     def __init__(self, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
-        self.port = self.Port(SpiController(frequency_limit=frequency_limit))
+        self.port = self.Port(SpiController(DigitalBidir(), frequency_limit=frequency_limit))
 
 
 class SpiPeripheralBlock(Block):
