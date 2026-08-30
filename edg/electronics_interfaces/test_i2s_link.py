@@ -66,8 +66,8 @@ class I2sBitsTest(DesignTop):
 class I2sBitsInvalidTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
-        self.controller = self.Block(I2sControllerBlock(sample_rate_limit=(0, 8) * Bit))
-        self.target = self.Block(I2sTargetReceiverBlock(sample_rate_limit=(16, 16) * Bit))
+        self.controller = self.Block(I2sControllerBlock(bit_limit=(0, 8) * Bit))
+        self.target = self.Block(I2sTargetReceiverBlock(bit_limit=(16, 16) * Bit))
         self.connect(self.controller.port, self.target.port)
 
 
