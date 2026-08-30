@@ -157,7 +157,8 @@ class Esp32c3_Device(
         spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 60) * MHertz)
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)  # section 3.4.4
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)
-        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0.01, 40) * MHertz)
+        # specified up to 40 Mbps, sample rate backed out with 8 bits and two channels
+        i2s_model = I2sController(DigitalBidir.empty(), sample_rate_limit=(0, 2.5) * MHertz, bit_limit=(8, 32) * Bit)
         can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(1, 1000) * kHertz)  # aka TWAI
 
         return (

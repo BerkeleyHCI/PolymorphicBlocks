@@ -26,7 +26,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, GeneratorBlock, FootprintBlo
             voltage_limits=(-0.3, 6) * Volt,  # abs max ratings
             input_thresholds=(0.6, 0.6) * Volt,  # only input low voltage given
         )
-        self.i2s = self.Port(I2sTargetReceiver(din_model))
+        self.i2s = self.Port(I2sTargetReceiver(din_model, sample_rate_limit=(8, 96) * kHertz, bit_limit=(16, 32) * Bit))
 
         self.out = self.Port(SpeakerDriverPort(AnalogSource()), [Output])
 

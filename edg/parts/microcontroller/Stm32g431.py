@@ -140,6 +140,7 @@ class Stm32g431_Device(
         i2c_model = I2cController(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(0, 1) * MHertz)
         fdcan_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(0, 8) * MHertz)
+        i2s_model = I2sController(DigitalBidir.empty(), sample_rate_limit=(0, 192) * kHertz, bit_limit=(16, 32) * Bit)
 
         return PinMapUtil(
             [  # for 32 pins only for now
@@ -176,12 +177,10 @@ class Stm32g431_Device(
                 PeripheralFixedResource("SPI3", spi_model, {"sck": ["PB3"], "miso": ["PB4"], "mosi": ["PB5"]}),
                 PeripheralFixedResource(
                     "I2S2",
-                    I2sController(DigitalBidir.empty()),
+                    i2s_model,
                     {"sck": ["PB13", "PF1"], "ws": ["PB12", "PF0"], "sd": ["PA11", "PB15"]},
                 ),
-                PeripheralFixedResource(
-                    "I2S3", I2sController(DigitalBidir.empty()), {"sck": ["PB3"], "ws": ["PA4", "PA15"], "sd": ["PB5"]}
-                ),
+                PeripheralFixedResource("I2S3", i2s_model, {"sck": ["PB3"], "ws": ["PA4", "PA15"], "sd": ["PB5"]}),
                 PeripheralFixedResource("USART1", uart_model, {"tx": ["PA9", "PB6"], "rx": ["PA10", "PB7"]}),
                 PeripheralFixedResource(
                     "USART2", uart_model, {"tx": ["PA2", "PA14", "PB3"], "rx": ["PA3", "PA15", "PB4"]}

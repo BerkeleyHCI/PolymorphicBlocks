@@ -139,7 +139,8 @@ class Esp32s3_Wroom_1_Device(
         i2c_target_model = I2cTarget(DigitalBidir.empty(), frequency_limit=(100, 800) * kHertz)
         touch_model = TouchDriver()
         can_model = CanControllerPort(DigitalBidir.empty(), bitrate_limit=(1, 1000) * kHertz)
-        i2s_model = I2sController(DigitalBidir.empty(), bitrate_limit=(0.01, 40) * MHertz)
+        # specified up to 40 Mbps, sample rate backed out with 8 bits and two channels
+        i2s_model = I2sController(DigitalBidir.empty(), sample_rate_limit=(0, 2.5) * MHertz, bit_limit=(8, 32) * Bit)
         dvp8_model = Dvp8Host(DigitalBidir.empty())
 
         return (
