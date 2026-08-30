@@ -16,7 +16,7 @@ class JiecangConnector(Block):
         self.pwr = self.Port(
             VoltageSource(voltage=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
         )  # reportedly drives at least 300mA
-        self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr), baud_limit=9600 * Hertz))
+        self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr), baud_limit=9600 * Hertz(tol=0)))
 
         self.conn = self.Block(PassiveConnector(length=6)).connected(
             {
