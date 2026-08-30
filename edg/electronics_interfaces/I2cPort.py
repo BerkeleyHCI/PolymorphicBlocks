@@ -41,6 +41,7 @@ class I2cLink(Link):
             self.frequency,
             self.controller.frequency_limit.intersect(self.targets.intersection(lambda x: x.frequency_limit)),
         )
+        self.require(self.frequency != RangeExpr.EMPTY, "no compatible frequency between devices")
 
         self.scl = self.connect(
             self.pull.map_extract(lambda device: device.scl),
