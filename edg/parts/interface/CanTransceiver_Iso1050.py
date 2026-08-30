@@ -12,6 +12,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
         self.gnd1 = self.Port(Ground())
         self.gnd2 = self.Port(Ground())
 
+        # dominant timeout with maximum successive bits sets minimum rate
         self.controller = self.Port(
             CanTransceiverPort(
                 DigitalBidir(
@@ -20,11 +21,12 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
                     current_limits=(-5, 5) * uAmp,
                     input_thresholds=(0.8, 2) * Volt,
                     output_thresholds=(0 * Volt, self.vcc1.link().voltage.lower()),
-                )
+                ),
+                bitrate_limit=(0.000916, 1) * MHertz,
             )
         )
 
-        self.can = self.Port(CanDiffPort())
+        self.can = self.Port(CanDiffPort(bitrate_limit=self.controller.link().bitrate_limit))
 
     @override
     def contents(self) -> None:
