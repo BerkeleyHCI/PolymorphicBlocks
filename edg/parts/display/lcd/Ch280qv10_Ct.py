@@ -126,7 +126,7 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
         self.device = self.Block(Ch280qv10_Ct_Device())
         self.gnd = self.Export(self.device.gnd, [Common])
         self.pwr = self.Export(self.device.iovcc, [Power])
-        # SPI capable of 10 MHz in write mode
+        # SPI capable of 10 MHz in write mode, slower (as modeled) in read mode
         self.spi = self.Port(SpiPeripheral(DigitalBidir.empty(), frequency_limit=(0, 6.6) * MHertz))
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.wr_rs)

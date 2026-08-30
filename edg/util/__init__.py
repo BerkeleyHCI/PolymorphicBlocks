@@ -9,7 +9,8 @@ def deprecated_param_remap(*params: Tuple[Union[int, str], str]) -> Callable[[Ca
     """Decorator to remap deprecated parameter positional arg or kwarg names to new kwarg names.
 
     Args:
-        *params: A list of tuples where each tuple contains the old parameter name and the new parameter name.
+        *params: A list of tuples where each tuple contains the old positional index (int) or kwarg name (str)
+         and the new kwarg name.
     """
 
     def decorator(func: CallableType) -> CallableType:
@@ -20,7 +21,7 @@ def deprecated_param_remap(*params: Tuple[Union[int, str], str]) -> Callable[[Ca
             for old_param, new_param in sorted_params:
                 if isinstance(old_param, int) and old_param < len(args):
                     warnings.warn(
-                        f"Positional argument {old_param} is deprecated and replaced with {new_param}",
+                        f"Positional argument {old_param} (0-based, including self) is deprecated and replaced with {new_param}",
                         DeprecationWarning,
                         stacklevel=2,
                     )

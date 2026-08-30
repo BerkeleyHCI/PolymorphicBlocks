@@ -144,7 +144,7 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
         self.pwr = self.Port(VoltageSink.empty())
         self.eeclk = self.Port(DigitalSink.empty())
         self.eedata = self.Port(DigitalBidir.empty())
-        # datasheet: 93LC56B or equivalent capable of 1 Mbit/s clock rate
+        # datasheet: 93LC56B or equivalent capable of 1 Mbit/s clock rate, assume driver at exactly 1 Mbit/s
         self.spi = self.Port(SpiController(DigitalBidir.empty(), frequency_limit=(1, 1) * MHertz))
 
     @override
