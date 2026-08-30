@@ -64,7 +64,22 @@ class I2cControllerNestedBlock(Block):
         self.link = self.connect(self.port, self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
 
-class I2cNestedTest(DesignTop):
+class I2cNestedBlock(Block):
+    def __init__(
+        self,
+        dev1_addr: IntLike = 0,
+        dev1_freq_limit: RangeLike = RangeExpr.ALL,
+        dev2_addr: IntLike = 1,
+        dev2_freq_limit: RangeLike = RangeExpr.ALL,
+    ) -> None:
+        super().__init__()
+        self.port = self.Port(I2cTarget.empty())
+        self.device1 = self.Block(I2cTargetBlock(dev1_addr, frequency_limit=dev1_freq_limit))
+        self.device2 = self.Block(I2cTargetBlock(dev2_addr, frequency_limit=dev2_freq_limit))
+        self.link = self.connect(self.port, self.device1.port, self.device2.port)
+
+
+class I2cControllerNestedTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
         self.controller = self.Block(I2cControllerNestedBlock())
@@ -81,6 +96,25 @@ class I2cNestedExtraPullTest(DesignTop):
         self.pull = self.Block(I2cPullupBlock())  # redundant with pullup in controller
         self.device = self.Block(I2cTargetBlock(2))
         self.link = self.connect(self.controller.port, self.pull.port, self.device.port)
+
+
+class I2cNestedTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock())
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_addr=1, dev2_addr=2))
+        self.link = self.connect(self.controller.port, self.pull.port, self.devices.port)
+        self.require(self.controller.port.link().addresses == [1, 2], _unchecked=True)
+
+
+class I2cNestedConflictTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.controller = self.Block(I2cControllerBlock())
+        self.pull = self.Block(I2cPullupBlock())
+        self.devices = self.Block(I2cNestedBlock(dev1_addr=1, dev2_addr=1))
+        self.link = self.connect(self.controller.port, self.pull.port, self.devices.port)
 
 
 class I2cFrequencyTest(DesignTop):
@@ -119,12 +153,19 @@ class I2cTestCase(unittest.TestCase):
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(I2cConflictTest)
 
-    def test_i2c_nested(self) -> None:
-        ScalaCompiler.compile(I2cNestedTest)
+    def test_i2c_nested_controller(self) -> None:
+        ScalaCompiler.compile(I2cControllerNestedTest)
 
     def test_i2c_nested_extrapull(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(I2cNestedExtraPullTest)
+
+    def test_i2c_nested(self) -> None:
+        ScalaCompiler.compile(I2cNestedTest)
+
+    def test_i2c_nested_conflict(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(I2cNestedConflictTest)
 
     def test_i2c_frequency(self) -> None:
         ScalaCompiler.compile(I2cFrequencyTest)
