@@ -38,7 +38,8 @@ class SpiFrequencyTest(DesignTop):
 
 
 class SpiFrequencyInvalidTest(DesignTop):
-    """Invalid connection with no overlapping frequency range"""
+    """Invalid connection with no overlapping frequency range, e.g. fixed-frequency non-programmable
+    controller with incompatible peripheral"""
 
     def __init__(self) -> None:
         super().__init__()
