@@ -59,6 +59,17 @@ class CanDiffBlock(Block):
         self.port = self.Port(CanDiffPort(bitrate_limit=bitrate_limit))
 
 
+class CanNestedDiffBlock(Block):
+    def __init__(
+        self, node1_bitrate_limit: RangeLike = RangeExpr.ALL, node2_bitrate_limit: RangeLike = RangeExpr.ALL
+    ) -> None:
+        super().__init__()
+        self.port = self.Port(CanDiffPort.empty())
+        self.node1 = self.Block(CanDiffBlock(node1_bitrate_limit))
+        self.node2 = self.Block(CanDiffBlock(node2_bitrate_limit))
+        self.connect(self.node1.port, self.node2.port, self.port)
+
+
 class CanDiffTest(DesignTop):
     def __init__(self) -> None:
         super().__init__()
@@ -94,6 +105,17 @@ class CanDiffFrequencyInvalidTest(DesignTop):
         self.connect(self.node1.port, self.node2.port)
 
 
+class CanDiffNestedFrequencyTest(DesignTop):
+    def __init__(self) -> None:
+        super().__init__()
+        self.node1 = self.Block(CanDiffBlock(bitrate_limit=(0, 1) * MHertz))
+        self.nodes = self.Block(
+            CanNestedDiffBlock(node1_bitrate_limit=(0.5, 1) * MHertz, node2_bitrate_limit=(0.25, 0.5) * MHertz)
+        )
+        self.connect(self.node1.port, self.nodes.port)
+        self.require(self.node1.port.link().bitrate_limit == (0.5, 0.5) * MHertz, _unchecked=True)
+
+
 class CanTestCase(unittest.TestCase):
     def test_logic_link(self) -> None:
         ScalaCompiler.compile(CanLogicTest)
@@ -122,3 +144,6 @@ class CanTestCase(unittest.TestCase):
     def test_diff_frequency_invalid(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(CanDiffFrequencyInvalidTest)
+
+    def test_diff_nested_frequency(self) -> None:
+        ScalaCompiler.compile(CanDiffNestedFrequencyTest)

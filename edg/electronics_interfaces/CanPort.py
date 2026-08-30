@@ -94,7 +94,7 @@ class CanDiffBridge(PortBridge):
         super().__init__()
 
         self.outer_port = self.Port(CanDiffPort.empty())
-        self.inner_link = self.Port(CanDiffPort.empty())
+        self.inner_link = self.Port(CanDiffPort())
 
     @override
     def contents(self) -> None:
@@ -107,6 +107,8 @@ class CanDiffBridge(PortBridge):
         self.canl_bridge = self.Block(PassiveBridge())
         self.connect(self.outer_port.canl, self.canl_bridge.outer_port)
         self.connect(self.canl_bridge.inner_link, self.inner_link.canl)
+
+        self.assign(self.outer_port.bitrate_limit, self.inner_link.link().bitrate_limit)
 
 
 class CanDiffPort(Port[CanDiffLink]):
