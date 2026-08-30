@@ -43,7 +43,7 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.suspend = self.Port(dout_model, optional=True)
         self.nsuspend = self.Port(dout_model, optional=True)
 
-        self.uart = self.Port(UartPort(dio_model), optional=True)  # baud up to 921600bps
+        self.uart = self.Port(UartPort(dio_model, baud_limit=(0, 921600) * Hertz), optional=True)
         self.ri = self.Port(din_model, optional=True)
         self.dcd = self.Port(din_model, optional=True)
         self.dtr = self.Port(dout_model, optional=True)
