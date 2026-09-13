@@ -505,9 +505,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
         ref_map = self._create_ref_map()
 
         pb = edgir.HierarchyBlock()
-        pb.prerefine_class.target.name = (
-            self._get_def_name()
-        )  # TODO integrate with a non-link populate_def_proto_block...
+        # TODO integrate with a non-link populate_def_proto_block...
+        pb.prerefine_class.target.name = self._get_def_name()
         self._populate_def_proto_block_base(pb)
         self._populate_def_proto_port_init(pb, ref_map)
 

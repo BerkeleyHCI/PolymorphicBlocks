@@ -248,14 +248,9 @@ class LibraryElement(Refable):
         if cls.__module__ == "__main__":
             # when the top-level design is run as main, the module name is __main__ which is meaningless
             # and breaks when the HDL server tries to resolve the __main__ reference (to itself),
-            # so this needs to resolve the correct name
-            import inspect
-            import os
-
-            module = os.path.splitext(os.path.basename(inspect.getfile(cls)))[0]
+            return cls.__name__
         else:
-            module = cls.__module__
-        return module + "." + cls.__name__
+            return cls.__module__ + "." + cls.__name__
 
     def _get_def_name(self) -> str:
         """Returns the definition name"""
