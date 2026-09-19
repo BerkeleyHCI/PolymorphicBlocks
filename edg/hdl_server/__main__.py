@@ -84,7 +84,11 @@ LibraryClassType = TypeVar("LibraryClassType")
 
 def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[LibraryClassType]) -> Type[LibraryClassType]:
     elt_split = elt.target.name.split(".")
-    elt_module = importlib.import_module(".".join(elt_split[:-1]))
+    if len(elt_split) > 1:
+        elt_module = importlib.import_module(".".join(elt_split[:-1]))
+    else:
+        import __main__
+        elt_module = __main__
     assert inspect.ismodule(elt_module)
     cls = getattr(elt_module, elt_split[-1])
     assert issubclass(cls, expected_superclass)
