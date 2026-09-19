@@ -18,11 +18,11 @@ classifiers = [
 keywords = ["PCB", "hardware description language"]
 dependencies = [
     "protobuf >= 3.20.0",
-    "sexpdata==0.0.3",
-    "Deprecated==1.2.14",
+    "sexpdata ~= 1.0",
+    "Deprecated ~= 1.0",
     "typing_extensions >= 4.4.0",
-    "pydantic == 2.8.2",
-    "install-jdk == 1.1.0",
+    "pydantic ~= 2.0",
+    "install-jdk ~= 1.0",
 ]
 requires-python = ">=3.9"
 
