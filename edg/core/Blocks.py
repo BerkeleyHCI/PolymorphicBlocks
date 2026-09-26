@@ -434,6 +434,9 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                 )
 
     def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+        if container_port in self._connects_by_port:
+            return  # connected boundary ports inherit parameters
+
         if isinstance(container_port, Port):
             for name, port in container_port._ports.items():
                 self._check_port_params_assigned(port, path + [name])

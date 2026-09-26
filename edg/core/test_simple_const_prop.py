@@ -7,11 +7,11 @@ from . import *
 
 
 class TestConstPropInternal(Block):
-    def __init__(self, float_value: FloatLike, range_value: RangeLike) -> None:
+    def __init__(self, float_param: FloatLike, range_param: RangeLike) -> None:
         super().__init__()
 
-        self.float_param = self.ArgParameter(float_value)
-        self.range_param = self.ArgParameter(range_value)
+        self.float_param = self.ArgParameter(float_param)
+        self.range_param = self.ArgParameter(range_param)
 
 
 class TestParameterConstProp(Block):
@@ -78,10 +78,10 @@ class TestPortConstPropInnerBlock(Block):
 
 
 class TestPortConstPropOuterBlock(Block):
-    def __init__(self, float_param: FloatLike = 0.0, inner_float_param: FloatLike = 0.0) -> None:
+    def __init__(self, inner_float_param: FloatLike = 0.0) -> None:
         super().__init__()
         self.inner = self.Block(TestPortConstPropInnerBlock(inner_float_param))
-        self.port = self.Port(TestPortConstPropPort(float_param))
+        self.port = self.Port(TestPortConstPropPort.empty())
         self.connect(self.inner.port, self.port)
 
 
@@ -138,7 +138,7 @@ class TestPortConstPropBundleLink(Link):
 class TestPortConstPropBundle(Port[TestPortConstPropBundleLink]):
     link_type = TestPortConstPropBundleLink
 
-    def __init__(self, elt1_float_value: FloatLike, elt2_float_value: FloatLike) -> None:
+    def __init__(self, elt1_float_value: FloatLike = 0.0, elt2_float_value: FloatLike = 0.0) -> None:
         super().__init__()
         self.elt1 = self.Port(TestPortConstPropPort(elt1_float_value))
         self.elt2 = self.Port(TestPortConstPropPort(elt2_float_value))
