@@ -499,6 +499,31 @@ class Block(BaseBlock, metaclass=BlockMeta):
                         ref_map,
                     )
 
+    @override
+    def _check_params_assigned(self) -> None:
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return  # abstract blocks do not need assigned parameters
+
+        for param in self._parameters:
+            if (
+                param not in self._assigns
+                and param.initializer is None
+                and not isinstance(param.binding, InitParamBinding)
+            ):
+                raise MissingParameterError(self, [self._name_of(param)])
+
+        for port in self._ports:
+            self._check_port_params_assigned(port, [self._name_of(port)])
+
+        for block in self._blocks:
+            for param in block._parameters:
+                if (
+                    param not in self._assigns
+                    and isinstance(param.binding, InitParamBinding)
+                    and (isinstance(param.binding, InitParamBinding) and param.binding.value is None)
+                ):
+                    raise MissingParameterError(self, [self._name_of(block), block._name_of(param)])
+
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
