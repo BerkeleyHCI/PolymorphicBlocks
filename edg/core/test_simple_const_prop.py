@@ -7,11 +7,11 @@ from . import *
 
 
 class TestConstPropInternal(Block):
-    def __init__(self) -> None:
+    def __init__(self, float_value: FloatLike, range_value: RangeLike) -> None:
         super().__init__()
 
-        self.float_param = self.Parameter(FloatExpr())
-        self.range_param = self.Parameter(RangeExpr())
+        self.float_param = self.ArgParameter(float_value)
+        self.range_param = self.ArgParameter(range_value)
 
 
 class TestParameterConstProp(Block):
@@ -32,9 +32,7 @@ class TestParameterConstProp(Block):
         self.assign(self.range_const, Range(1.0, 42.0))
         self.assign(self.range_param, self.range_const)
 
-        self.block = self.Block(TestConstPropInternal())
-        self.assign(self.block.float_param, self.float_param)
-        self.assign(self.block.range_param, self.range_param)
+        self.block = self.Block(TestConstPropInternal(self.float_param, self.range_param))
 
 
 class ConstPropTestCase(unittest.TestCase):
@@ -68,32 +66,31 @@ class TestPortConstPropLink(Link):
 class TestPortConstPropPort(Port[TestPortConstPropLink]):
     link_type = TestPortConstPropLink
 
-    def __init__(self) -> None:
+    def __init__(self, float_param: FloatLike = 0.0) -> None:
         super().__init__()
-        self.float_param = self.Parameter(FloatExpr())
+        self.float_param = self.Parameter(FloatExpr(float_param))
 
 
 class TestPortConstPropInnerBlock(Block):
-    def __init__(self) -> None:
+    def __init__(self, float_param: FloatLike = 0.0) -> None:
         super().__init__()
-        self.port = self.Port(TestPortConstPropPort(), optional=True)
+        self.port = self.Port(TestPortConstPropPort(float_param), optional=True)
 
 
 class TestPortConstPropOuterBlock(Block):
-    def __init__(self) -> None:
+    def __init__(self, float_param: FloatLike = 0.0, inner_float_param: FloatLike = 0.0) -> None:
         super().__init__()
-        self.inner = self.Block(TestPortConstPropInnerBlock())
-        self.port = self.Port(TestPortConstPropPort())
+        self.inner = self.Block(TestPortConstPropInnerBlock(inner_float_param))
+        self.port = self.Port(TestPortConstPropPort(float_param))
         self.connect(self.inner.port, self.port)
 
 
 class TestPortConstPropTopBlock(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.block1 = self.Block(TestPortConstPropInnerBlock())
-        self.block2 = self.Block(TestPortConstPropOuterBlock())  # dummy, just to infer a connection
+        self.block1 = self.Block(TestPortConstPropInnerBlock(3.5))
+        self.block2 = self.Block(TestPortConstPropOuterBlock(0.0))  # dummy, just to infer a connection
         self.link = self.connect(self.block1.port, self.block2.port)
-        self.assign(self.block1.port.float_param, 3.5)
 
 
 class ConstPropPortTestCase(unittest.TestCase):
@@ -115,8 +112,7 @@ class ConstPropPortTestCase(unittest.TestCase):
 class TestDisconnectedTopBlock(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.block1 = self.Block(TestPortConstPropInnerBlock())
-        self.assign(self.block1.port.float_param, 3.5)
+        self.block1 = self.Block(TestPortConstPropInnerBlock(3.5))
 
 
 class DisconnectedPortTestCase(unittest.TestCase):
@@ -142,16 +138,16 @@ class TestPortConstPropBundleLink(Link):
 class TestPortConstPropBundle(Port[TestPortConstPropBundleLink]):
     link_type = TestPortConstPropBundleLink
 
-    def __init__(self) -> None:
+    def __init__(self, elt1_float_value: FloatLike, elt2_float_value: FloatLike) -> None:
         super().__init__()
-        self.elt1 = self.Port(TestPortConstPropPort())
-        self.elt2 = self.Port(TestPortConstPropPort())
+        self.elt1 = self.Port(TestPortConstPropPort(elt1_float_value))
+        self.elt2 = self.Port(TestPortConstPropPort(elt2_float_value))
 
 
 class TestPortConstPropBundleInnerBlock(Block):
-    def __init__(self) -> None:
+    def __init__(self, elt1_float_value: FloatLike, elt2_float_value: FloatLike) -> None:
         super().__init__()
-        self.port = self.Port(TestPortConstPropBundle())
+        self.port = self.Port(TestPortConstPropBundle(elt1_float_value, elt2_float_value))
 
 
 class TestPortConstPropBundleTopBlock(Block):
@@ -160,12 +156,9 @@ class TestPortConstPropBundleTopBlock(Block):
 
     @override
     def contents(self) -> None:
-        self.block1 = self.Block(TestPortConstPropBundleInnerBlock())
-        self.block2 = self.Block(TestPortConstPropBundleInnerBlock())  # dummy, just to infer a connection
+        self.block1 = self.Block(TestPortConstPropBundleInnerBlock(3.5, 6.0))
+        self.block2 = self.Block(TestPortConstPropBundleInnerBlock(0.0, 0.0))  # dummy, just to infer a connection
         self.link = self.connect(self.block1.port, self.block2.port)
-
-        self.assign(self.block1.port.elt1.float_param, 3.5)
-        self.assign(self.block1.port.elt2.float_param, 6.0)
 
 
 class ConstPropBundleTestCase(unittest.TestCase):

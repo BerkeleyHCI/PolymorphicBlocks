@@ -498,11 +498,25 @@ class Block(BaseBlock, metaclass=BlockMeta):
                         ref_map,
                     )
 
+    @override
     def _check_params_assigned(self) -> None:
-        super()._check_params_assigned()
+        """Walks through all params and checks that they have been assigned."""
+        for name, param in self._parameters.items():
+            if (
+                param not in self._assigns
+                and param.initializer is None
+                and not isinstance(param.binding, InitParamBinding)
+            ):
+                raise MissingParameterError(self, [name])
+
+        for name, port in self._ports.items():
+            self._check_port_params_assigned(port, [name])
+
         for name, block in self._blocks.items():
             for param_name, param in block._parameters.items():
-                if param not in self._assigns and param.initializer is None:
+                if param not in self._assigns and not (
+                    isinstance(param.binding, InitParamBinding) and param.binding.value is not None
+                ):
                     raise MissingParameterError(self, [name, param_name])
 
     # TODO make this non-overriding?

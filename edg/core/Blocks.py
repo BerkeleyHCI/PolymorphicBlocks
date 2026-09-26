@@ -450,7 +450,6 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     def _check_params_assigned(self) -> None:
         """Walks through all params and checks that they have been assigned."""
         for name, param in self._parameters.items():
-            # note, arg-params have an initializer
             if param not in self._assigns and param.initializer is None:
                 raise MissingParameterError(self, [name])
 
