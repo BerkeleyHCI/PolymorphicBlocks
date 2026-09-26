@@ -1,4 +1,4 @@
-from typing import Any, Type, Union, Tuple, TYPE_CHECKING
+from typing import Any, Type, Union, Tuple, TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from edg import BaseBlock, ConstraintExpr
@@ -62,9 +62,15 @@ class ChainError(BlockDefinitionError):
 class MissingParameterError(EdslUserError):
     """Error if a block is missing an (output) parameter assignment / value"""
 
+    def __init__(self, block: "BaseBlock", param_path: List[str]) -> None:
+        super().__init__(f"{type(block).__name__} parameter {'.'.join(param_path)} is missing an assignment", "assign a value to the parameter")
+
 
 class OverassignParameterError(EdslUserError):
     """Error if a block is assigned a parameter value more than once"""
 
     def __init__(self, block: "BaseBlock", param: "ConstraintExpr") -> None:
-        super().__init__(f"parameter in {type(block).__name__} assigned more than once")
+        super().__init__(
+            f"{type(block).__name__} parameter has conflicting assignment (assigned multiple times)",
+            "remove an assignment",
+        )

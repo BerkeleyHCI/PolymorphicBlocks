@@ -498,6 +498,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
                         ref_map,
                     )
 
+    def _check_params_assigned(self) -> None:
+        super()._check_params_assigned()
+        for name, block in self._blocks.items():
+            for param_name, param in block._parameters.items():
+                if param not in self._assigns and not param.initializer:
+                    raise MissingParameterError(self, [name, param_name])
+
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
