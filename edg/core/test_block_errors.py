@@ -85,6 +85,9 @@ class BadLinkTestCase(unittest.TestCase):
         with self.assertRaises(UnconnectableError):
             self.AmbiguousJoinBlock()._elaborated_def_to_proto()
 
+
+class MissingParamTestCase(unittest.TestCase):
+
     class MissingParamTopBlock(Block):
         """This block doesn't define a parameter value"""
 
