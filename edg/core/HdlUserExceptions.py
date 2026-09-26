@@ -57,3 +57,7 @@ class BlockDefinitionError(EdslUserError):
 
 class ChainError(BlockDefinitionError):
     """Base error for bad elements in a chain connect"""
+
+
+class MissingParameterError(EdslUserError):
+    """Error if a block is missing an (output) parameter assignment / value"""

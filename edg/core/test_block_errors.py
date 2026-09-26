@@ -2,9 +2,16 @@ import unittest
 
 from typing_extensions import override
 
+
 from . import *
 from .HdlUserExceptions import *
 from .test_common import TestPortSource, TestBlockSource, TestBlockSink
+
+
+class HasParamInnerBlock(Block):
+    def __init__(self, in_param: IntLike) -> None:
+        super().__init__()
+        self.in_param = self.ArgParameter(in_param)
 
 
 class BadLinkTestCase(unittest.TestCase):
@@ -77,3 +84,37 @@ class BadLinkTestCase(unittest.TestCase):
     def test_ambiguous_join(self) -> None:
         with self.assertRaises(UnconnectableError):
             self.AmbiguousJoinBlock()._elaborated_def_to_proto()
+
+    class MissingParamTopBlock(Block):
+        """This block doesn't define a parameter value"""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.param = self.Parameter(IntExpr())
+
+    def test_missing_param(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamTopBlock()._elaborated_def_to_proto()
+
+    class MissingParamInnerBlock(Block):
+        """This block defines an arg-param but does not define an output parameter value."""
+
+        def __init__(self, in_param: IntLike) -> None:
+            super().__init__()
+            self.in_param = self.ArgParameter(in_param)
+            self.param = self.Parameter(IntExpr())
+
+    def test_missing_param_inner(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamInnerBlock(0)._elaborated_def_to_proto()
+
+    class MissingParamContainerBlock(Block):
+        """This block contains a child that defines an arg-param but does not define an output parameter value."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.inner = self.Block(HasParamInnerBlock(IntExpr()))
+
+    def test_missing_param_container(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamContainerBlock()._elaborated_def_to_proto()
