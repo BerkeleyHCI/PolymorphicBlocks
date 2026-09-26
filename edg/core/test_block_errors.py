@@ -8,12 +8,6 @@ from .HdlUserExceptions import *
 from .test_common import TestPortSource, TestBlockSource, TestBlockSink
 
 
-class HasParamInnerBlock(Block):
-    def __init__(self, in_param: IntLike) -> None:
-        super().__init__()
-        self.in_param = self.ArgParameter(in_param)
-
-
 class BadLinkTestCase(unittest.TestCase):
     # This needs to be an internal class to avoid this error case being auto-discovered in a library
 
@@ -86,6 +80,26 @@ class BadLinkTestCase(unittest.TestCase):
             self.AmbiguousJoinBlock()._elaborated_def_to_proto()
 
 
+class HasParamInnerBlock(Block):
+    def __init__(self, in_param: IntLike) -> None:
+        super().__init__()
+        self.in_param = self.ArgParameter(in_param)
+
+
+class HasParamLink(Link):
+    def __init__(self) -> None:
+        super().__init__()
+        self.source = self.Port(HasParamPort.empty())
+
+
+class HasParamPort(Port[HasParamLink]):
+    link_type = HasParamLink
+
+    def __init__(self, param: IntLike = 0) -> None:
+        super().__init__()
+        self.param = self.Parameter(IntExpr(param))
+
+
 class MissingParamTestCase(unittest.TestCase):
 
     class MissingParamBlock(Block):
@@ -107,6 +121,18 @@ class MissingParamTestCase(unittest.TestCase):
     def test_overassign_param(self) -> None:
         with self.assertRaises(OverassignParameterError):
             self.OverassignParamBlock()._elaborated_def_to_proto()
+
+    class OverassignInitializerParamBlock(Block):
+        """This has a conflicting assign between the initializer and an explicit assign statement."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.param = self.Parameter(IntExpr(1))
+            self.assign(self.param, 2)
+
+    def test_overassign_initializer_param(self) -> None:
+        with self.assertRaises(OverassignParameterError):
+            self.OverassignInitializerParamBlock()._elaborated_def_to_proto()
 
     class MissingParamInnerBlock(Block):
         """This block defines an arg-param but does not define an output parameter value."""
@@ -130,6 +156,27 @@ class MissingParamTestCase(unittest.TestCase):
     def test_missing_param_container(self) -> None:
         with self.assertRaises(MissingParameterError):
             self.MissingParamContainerBlock()._elaborated_def_to_proto()
+
+    class MissingParamPortBlock(Block):
+        def __init__(self) -> None:
+            super().__init__()
+            self.port = self.Port(HasParamPort(IntExpr()))
+
+    def test_missing_param_port(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamPortBlock()._elaborated_def_to_proto()
+
+    class MissingParamVectorBlock(Block):
+        def __init__(self) -> None:
+            super().__init__()
+            self.port = self.Port(Vector(HasParamPort.empty()))
+            self.port.append_elt(HasParamPort(2), "0")
+            self.port.append_elt(HasParamPort(IntExpr()), "1")  # missing value
+            self.port.defined()
+
+    def test_missing_param_vector(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamVectorBlock()._elaborated_def_to_proto()
 
     class MissingParamLink(Link):
         def __init__(self) -> None:

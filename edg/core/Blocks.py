@@ -433,21 +433,24 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                     edgir.add_pair(pb.constraints, f"(init){name}"), param, param.initializer, ref_map
                 )
 
-    def _check_port_params_assigned(self, port: BasePort, path: List[str]) -> None:
-        if isinstance(port, Port):
-            for name, port in port._port.items():
+    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+        if isinstance(container_port, Port):
+            for name, port in container_port._ports.items():
                 self._check_port_params_assigned(port, path + [name])
 
-            for name, param in port._parameters.items():
+            for name, param in container_port._parameters.items():
                 if param not in self._assigns and param.initializer is None:
                     raise MissingParameterError(self, path + [name])
+        elif isinstance(container_port, Vector):
+            for name, elt in container_port._elts.items():
+                self._check_port_params_assigned(elt, path + [name])
         else:
-            raise ValueError(f"unsupported port type {port}")
+            raise ValueError(f"unsupported port type {container_port}")
 
     def _check_params_assigned(self) -> None:
         """Walks through all params and checks that they have been assigned."""
-        # TODO remove arg-params
         for name, param in self._parameters.items():
+            # note, arg-params have an initializer
             if param not in self._assigns and param.initializer is None:
                 raise MissingParameterError(self, [name])
 
