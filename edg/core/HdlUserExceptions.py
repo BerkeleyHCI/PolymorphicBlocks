@@ -1,7 +1,7 @@
 from typing import Any, Type, Union, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from edg import BaseBlock
+    from edg import BaseBlock, ConstraintExpr
 
 
 class EdslUserError(Exception):
@@ -61,3 +61,10 @@ class ChainError(BlockDefinitionError):
 
 class MissingParameterError(EdslUserError):
     """Error if a block is missing an (output) parameter assignment / value"""
+
+
+class OverassignParameterError(EdslUserError):
+    """Error if a block is assigned a parameter value more than once"""
+
+    def __init__(self, block: "BaseBlock", param: "ConstraintExpr") -> None:
+        super().__init__(f"parameter in {type(block).__name__} assigned more than once")

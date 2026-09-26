@@ -297,9 +297,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
-        self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(
-            ConstraintExpr, anon_prefix="anon_constr"
-        )
+        self._constraints = self.manager.new_dict(ConstraintExpr, anon_prefix="anon_constr")
+        self._assigns = IdentityDict[ConstraintExpr, ConstraintExpr]()  # target -> assign constraint
 
         self._name = StringExpr()._bind(NameBinding(self))
 
@@ -526,6 +525,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
         constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
         self._constraints.register(constraint)
+
+        if target in self._assigns:
+            raise OverassignParameterError(self, target)
+        self._assigns[target] = constraint
 
         if name:  # TODO unify naming API with everything else?
             self.manager.add_element(name, constraint)

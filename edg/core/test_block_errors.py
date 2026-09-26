@@ -88,16 +88,25 @@ class BadLinkTestCase(unittest.TestCase):
 
 class MissingParamTestCase(unittest.TestCase):
 
-    class MissingParamTopBlock(Block):
-        """This block doesn't define a parameter value"""
-
+    class MissingParamBlock(Block):
         def __init__(self) -> None:
             super().__init__()
-            self.param = self.Parameter(IntExpr())
+            self.param = self.Parameter(IntExpr())  # value never defined
 
     def test_missing_param(self) -> None:
         with self.assertRaises(MissingParameterError):
-            self.MissingParamTopBlock()._elaborated_def_to_proto()
+            self.MissingParamBlock()._elaborated_def_to_proto()
+
+    class OverassignParamBlock(Block):
+        def __init__(self) -> None:
+            super().__init__()
+            self.param = self.Parameter(IntExpr())
+            self.assign(self.param, 1)
+            self.assign(self.param, 2)
+
+    def test_overassign_param(self) -> None:
+        with self.assertRaises(OverassignParameterError):
+            self.OverassignParamBlock()._elaborated_def_to_proto()
 
     class MissingParamInnerBlock(Block):
         """This block defines an arg-param but does not define an output parameter value."""
