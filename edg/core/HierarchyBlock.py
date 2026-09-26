@@ -502,7 +502,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         super()._check_params_assigned()
         for name, block in self._blocks.items():
             for param_name, param in block._parameters.items():
-                if param not in self._assigns and not param.initializer:
+                if param not in self._assigns and param.initializer is None:
                     raise MissingParameterError(self, [name, param_name])
 
     # TODO make this non-overriding?
