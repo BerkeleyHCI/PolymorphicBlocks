@@ -121,3 +121,13 @@ class MissingParamTestCase(unittest.TestCase):
     def test_missing_param_container(self) -> None:
         with self.assertRaises(MissingParameterError):
             self.MissingParamContainerBlock()._elaborated_def_to_proto()
+
+    class MissingParamLink(Link):
+        def __init__(self) -> None:
+            super().__init__()
+            self.source = self.Port(TestPortSource(), optional=True)
+            self.param = self.Parameter(IntExpr())
+
+    def test_missing_param_link(self) -> None:
+        with self.assertRaises(MissingParameterError):
+            self.MissingParamLink()._elaborated_def_to_proto()
