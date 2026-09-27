@@ -445,8 +445,9 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                 if param not in self._assigns and param.initializer is None:
                     raise MissingParameterError(self, path + [name])
         elif isinstance(container_port, Vector):
-            for name, elt in container_port._elts.items():
-                self._check_port_params_assigned(elt, path + [name])
+            if container_port._elts is not None:
+                for name, elt in container_port._elts.items():
+                    self._check_port_params_assigned(elt, path + [name])
         else:
             raise ValueError(f"unsupported port type {container_port}")
 
