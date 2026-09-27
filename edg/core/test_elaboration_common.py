@@ -33,7 +33,7 @@ class TestLink(TestLinkBase):
 class TestPortBase(Port[TestLink]):
     link_type = TestLink
 
-    def __init__(self, float_param: FloatLike = FloatExpr()) -> None:
+    def __init__(self, float_param: FloatLike = 0.0) -> None:
         super().__init__()
         self.float_param = self.Parameter(FloatExpr(float_param))
 
