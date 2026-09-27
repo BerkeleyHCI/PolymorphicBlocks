@@ -41,9 +41,9 @@ class TestPortBase(Port[TestLink]):
 class TestPortSource(TestPortBase):
     def __init__(
         self,
-        float_param_limit: RangeLike = RangeExpr(),
-        range_param: RangeLike = RangeExpr(),
-        float_param: FloatLike = FloatExpr(),
+        float_param_limit: RangeLike = RangeExpr.ALL,
+        range_param: RangeLike = Range(0, 0),
+        float_param: FloatLike = 0.0,
     ) -> None:
         super().__init__(float_param)
         self.float_param_limit = self.Parameter(RangeExpr(float_param_limit))
