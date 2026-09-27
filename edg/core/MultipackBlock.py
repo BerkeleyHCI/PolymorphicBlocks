@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+import warnings
+from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload, Any, override
 from typing_extensions import TypeVar
 from deprecated import deprecated
 
 from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
-from .Binding import InitParamBinding
+from .Binding import ParamBinding
 from .Blocks import BlockElaborationState
 from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
@@ -14,6 +15,7 @@ from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block, BlockPrototype
+from ..core.IdentitySet import IdentitySet
 
 
 class PackedBlockAllocate(NamedTuple):
@@ -48,8 +50,8 @@ PackedBlockElementType = TypeVar("PackedBlockElementType", covariant=True, bound
 
 
 class PackedBlockArray(Generic[PackedBlockElementType]):
-    """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
-    This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
+    """A container "block" (for multipack packing only) for an arbitrary-length array of abstract Blocks.
+    This is meant to be analogous to Vector (port arrays), though there isn't a use case for this in general
     (non-multipack) core infrastructure yet."""
 
     def __init__(self, tpe: PackedBlockElementType):
@@ -138,6 +140,8 @@ class MultipackBlock(Block):
         self._packed_connects_by_packed_block = IdentityDict[
             PackedBlockTypes, IdentityDict[BasePort, PackedPortTypes]
         ]()
+        # TODO can this be deduplicated with above?
+        self._packed_connected_ports = IdentitySet[BasePort]()  # exterior ports involved in packed connections
         # packed block -> (self param -> packed param) (reverse of assign direction)
         self._packed_assigns_by_packed_block = IdentityDict[
             PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamTypes]
@@ -147,21 +151,39 @@ class MultipackBlock(Block):
             PackedBlockTypes, IdentityDict[ConstraintExpr, UnpackedParamTypes]
         ]()
 
+    @override
+    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+        if container_port in self._packed_connected_ports:
+            return
+        super()._check_port_params_assigned(container_port, path)
+
     PackedPartType = TypeVar("PackedPartType", bound=Union[Block, PackedBlockArray])
 
     def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
         """Adds a block type that can be packed into this block.
         The block is a "virtual block" that will not appear in the design tree."""
-        if isinstance(tpe, BlockPrototype):
-            tpe_cls = tpe._tpe
+        if isinstance(tpe, PackedBlockArray):
+            unpacked_tpe: Any = tpe._tpe
+        elif isinstance(tpe, (Block, BlockPrototype)):
+            unpacked_tpe = tpe
         else:
-            tpe_cls = tpe.__class__
-
-        if not issubclass(tpe_cls, (Block, PackedBlockArray)):
             raise EdgTypeError(f"PackedPart(...) param", tpe, Block)
         if self._elaboration_state != BlockElaborationState.init:
             raise BlockDefinitionError(type(self), "can only define multipack in init")
 
+        if isinstance(unpacked_tpe, Block):
+            tpe_cls = type(unpacked_tpe)
+        elif isinstance(unpacked_tpe, BlockPrototype):
+            tpe_cls = unpacked_tpe._tpe
+        else:
+            raise ValueError("unexpected unpacked_tpe")
+
+        if not tpe_cls._is_abstract():
+            warnings.warn(
+                f"PackedPart should directly use the abstract block, there is no more need for a dummy concrete block",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         elt = tpe._bind(self)  # TODO: does this actually need to be bound?
         self._packed_blocks.register(elt)
         self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
@@ -179,12 +201,14 @@ class MultipackBlock(Block):
             block_parent = packed_port._block_parent()
             assert isinstance(block_parent, Block)
             self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
+            self._packed_connected_ports.add(exterior_port)
         elif isinstance(packed_port, PackedBlockPortArray):
             assert isinstance(exterior_port, Vector), "can only connect vector from packed port array"
             assert type(exterior_port._elt_sample) == type(
                 packed_port.port
             ), "packed_connect ports must be of the same type"
             self._packed_connects_by_packed_block[packed_port.parent][exterior_port] = packed_port
+            self._packed_connected_ports.add(exterior_port)
         else:
             raise TypeError()
 
@@ -192,6 +216,7 @@ class MultipackBlock(Block):
 
     @overload
     def PackedExport(self, packed_port: PackedPortType, *, optional: bool = False) -> PackedPortType: ...
+
     @overload
     def PackedExport(
         self, packed_port: PackedBlockPortArray[PackedPortType], *, optional: bool = False
@@ -230,14 +255,19 @@ class MultipackBlock(Block):
 
     @overload
     def PackedParameter(self, packed_param: PackedParamType) -> PackedParamType: ...
+
     @overload
     def PackedParameter(self, packed_param: PackedBlockParamArray[BoolExpr]) -> ArrayBoolExpr: ...
+
     @overload
     def PackedParameter(self, packed_param: PackedBlockParamArray[IntExpr]) -> ArrayIntExpr: ...
+
     @overload
     def PackedParameter(self, packed_param: PackedBlockParamArray[FloatExpr]) -> ArrayFloatExpr: ...
+
     @overload
     def PackedParameter(self, packed_param: PackedBlockParamArray[RangeExpr]) -> ArrayRangeExpr: ...
+
     @overload
     def PackedParameter(self, packed_param: PackedBlockParamArray[StringExpr]) -> ArrayStringExpr: ...
 
@@ -246,9 +276,9 @@ class MultipackBlock(Block):
         Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
         where self.Parameter(...) would error out."""
         if isinstance(packed_param, ConstraintExpr):
-            new_param = type(packed_param)()._bind(InitParamBinding(self))
+            new_param = type(packed_param)()._bind(ParamBinding(self))
         elif isinstance(packed_param, PackedBlockParamArray):
-            new_param = ArrayExpr.array_of_elt(packed_param.param)._bind(InitParamBinding(self))
+            new_param = ArrayExpr.array_of_elt(packed_param.param)._bind(ParamBinding(self))
         else:
             raise TypeError()
         self.packed_assign(new_param, packed_param)

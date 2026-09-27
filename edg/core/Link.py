@@ -12,7 +12,7 @@ from .Builder import builder
 from .Core import Refable, non_library
 from .HdlUserExceptions import UnconnectableError
 from .IdentityDict import IdentityDict
-from .Ports import Port
+from .Ports import Port, BasePort
 
 
 class LinkMeta(BaseBlockMeta):
@@ -96,3 +96,8 @@ class Link(BaseBlock, metaclass=LinkMeta):
     @override
     def _elaborated_def_to_proto(self) -> edgir.Link:
         return cast(edgir.Link, super()._elaborated_def_to_proto())
+
+    @override
+    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+        # link ports should not have params assigned and this is a no-op
+        pass

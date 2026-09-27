@@ -33,7 +33,7 @@ class TestLink(TestLinkBase):
 class TestPortBase(Port[TestLink]):
     link_type = TestLink
 
-    def __init__(self, float_param: FloatLike = FloatExpr()) -> None:
+    def __init__(self, float_param: FloatLike = 0.0) -> None:
         super().__init__()
         self.float_param = self.Parameter(FloatExpr(float_param))
 
@@ -41,9 +41,9 @@ class TestPortBase(Port[TestLink]):
 class TestPortSource(TestPortBase):
     def __init__(
         self,
-        float_param_limit: RangeLike = RangeExpr(),
-        range_param: RangeLike = RangeExpr(),
-        float_param: FloatLike = FloatExpr(),
+        float_param_limit: RangeLike = RangeExpr.ALL,
+        range_param: RangeLike = Range(0, 0),
+        float_param: FloatLike = 0.0,
     ) -> None:
         super().__init__(float_param)
         self.float_param_limit = self.Parameter(RangeExpr(float_param_limit))
@@ -53,17 +53,19 @@ class TestPortSource(TestPortBase):
 class TestPortBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
-        self.outer_port = self.Port(TestPortSink())
         self.inner_link = self.Port(TestPortSource())
-
-        self.assign(self.outer_port.float_param, self.inner_link.link().float_param_sink_sum)
-        self.assign(self.outer_port.range_limit, self.inner_link.link().range_param_sink_common)
+        self.outer_port = self.Port(
+            TestPortSink(
+                float_param=self.inner_link.link().float_param_sink_sum,
+                range_limit=self.inner_link.link().range_param_sink_common,
+            )
+        )
 
 
 class TestPortSink(TestPortBase):
     bridge_type = TestPortBridge
 
-    def __init__(self, range_limit: RangeLike = RangeExpr(), float_param: FloatLike = FloatExpr()) -> None:
+    def __init__(self, range_limit: RangeLike = RangeExpr.ALL, float_param: FloatLike = 0.0) -> None:
         super().__init__(float_param)
         self.range_limit = self.Parameter(RangeExpr(range_limit))
 
