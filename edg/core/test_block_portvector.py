@@ -41,7 +41,7 @@ class TestBlockPortVectorExport(TestBlockPortVectorBase):
 class TestBlockPortVectorBridged(TestBlockPortVectorBase):
     def __init__(self) -> None:
         super().__init__()
-        vector_port = self.vector.append_elt(TestPortSink())
+        vector_port = self.vector.append_elt(TestPortSink.empty())
         self.block0 = self.Block(TestBlockSink())
         self.block1 = self.Block(TestBlockSink())
         self.conn = self.connect(self.block0.sink, self.block1.sink, vector_port)
