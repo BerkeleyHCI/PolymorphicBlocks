@@ -7,6 +7,7 @@ from . import *
 from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSource
 
 
+@abstract_block
 class PartSink(Block):
     def __init__(self) -> None:
         super().__init__()
