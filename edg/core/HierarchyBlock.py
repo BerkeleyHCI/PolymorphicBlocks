@@ -500,7 +500,9 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
     @override
     def _check_params_assigned(self) -> None:
-        """Walks through all params and checks that they have been assigned."""
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return  # abstract blocks do not need assigned parameters
+
         for name, param in self._parameters.items():
             if (
                 param not in self._assigns

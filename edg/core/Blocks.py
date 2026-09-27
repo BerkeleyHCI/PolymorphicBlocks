@@ -435,6 +435,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
         if container_port in self._connects_by_port:
+            # TODO check for absence of assignments
             return  # connected boundary ports inherit parameters
 
         if isinstance(container_port, Port):
@@ -453,6 +454,9 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     def _check_params_assigned(self) -> None:
         """Walks through all params and checks that they have been assigned."""
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return  # abstract blocks do not need assigned parameters
+
         for name, param in self._parameters.items():
             if param not in self._assigns and param.initializer is None:
                 raise MissingParameterError(self, [name])
