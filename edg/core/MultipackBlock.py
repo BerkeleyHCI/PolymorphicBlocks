@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload, Any
+from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload, Any, override
 from typing_extensions import TypeVar
 from deprecated import deprecated
 
@@ -140,6 +140,8 @@ class MultipackBlock(Block):
         self._packed_connects_by_packed_block = IdentityDict[
             PackedBlockTypes, IdentityDict[BasePort, PackedPortTypes]
         ]()
+        # TODO can this be deduplicated with above?
+        self._packed_connected_ports = IdentitySet[BasePort]()  # exterior ports involved in packed connections
         # packed block -> (self param -> packed param) (reverse of assign direction)
         self._packed_assigns_by_packed_block = IdentityDict[
             PackedBlockTypes, IdentityDict[ConstraintExpr, PackedParamTypes]
@@ -149,9 +151,9 @@ class MultipackBlock(Block):
             PackedBlockTypes, IdentityDict[ConstraintExpr, UnpackedParamTypes]
         ]()
 
+    @override
     def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
-        packed_connected_ports = IdentitySet(self._packed_connects_by_packed_block.values())
-        if container_port in packed_connected_ports:
+        if container_port in self._packed_connected_ports:
             return
         super()._check_port_params_assigned(container_port, path)
 
@@ -170,7 +172,7 @@ class MultipackBlock(Block):
             raise BlockDefinitionError(type(self), "can only define multipack in init")
 
         if isinstance(unpacked_tpe, Block):
-            tpe_cls = type(tpe)
+            tpe_cls = type(unpacked_tpe)
         elif isinstance(unpacked_tpe, BlockPrototype):
             tpe_cls = unpacked_tpe._tpe
         else:
@@ -199,12 +201,14 @@ class MultipackBlock(Block):
             block_parent = packed_port._block_parent()
             assert isinstance(block_parent, Block)
             self._packed_connects_by_packed_block[block_parent][exterior_port] = packed_port
+            self._packed_connected_ports.add(exterior_port)
         elif isinstance(packed_port, PackedBlockPortArray):
             assert isinstance(exterior_port, Vector), "can only connect vector from packed port array"
             assert type(exterior_port._elt_sample) == type(
                 packed_port.port
             ), "packed_connect ports must be of the same type"
             self._packed_connects_by_packed_block[packed_port.parent][exterior_port] = packed_port
+            self._packed_connected_ports.add(exterior_port)
         else:
             raise TypeError()
 
