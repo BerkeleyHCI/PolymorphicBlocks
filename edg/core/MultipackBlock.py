@@ -151,12 +151,6 @@ class MultipackBlock(Block):
             PackedBlockTypes, IdentityDict[ConstraintExpr, UnpackedParamTypes]
         ]()
 
-    @override
-    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
-        if container_port in self._packed_connected_ports:
-            return
-        super()._check_port_params_assigned(container_port, path)
-
     PackedPartType = TypeVar("PackedPartType", bound=Union[Block, PackedBlockArray])
 
     def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
