@@ -358,6 +358,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                 metadata_dict[name] = self._port_docs[port]
         self._docs = self.Metadata(metadata_dict)
 
+    @classmethod
+    def _is_abstract(cls) -> bool:
+        return (cls, AbstractBlockProperty) in cls._elt_properties
+
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
         """Populates the structural parts of a block proto: parameters, ports, superclasses"""
         assert (
@@ -368,7 +372,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._parameters.finalize()
         self._ports.finalize()
 
-        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+        if self._is_abstract():
             assert isinstance(pb, edgir.HierarchyBlock)
             pb.is_abstract = True
             pb.is_mixin = False
