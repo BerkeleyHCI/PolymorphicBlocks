@@ -9,11 +9,11 @@ from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSourc
 
 @abstract_block
 class PartSink(Block):
-    def __init__(self) -> None:
+    def __init__(self, param: FloatLike = 0.0) -> None:
         super().__init__()
-        self.param = self.Parameter(FloatExpr())
+        self.param = self.ArgParameter(param)
         self.result_param = self.Parameter(IntExpr())
-        self.sink = self.Port(TestPortSink(), optional=True)
+        self.sink = self.Port(TestPortSink.empty(), optional=True)
 
 
 class MultipackBlockSink(MultipackBlock):
@@ -64,7 +64,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
         self.constraints = list(map(lambda pair: pair.value, pb.constraints))
 
     def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
-        self.assertEqual(len(self.constraints), 6)
+        self.assertEqual(len(self.constraints), 7)
 
     def test_export_tunnel(self) -> None:
         expected_constr = edgir.ValueExpr()
@@ -149,7 +149,7 @@ class TopMultipackArrayDesignTestCase(unittest.TestCase):
         self.constraints = list(map(lambda pair: pair.value, pb.constraints))
 
     def test_constraints_count(self) -> None:  # so individual cases (export / assigns) can still pass
-        self.assertEqual(len(self.constraints), 5)
+        self.assertEqual(len(self.constraints), 6)
 
     def test_export_tunnel(self) -> None:
         expected_constr = edgir.ValueExpr()
