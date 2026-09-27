@@ -276,9 +276,9 @@ class MultipackBlock(Block):
         Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
         where self.Parameter(...) would error out."""
         if isinstance(packed_param, ConstraintExpr):
-            new_param = type(packed_param)()._bind(InitParamBinding(self))
+            new_param = type(packed_param)()._bind(ParamBinding(self))
         elif isinstance(packed_param, PackedBlockParamArray):
-            new_param = ArrayExpr.array_of_elt(packed_param.param)._bind(InitParamBinding(self))
+            new_param = ArrayExpr.array_of_elt(packed_param.param)._bind(ParamBinding(self))
         else:
             raise TypeError()
         self.packed_assign(new_param, packed_param)
