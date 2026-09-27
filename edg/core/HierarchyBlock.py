@@ -514,8 +514,10 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
         for name, block in self._blocks.items():
             for param_name, param in block._parameters.items():
-                if param not in self._assigns and not (
-                    isinstance(param.binding, InitParamBinding) and param.binding.value is not None
+                if (
+                    param not in self._assigns
+                    and isinstance(param.binding, InitParamBinding)
+                    and (isinstance(param.binding, InitParamBinding) and param.binding.value is None)
                 ):
                     raise MissingParameterError(self, [name, param_name])
 
