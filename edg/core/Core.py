@@ -207,17 +207,17 @@ class LibraryElement(Refable):
     def __init__(self) -> None:
         self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
 
-        self.manager = SubElementManager()
-        self.manager_ignored: Set[str] = set(["_parent"])
+        self._manager = SubElementManager()
+        self._manager_ignored: Set[str] = set(["_parent"])
 
     @override
     def __setattr__(self, name: str, value: Any) -> None:
-        if hasattr(self, "manager_ignored") and name not in self.manager_ignored:
-            self.manager.add_element(name, value)
+        if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
+            self._manager.add_element(name, value)
         super().__setattr__(name, value)
 
     def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
-        self_name = self.manager.name_of(subelt)
+        self_name = self._manager.name_of(subelt)
         if self_name is not None:
             return self_name
         else:
@@ -261,7 +261,7 @@ class HasMetadata(LibraryElement):
 
     def __init__(self) -> None:
         super().__init__()
-        self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)
+        self._metadata: SubElementDict[Any] = self._manager.new_dict(Any)
 
     MetadataType = TypeVar(
         "MetadataType", bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]]

@@ -149,10 +149,10 @@ class Port(BasePort, Generic[PortLinkType]):
         self._bridge_instance: Optional[PortBridge] = None  # internal only
         self._adapter_count: int = 0
 
-        self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
-        self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
+        self._parameters: SubElementDict[ConstraintExpr] = self._manager.new_dict(ConstraintExpr)
+        self._ports: SubElementDict[Port] = self._manager.new_dict(Port)
 
-        self.manager_ignored.update(["_is_connected", "_name"])
+        self._manager_ignored.update(["_is_connected", "_name"])
         self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
         self._name = StringExpr()._bind(NameBinding(self))
 
@@ -214,7 +214,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
         adapter_inst = enclosing_block.Block(adapter)
         adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
-        enclosing_block.manager.add_element(
+        enclosing_block._manager.add_element(
             f"(adapter){self._name_from(enclosing_block)}{adapter_name_suffix}", adapter_inst
         )
         enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts

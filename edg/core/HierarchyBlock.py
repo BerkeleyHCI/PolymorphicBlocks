@@ -336,13 +336,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
             self._init_params: Dict[str, ConstraintExpr]
             for param_name, param in self._init_params.items():
                 self._parameters.register(param)
-                self.manager.add_element(param_name, param)
+                self._manager.add_element(param_name, param)
             delattr(self, "_init_params")
 
         self._mixins: List["BlockInterfaceMixin"] = []
 
-        self._blocks = self.manager.new_dict(Block)
-        self._chains = self.manager.new_dict(ChainConnect, anon_prefix="anon_chain")
+        self._blocks = self._manager.new_dict(Block)
+        self._chains = self._manager.new_dict(ChainConnect, anon_prefix="anon_chain")
         self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
     def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
@@ -542,7 +542,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert self._parent is not None
 
         elt = tpe._bind(self._parent)
-        self._parent.manager.add_alias(elt, self)
+        self._parent._manager.add_alias(elt, self)
         self._mixins.append(elt)
 
         return elt

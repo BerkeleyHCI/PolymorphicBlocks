@@ -285,19 +285,19 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             None  # additional string field to be displayed as part of the tooltip for blocks
         )
 
-        self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
+        self._parameters: SubElementDict[ConstraintExpr] = self._manager.new_dict(ConstraintExpr)
         self._param_docs = IdentityDict[ConstraintExpr, str]()
 
-        self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
+        self._ports: SubElementDict[BasePort] = self._manager.new_dict(BasePort)
         self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
-        self._connects = self.manager.new_dict(Connection, anon_prefix="anon_link")
+        self._connects = self._manager.new_dict(Connection, anon_prefix="anon_link")
         self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
-        self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(
+        self._constraints: SubElementDict[ConstraintExpr] = self._manager.new_dict(
             ConstraintExpr, anon_prefix="anon_constr"
         )
 
@@ -496,7 +496,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._constraints.register(constraint_typed)
 
         if name:  # TODO unify naming API with everything else?
-            self.manager.add_element(name, constraint_typed)
+            self._manager.add_element(name, constraint_typed)
 
         return constraint_typed
 
@@ -521,7 +521,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._constraints.register(constraint)
 
         if name:  # TODO unify naming API with everything else?
-            self.manager.add_element(name, constraint)
+            self._manager.add_element(name, constraint)
 
         return constraint
 

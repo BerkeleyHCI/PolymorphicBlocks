@@ -132,7 +132,7 @@ class MultipackBlock(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
+        self._packed_blocks: SubElementDict[PackedBlockTypes] = self._manager.new_dict((Block, PackedBlockArray))
         # TODO should these be defined in terms of Refs?
         # packed block -> (exterior port -> packed block port)
         self._packed_connects_by_packed_block = IdentityDict[
