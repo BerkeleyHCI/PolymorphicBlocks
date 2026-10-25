@@ -178,12 +178,9 @@ class MultipackBlock(Block):
         else:
             raise ValueError("unexpected unpacked_tpe")
 
-        if not tpe_cls._is_abstract():
-            warnings.warn(
-                f"PackedPart should directly use the abstract block, there is no more need for a dummy concrete block",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+        if tpe_cls._is_abstract():
+            raise BlockDefinitionError(type(self), "multipack PackedPart must not be abstract")
+
         elt = tpe._bind(self)  # TODO: does this actually need to be bound?
         self._packed_blocks.register(elt)
         self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
