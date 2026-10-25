@@ -46,7 +46,6 @@ class Link(BaseBlock, metaclass=LinkMeta):
 
         pb = edgir.Link()
         self._populate_def_proto_block_base(pb)
-        self._populate_def_proto_param_init(pb, ref_map)
         self._populate_def_proto_block_contents(pb, ref_map)
         self._populate_def_proto_description(pb, ref_map)
         # specifically ignore the port initializers

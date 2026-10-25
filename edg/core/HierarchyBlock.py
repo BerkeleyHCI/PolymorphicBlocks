@@ -510,8 +510,6 @@ class Block(BaseBlock, metaclass=BlockMeta):
         self._populate_def_proto_block_base(pb)
         self._populate_def_proto_port_init(pb, ref_map)
 
-        self._populate_def_proto_param_init(pb, ref_map)
-
         self._populate_def_proto_hierarchy(pb, ref_map)
         self._populate_def_proto_block_contents(pb, ref_map)
         self._populate_def_proto_description(pb, ref_map)

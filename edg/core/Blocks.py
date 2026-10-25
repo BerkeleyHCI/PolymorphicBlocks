@@ -427,13 +427,6 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                     ref_map,
                 )
 
-    def _populate_def_proto_param_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
-        for name, param in self._parameters.items():
-            if param.initializer is not None:
-                AssignBinding.populate_assign_proto(
-                    edgir.add_pair(pb.constraints, f"(init){name}"), param, param.initializer, ref_map
-                )
-
     def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
         """Populates the contents of a block proto: constraints"""
         assert (
@@ -577,7 +570,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         elt = tpe._bind(ParamBinding(self))
         self._parameters.register(elt)
         if elt.initializer is not None:
-            self._check_constraint(elt.initializer)
+            self.assign(elt, elt.initializer, name="(init)")
 
         if doc is not None:
             self._param_docs[elt] = doc
