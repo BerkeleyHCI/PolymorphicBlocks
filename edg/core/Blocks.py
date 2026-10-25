@@ -570,7 +570,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         elt = tpe._bind(ParamBinding(self))
         self._parameters.register(elt)
         if elt.initializer is not None:
-            self.assign(elt, elt.initializer, name="(init)")
+            self.assign(elt, elt.initializer)
 
         if doc is not None:
             self._param_docs[elt] = doc
