@@ -93,6 +93,13 @@ class GeneratorBlock(Block):
     # Generator serialization and parsing
     #
     @override
+    def _check_params_assigned(self) -> None:
+        # the block is only complete when generating, don't check for missing params before then
+        if self._elaboration_state != BlockElaborationState.post_generate:
+            return
+        super()._check_params_assigned()
+
+    @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
         if (
             self._elaboration_state != BlockElaborationState.post_generate

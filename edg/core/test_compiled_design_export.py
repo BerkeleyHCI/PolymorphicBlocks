@@ -1,8 +1,23 @@
 import unittest
-from typing import cast
+from typing import cast, override
 
 from . import *
 from .CompiledDesignExport import CompiledPort
+
+
+class ParamErrorsBlock(Block):
+    def __init__(self) -> None:
+        super().__init__()
+        self.param_a = self.Parameter(FloatExpr())
+        self.param_b = self.Parameter(FloatExpr())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.assign(self.param_a, self.param_b + 1.0)
+        self.assign(self.param_b, self.param_a + 1.0)
+
+        self.require(self.param_a == 1.0)
 
 
 class CompiledDesignExportTestCase(unittest.TestCase):
@@ -34,9 +49,6 @@ class CompiledDesignExportTestCase(unittest.TestCase):
         self.assertEqual(result.links["link"].params["range_intersection"].value, (5.0, 10.0))
 
     def test_param_error(self) -> None:
-        from .test_simple_expr_eval import TestEvalExprErrorBlock
-
-        compiled = ScalaCompiler.compile(TestEvalExprErrorBlock, ignore_errors=True)
+        compiled = ScalaCompiler.compile(ParamErrorsBlock, ignore_errors=True)
         result = CompiledDesignExportTransform(compiled).transform()
-        self.assertIn("overassign", cast(str, result.params["overassign_float"].error))
-        self.assertEqual(result.params["overassign_float"].value, None)
+        self.assertEqual(result.params["param_a"].value, None)

@@ -29,7 +29,7 @@ class FootprintBlock(Block):
         self.fp_mfr = self.Parameter(StringExpr())
         self.fp_part = self.Parameter(StringExpr())
         self.fp_value = self.Parameter(StringExpr())
-        self.fp_refdes = self.Parameter(StringExpr())
+        self.fp_refdes = self.Parameter(StringExpr(""))  # dummy value, replaced during compilation
         self.fp_refdes_prefix = self.Parameter(StringExpr())
 
         self.fp_pnp_rot = self.Parameter(FloatExpr())
@@ -144,9 +144,15 @@ class FootprintBlock(Block):
         # PNP rotation is left explicitly unassigned if not defined
         if pnp_rot is not None:
             self.assign(self.fp_pnp_rot, pnp_rot)
+        else:
+            self.assign(self.fp_pnp_rot, 0.0)
+
         if pnp_offset is not None:
             self.assign(self.fp_pnp_offset_x, pnp_offset[0])
             self.assign(self.fp_pnp_offset_y, pnp_offset[1])
+        else:
+            self.assign(self.fp_pnp_offset_x, 0.0)
+            self.assign(self.fp_pnp_offset_y, 0.0)
 
 
 @non_library
