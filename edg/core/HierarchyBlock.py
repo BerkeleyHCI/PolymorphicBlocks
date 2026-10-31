@@ -449,7 +449,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     assert not connect_elts.is_link_array, "bridged arrays not supported"
                     assert self_port.bridge_type is not None
 
-                    port_name = self_port._name_from(self)
+                    port_name = self._name_of(self_port, recursive=True)
                     edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.base.target.name = (
                         self_port.bridge_type._static_def_name()
                     )

@@ -10,7 +10,7 @@ from typing_extensions import TypeVar, override
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
-from .Core import Refable, HasMetadata, SubElementDict, non_library
+from .Core import Refable, HasMetadata, SubElementDict, non_library, NamingContainer
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .. import edgir
@@ -36,7 +36,7 @@ PortParentTypes = Union["Port", "Vector[Any]", "BaseBlock"]
 
 
 @non_library
-class BasePort(HasMetadata, metaclass=InitializerContextMeta):
+class BasePort(HasMetadata, NamingContainer, metaclass=InitializerContextMeta):
     SelfType = TypeVar("SelfType", bound="BasePort")
 
     def __init__(self) -> None:
@@ -215,7 +215,7 @@ class Port(BasePort, Generic[PortLinkType]):
         adapter_inst = enclosing_block.Block(adapter)
         adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
         enclosing_block._manager.add_element(
-            f"(adapter){self._name_from(enclosing_block)}{adapter_name_suffix}", adapter_inst
+            f"(adapter){enclosing_block._name_of(self, recursive=True)}{adapter_name_suffix}", adapter_inst
         )
         enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
         self._adapter_count += 1

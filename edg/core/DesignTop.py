@@ -128,7 +128,7 @@ class DesignTop(Block):
                     packed_port_port = packed_port.port
                 else:
                     raise TypeError
-                packed_port_name = multipack_part_block._name_of_child(packed_port_port, self)
+                packed_port_name = multipack_part_block._manager.name(packed_port_port)
                 exported_tunnel = edgir.add_pair(
                     pb.constraints, f"(packed){multipack_name}.{part_name}.{packed_port_name}"
                 ).exportedTunnel

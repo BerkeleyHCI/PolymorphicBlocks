@@ -191,12 +191,18 @@ class NamespaceManager:
         else:
             return name_candidates_filtered[0]
 
-    def name(self, item: Any) -> str:
+    def name(self, item: Any, *, debug: bool = False) -> str:
+        """Returns the final name of an item"""
         name = self._base_names.get(item, None)
         if isinstance(name, str):
             return name
         elif isinstance(name, SourceLocator):
-            raise ValueError(f"no name for {item} at {name} (internal error, should have been caught at validation)")
+            if debug:
+                return str(name)
+            else:
+                raise ValueError(
+                    f"no name for {item} at {name} (internal error, should have been caught at validation)"
+                )
         else:
             raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
@@ -284,45 +290,6 @@ class LibraryElement(Refable):
     def __repr__(self) -> str:
         return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xFF)
 
-    def __init__(self) -> None:
-        self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
-
-        self._manager = NamespaceManager()
-        self._manager_ignored: Set[str] = set(["_parent"])
-
-    @override
-    def __setattr__(self, name: str, value: Any) -> None:
-        if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
-            self._manager.add_element(name, value)
-        if hasattr(self, "_manager"):  # for before _manager is defined
-            self._manager.add_name(value, name)
-        super().__setattr__(name, value)
-
-    def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
-        self_name = self._manager.name_of(subelt)
-        if self_name is not None:
-            return self_name
-        else:
-            if allow_unknown:
-                return f"(unknown {subelt.__class__.__name__})"
-            else:
-                raise ValueError(f"no name for {subelt}")
-
-    def _path_from(self, base: LibraryElement, allow_unknown: bool = False) -> List[str]:
-        if base is self:
-            return []
-        else:
-            assert self._parent is not None, "can't get path / name for non-bound element"
-            return self._parent._path_from(base, allow_unknown) + [
-                self._parent._name_of_child(self, base, allow_unknown)
-            ]
-
-    def _name_from(self, base: LibraryElement, allow_unknown: bool = False) -> str:
-        """Returns the path name to (inclusive) this element from some starting point.
-        allow_unknown allows elements that haven't been assigned a name yet to not crash,
-        this is useful when called from an error so the _name_from error doesn't stomp the real error."""
-        return ".".join(self._path_from(base, allow_unknown))
-
     @classmethod
     def _static_def_name(cls) -> str:
         """If this library element is defined by class (all instances have an equivalent library definition),
@@ -337,8 +304,72 @@ class LibraryElement(Refable):
     def _def_to_proto(self) -> Union[edgir.PortTypes, edgir.BlockLikeTypes]: ...
 
 
+class NamingContainer:
+    """Mixin class for objects that contain and name internal objects"""
+
+    def __init__(self) -> None:
+        self._parent: Optional[NamingContainer] = None  # set by binding, None means not bound
+
+        self._manager = NamespaceManager()
+        self._manager_ignored: Set[str] = set(["_parent"])
+
+    @override
+    def __setattr__(self, name: str, value: Any) -> None:
+        if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
+            self._manager.add_element(name, value)
+        if hasattr(self, "_manager"):  # for before _manager is defined
+            self._manager.add_name(value, name)
+        super().__setattr__(name, value)
+
+    def _path_of(self, elt: Any, *, recursive: bool = False, debug: bool = False) -> List[str]:
+        """Returns the name path of an inner element, optionally recursively (child of child).
+        If debug is true, will return the best-effort name even if it is not yet assigned.
+        If debug is false, raises an error for unassigned names."""
+        if not recursive:
+            return [self._manager.name(elt, debug=debug)]
+        else:
+            if elt is self:
+                return []
+            else:
+                assert elt._parent is not None, "can't get path / name for non-bound element"
+                print(elt._parent)
+                return self._path_of(elt._parent, recursive=True, debug=debug) + [
+                    elt._parent._manager.name(elt, debug=debug)
+                ]
+
+    def _name_of(self, elt: Any, *, recursive: bool = False, debug: bool = False) -> str:
+        """Convenience stringify wrapper around _path_of."""
+        path = self._path_of(elt, recursive=recursive, debug=debug)
+        return ".".join(path)
+
+    def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
+        self_name = self._manager.name_of(subelt)
+        if self_name is not None:
+            return self_name
+        else:
+            if allow_unknown:
+                return f"(unknown {subelt.__class__.__name__})"
+            else:
+                raise ValueError(f"no name for {subelt}")
+
+    def _path_from(self, base: NamingContainer, allow_unknown: bool = False) -> List[str]:
+        if base is self:
+            return []
+        else:
+            assert self._parent is not None, "can't get path / name for non-bound element"
+            return self._parent._path_from(base, allow_unknown) + [
+                self._parent._name_of_child(self, base, allow_unknown)
+            ]
+
+    def _name_from(self, base: NamingContainer, allow_unknown: bool = False) -> str:
+        """Returns the path name to (inclusive) this element from some starting point.
+        allow_unknown allows elements that haven't been assigned a name yet to not crash,
+        this is useful when called from an error so the _name_from error doesn't stomp the real error."""
+        return ".".join(self._path_from(base, allow_unknown))
+
+
 @non_library
-class HasMetadata(LibraryElement):
+class HasMetadata(LibraryElement, NamingContainer):
     """A library element with the metadata dict-like field"""
 
     def __init__(self) -> None:

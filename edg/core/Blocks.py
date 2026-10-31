@@ -12,7 +12,16 @@ from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase, SourceLocator
+from .Core import (
+    Refable,
+    HasMetadata,
+    builder,
+    SubElementDict,
+    non_library,
+    EltPropertiesBase,
+    SourceLocator,
+    NamingContainer,
+)
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -268,7 +277,7 @@ AbstractBlockProperty = EltPropertiesBase()
 
 
 @non_library
-class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
+class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
     """Base block that has ports (IOs), parameters, and constraints between them."""
 
     # __init__ should initialize the object with structural information (parameters, fields)
