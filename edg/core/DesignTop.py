@@ -101,7 +101,7 @@ class DesignTop(Block):
             else:
                 raise TypeError
             assert isinstance(multipack_block, MultipackBlock)
-            multipack_name = self._name_of_child(multipack_block, self)
+            multipack_name = self._name_of(multipack_block)
             multipack_ref_base = edgir.LocalPath()
             multipack_ref_base.steps.add().name = multipack_name
             multipack_ref_map = multipack_block._create_ref_map(multipack_ref_base)
@@ -113,9 +113,9 @@ class DesignTop(Block):
             packed_ref_map = multipack_part_block._create_ref_map(packed_ref_base)
 
             if isinstance(multipack_part, Block):
-                part_name = multipack_block._name_of_child(multipack_part, self)
+                part_name = multipack_block._name_of(multipack_part)
             elif isinstance(multipack_part, PackedBlockAllocate):
-                part_name = multipack_block._name_of_child(multipack_part.parent, self)
+                part_name = multipack_block._name_of(multipack_part.parent)
                 assert multipack_part.suggested_name, "multipack parts must have suggested name, for consistency"
                 part_name += f"[{multipack_part.suggested_name}]"
             else:
@@ -206,5 +206,5 @@ class DesignTop(Block):
         else:
             raise TypeError
         assert isinstance(multipack_block, MultipackBlock), "block must be a part of a MultipackBlock"
-        assert self._blocks.name_of(multipack_block), "containing MultipackBlock must be a PackedBlock"
+        assert multipack_block._parent is self, "block must be in self"
         self._packed_blocks[multipack_part] = path

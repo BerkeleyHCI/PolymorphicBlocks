@@ -342,7 +342,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
         self._mixins: List["BlockInterfaceMixin"] = []
 
-        self._blocks = self._manager.new_dict(Block)
+        self._blocks: List[Block] = []
         self._chains = self._manager.new_dict(ChainConnect, anon_prefix="anon_chain")
         self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
@@ -363,9 +363,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
         for mixin in self._mixins:
             mixin._build_ref_map(ref_map, prefix)
         if not interface_only:
-            for name, block in self._blocks.items():
-                assert isinstance(block, Block)
-                block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
+            for block in self._blocks:
+                block._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(block)), interface_only=True)
 
     @override
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
@@ -380,12 +379,11 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 param_typed_value._populate_expr_proto(pb.param_defaults[self._name_of(param)], IdentityDict())
 
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
-        self._blocks.finalize()
         self._connects.finalize()
         self._chains.finalize()
 
-        for name, block in self._blocks.items():
-            new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem
+        for block in self._blocks:
+            new_block_lib = edgir.add_pair(pb.blocks, self._name_of(block)).lib_elem
             new_block_lib.base.target.name = block._get_def_name()
             for mixin in block._mixins:
                 new_block_lib.mixins.add().target.name = mixin._get_def_name()
@@ -485,7 +483,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 raise ValueError("unknown connect type")
 
         # generate block initializers
-        for block_name, block in self._blocks.items():
+        for block in self._blocks:
             all_block_params = {block._name_of(param): param for param in block._parameters}
             for mixin in block._mixins:
                 all_block_params.update({mixin._name_of(param): param for param in mixin._parameters})
@@ -493,7 +491,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
                     param_typed_value = block_param._to_expr_type(block_param.binding.value)
                     AssignBinding.populate_assign_proto(
-                        edgir.add_pair(pb.constraints, f"(init){block_name}.{block_param_name}"),
+                        edgir.add_pair(pb.constraints, f"(init){self._name_of(block)}.{block_param_name}"),
                         block_param,
                         param_typed_value,
                         ref_map,
@@ -743,7 +741,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
             raise TypeError(f"param to Block(...) may not be DesignTop")
 
         elt = tpe._bind(self)
-        self._blocks.register(elt)
+        self._blocks.append(elt)
+        self._manager.add_expected(elt, SourceLocator.from_caller())
 
         return elt
 

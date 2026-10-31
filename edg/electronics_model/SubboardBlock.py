@@ -49,7 +49,7 @@ class HasSubboardBlockApi(Block):
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
         # create this assign after the block definition has run
-        self.assign(self.fp_external_blocks, [self._blocks.name_of(block) for block in self._external_blocks])
+        self.assign(self.fp_external_blocks, [self._name_of(block) for block in self._external_blocks])
         return super()._def_to_proto()
 
     @override
