@@ -336,7 +336,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
             self._init_params: Dict[str, ConstraintExpr]
             for param_name, param in self._init_params.items():
                 self._parameters.append(param)
-                self._manager.add_expected(param, SourceLocator.from_frame(inspect.currentframe()))
+                self._manager.add_expected(param, SourceLocator.from_current_frame(back=2))
                 self._manager.add_name(param, param_name)
             delattr(self, "_init_params")
 

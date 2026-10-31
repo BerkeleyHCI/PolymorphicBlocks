@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from typing import *
 from abc import abstractmethod
 
@@ -89,8 +90,14 @@ class SourceLocator:
         self.lineno = lineno
 
     @classmethod
-    def from_frame(cls, frame: Any) -> SourceLocator:
-        return cls(frame.f_code.co_filename, frame.f_lineno)
+    def from_current_frame(cls, back: int) -> SourceLocator:
+        # back defines the number of frames to go back, 2 is the call site's caller
+        calling_frame = inspect.currentframe()
+        assert calling_frame is not None
+        for i in range(back):
+            calling_frame = calling_frame.f_back
+            assert calling_frame is not None
+        return cls(calling_frame.f_code.co_filename, calling_frame.f_lineno)
 
     @override
     def __repr__(self) -> str:

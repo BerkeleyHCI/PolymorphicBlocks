@@ -10,7 +10,7 @@ from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
 from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
-from .Core import non_library, SubElementDict
+from .Core import non_library, SubElementDict, SourceLocator
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block, BlockPrototype
@@ -253,6 +253,7 @@ class MultipackBlock(Block):
             raise TypeError()
         self.packed_assign(new_param, packed_param)
         self._parameters.append(new_param)
+        self._manager.add_expected(new_param, SourceLocator.from_current_frame(back=2))
         return new_param
 
     def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:

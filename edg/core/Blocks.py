@@ -569,11 +569,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
         elt = tpe._bind(ParamBinding(self))
         self._parameters.append(elt)
-        calling_frame = inspect.currentframe()
-        assert calling_frame is not None
-        calling_frame = calling_frame.f_back
-        assert calling_frame is not None
-        self._manager.add_expected(elt, SourceLocator.from_frame(calling_frame))
+        self._manager.add_expected(elt, SourceLocator.from_current_frame(back=2))
         if elt.initializer is not None:
             self.assign(elt, elt.initializer)
 
