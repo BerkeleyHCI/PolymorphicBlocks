@@ -1,7 +1,7 @@
 from typing import Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
 from typing_extensions import TypeVar, override
 
-from .Core import non_library, HasMetadata
+from .Core import non_library, HasMetadata, LibraryElement
 from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
@@ -30,7 +30,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
 
-    BaseType = TypeVar("BaseType", bound=HasMetadata)
+    BaseType = TypeVar("BaseType", bound=LibraryElement)
 
     @classmethod
     @override
