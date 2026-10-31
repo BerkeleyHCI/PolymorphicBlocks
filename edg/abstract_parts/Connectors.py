@@ -32,9 +32,9 @@ class RfConnector(Connector):
 class RfConnectorTestPoint(BlockInterfaceMixin[RfConnector]):
     """Test point mixin that allows the footprint to take a name"""
 
-    def __init__(self, name: StringLike):
+    def __init__(self, tp_name: StringLike):
         super().__init__()
-        self.tp_name = self.ArgParameter(name)
+        self.tp_name = self.ArgParameter(tp_name)
 
 
 class RfConnectorAntenna(Antenna):
