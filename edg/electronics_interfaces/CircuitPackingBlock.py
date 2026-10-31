@@ -12,7 +12,7 @@ from .VoltagePorts import VoltageSource, VoltageSink
 @abstract_block
 class NetPackingBlock(InternalBlock, Block):
     def packed(self, elts: BasePort, merged: BasePort) -> None:
-        self.nets_packed = self.Metadata({"src": self._manager.name(elts), "dst": self._manager.name(merged)})
+        self.nets_packed = self.Metadata({"src": self._name_of(elts), "dst": self._name_of(merged)})
 
 
 class PackedPassive(InternalSubcircuit, GeneratorBlock):
@@ -31,7 +31,7 @@ class PackedPassive(InternalSubcircuit, GeneratorBlock):
         for request in self.get(self.elts.requested()):
             self.elts.append_elt(Passive(), request)
 
-        self.nets_packed = self.Metadata({"src": self._manager.name(self.elts), "dst": self._manager.name(self.merged)})
+        self.nets_packed = self.Metadata({"src": self._name_of(self.elts), "dst": self._name_of(self.merged)})
 
 
 class PackedGround(InternalSubcircuit, GeneratorBlock):

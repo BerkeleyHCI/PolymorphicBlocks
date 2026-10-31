@@ -80,8 +80,8 @@ class BaseIoControllerWrapped(BaseIoController):
             assert prefix not in pin_dict, f"duplicate pin name {prefix}"
             pin_dict[prefix] = port
 
-            for subport_name, subport in port._ports.items():
-                recurse_port(subport, f"{prefix}.{subport_name}")
+            for subport in port._ports:
+                recurse_port(subport, f"{prefix}.{port._name_of(subport)}")
 
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):
@@ -203,8 +203,8 @@ class BaseIoControllerWrapper(BaseIoController):
             assert prefix not in pin_type_dict, f"duplicate pin name {prefix}"
             pin_type_dict[prefix] = type(port)
 
-            for subport_name, subport in port._ports.items():
-                recurse_port(subport, f"{prefix}.{subport_name}")
+            for subport in port._ports:
+                recurse_port(subport, f"{prefix}.{self._name_of(subport)}")
 
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):

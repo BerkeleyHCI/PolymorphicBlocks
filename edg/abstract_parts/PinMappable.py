@@ -435,7 +435,8 @@ class PinMapUtil:
                 resource_model = resource.port_model  # typer gets confused if this is put directly where it is used
                 inner_models = {}
                 resource_name = resource.name  # typer gets confused if this is put directly where it is used
-                for inner_name, inner_model in resource.port_model._ports.items():
+                for inner_model in resource.port_model._ports:
+                    inner_name = resource.port_model._name_of(inner_model)
                     inner_type = type(inner_model)
                     if inner_type in self.transforms:  # apply transform to search for the resource type, if needed
                         inner_type = self.transforms[inner_type][0]

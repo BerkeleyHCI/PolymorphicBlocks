@@ -79,7 +79,7 @@ class Link(BaseBlock, metaclass=LinkMeta):
                         ref_map[self_port.base]
                     )
                     constraint_pb.exportedArray.exterior_port.map_extract.path.steps.add().name = (
-                        self_port.target._name_from(self_port.base._get_elt_sample())
+                        self_port.base._get_elt_sample()._name_of(self_port.target)
                     )
                     constraint_pb.exportedArray.internal_block_port.ref.CopyFrom(
                         edgir.localpath_concat(link_path, link_port_path)

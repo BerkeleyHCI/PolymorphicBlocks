@@ -16,7 +16,7 @@ def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, Passive]]
         return [(prefix, port)]  # type: ignore
     else:
         assert port._ports, "must be Passive or Port bundle with sub-Ports"
-        return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port) for (name, port) in port._ports.items()])
+        return chain(*[leaf_circuit_ports(f"{prefix}.{port._name_of(subport)}", subport) for subport in port._ports])
 
 
 class SpecialPin:

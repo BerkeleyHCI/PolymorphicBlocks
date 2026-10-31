@@ -13,7 +13,7 @@ def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
         result = {
             "_": edg_obj_name(obj),
             "params": obj._parameters,
-            "fields": {k: edg_to_dict(v) for k, v in obj._ports.items()},
+            "fields": {obj._name_of(port): edg_to_dict(port) for port in obj._ports},
         }
         if obj._link_instance is not None:
             result["link"] = edg_to_dict(obj._link_instance)
@@ -21,8 +21,8 @@ def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
     elif isinstance(obj, Block) or isinstance(obj, Link):
         return {
             "_": edg_obj_name(obj),
-            "params": {obj._manager.name(param): param for param in obj._parameters},
-            "ports": {obj._manager.name(port): edg_to_dict(port) for port in obj._ports},
+            "params": {obj._name_of(param): param for param in obj._parameters},
+            "ports": {obj._name_of(port): edg_to_dict(port) for port in obj._ports},
         }
     else:
         raise ValueError

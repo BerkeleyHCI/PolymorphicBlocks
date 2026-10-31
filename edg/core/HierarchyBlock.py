@@ -377,7 +377,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
             if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
                 # default values can't depend on anything so the ref_map is empty
                 param_typed_value = param._to_expr_type(param.binding.value)
-                param_typed_value._populate_expr_proto(pb.param_defaults[self._manager.name(param)], IdentityDict())
+                param_typed_value._populate_expr_proto(pb.param_defaults[self._name_of(param)], IdentityDict())
 
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
         self._blocks.finalize()
@@ -486,9 +486,9 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
         # generate block initializers
         for block_name, block in self._blocks.items():
-            all_block_params = {block._manager.name(param): param for param in block._parameters}
+            all_block_params = {block._name_of(param): param for param in block._parameters}
             for mixin in block._mixins:
-                all_block_params.update({mixin._manager.name(param): param for param in mixin._parameters})
+                all_block_params.update({mixin._name_of(param): param for param in mixin._parameters})
             for block_param_name, block_param in all_block_params.items():
                 if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
                     param_typed_value = block_param._to_expr_type(block_param.binding.value)

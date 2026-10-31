@@ -13,9 +13,6 @@ from .Builder import builder
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 
-if TYPE_CHECKING:
-    from .Blocks import BaseBlock
-
 ElementType = TypeVar("ElementType")
 
 
@@ -117,7 +114,10 @@ class NamespaceManager:
 
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
 
-    def validate_names(self, container_tpe: Type["BaseBlock"]) -> None:
+    def __contains__(self, item: Any) -> bool:
+        return item in self._base_names
+
+    def validate_names(self, container_tpe: Type[Any]) -> None:
         # asserts that all names are given and valid
         seen_names: Set[str] = set()
         missing_names: List[Tuple[Any, SourceLocator]] = []
@@ -359,13 +359,14 @@ class NamingContainer:
         If debug is true, will return the best-effort name even if it is not yet assigned.
         If debug is false, raises an error for unassigned names."""
         if not recursive:
+            assert elt in self._manager, f"{self.__class__.__name__} has no named {elt}"
             return [self._manager.name(elt, debug=debug)]
         else:
             if elt is self:
                 return []
             else:
                 assert elt._parent is not None, "can't get path / name for non-bound element"
-                print(elt._parent)
+                assert elt in elt._parent._manager, f"{elt._parent.__class__.__name__} has no named {elt}"
                 return self._path_of(elt._parent, recursive=True, debug=debug) + [
                     elt._parent._manager.name(elt, debug=debug)
                 ]
@@ -375,6 +376,7 @@ class NamingContainer:
         path = self._path_of(elt, recursive=recursive, debug=debug)
         return ".".join(path)
 
+    # TODO remove deprecated API
     def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
         self_name = self._manager.name_of(subelt)
         if self_name is not None:
@@ -385,6 +387,7 @@ class NamingContainer:
             else:
                 raise ValueError(f"no name for {subelt}")
 
+    # TODO remove deprecated API
     def _path_from(self, base: NamingContainer, allow_unknown: bool = False) -> List[str]:
         if base is self:
             return []
@@ -394,6 +397,7 @@ class NamingContainer:
                 self._parent._name_of_child(self, base, allow_unknown)
             ]
 
+    # TODO remove deprecated API
     def _name_from(self, base: NamingContainer, allow_unknown: bool = False) -> str:
         """Returns the path name to (inclusive) this element from some starting point.
         allow_unknown allows elements that haven't been assigned a name yet to not crash,
