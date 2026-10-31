@@ -348,7 +348,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
     def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
         out = []
-        for block_port_name, block_port in self._ports.items():
+        for block_port in self._ports:
             assert isinstance(block_port, BasePort)
             port_tags: Set[PortTag] = self._port_tags.get(block_port, set())
             if port_tags.issuperset(tags):

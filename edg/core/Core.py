@@ -14,7 +14,7 @@ from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 
 if TYPE_CHECKING:
-    from .Block import BaseBlock
+    from .Blocks import BaseBlock
 
 ElementType = TypeVar("ElementType")
 

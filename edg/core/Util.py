@@ -22,7 +22,7 @@ def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
         return {
             "_": edg_obj_name(obj),
             "params": {obj._manager.name(param): param for param in obj._parameters},
-            "ports": {k: edg_to_dict(v) for k, v in obj._ports.items()},
+            "ports": {obj._manager.name(port): edg_to_dict(port) for port in obj._ports},
         }
     else:
         raise ValueError

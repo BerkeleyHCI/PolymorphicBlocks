@@ -125,7 +125,7 @@ class Connection:
             assert not self.link_connected_ports
             assert not self.bridged_ports
             assert not self.available_link_ports_by_type
-            for name, port in link._ports.items():
+            for port in link._ports:
                 self.available_link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
         else:
             link = self.link_instance
@@ -288,7 +288,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._parameters: List[ConstraintExpr] = []
         self._param_docs = IdentityDict[ConstraintExpr, str]()
 
-        self._ports: SubElementDict[BasePort] = self._manager.new_dict(BasePort)
+        self._ports: List[BasePort] = []
         self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
@@ -353,9 +353,9 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         for param in self._parameters:
             if param in self._param_docs:
                 metadata_dict[self._manager.name(param)] = self._param_docs[param]
-        for name, port in self._ports.items():
+        for port in self._ports:
             if port in self._port_docs:
-                metadata_dict[name] = self._port_docs[port]
+                metadata_dict[self._manager.name(port)] = self._port_docs[port]
         self._docs = self.Metadata(metadata_dict)
 
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
@@ -366,7 +366,6 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         )
 
         self._manager.validate_names(type(self))
-        self._ports.finalize()
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)
@@ -391,11 +390,11 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             assert isinstance(param.binding, ParamBinding)
             param._populate_decl_proto(edgir.add_pair(pb.params, self._manager.name(param)))
 
-        for name, port in self._ports.items():
-            port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
+        for port in self._ports:
+            port._populate_portlike_proto(edgir.add_pair(pb.ports, self._manager.name(port)))
 
         ref_map = self._create_ref_map()
-        for name, port in self._ports.items():
+        for port in self._ports:
             if port in self._required_ports:
                 if isinstance(port, Port):
                     connected_condition = port.is_connected()
@@ -410,7 +409,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                     connected_condition = precondition.implies(connected_condition)
 
                 # add required constraints first
-                connected_condition._populate_expr_proto(edgir.add_pair(pb.constraints, f"(reqd){name}"), ref_map)
+                # TODO move to port declaration time
+                connected_condition._populate_expr_proto(
+                    edgir.add_pair(pb.constraints, f"(reqd){self._manager.name(port)}"), ref_map
+                )
 
         self._constraints.finalize()  # needed for source locator generation
 
@@ -418,8 +420,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._populate_metadata(pb.meta, self._metadata, ref_map)
 
     def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
-        for name, port in self._ports.items():
-            for param, path, initializer in port._get_initializers([name]):
+        for port in self._ports:
+            for param, path, initializer in port._get_initializers([self._manager.name(port)]):
                 AssignBinding.populate_assign_proto(
                     edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}"),
                     param,
@@ -449,8 +451,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
         for param in self._parameters:
             param._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._manager.name(param)))
-        for name, port in self._ports.items():
-            port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
+        for port in self._ports:
+            port._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._manager.name(port)))
 
     def _bind_in_place(self, parent: Union[BaseBlock, Port]) -> None:
         self._parent = parent
@@ -539,7 +541,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             raise EdgTypeError(f"param to Port(...)", tpe, BasePort)
 
         elt = tpe._bind(self)
-        self._ports.register(elt)
+        self._ports.append(elt)
+        self._manager.add_expected(elt, SourceLocator.from_caller())
 
         if isinstance(optional, bool):
             if not optional:
