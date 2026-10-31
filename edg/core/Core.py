@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from types import FrameType
 from typing import *
 from abc import abstractmethod
 
@@ -89,23 +90,24 @@ class SubElementDict(Generic[ElementType]):
 class SourceLocator:
     """Object that can be used to locate the source of a library element, for error reporting."""
 
-    def __init__(self, filename: str, lineno: int) -> None:
-        self.filename = filename
-        self.lineno = lineno
+    def __init__(self, top_frame: Optional[FrameType], depth: int) -> None:
+        self._top_frame = top_frame
+        self._depth = depth
 
     @classmethod
-    def from_current_frame(cls, back: int) -> SourceLocator:
-        # back defines the number of frames to go back, 2 is the call site's caller
-        calling_frame = inspect.currentframe()
-        assert calling_frame is not None
-        for i in range(back):
-            calling_frame = calling_frame.f_back
-            assert calling_frame is not None
-        return cls(calling_frame.f_code.co_filename, calling_frame.f_lineno)
+    def from_caller(cls) -> SourceLocator:
+        # returns the source locator for the calling frame of the caller
+        return cls(inspect.currentframe(), 2)
 
     @override
     def __repr__(self) -> str:
-        return f"{self.filename}:{self.lineno}"
+        """Evaluation is lazy since the results are almost never used"""
+        frame = self._top_frame
+        assert frame is not None
+        for i in range(self._depth):
+            frame = frame.f_back
+            assert frame is not None
+        return f"{frame.f_code.co_filename}:{frame.f_lineno}"
 
 
 class NamespaceManager:
@@ -135,6 +137,7 @@ class NamespaceManager:
         if duplicate_names:
             raise ElementNamingError(container_tpe, f"duplicate names {duplicate_names}")
 
+    # TODO remove old API
     def new_dict(
         self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]], anon_prefix: Optional[str] = None
     ) -> SubElementDict[ElementType]:
@@ -145,6 +148,7 @@ class NamespaceManager:
     def add_alias(self, src: Any, target: Any) -> None:
         self.aliases[src] = target
 
+    # TODO remove old API
     def add_element(self, name: str, item: Any) -> None:
         if isinstance(item, ElementDict):
             item._set_parent((name, self))
@@ -161,6 +165,7 @@ class NamespaceManager:
     def add_expected(self, item: Any, source_locator: SourceLocator) -> None:
         self._base_names[item] = source_locator
 
+    # TODO remove old API
     def add_name(self, item: Any, name: str) -> None:
         existing = self._base_names.get(item, None)
         if existing is None:
@@ -174,6 +179,7 @@ class NamespaceManager:
         else:
             raise ValueError("unexpected name entry type")
 
+    # TODO: remove this, replace with debug_name
     def name_of(self, item: Any) -> Optional[str]:
         if item in self.aliases:
             item = self.aliases[item]

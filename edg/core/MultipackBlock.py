@@ -253,7 +253,7 @@ class MultipackBlock(Block):
             raise TypeError()
         self.packed_assign(new_param, packed_param)
         self._parameters.append(new_param)
-        self._manager.add_expected(new_param, SourceLocator.from_current_frame(back=2))
+        self._manager.add_expected(new_param, SourceLocator.from_caller())
         return new_param
 
     def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
