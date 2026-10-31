@@ -414,13 +414,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 if connect in link_chain_names and not link_chain_names[connect][0].startswith("anon_"):
                     name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
                 elif isinstance(connect_elts, Connection.Export):
-                    port_pathname = connect_elts.external_port._name_from(self).replace(".", "_")
+                    port_pathname = self._name_of(connect_elts.external_port, recursive=True).replace(".", "_")
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.bridged_connects:
-                    port_pathname = connect_elts.bridged_connects[0][0]._name_from(self).replace(".", "_")
+                    port_pathname = self._name_of(connect_elts.bridged_connects[0][0], recursive=True).replace(".", "_")
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.link_connects:
-                    port_pathname = connect_elts.link_connects[0][0]._name_from(self).replace(".", "_")
+                    port_pathname = self._name_of(connect_elts.link_connects[0][0], recursive=True).replace(".", "_")
                     name = f"_{port_pathname}_link"
                 elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
                     name = link_chain_names[connect][0]
