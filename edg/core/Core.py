@@ -151,7 +151,7 @@ class NamespaceManager:
     # TODO remove old API
     def add_element(self, name: str, item: Any) -> None:
         if isinstance(item, ElementDict):
-            item._set_parent((name, self))
+            pass  # moved to add_name
         else:
             assigned = []
             for tpe, dict in self.dicts:
@@ -165,11 +165,13 @@ class NamespaceManager:
     def add_expected(self, item: Any, source_locator: SourceLocator) -> None:
         self._base_names[item] = source_locator
 
-    # TODO remove old API
     def add_name(self, item: Any, name: str) -> None:
         existing = self._base_names.get(item, None)
         if existing is None:
-            return  # not expected, ignore
+            if isinstance(item, ElementDict):
+                item._set_parent((name, self))  # TODO re-examine the architecture
+            else:
+                return  # not expected, ignore
         elif existing == name:
             return  # already assigned, ignore
         elif isinstance(existing, str):
@@ -220,8 +222,8 @@ class ElementDict(Generic[ElementType]):
 
     def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
         assert self._parent is not None
-        self._parent[1].add_element(
-            f"{self._parent[0]}[{key}]", value
+        self._parent[1].add_name(
+            value, f"{self._parent[0]}[{key}]"
         )  # TODO perhaps some kind of check to make sure this is required?
         self.container[key] = value
 
