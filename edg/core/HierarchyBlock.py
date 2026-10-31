@@ -412,13 +412,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 if connect in link_chain_names and not link_chain_names[connect][0].startswith("anon_"):
                     name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
                 elif isinstance(connect_elts, Connection.Export):
-                    port_pathname = self._name_of(connect_elts.external_port, recursive=True).replace(".", "_")
+                    port_pathname = "_".join(self._path_name_of(connect_elts.external_port))
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.bridged_connects:
-                    port_pathname = self._name_of(connect_elts.bridged_connects[0][0], recursive=True).replace(".", "_")
+                    port_pathname = "_".join(self._path_of(connect_elts.bridged_connects[0][0]))
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.link_connects:
-                    port_pathname = self._name_of(connect_elts.link_connects[0][0], recursive=True).replace(".", "_")
+                    port_pathname = "_".join(self._path_of(connect_elts.link_connects[0][0]))
                     name = f"_{port_pathname}_link"
                 elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
                     name = link_chain_names[connect][0]
@@ -447,7 +447,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     assert not connect_elts.is_link_array, "bridged arrays not supported"
                     assert self_port.bridge_type is not None
 
-                    port_name = self._name_of(self_port, recursive=True)
+                    port_name = self._path_name_of(self_port)
                     edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.base.target.name = (
                         self_port.bridge_type._static_def_name()
                     )

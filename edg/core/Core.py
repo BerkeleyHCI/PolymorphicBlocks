@@ -356,27 +356,25 @@ class NamingContainer:
             self._manager.add_name(value, name)
         super().__setattr__(name, value)
 
-    def _path_of(self, elt: Any, *, recursive: bool = False, debug: bool = False) -> List[str]:
-        """Returns the name path of an inner element, optionally recursively (child of child).
+    def _path_of(self, elt: Any, *, debug: bool = False) -> List[str]:
+        """Returns the name path of an inner element.
         If debug is true, will return the best-effort name even if it is not yet assigned.
         If debug is false, raises an error for unassigned names."""
-        if not recursive:
-            assert elt in self._manager, f"{self.__class__.__name__} has no named {elt}"
-            return [self._manager.name(elt, debug=debug)]
+        if elt is self:
+            return []
         else:
-            if elt is self:
-                return []
-            else:
-                assert elt._parent is not None, "can't get path / name for non-bound element"
-                assert elt in elt._parent._manager, f"{elt._parent.__class__.__name__} has no named {elt}"
-                return self._path_of(elt._parent, recursive=True, debug=debug) + [
-                    elt._parent._manager.name(elt, debug=debug)
-                ]
+            assert elt._parent is not None, "can't get path / name for non-bound element"
+            assert elt in elt._parent._manager, f"{elt._parent.__class__.__name__} has no named {elt}"
+            return self._path_of(elt._parent, debug=debug) + [elt._parent._name_of(elt, debug=debug)]
 
-    def _name_of(self, elt: Any, *, recursive: bool = False, debug: bool = False) -> str:
+    def _path_name_of(self, elt: Any, *, debug: bool = False) -> str:
         """Convenience stringify wrapper around _path_of."""
-        path = self._path_of(elt, recursive=recursive, debug=debug)
-        return ".".join(path)
+        return ".".join(self._path_of(elt, debug=debug))
+
+    def _name_of(self, elt: Any, *, debug: bool = False) -> str:
+        """Returns the name of a contained element, non-recursively."""
+        assert elt in self._manager, f"{self.__class__.__name__} has no named {elt}"
+        return self._manager.name(elt, debug=debug)
 
     # TODO remove deprecated API
     def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
