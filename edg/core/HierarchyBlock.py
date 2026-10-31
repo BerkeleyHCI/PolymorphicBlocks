@@ -27,7 +27,7 @@ from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty, BaseBlockMeta
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library
+from .Core import Refable, non_library, SourceLocator
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -336,7 +336,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
             self._init_params: Dict[str, ConstraintExpr]
             for param_name, param in self._init_params.items():
                 self._parameters.append(param)
-                self._manager.add_expected(param)
+                self._manager.add_expected(param, SourceLocator.from_frame(inspect.currentframe()))
                 self._manager.add_name(param, param_name)
             delattr(self, "_init_params")
 

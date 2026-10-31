@@ -81,24 +81,43 @@ class SubElementDict(Generic[ElementType]):
             return None
 
 
+class SourceLocator:
+    """Object that can be used to locate the source of a library element, for error reporting."""
+
+    def __init__(self, filename: str, lineno: int) -> None:
+        self.filename = filename
+        self.lineno = lineno
+
+    @classmethod
+    def from_frame(cls, frame: Any) -> SourceLocator:
+        return cls(frame.f_code.co_filename, frame.f_lineno)
+
+    @override
+    def __repr__(self) -> str:
+        return f"{self.filename}:{self.lineno}"
+
+
 class NamespaceManager:
     def __init__(self) -> None:
         self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
         self.aliases = IdentityDict[Any, Any]()
 
-        self._base_names = IdentityDict[Any, Optional[str]]()
+        self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
 
-    def validate_names(self) -> bool:
+    def validate_names(self) -> None:
         # asserts that all names are given and valid
         seen_names: Set[str] = set()
-        missing_names: List[Any] = []
+        missing_names: List[Tuple[Any, SourceLocator]] = []
         duplicate_names: List[str] = []
         for obj, name in self._base_names.items():
-            if name is None:
-                missing_names.append(obj)
-            if name in seen_names:
-                duplicate_names.append(name)
-            seen_names.add(name)
+            if isinstance(name, str):
+                if name in seen_names:
+                    duplicate_names.append(name)
+                seen_names.add(name)
+            elif isinstance(name, SourceLocator):
+                missing_names.append((obj, name))
+            else:
+                raise TypeError("unexpected name entry type")
 
         # TODO replace with EDG error type
         if missing_names:
@@ -129,26 +148,29 @@ class NamespaceManager:
                     assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
             assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
-    def add_expected(self, item: Any) -> None:
-        self._base_names[item] = None
+    def add_expected(self, item: Any, source_locator: SourceLocator) -> None:
+        self._base_names[item] = source_locator
 
     def add_name(self, item: Any, name: str) -> None:
-        existing = self._base_names.get(item, 0)  # uses 0 as guard
-        if existing == 0:
+        existing = self._base_names.get(item, None)
+        if existing is None:
             return  # not expected, ignore
         elif existing == name:
             return  # already assigned, ignore
-        elif existing is not None:
+        elif isinstance(existing, str):
             raise ValueError(f"attempted to reassign name {name} to item with prior name {existing}")
-        elif existing is None:
+        elif isinstance(existing, SourceLocator):
             self._base_names.update(item, name)
+        else:
+            raise ValueError("unexpected name entry type")
 
     def name_of(self, item: Any) -> Optional[str]:
         if item in self.aliases:
             item = self.aliases[item]
         name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
-        if item in self._base_names:
-            name_candidates.append(self._base_names[item])
+        base_name_candidate = self._base_names.get(item, None)
+        if isinstance(base_name_candidate, str):
+            name_candidates.append(base_name_candidate)
         name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
         assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
         if not name_candidates_filtered:
@@ -159,7 +181,8 @@ class NamespaceManager:
     def name(self, item: Any) -> str:
         name = self.name_of(item)
         if name is None:
-            raise ValueError(f"no name for {item}")
+            base_name_of = self._base_names.get(item, None)
+            raise ValueError(f"no name for {item} at {base_name_of}")
         else:
             return name
 

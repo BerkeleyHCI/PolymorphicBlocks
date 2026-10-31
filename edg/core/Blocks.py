@@ -12,7 +12,7 @@ from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase
+from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase, SourceLocator
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -569,7 +569,11 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
         elt = tpe._bind(ParamBinding(self))
         self._parameters.append(elt)
-        self._manager.add_expected(elt)
+        calling_frame = inspect.currentframe()
+        assert calling_frame is not None
+        calling_frame = calling_frame.f_back
+        assert calling_frame is not None
+        self._manager.add_expected(elt, SourceLocator.from_frame(calling_frame))
         if elt.initializer is not None:
             self.assign(elt, elt.initializer)
 
