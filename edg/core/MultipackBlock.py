@@ -252,7 +252,7 @@ class MultipackBlock(Block):
         else:
             raise TypeError()
         self.packed_assign(new_param, packed_param)
-        self._parameters.register(new_param)
+        self._parameters.append(new_param)
         return new_param
 
     def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:

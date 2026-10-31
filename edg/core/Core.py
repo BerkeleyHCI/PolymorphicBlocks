@@ -81,10 +81,30 @@ class SubElementDict(Generic[ElementType]):
             return None
 
 
-class SubElementManager:
+class NamespaceManager:
     def __init__(self) -> None:
         self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
         self.aliases = IdentityDict[Any, Any]()
+
+        self._base_names = IdentityDict[Any, Optional[str]]()
+
+    def validate_names(self) -> bool:
+        # asserts that all names are given and valid
+        seen_names: Set[str] = set()
+        missing_names: List[Any] = []
+        duplicate_names: List[str] = []
+        for obj, name in self._base_names.items():
+            if name is None:
+                missing_names.append(obj)
+            if name in seen_names:
+                duplicate_names.append(name)
+            seen_names.add(name)
+
+        # TODO replace with EDG error type
+        if missing_names:
+            raise ValueError(f"no name for objects {missing_names}")
+        if duplicate_names:
+            raise ValueError(f"duplicate names {duplicate_names}")
 
     def new_dict(
         self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]], anon_prefix: Optional[str] = None
@@ -109,16 +129,37 @@ class SubElementManager:
                     assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
             assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
+    def add_expected(self, item: Any) -> None:
+        self._base_names[item] = None
+
+    def add_name(self, item: Any, name: str) -> None:
+        existing = self._base_names.get(item, 0)  # uses 0 as guard
+        if existing == 0:
+            return  # not expected, ignore
+        elif existing is not None:
+            raise ValueError(f"attempted to reassign name {name} to item with prior name {existing}")
+        elif existing is None:
+            self._base_names.update(item, name)
+
     def name_of(self, item: Any) -> Optional[str]:
         if item in self.aliases:
             item = self.aliases[item]
         name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
+        if item in self._base_names:
+            name_candidates.append(self._base_names[item])
         name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
         assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
         if not name_candidates_filtered:
             return None
         else:
             return name_candidates_filtered[0]
+
+    def name(self, item: Any) -> str:
+        name = self.name_of(item)
+        if name is None:
+            raise ValueError(f"no name for {item}")
+        else:
+            return name
 
 
 class ElementDict(Generic[ElementType]):
@@ -127,9 +168,9 @@ class ElementDict(Generic[ElementType]):
     # TODO also have a KeyType? Perhaps enforce type bounds, eg must be str-able?
     def __init__(self) -> None:
         self.container: Dict[Union[str, int], ElementType] = {}
-        self._parent: Optional[Tuple[str, SubElementManager]] = None  # name prefix, pointer to top level
+        self._parent: Optional[Tuple[str, NamespaceManager]] = None  # name prefix, pointer to top level
 
-    def _set_parent(self, parent: Tuple[str, SubElementManager]) -> None:
+    def _set_parent(self, parent: Tuple[str, NamespaceManager]) -> None:
         self._parent = parent
 
     def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
@@ -207,13 +248,15 @@ class LibraryElement(Refable):
     def __init__(self) -> None:
         self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
 
-        self._manager = SubElementManager()
+        self._manager = NamespaceManager()
         self._manager_ignored: Set[str] = set(["_parent"])
 
     @override
     def __setattr__(self, name: str, value: Any) -> None:
         if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
             self._manager.add_element(name, value)
+        if hasattr(self, "_manager"):  # for before _manager is defined
+            self._manager.add_name(name, value)
         super().__setattr__(name, value)
 
     def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:

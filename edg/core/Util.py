@@ -21,7 +21,7 @@ def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
     elif isinstance(obj, Block) or isinstance(obj, Link):
         return {
             "_": edg_obj_name(obj),
-            "params": obj._parameters,
+            "params": {obj._manager.name(param): param for param in obj._parameters},
             "ports": {k: edg_to_dict(v) for k, v in obj._ports.items()},
         }
     else:
