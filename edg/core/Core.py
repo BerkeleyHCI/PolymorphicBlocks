@@ -136,6 +136,8 @@ class NamespaceManager:
         existing = self._base_names.get(item, 0)  # uses 0 as guard
         if existing == 0:
             return  # not expected, ignore
+        elif existing == name:
+            return  # already assigned, ignore
         elif existing is not None:
             raise ValueError(f"attempted to reassign name {name} to item with prior name {existing}")
         elif existing is None:
@@ -256,7 +258,7 @@ class LibraryElement(Refable):
         if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
             self._manager.add_element(name, value)
         if hasattr(self, "_manager"):  # for before _manager is defined
-            self._manager.add_name(name, value)
+            self._manager.add_name(value, name)
         super().__setattr__(name, value)
 
     def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
