@@ -6,10 +6,14 @@ from abc import abstractmethod
 
 from typing_extensions import override
 
+from .HdlUserExceptions import ElementNamingError
 from .. import edgir
 from .Builder import builder
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
+
+if TYPE_CHECKING:
+    from .Block import BaseBlock
 
 ElementType = TypeVar("ElementType")
 
@@ -111,7 +115,7 @@ class NamespaceManager:
 
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
 
-    def validate_names(self) -> None:
+    def validate_names(self, container_tpe: Type["BaseBlock"]) -> None:
         # asserts that all names are given and valid
         seen_names: Set[str] = set()
         missing_names: List[Tuple[Any, SourceLocator]] = []
@@ -126,11 +130,10 @@ class NamespaceManager:
             else:
                 raise TypeError("unexpected name entry type")
 
-        # TODO replace with EDG error type
         if missing_names:
-            raise ValueError(f"no name for objects {missing_names}")
+            raise ElementNamingError(container_tpe, f"no name for objects {missing_names}")
         if duplicate_names:
-            raise ValueError(f"duplicate names {duplicate_names}")
+            raise ElementNamingError(container_tpe, f"duplicate names {duplicate_names}")
 
     def new_dict(
         self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]], anon_prefix: Optional[str] = None
@@ -175,9 +178,6 @@ class NamespaceManager:
         if item in self.aliases:
             item = self.aliases[item]
         name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
-        base_name_candidate = self._base_names.get(item, None)
-        if isinstance(base_name_candidate, str):
-            name_candidates.append(base_name_candidate)
         name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
         assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
         if not name_candidates_filtered:
@@ -186,12 +186,13 @@ class NamespaceManager:
             return name_candidates_filtered[0]
 
     def name(self, item: Any) -> str:
-        name = self.name_of(item)
-        if name is None:
-            base_name_of = self._base_names.get(item, None)
-            raise ValueError(f"no name for {item} at {base_name_of}")
-        else:
+        name = self._base_names.get(item, None)
+        if isinstance(name, str):
             return name
+        elif isinstance(name, SourceLocator):
+            raise ValueError(f"no name for {item} at {name} (internal error, should have been caught at validation)")
+        else:
+            raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
 
 class ElementDict(Generic[ElementType]):

@@ -365,7 +365,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        self._manager.validate_names()
+        self._manager.validate_names(type(self))
         self._ports.finalize()
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:

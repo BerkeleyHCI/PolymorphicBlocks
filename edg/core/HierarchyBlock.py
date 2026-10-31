@@ -502,6 +502,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
+        self._manager.validate_names(type(self))
+
         assert not self._mixins  # blocks with mixins can only be instantiated anonymously
         ref_map = self._create_ref_map()
 
