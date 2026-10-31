@@ -132,7 +132,7 @@ class MultipackBlock(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self._packed_blocks: SubElementDict[PackedBlockTypes] = self._manager.new_dict((Block, PackedBlockArray))
+
         # TODO should these be defined in terms of Refs?
         # packed block -> (exterior port -> packed block port)
         self._packed_connects_by_packed_block = IdentityDict[
@@ -163,7 +163,7 @@ class MultipackBlock(Block):
             raise BlockDefinitionError(type(self), "can only define multipack in init")
 
         elt = tpe._bind(self)  # TODO: does this actually need to be bound?
-        self._packed_blocks.register(elt)
+        self._manager.add_expected(elt, SourceLocator.from_caller())
         self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
         self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
         self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, UnpackedParamTypes]()
@@ -275,7 +275,6 @@ class MultipackBlock(Block):
 
     def _get_block_packing_rule(self, packed_part: Union[Block, PackedBlockAllocate]) -> MultipackPackingRule:
         """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
-        self._packed_blocks.finalize()
         if isinstance(packed_part, PackedBlockAllocate):
             packed_block: PackedBlockTypes = packed_part.parent
         else:
