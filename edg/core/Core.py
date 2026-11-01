@@ -109,21 +109,23 @@ class SourceLocator:
 
 class NamespaceManager:
     def __init__(self) -> None:
+        # TODO REMOVE ME
         self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
-        self.aliases = IdentityDict[Any, Any]()
 
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
+        self._optional_names = IdentityDict[Any, bool]()
+        self._aliases = IdentityDict[Any, Any]()
 
     def __contains__(self, item: Any) -> bool:
-        if item in self.aliases:
-            return self.aliases[item] in self
+        if item in self._aliases:
+            return self._aliases[item] in self
 
         return item in self._base_names
 
     def validate_names(self, container_tpe: Type[Any]) -> None:
         # asserts that all names are given and valid
         seen_names: Set[str] = set()
-        missing_names: List[Tuple[Any, SourceLocator]] = []
+        missing_names: List[str] = []
         duplicate_names: List[str] = []
         for obj, name in self._base_names.items():
             if isinstance(name, str):
@@ -131,7 +133,8 @@ class NamespaceManager:
                     duplicate_names.append(name)
                 seen_names.add(name)
             elif isinstance(name, SourceLocator):
-                missing_names.append((obj, name))
+                if obj not in self._optional_names:
+                    missing_names.append(f"{obj}@{name}")
             else:
                 raise TypeError("unexpected name entry type")
 
@@ -149,7 +152,7 @@ class NamespaceManager:
         return sub_dict
 
     def add_alias(self, src: Any, target: Any) -> None:
-        self.aliases[src] = target
+        self._aliases[src] = target
 
     # TODO remove old API
     def add_element(self, name: str, item: Any) -> None:
@@ -165,8 +168,10 @@ class NamespaceManager:
                     assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
             assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
-    def add_expected(self, item: Any, source_locator: SourceLocator) -> None:
+    def add_expected(self, item: Any, source_locator: SourceLocator, *, optional: bool = False) -> None:
         self._base_names[item] = source_locator
+        if optional:
+            self._optional_names[item] = True
 
     def add_name(self, item: Any, name: str) -> None:
         existing = self._base_names.get(item, None)
@@ -184,8 +189,8 @@ class NamespaceManager:
 
     # TODO: remove this, replace with debug_name
     def name_of(self, item: Any) -> Optional[str]:
-        if item in self.aliases:
-            item = self.aliases[item]
+        if item in self._aliases:
+            item = self._aliases[item]
         name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
         name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
         assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
@@ -194,10 +199,10 @@ class NamespaceManager:
         else:
             return name_candidates_filtered[0]
 
-    def name(self, item: Any, *, debug: bool = False) -> str:
-        """Returns the final name of an item"""
-        if item in self.aliases:
-            return self.name(self.aliases[item], debug=debug)
+    def name(self, item: Any, *, debug: bool = False) -> Optional[str]:
+        """Returns the final name of an item, if available."""
+        if item in self._aliases:
+            return self.name(self._aliases[item], debug=debug)
 
         name = self._base_names.get(item, None)
         if isinstance(name, str):
@@ -206,9 +211,7 @@ class NamespaceManager:
             if debug:
                 return str(name)
             else:
-                raise ValueError(
-                    f"no name for {item} at {name} (internal error, should have been caught at validation)"
-                )
+                return None
         else:
             raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
@@ -356,7 +359,7 @@ class NamingContainer:
     def __setattr__(self, name: str, value: Any) -> None:
         if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
             self._namer.add_element(name, value)
-        if hasattr(self, "_manager"):  # for before _manager is defined
+        if hasattr(self, "_namer"):  # don't access before definition
             self._namer.add_name(value, name)
         super().__setattr__(name, value)
 
@@ -376,13 +379,20 @@ class NamingContainer:
 
     def _name_of(self, elt: Any, *, debug: bool = False) -> str:
         """Returns the name of a contained element, non-recursively."""
-        if not elt in self._namer:
+        if elt not in self._namer:
             if not debug:
-                raise ValueError(f"{self.__class__.__name__} has no named {elt}")
+                raise ValueError(f"{self.__class__.__name__} has no {elt}")
             else:
                 return f"(unknown {elt.__class__.__name__})"
         else:
-            return self._namer.name(elt, debug=debug)
+            name = self._namer.name(elt, debug=debug)
+            if name is None:
+                if debug:
+                    return f"(unnamed {elt.__class__.__name__})"
+                else:
+                    raise ValueError(f"{self.__class__.__name__} has no name for {elt}")
+            else:
+                return name
 
 
 @non_library

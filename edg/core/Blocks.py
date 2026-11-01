@@ -299,7 +299,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
-        self._connects = self._namer.new_dict(Connection, anon_prefix="anon_link")
+        self._connects: List[Connection] = []
         self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
@@ -608,7 +608,8 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         existing_connects = connects_connects + connects_ports_connects
         if not existing_connects:
             connect = Connection(self, flatten)
-            self._connects.register(connect)
+            self._connects.append(connect)
+            self._namer.add_expected(connect, SourceLocator.from_caller(), optional=True)
         else:  # append to (potentially multiple) existing connect
             connect = existing_connects[0]  # first one is authoritative
             connect_flattens = set([connect.flatten for connect in existing_connects])

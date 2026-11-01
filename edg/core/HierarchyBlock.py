@@ -379,7 +379,6 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 param_typed_value._populate_expr_proto(pb.param_defaults[self._name_of(param)], IdentityDict())
 
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
-        self._connects.finalize()
         self._chains.finalize()
 
         for block in self._blocks:
@@ -396,19 +395,19 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
         delegated_connects = self._all_delegated_connects()
-        for name, connect in self._connects.items_ordered():
+        for i, connect in enumerate(self._connects):
             if connect in delegated_connects:
                 continue
-            connect_names_opt = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
-            connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
-            if len(connect_names) > 1:
-                raise UnconnectableError(f"Multiple names {connect_names} for connect")
-            elif len(connect_names) == 1:
-                name = connect_names[0]
 
             connect_elts = connect.make_connection()
 
-            if name.startswith("anon_"):  # infer a non-anon name if possible
+            connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
+            connect_names = [c for c in connect_names_opt if c is not None]
+            if len(connect_names) > 1:
+                raise UnconnectableError(f"Multiple assigned names {connect_names} for connect")
+            elif len(connect_names) == 1:
+                name = connect_names[0]
+            else:  # infer a better name if possible
                 if connect in link_chain_names and not link_chain_names[connect][0].startswith("anon_"):
                     name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
                 elif isinstance(connect_elts, Connection.Export):
@@ -422,6 +421,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     name = f"_{port_pathname}_link"
                 elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
                     name = link_chain_names[connect][0]
+                else:
+                    name = f"anon_link_{i}"
 
             if connect_elts is None:  # single port net - effectively discard
                 pass

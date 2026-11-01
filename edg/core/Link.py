@@ -51,17 +51,18 @@ class Link(BaseBlock, metaclass=LinkMeta):
         # specifically ignore the port initializers
 
         # actually generate the links and connects
-        self._connects.finalize()
         delegated_connects = self._all_delegated_connects()
-        for name, connect in self._connects.items_ordered():
+        for i, connect in enumerate(self._connects):
             if connect in delegated_connects:
                 continue
-            connect_names_opt = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
+            connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
             connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
             if len(connect_names) > 1:
                 raise UnconnectableError(f"Multiple names {connect_names} for connect")
             elif len(connect_names) == 1:
                 name = connect_names[0]
+            else:
+                name = f"anon_link_{i}"
 
             connect_elts = connect.make_connection()
             assert isinstance(connect_elts, Connection.ConnectedLink)
