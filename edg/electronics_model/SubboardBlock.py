@@ -57,7 +57,7 @@ class HasSubboardBlockApi(Block):
         super()._populate_def_proto_hierarchy(pb, ref_map)
 
         for exterior_port, internal_port in self._export_taps:
-            internal_port_name = internal_port._name_from(self).replace(".", "_")
+            internal_port_name = "_".join(self._path_of(internal_port))
             constraint_pb = edgir.add_pair(pb.constraints, f"(export_tap){internal_port_name}")
             if isinstance(exterior_port, Vector):
                 constraint_pb.exportedArray.exterior_port.ref.CopyFrom(ref_map[exterior_port])
