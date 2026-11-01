@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from types import FrameType
+from types import FrameType, FunctionType
 from typing import *
 from abc import abstractmethod
 
@@ -82,7 +82,8 @@ class NamespaceManager:
         existing = self._base_names.get(item, None)
         if existing is None:
             if isinstance(item, ElementDict):
-                item._set_parent((name, self))
+                item._set_parent(self)
+                self._base_names[item] = name
             else:
                 return  # not expected, ignore
         elif isinstance(existing, SourceLocator):
@@ -105,8 +106,10 @@ class NamespaceManager:
         name = self._base_names.get(item, None)
         if isinstance(name, str):
             return name
-        elif isinstance(name, Callable):
-            return name()
+        elif isinstance(name, FunctionType):
+            name = name()
+            assert isinstance(name, str)
+            return name
         elif isinstance(name, SourceLocator):
             if debug:
                 return str(name)
@@ -122,14 +125,14 @@ class ElementDict(Generic[ElementType]):
     # TODO also have a KeyType? Perhaps enforce type bounds, eg must be str-able?
     def __init__(self) -> None:
         self.container: Dict[Union[str, int], ElementType] = {}
-        self._parent: Optional[Tuple[str, NamespaceManager]] = None  # name prefix, pointer to top level
+        self._parent: Optional[NamespaceManager] = None  # name prefix, pointer to top level
 
-    def _set_parent(self, parent: Tuple[str, NamespaceManager]) -> None:
+    def _set_parent(self, parent: NamespaceManager) -> None:
         self._parent = parent
 
     def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
         assert self._parent is not None
-        self._parent[1].add_name(value, f"{self._parent[0]}[{key}]")
+        self._parent.add_name(value, lambda: f"{self._parent.name(self)}[{key}]")  # type: ignore[union-attr]
         self.container[key] = value
 
     def __getitem__(self, item: Union[str, int]) -> ElementType:
