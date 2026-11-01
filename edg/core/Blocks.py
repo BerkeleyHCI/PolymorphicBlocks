@@ -372,7 +372,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        self._namer.validate_names(type(self))
+        self._namer.validate_names()
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)

@@ -108,12 +108,14 @@ class SourceLocator:
 
 
 class NamespaceManager:
-    def __init__(self) -> None:
+    def __init__(self, parent: Any) -> None:
         # TODO REMOVE ME
         self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
 
+        self._parent = parent
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
         self._optional_names = IdentityDict[Any, bool]()
+        self._assigned_names: Set[str] = set()
         self._aliases = IdentityDict[Any, Any]()
 
     def __contains__(self, item: Any) -> bool:
@@ -122,16 +124,12 @@ class NamespaceManager:
 
         return item in self._base_names
 
-    def validate_names(self, container_tpe: Type[Any]) -> None:
+    def validate_names(self) -> None:
         # asserts that all names are given and valid
-        seen_names: Set[str] = set()
         missing_names: List[str] = []
-        duplicate_names: List[str] = []
         for obj, name in self._base_names.items():
             if isinstance(name, str):
-                if name in seen_names:
-                    duplicate_names.append(name)
-                seen_names.add(name)
+                pass
             elif isinstance(name, SourceLocator):
                 if obj not in self._optional_names:
                     missing_names.append(f"{obj}@{name}")
@@ -139,9 +137,7 @@ class NamespaceManager:
                 raise TypeError("unexpected name entry type")
 
         if missing_names:
-            raise ElementNamingError(container_tpe, f"no name for objects {missing_names}")
-        if duplicate_names:
-            raise ElementNamingError(container_tpe, f"duplicate names {duplicate_names}")
+            raise ElementNamingError(type(self._parent), f"no name for objects {missing_names}")
 
     # TODO remove old API
     def new_dict(
@@ -183,6 +179,10 @@ class NamespaceManager:
         elif isinstance(existing, str):
             return  # reassignments, eg for aliasing for deprecation, ignored; first one takes
         elif isinstance(existing, SourceLocator):
+            if name in self._assigned_names:
+                raise ElementNamingError(type(self._parent), f"duplicate name {name}")
+            self._assigned_names.add(name)
+
             self._base_names.update(item, name)
         else:
             raise ValueError("unexpected name entry type")
@@ -352,7 +352,7 @@ class NamingContainer:
     def __init__(self) -> None:
         self._parent: Optional[NamingContainer] = None  # set by binding, None means not bound
 
-        self._namer = NamespaceManager()
+        self._namer = NamespaceManager(self)
         self._manager_ignored: Set[str] = set(["_parent"])  # TODO REMOVE ME
 
     @override
