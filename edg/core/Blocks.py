@@ -495,6 +495,11 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
 
     def require(self, constraint: BoolLike, name: Optional[str] = None, *, _unchecked: bool = False) -> BoolExpr:
         constraint_typed = BoolExpr._to_expr_type(constraint)
+        if isinstance(constraint_typed.binding, ParamBinding):
+            # if this otherwise would return the raw parameter, wrap in an expression
+            # otherwise, this may redefine the name of the parameter
+            constraint_typed = constraint_typed == True
+
         if not isinstance(name, (str, type(None))):
             raise EdgTypeError(f"require(...) name", name, (str, None))
 
