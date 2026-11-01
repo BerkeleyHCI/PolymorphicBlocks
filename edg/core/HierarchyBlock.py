@@ -336,14 +336,14 @@ class Block(BaseBlock, metaclass=BlockMeta):
             self._init_params: Dict[str, ConstraintExpr]
             for param_name, param in self._init_params.items():
                 self._parameters.append(param)
-                self._manager.add_expected(param, SourceLocator.from_caller())
-                self._manager.add_name(param, param_name)
+                self._namer.add_expected(param, SourceLocator.from_caller())
+                self._namer.add_name(param, param_name)
             delattr(self, "_init_params")
 
         self._mixins: List["BlockInterfaceMixin"] = []
 
         self._blocks: List[Block] = []
-        self._chains = self._manager.new_dict(ChainConnect, anon_prefix="anon_chain")
+        self._chains = self._namer.new_dict(ChainConnect, anon_prefix="anon_chain")
         self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
     def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
@@ -500,7 +500,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
-        self._manager.validate_names(type(self))
+        self._namer.validate_names(type(self))
 
         assert not self._mixins  # blocks with mixins can only be instantiated anonymously
         ref_map = self._create_ref_map()
@@ -543,7 +543,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert self._parent is not None
 
         elt = tpe._bind(self._parent)
-        self._parent._manager.add_alias(elt, self)
+        self._parent._namer.add_alias(elt, self)
         self._mixins.append(elt)
 
         return elt
@@ -742,7 +742,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
         elt = tpe._bind(self)
         self._blocks.append(elt)
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
 
         return elt
 

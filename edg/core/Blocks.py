@@ -299,12 +299,12 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
-        self._connects = self._manager.new_dict(Connection, anon_prefix="anon_link")
+        self._connects = self._namer.new_dict(Connection, anon_prefix="anon_link")
         self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
-        self._constraints: SubElementDict[ConstraintExpr] = self._manager.new_dict(
+        self._constraints: SubElementDict[ConstraintExpr] = self._namer.new_dict(
             ConstraintExpr, anon_prefix="anon_constr"
         )
 
@@ -372,7 +372,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        self._manager.validate_names(type(self))
+        self._namer.validate_names(type(self))
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)
@@ -505,7 +505,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._constraints.register(constraint_typed)
 
         if name:  # TODO unify naming API with everything else?
-            self._manager.add_element(name, constraint_typed)
+            self._namer.add_element(name, constraint_typed)
 
         return constraint_typed
 
@@ -530,7 +530,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._constraints.register(constraint)
 
         if name:  # TODO unify naming API with everything else?
-            self._manager.add_element(name, constraint)
+            self._namer.add_element(name, constraint)
 
         return constraint
 
@@ -549,7 +549,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
 
         elt = tpe._bind(self)
         self._ports.append(elt)
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
 
         if isinstance(optional, bool):
             if not optional:
@@ -579,7 +579,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
 
         elt = tpe._bind(ParamBinding(self))
         self._parameters.append(elt)
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
         if elt.initializer is not None:
             self.assign(elt, elt.initializer)
 

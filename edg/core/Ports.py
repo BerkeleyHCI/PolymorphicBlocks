@@ -224,7 +224,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
     @override
     def _def_to_proto(self) -> edgir.Port:
-        self._manager.validate_names(type(self))
+        self._namer.validate_names(type(self))
 
         pb = edgir.Port()
 
@@ -308,7 +308,7 @@ class Port(BasePort, Generic[PortLinkType]):
         """Registers a parameter for this Port"""
         elt = tpe._bind(ParamBinding(self))
         self._parameters.append(elt)
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
         return elt
 
     T = TypeVar("T", bound="Port")
@@ -320,7 +320,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
         elt = tpe._bind(self)
         self._ports.append(elt)
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
 
         return elt
 

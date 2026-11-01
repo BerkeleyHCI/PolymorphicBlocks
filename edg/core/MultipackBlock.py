@@ -163,7 +163,7 @@ class MultipackBlock(Block):
             raise BlockDefinitionError(type(self), "can only define multipack in init")
 
         elt = tpe._bind(self)  # TODO: does this actually need to be bound?
-        self._manager.add_expected(elt, SourceLocator.from_caller())
+        self._namer.add_expected(elt, SourceLocator.from_caller())
         self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
         self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
         self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, UnpackedParamTypes]()
@@ -253,7 +253,7 @@ class MultipackBlock(Block):
             raise TypeError()
         self.packed_assign(new_param, packed_param)
         self._parameters.append(new_param)
-        self._manager.add_expected(new_param, SourceLocator.from_caller())
+        self._namer.add_expected(new_param, SourceLocator.from_caller())
         return new_param
 
     def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:

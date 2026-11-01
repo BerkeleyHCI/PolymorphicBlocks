@@ -349,15 +349,15 @@ class NamingContainer:
     def __init__(self) -> None:
         self._parent: Optional[NamingContainer] = None  # set by binding, None means not bound
 
-        self._manager = NamespaceManager()
-        self._manager_ignored: Set[str] = set(["_parent"])
+        self._namer = NamespaceManager()
+        self._manager_ignored: Set[str] = set(["_parent"])  # TODO REMOVE ME
 
     @override
     def __setattr__(self, name: str, value: Any) -> None:
         if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
-            self._manager.add_element(name, value)
+            self._namer.add_element(name, value)
         if hasattr(self, "_manager"):  # for before _manager is defined
-            self._manager.add_name(value, name)
+            self._namer.add_name(value, name)
         super().__setattr__(name, value)
 
     def _path_of(self, elt: Any, *, debug: bool = False) -> List[str]:
@@ -376,13 +376,13 @@ class NamingContainer:
 
     def _name_of(self, elt: Any, *, debug: bool = False) -> str:
         """Returns the name of a contained element, non-recursively."""
-        if not elt in self._manager:
+        if not elt in self._namer:
             if not debug:
                 raise ValueError(f"{self.__class__.__name__} has no named {elt}")
             else:
                 return f"(unknown {elt.__class__.__name__})"
         else:
-            return self._manager.name(elt, debug=debug)
+            return self._namer.name(elt, debug=debug)
 
 
 @non_library
@@ -391,7 +391,7 @@ class HasMetadata(LibraryElement, NamingContainer):
 
     def __init__(self) -> None:
         super().__init__()
-        self._metadata: SubElementDict[Any] = self._manager.new_dict(Any)
+        self._metadata: SubElementDict[Any] = self._namer.new_dict(Any)
 
     MetadataType = TypeVar(
         "MetadataType", bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]]
