@@ -401,7 +401,7 @@ class HasMetadata(LibraryElement, NamingContainer):
 
     def __init__(self) -> None:
         super().__init__()
-        self._metadata: SubElementDict[Any] = self._namer.new_dict(Any)
+        self._metadata: List[Any] = []
 
     MetadataType = TypeVar(
         "MetadataType", bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]]
@@ -411,7 +411,8 @@ class HasMetadata(LibraryElement, NamingContainer):
         """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
         Value may be changed until proto generation.
         Utility method for library builders."""
-        self._metadata.register(value)
+        self._metadata.append(value)
+        self._namer.add_expected(value, SourceLocator.from_caller())
         return value
 
     def _populate_metadata(self, pb: edgir.Metadata, src: Any, ref_map: Refable.RefMapType) -> None:

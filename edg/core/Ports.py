@@ -241,8 +241,8 @@ class Port(BasePort, Generic[PortLinkType]):
         for port in self._ports:
             port._populate_portlike_proto(edgir.add_pair(pb.ports, self._name_of(port)))
 
-        self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
-
+        named_metadata = {self._name_of(metadata): metadata for metadata in self._metadata}
+        self._populate_metadata(pb.meta, named_metadata, IdentityDict())
         return pb
 
     @override

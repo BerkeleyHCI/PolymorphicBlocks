@@ -424,7 +424,8 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._constraints.finalize()  # needed for source locator generation
 
         self._add_doc_metadata()
-        self._populate_metadata(pb.meta, self._metadata, ref_map)
+        named_metadata = {self._name_of(metadata): metadata for metadata in self._metadata}
+        self._populate_metadata(pb.meta, named_metadata, ref_map)
 
     def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
         for port in self._ports:
