@@ -152,7 +152,6 @@ class Port(BasePort, Generic[PortLinkType]):
         self._parameters: List[ConstraintExpr] = []
         self._ports: List[Port] = []
 
-        self._manager_ignored.update(["_is_connected", "_name"])
         self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
         self._name = StringExpr()._bind(NameBinding(self))
 

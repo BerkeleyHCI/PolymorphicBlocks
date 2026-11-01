@@ -245,9 +245,7 @@ class NamingContainer:
 
     def __init__(self) -> None:
         self._parent: Optional[NamingContainer] = None  # set by binding, None means not bound
-
         self._namer = NamespaceManager(self)
-        self._manager_ignored: Set[str] = set(["_parent"])  # TODO REMOVE ME
 
     @override
     def __setattr__(self, name: str, value: Any) -> None:
