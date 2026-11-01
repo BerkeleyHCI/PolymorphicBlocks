@@ -174,7 +174,7 @@ class Port(BasePort, Generic[PortLinkType]):
         assert len(other._ports) == len(self._ports)
         for self_port, other_port in zip(self._ports, other._ports):
             assert type(other_port) is type(self_port)
-            other_port._cloned_from(self_port)
+            self_port._cloned_from(other_port)
 
     def init_from(self: SelfType, other: SelfType) -> None:
         assert self._parent is not None, "may only init_from on an bound port"
