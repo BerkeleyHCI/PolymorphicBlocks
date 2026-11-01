@@ -207,7 +207,6 @@ class Port(BasePort, Generic[PortLinkType]):
         if (block_parent is not enclosing_block) and (block_parent._parent is not enclosing_block):
             raise UnconnectableError(f"can only create adapters on own ports or subblock ports")
 
-        # TODO proper programmatic naming API
         adapter_inst = enclosing_block.Block(adapter)
         adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
         enclosing_block._namer.add_name(
