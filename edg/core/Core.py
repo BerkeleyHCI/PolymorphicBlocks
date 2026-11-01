@@ -98,10 +98,10 @@ class NamespaceManager:
         else:
             raise ValueError("unexpected name entry type")
 
-    def name(self, item: Any, *, debug: bool = False) -> Optional[str]:
+    def name(self, item: Any) -> Optional[str]:
         """Returns the final name of an item, if available."""
         if item in self._aliases:
-            return self.name(self._aliases[item], debug=debug)
+            return self.name(self._aliases[item])
 
         name = self._base_names.get(item, None)
         if isinstance(name, str):
@@ -111,10 +111,7 @@ class NamespaceManager:
             assert isinstance(name, str)
             return name
         elif isinstance(name, SourceLocator):
-            if debug:
-                return str(name)
-            else:
-                return None
+            return None
         else:
             raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
@@ -282,7 +279,7 @@ class NamingContainer:
             else:
                 return f"(unknown {elt.__class__.__name__})"
         else:
-            name = self._namer.name(elt, debug=debug)
+            name = self._namer.name(elt)
             if name is None:
                 if debug:
                     return f"(unnamed {elt.__class__.__name__})"
