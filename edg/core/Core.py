@@ -175,10 +175,8 @@ class NamespaceManager:
                 item._set_parent((name, self))  # TODO re-examine the architecture
             else:
                 return  # not expected, ignore
-        elif existing == name:
-            return  # already assigned, ignore
         elif isinstance(existing, str):
-            raise ValueError(f"attempted to reassign name {name} to item with prior name {existing}")
+            return  # reassignments, eg for aliasing for deprecation, ignored; first one takes
         elif isinstance(existing, SourceLocator):
             self._base_names.update(item, name)
         else:
