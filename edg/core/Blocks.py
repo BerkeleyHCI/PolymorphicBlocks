@@ -587,7 +587,8 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._parameters.append(elt)
         self._namer.add_expected(elt, SourceLocator.from_caller())
         if elt.initializer is not None:
-            self.assign(elt, elt.initializer)
+            assign = self.assign(elt, elt.initializer)
+            self._namer.add_name(assign, lambda: f"(init){self._name_of(elt)}")
 
         if doc is not None:
             self._param_docs[elt] = doc

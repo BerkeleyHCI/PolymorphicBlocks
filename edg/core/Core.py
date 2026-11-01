@@ -39,9 +39,14 @@ class SourceLocator:
 
 
 class NamespaceManager:
+    """Manages names of objects in a naming container.
+    Supports source locators via inspect, before an object is given a name.
+    Supports delayed naming via callables, allowing names to depend on other names that may not yet be assigned.
+    """
+
     def __init__(self, parent: Any) -> None:
         self._parent = parent
-        self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
+        self._base_names = IdentityDict[Any, Union[SourceLocator, str, Callable[[], str]]]()
         self._optional_names = IdentityDict[Any, bool]()
         self._assigned_names: Set[str] = set()
         self._aliases = IdentityDict[Any, Any]()
@@ -56,13 +61,11 @@ class NamespaceManager:
         # asserts that all names are given and valid
         missing_names: List[str] = []
         for obj, name in self._base_names.items():
-            if isinstance(name, str):
-                pass
-            elif isinstance(name, SourceLocator):
+            if isinstance(name, SourceLocator):
                 if obj not in self._optional_names:
                     missing_names.append(f"{obj}@{name}")
             else:
-                raise TypeError("unexpected name entry type")
+                pass  # has valid name
 
         if missing_names:
             raise ElementNamingError(type(self._parent), f"no name for objects {missing_names}")
@@ -75,21 +78,22 @@ class NamespaceManager:
         if optional:
             self._optional_names[item] = True
 
-    def add_name(self, item: Any, name: str) -> None:
+    def add_name(self, item: Any, name: Union[str, Callable[[], str]]) -> None:
         existing = self._base_names.get(item, None)
         if existing is None:
             if isinstance(item, ElementDict):
                 item._set_parent((name, self))  # TODO re-examine the architecture
             else:
                 return  # not expected, ignore
-        elif isinstance(existing, str):
-            return  # reassignments, eg for aliasing for deprecation, ignored; first one takes
         elif isinstance(existing, SourceLocator):
             if name in self._assigned_names:
                 raise ElementNamingError(type(self._parent), f"duplicate name {name}")
-            self._assigned_names.add(name)
+            if isinstance(name, str):
+                self._assigned_names.add(name)
 
             self._base_names.update(item, name)
+        elif existing is not None:
+            return  # reassignments, eg for aliasing for deprecation, ignored; first one takes
         else:
             raise ValueError("unexpected name entry type")
 
@@ -101,6 +105,8 @@ class NamespaceManager:
         name = self._base_names.get(item, None)
         if isinstance(name, str):
             return name
+        elif isinstance(name, Callable):
+            return name()
         elif isinstance(name, SourceLocator):
             if debug:
                 return str(name)
