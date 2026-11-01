@@ -11,77 +11,8 @@ from .HdlUserExceptions import ElementNamingError
 from .. import edgir
 from .Builder import builder
 from .IdentityDict import IdentityDict
-from .IdentitySet import IdentitySet
 
 ElementType = TypeVar("ElementType")
-
-
-class SubElementDict(Generic[ElementType]):
-    def __init__(self, anon_prefix: Optional[str] = None) -> None:
-        self.anons = IdentitySet[ElementType]()  # TODO this should be order-preserving?
-        self.anon_prefix = anon_prefix
-        self.container: Dict[str, ElementType] = {}
-        self.names = IdentityDict[ElementType, str]()  # TODO unify w/ container?
-        self.keys_list: List[str] = []
-        self.closed = False
-
-    def register(self, item: ElementType) -> ElementType:
-        assert not self.closed, "adding items after closed"
-        self.anons.add(item)
-        return item
-
-    def add_element(self, name: str, item: Any) -> None:
-        assert not self.closed, "naming items after closed"
-        assert item in self.anons, f"attempted to add {name}={item}, but did not pre-register"
-        self.anons.remove(item)
-        assert name not in self.container, f"attempted to reassign {name}={item}"
-
-        self.container[name] = item
-        self.names[item] = name
-        self.keys_list.append(name)
-
-    # TODO should this be automatically called?
-    def finalize(self) -> None:
-        if self.anon_prefix is None:
-            assert not self.anons, f"can't have unnamed objects: {self.anons}"
-        else:
-            for id, elt in enumerate(self.anons):
-                name = f"{self.anon_prefix}_{id}"
-                assert name not in self.container, f"duplicate name {name}"
-                self.container[name] = elt
-                self.names[elt] = name
-                self.keys_list.append(name)
-            self.anons = IdentitySet[ElementType]()  # TODO needs clear operation
-        self.closed = True
-
-    def all_values_temp(self) -> Iterable[ElementType]:  # TODO needs better API name, reconcile w/ values?
-        return list(self.container.values()) + list(self.anons)
-
-    # TODO the below allows this to be used like a dict, is this a good idea?
-    # TODO should these make sure the dict is closed?
-    def items(self) -> ItemsView[str, ElementType]:
-        return self.container.items()
-
-    def items_ordered(self) -> Iterable[Tuple[str, ElementType]]:
-        return [(key, self.container[key]) for key in self.keys_list]
-
-    def keys_ordered(self) -> Iterable[str]:  # TODO should this clone?
-        return self.keys_list
-
-    def values(self) -> ValuesView[ElementType]:
-        return self.container.values()
-
-    def __getitem__(self, item: str) -> ElementType:
-        return self.container[item]
-
-    def __contains__(self, item: str) -> bool:
-        return item in self.container
-
-    def name_of(self, elt: ElementType) -> Optional[str]:
-        if elt in self.names:
-            return self.names[elt]
-        else:
-            return None
 
 
 class SourceLocator:
@@ -109,9 +40,6 @@ class SourceLocator:
 
 class NamespaceManager:
     def __init__(self, parent: Any) -> None:
-        # TODO REMOVE ME
-        self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
-
         self._parent = parent
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
         self._optional_names = IdentityDict[Any, bool]()
@@ -139,30 +67,8 @@ class NamespaceManager:
         if missing_names:
             raise ElementNamingError(type(self._parent), f"no name for objects {missing_names}")
 
-    # TODO remove old API
-    def new_dict(
-        self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]], anon_prefix: Optional[str] = None
-    ) -> SubElementDict[ElementType]:
-        sub_dict = SubElementDict[ElementType](anon_prefix)
-        self.dicts.append((filter_type, sub_dict))
-        return sub_dict
-
     def add_alias(self, src: Any, target: Any) -> None:
         self._aliases[src] = target
-
-    # TODO remove old API
-    def add_element(self, name: str, item: Any) -> None:
-        if isinstance(item, ElementDict):
-            pass  # moved to add_name
-        else:
-            assigned = []
-            for tpe, dict in self.dicts:
-                if item in dict.anons:
-                    dict.add_element(name, item)
-                    assigned.append(dict)
-                else:  # require not conflicting name, or direct reassignment
-                    assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
-            assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
     def add_expected(self, item: Any, source_locator: SourceLocator, *, optional: bool = False) -> None:
         self._base_names[item] = source_locator
@@ -186,18 +92,6 @@ class NamespaceManager:
             self._base_names.update(item, name)
         else:
             raise ValueError("unexpected name entry type")
-
-    # TODO: remove this, replace with debug_name
-    def name_of(self, item: Any) -> Optional[str]:
-        if item in self._aliases:
-            item = self._aliases[item]
-        name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
-        name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
-        assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
-        if not name_candidates_filtered:
-            return None
-        else:
-            return name_candidates_filtered[0]
 
     def name(self, item: Any, *, debug: bool = False) -> Optional[str]:
         """Returns the final name of an item, if available."""
@@ -357,8 +251,6 @@ class NamingContainer:
 
     @override
     def __setattr__(self, name: str, value: Any) -> None:
-        if hasattr(self, "_manager_ignored") and name not in self._manager_ignored:
-            self._namer.add_element(name, value)
         if hasattr(self, "_namer"):  # don't access before definition
             self._namer.add_name(value, name)
         super().__setattr__(name, value)
@@ -403,9 +295,7 @@ class HasMetadata(LibraryElement, NamingContainer):
         super().__init__()
         self._metadata: List[Any] = []
 
-    MetadataType = TypeVar(
-        "MetadataType", bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]]
-    )
+    MetadataType = TypeVar("MetadataType", bound=Union[str, Mapping[str, Any], IdentityDict[Any, Any]])
 
     def Metadata(self, value: MetadataType) -> MetadataType:
         """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
@@ -421,9 +311,7 @@ class HasMetadata(LibraryElement, NamingContainer):
             pb.text_leaf = src
         elif isinstance(src, bytes):
             pb.bin_leaf = src
-        elif isinstance(src, dict) or isinstance(src, SubElementDict) or isinstance(src, IdentityDict):
-            if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
-                src.finalize()  # TODO should this be here?
+        elif isinstance(src, dict) or isinstance(src, IdentityDict):
             for key, val in src.items():
                 assert isinstance(key, str), f"must overload _metadata_to_proto for non-str dict key {key}"
                 self._populate_metadata(pb.members.node[key], val, ref_map)

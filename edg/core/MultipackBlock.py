@@ -10,7 +10,7 @@ from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
 from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
-from .Core import non_library, SubElementDict, SourceLocator
+from .Core import non_library, SourceLocator
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block, BlockPrototype

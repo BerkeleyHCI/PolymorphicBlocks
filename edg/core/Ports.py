@@ -10,7 +10,7 @@ from typing_extensions import TypeVar, override
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
-from .Core import Refable, HasMetadata, SubElementDict, non_library, NamingContainer, SourceLocator
+from .Core import Refable, HasMetadata, non_library, NamingContainer, SourceLocator
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .. import edgir

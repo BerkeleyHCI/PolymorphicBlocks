@@ -16,7 +16,6 @@ from .Core import (
     Refable,
     HasMetadata,
     builder,
-    SubElementDict,
     non_library,
     EltPropertiesBase,
     SourceLocator,
