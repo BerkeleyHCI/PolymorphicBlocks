@@ -91,7 +91,7 @@ class BaseIoControllerWrapped(BaseIoController):
                     recurse_port(subport, subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
-                    port_name = io_port._name_from(self)
+                    port_name = self._path_name_of(io_port)
                     recurse_port(io_port, port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
@@ -212,7 +212,7 @@ class BaseIoControllerWrapper(BaseIoController):
                     recurse_port(io_port._tpe.empty(), subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
-                    port_name = io_port._name_from(self)
+                    port_name = self._name_of(io_port)
                     recurse_port(io_port, port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")

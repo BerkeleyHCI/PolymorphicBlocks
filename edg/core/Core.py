@@ -378,36 +378,13 @@ class NamingContainer:
 
     def _name_of(self, elt: Any, *, debug: bool = False) -> str:
         """Returns the name of a contained element, non-recursively."""
-        assert elt in self._manager, f"{self.__class__.__name__} has no named {elt}"
-        return self._manager.name(elt, debug=debug)
-
-    # TODO remove deprecated API
-    def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
-        self_name = self._manager.name_of(subelt)
-        if self_name is not None:
-            return self_name
-        else:
-            if allow_unknown:
-                return f"(unknown {subelt.__class__.__name__})"
+        if not elt in self._manager:
+            if not debug:
+                raise ValueError(f"{self.__class__.__name__} has no named {elt}")
             else:
-                raise ValueError(f"no name for {subelt}")
-
-    # TODO remove deprecated API
-    def _path_from(self, base: NamingContainer, allow_unknown: bool = False) -> List[str]:
-        if base is self:
-            return []
+                return f"(unknown {elt.__class__.__name__})"
         else:
-            assert self._parent is not None, "can't get path / name for non-bound element"
-            return self._parent._path_from(base, allow_unknown) + [
-                self._parent._name_of_child(self, base, allow_unknown)
-            ]
-
-    # TODO remove deprecated API
-    def _name_from(self, base: NamingContainer, allow_unknown: bool = False) -> str:
-        """Returns the path name to (inclusive) this element from some starting point.
-        allow_unknown allows elements that haven't been assigned a name yet to not crash,
-        this is useful when called from an error so the _name_from error doesn't stomp the real error."""
-        return ".".join(self._path_from(base, allow_unknown))
+            return self._manager.name(elt, debug=debug)
 
 
 @non_library
