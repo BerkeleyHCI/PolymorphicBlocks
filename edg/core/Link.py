@@ -99,6 +99,6 @@ class Link(BaseBlock, metaclass=LinkMeta):
         return cast(edgir.Link, super()._elaborated_def_to_proto())
 
     @override
-    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
         # link ports should not have params assigned and this is a no-op
         pass

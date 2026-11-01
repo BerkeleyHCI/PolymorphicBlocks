@@ -152,10 +152,11 @@ class MultipackBlock(Block):
         ]()
 
     @override
-    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
         if container_port in self._packed_connected_ports:
-            return
-        super()._check_port_params_assigned(container_port, path)
+            # packed ports delegate their implementations
+            return []
+        return super()._collect_unassigned_port_params(container_port, path)
 
     PackedPartType = TypeVar("PackedPartType", bound=Union[Block, PackedBlockArray])
 
