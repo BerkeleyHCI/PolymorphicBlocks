@@ -213,8 +213,8 @@ class Port(BasePort, Generic[PortLinkType]):
         # TODO proper programmatic naming API
         adapter_inst = enclosing_block.Block(adapter)
         adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
-        enclosing_block._manager.add_element(
-            f"(adapter){enclosing_block._path_name_of(self)}{adapter_name_suffix}", adapter_inst
+        enclosing_block._manager.add_name(
+            adapter_inst, f"(adapter){enclosing_block._path_name_of(self)}{adapter_name_suffix}"
         )
         enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
         self._adapter_count += 1
