@@ -146,7 +146,7 @@ class GeneratorBlock(Block):
                     self.generate()
                 except Exception as e:
                     params_list_str = ", ".join(
-                        f"{self._name_of(param, debug=True)}={self._generator_param_values[param]!r}"
+                        f"{self._name_of_child(param, self, allow_unknown=True)}={self._generator_param_values[param]!r}"
                         for param in self._generator_params_list
                     )
                     raise RuntimeError(
