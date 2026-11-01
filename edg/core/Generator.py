@@ -94,6 +94,8 @@ class GeneratorBlock(Block):
     #
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
+        self._namer.resolve_names()
+
         if (
             self._elaboration_state != BlockElaborationState.post_generate
         ):  # only write generator on the stub definition

@@ -58,7 +58,7 @@ class NamespaceManager:
         return item in self._base_names
 
     def resolve_names(self) -> None:
-        # asserts that all names are given and valid and resolves dependent and anonymous names
+        # asserts that all names are given and valid and resolves anonymous names
         missing_names: List[str] = []
         error_names: List[Any] = []
         for obj, name in self._base_names.items():
@@ -71,16 +71,6 @@ class NamespaceManager:
                     self._assigned_names.add(default_name)
                 else:
                     missing_names.append(f"{obj} @ {name}")
-            elif isinstance(name, FunctionType):
-                try:
-                    name = name()
-                    assert isinstance(name, str)
-                    if name in self._assigned_names:
-                        raise ElementNamingError(type(self._parent), f"duplicate name {name}")
-                    self._assigned_names.add(name)
-                    self._base_names.update(obj, name)
-                except Exception as e:
-                    error_names.append(f"{obj} = {e}")
             else:
                 pass  # has valid name
 
@@ -120,8 +110,8 @@ class NamespaceManager:
             raise ValueError("unexpected name entry type")
 
     def name(self, item: Any, *, debug: bool = False) -> str:
-        """Returns the final name of an item, if available.
-        If debug, returns a debugging name if the final name is not available, otherwise raises."""
+        """Returns the name of an item.
+        If debug, returns a debugging name if the final name is not resolved, otherwise raises."""
         if item in self._aliases:
             return self.name(self._aliases[item], debug=debug)
 
@@ -129,13 +119,16 @@ class NamespaceManager:
         if isinstance(name, str):
             return name
         elif isinstance(name, FunctionType):
-            if debug:
-                return f"(name function for {item})"
-            else:
-                raise ValueError(f"name not resolved for function name for {item} (internal consistency error)")
+            name = name()
+            assert isinstance(name, str)
+            self._base_names.update(item, name)
+            if name in self._assigned_names:
+                raise ElementNamingError(type(self._parent), f"duplicate name {name}")
+            self._assigned_names.add(name)
+            return name
         elif isinstance(name, SourceLocator):
             if debug:
-                return f"(unnamed {item})"
+                return f"(unnamed {item}@{name})"
             else:
                 raise ValueError(f"no name for {item}")
         else:

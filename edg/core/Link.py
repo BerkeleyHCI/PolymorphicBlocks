@@ -42,6 +42,7 @@ class Link(BaseBlock, metaclass=LinkMeta):
 
     @override
     def _def_to_proto(self) -> edgir.Link:
+        self._namer.resolve_names()
         ref_map = self._create_ref_map()
 
         pb = edgir.Link()
@@ -57,7 +58,7 @@ class Link(BaseBlock, metaclass=LinkMeta):
                 continue
             connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
             connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
-            if len(connect_names) != 1:
+            if len(connect_names) > 1:
                 raise UnconnectableError(f"Multiple names {connect_names} for connect")
             elif len(connect_names) == 1:
                 name = connect_names[0]
