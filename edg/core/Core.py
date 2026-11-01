@@ -115,6 +115,9 @@ class NamespaceManager:
         self._base_names = IdentityDict[Any, Union[str, SourceLocator]]()
 
     def __contains__(self, item: Any) -> bool:
+        if item in self.aliases:
+            return self.aliases[item] in self
+
         return item in self._base_names
 
     def validate_names(self, container_tpe: Type[Any]) -> None:
@@ -195,6 +198,9 @@ class NamespaceManager:
 
     def name(self, item: Any, *, debug: bool = False) -> str:
         """Returns the final name of an item"""
+        if item in self.aliases:
+            return self.name(self.aliases[item], debug=debug)
+
         name = self._base_names.get(item, None)
         if isinstance(name, str):
             return name
