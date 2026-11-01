@@ -343,7 +343,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         self._mixins: List["BlockInterfaceMixin"] = []
 
         self._blocks: List[Block] = []
-        self._chains = self._namer.new_dict(ChainConnect, anon_prefix="anon_chain")
+        self._chains: List[ChainConnect] = []
         self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
     def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
@@ -379,8 +379,6 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 param_typed_value._populate_expr_proto(pb.param_defaults[self._name_of(param)], IdentityDict())
 
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
-        self._chains.finalize()
-
         for block in self._blocks:
             new_block_lib = edgir.add_pair(pb.blocks, self._name_of(block)).lib_elem
             new_block_lib.base.target.name = block._get_def_name()
@@ -390,7 +388,10 @@ class Block(BaseBlock, metaclass=BlockMeta):
         # actually generate the links and connects
         link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
         # TODO generate into primary data structures
-        for name, chain in self._chains.items_ordered():  # TODO work with net join
+        for i, chain in enumerate(self._chains):  # TODO work with net join
+            name = self._namer.name(chain)
+            if name is None:
+                name = f"anon_chain_{i}"
             for i, connect in enumerate(chain.links):
                 link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
@@ -550,12 +551,12 @@ class Block(BaseBlock, metaclass=BlockMeta):
         return elt
 
     def chain(self, *elts: Union[Connection, BasePort, Block]) -> Any:
-        if not elts:
-            return self._chains.register(ChainConnect([], []))
         chain_blocks = []
         chain_links = []
 
-        if isinstance(elts[0], (BasePort, Connection)):
+        if not elts:
+            current_port: Optional[Union[BasePort, Connection]] = None
+        elif isinstance(elts[0], (BasePort, Connection)):
             current_port = elts[0]
         elif isinstance(elts[0], Block):
             outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
@@ -570,6 +571,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
             raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Connection, Block))
 
         for i, elt in list(enumerate(elts))[1:-1]:
+            assert current_port is not None
+
             if not isinstance(elt, Block):
                 raise EdgTypeError(f"middle arguments elts[{i}] in chain", elt, Block)
             if elt._get_ports_by_tag({Input}) and elt._get_ports_by_tag({Output}):
@@ -600,9 +603,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     type(self), f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports"
                 )
 
-        if isinstance(elts[-1], (BasePort, Connection)):
+        if not elts:
+            pass
+        elif isinstance(elts[-1], (BasePort, Connection)):
+            assert current_port is not None
             chain_links.append(self.connect(current_port, elts[-1]))
         elif isinstance(elts[-1], Block):
+            assert current_port is not None
             inable_ports = elts[-1]._get_ports_by_tag({Input}) + elts[-1]._get_ports_by_tag({InOut})
             if len(inable_ports) != 1:
                 raise BlockDefinitionError(
@@ -614,7 +621,10 @@ class Block(BaseBlock, metaclass=BlockMeta):
         else:
             raise EdgTypeError(f"last argument {len(elts) - 1} to chain", elts[-1], (BasePort, Connection, Block))
 
-        return self._chains.register(ChainConnect(chain_blocks, chain_links))
+        chain = ChainConnect(chain_blocks, chain_links)
+        self._chains.append(chain)
+        self._namer.add_expected(chain, SourceLocator.from_caller(), optional=True)
+        return chain
 
     def implicit_connect(self, *implicits: ImplicitConnect) -> ImplicitScope:
         for implicit in implicits:
@@ -634,22 +644,31 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # type ignore is needed because IntLike overlaps BoolLike
     @overload
     def ArgParameter(self, param: BoolLike, *, doc: Optional[str] = None) -> BoolExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: IntLike, *, doc: Optional[str] = None) -> IntExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...
+
     @overload
     def ArgParameter(self, param: RangeLike, *, doc: Optional[str] = None) -> RangeExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: StringLike, *, doc: Optional[str] = None) -> StringExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayBoolLike, *, doc: Optional[str] = None) -> ArrayBoolExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayIntLike, *, doc: Optional[str] = None) -> ArrayIntExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...
+
     @overload
     def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...
+
     @overload
     def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...
 

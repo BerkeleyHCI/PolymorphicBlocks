@@ -304,9 +304,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
-        self._constraints: SubElementDict[ConstraintExpr] = self._namer.new_dict(
-            ConstraintExpr, anon_prefix="anon_constr"
-        )
+        self._constraints: List[ConstraintExpr] = []
 
         self._name = StringExpr()._bind(NameBinding(self))
 
@@ -421,8 +419,6 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
                     edgir.add_pair(pb.constraints, f"(reqd){self._name_of(port)}"), ref_map
                 )
 
-        self._constraints.finalize()  # needed for source locator generation
-
         self._add_doc_metadata()
         named_metadata = {self._name_of(metadata): metadata for metadata in self._metadata}
         self._populate_metadata(pb.meta, named_metadata, ref_map)
@@ -444,7 +440,10 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        for name, constraint in self._constraints.items():
+        for i, constraint in enumerate(self._constraints):
+            name = self._namer.name(constraint)
+            if name is None:
+                name = f"anon_constr_{i}"
             constraint._populate_expr_proto(edgir.add_pair(pb.constraints, name), ref_map)
 
     def _populate_def_proto_description(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
@@ -503,10 +502,11 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         if not _unchecked:  # allow breaking structural / abstraction rules, used in some unit tests
             self._check_constraint(constraint_typed)
 
-        self._constraints.register(constraint_typed)
+        self._constraints.append(constraint_typed)
+        self._namer.add_expected(constraint_typed, SourceLocator.from_caller(), optional=True)
 
         if name:  # TODO unify naming API with everything else?
-            self._namer.add_element(name, constraint_typed)
+            self._namer.add_name(constraint_typed, name)
 
         return constraint_typed
 
@@ -528,10 +528,11 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         self._check_constraint(expr_value)
 
         constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
-        self._constraints.register(constraint)
+        self._constraints.append(constraint)
+        self._namer.add_expected(constraint, SourceLocator.from_caller(), optional=True)
 
         if name:  # TODO unify naming API with everything else?
-            self._namer.add_element(name, constraint)
+            self._namer.add_name(constraint, name)
 
         return constraint
 
