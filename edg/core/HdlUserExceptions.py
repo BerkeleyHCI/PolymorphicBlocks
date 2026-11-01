@@ -66,9 +66,10 @@ class ElementNamingError(BlockDefinitionError):
 class MissingParameterError(EdslUserError):
     """Error if a block is missing an (output) parameter assignment / value"""
 
-    def __init__(self, block: "BaseBlock", param_path: List[str]) -> None:
+    def __init__(self, block: "BaseBlock", param_paths: List[List[str]]) -> None:
+        params_str = ", ".join([".".join(path) for path in param_paths])
         super().__init__(
-            f"{type(block).__name__} parameter {'.'.join(param_path)} is missing an assignment",
+            f"{type(block).__name__} parameters {params_str} missing assignment",
             "assign a value to the parameter",
         )
 

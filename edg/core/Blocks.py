@@ -10,7 +10,7 @@ from typing_extensions import override
 
 from .. import edgir
 from .Array import BaseVector, Vector
-from .Binding import AssignBinding, NameBinding
+from .Binding import AssignBinding, NameBinding, InitParamBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
 from .Core import (
     Refable,
@@ -435,36 +435,55 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
                     ref_map,
                 )
 
-    def _check_port_params_assigned(self, container_port: BasePort, path: List[str]) -> None:
+    def _collect_unassigned_params(self) -> List[List[str]]:
+        """Walks through all params and checks that they have been assigned.
+        TODO: return List[ConstraintExpr] when param names can be resolved."""
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return []  # abstract blocks do not need assigned parameters
+
+        unassigned: List[List[str]] = []
+
+        # TODO instead of filtering by binding, init should have assign record
+        for param in self._parameters:
+            if (
+                param not in self._assigns
+                and param.initializer is None
+                and not isinstance(param.binding, InitParamBinding)
+            ):
+                unassigned.append([self._name_of(param)])
+
+        for port in self._ports:
+            unassigned.extend(self._collect_unassigned_port_params(port, [self._name_of(port)]))
+
+        return unassigned
+
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
         if container_port in self._connects_by_port:
             # TODO check for absence of assignments
-            return  # connected boundary ports inherit parameters
+            return []  # connected boundary ports inherit parameters
+
+        unassigned: List[List[str]] = []
 
         if isinstance(container_port, Port):
             for port in container_port._ports:
-                self._check_port_params_assigned(port, path + [container_port._name_of(port)])
+                unassigned.extend(self._collect_unassigned_port_params(port, path + [container_port._name_of(port)]))
 
             for param in container_port._parameters:
                 if param not in self._assigns and param.initializer is None:
-                    raise MissingParameterError(self, path + [container_port._name_of(param)])
+                    unassigned.append(path + [container_port._name_of(param)])
         elif isinstance(container_port, Vector):
             if container_port._elts is not None:
                 for name, elt in container_port._elts.items():
-                    self._check_port_params_assigned(elt, path + [name])
+                    unassigned.extend(self._collect_unassigned_port_params(elt, path + [name]))
         else:
             raise ValueError(f"unsupported port type {container_port}")
 
+        return unassigned
+
     def _check_params_assigned(self) -> None:
-        """Walks through all params and checks that they have been assigned."""
-        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
-            return  # abstract blocks do not need assigned parameters
-
-        for param in self._parameters:
-            if param not in self._assigns and param.initializer is None:
-                raise MissingParameterError(self, [self._name_of(param)])
-
-        for port in self._ports:
-            self._check_port_params_assigned(port, [self._name_of(port)])
+        unassigned = self._collect_unassigned_params()
+        if unassigned:
+            raise MissingParameterError(self, unassigned)
 
     def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
         """Populates the contents of a block proto: constraints"""
