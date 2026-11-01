@@ -101,4 +101,4 @@ class Link(BaseBlock, metaclass=LinkMeta):
     @override
     def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
         # link ports should not have params assigned and this is a no-op
-        pass
+        return []
