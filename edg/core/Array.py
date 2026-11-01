@@ -155,36 +155,20 @@ class Vector(BaseVector, Generic[VectorType]):
 
     # unlike most other LibraryElement types, the names are stored in _elts and _allocates
     @override
-    def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
-        from .HierarchyBlock import Block
-
-        block_parent = self._block_parent()
-        assert isinstance(block_parent, Block)
-
-        if context is block_parent:
-            # in block defining this port (direct elt definition), or in test top
-            assert self._elts is not None, "can't get name on undefined vector"
+    def _name_of(self, subelt: Any, *, debug: bool = False) -> str:
+        if self._elts is not None:
             for name, elt in self._elts.items():
                 if subelt is elt:
                     return name
-            if allow_unknown:
-                return f"(unknown {subelt.__class__.__name__})"
-            else:
-                raise ValueError(f"no name for {subelt}")
-        elif context is block_parent._parent:
-            # in block enclosing the block defining this port (allocate required)
-            for i, (suggested_name, allocate_elt) in enumerate(self._requests):
-                if subelt is allocate_elt:
-                    if suggested_name is not None:
-                        return suggested_name
-                    else:
-                        return f"_allocate_{i}"
-            if allow_unknown:
-                return f"(unknown {subelt.__class__.__name__})"
-            else:
-                raise ValueError(f"allocated elt not found {subelt}")
-        else:
-            raise ValueError(f"unknown context of array")
+
+        for i, (suggested_name, allocate_elt) in enumerate(self._requests):
+            if subelt is allocate_elt:
+                if suggested_name is not None:
+                    return suggested_name
+                else:
+                    return f"_allocate_{i}"
+
+        raise ValueError(f"{subelt} not in Vector")
 
     @override
     def _get_elt_sample(self) -> BasePort:
@@ -338,14 +322,19 @@ class Vector(BaseVector, Generic[VectorType]):
     # See the note in ArrayExpr for why this is expanded.
     @overload
     def map_extract(self, selector: Callable[[VectorType], BoolExpr]) -> ArrayBoolExpr: ...
+
     @overload
     def map_extract(self, selector: Callable[[VectorType], IntExpr]) -> ArrayIntExpr: ...
+
     @overload
     def map_extract(self, selector: Callable[[VectorType], FloatExpr]) -> ArrayFloatExpr: ...
+
     @overload
     def map_extract(self, selector: Callable[[VectorType], RangeExpr]) -> ArrayRangeExpr: ...
+
     @overload
     def map_extract(self, selector: Callable[[VectorType], StringExpr]) -> ArrayStringExpr: ...
+
     @overload
     def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
@@ -377,8 +366,10 @@ class Vector(BaseVector, Generic[VectorType]):
 
     @overload
     def sum(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr: ...
+
     @overload
     def sum(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr: ...
+
     def sum(self, selector: Callable[[VectorType], Union[RangeExpr, FloatExpr]]) -> Union[RangeExpr, FloatExpr]:
         param = selector(self._elt_sample)
         if isinstance(param, FloatExpr):

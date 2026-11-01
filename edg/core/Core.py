@@ -364,7 +364,6 @@ class NamingContainer:
             return []
         else:
             assert elt._parent is not None, "can't get path / name for non-bound element"
-            assert elt in elt._parent._manager, f"{elt._parent.__class__.__name__} has no named {elt}"
             return self._path_of(elt._parent, debug=debug) + [elt._parent._name_of(elt, debug=debug)]
 
     def _path_name_of(self, elt: Any, *, debug: bool = False) -> str:
