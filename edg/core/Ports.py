@@ -149,7 +149,7 @@ class Port(BasePort, Generic[PortLinkType]):
         self._bridge_instance: Optional[PortBridge] = None  # internal only
         self._adapter_count: int = 0
 
-        self._parameters: SubElementDict[ConstraintExpr] = self._manager.new_dict(ConstraintExpr)
+        self._parameters: List[ConstraintExpr] = []
         self._ports: List[Port] = []
 
         self._manager_ignored.update(["_is_connected", "_name"])
@@ -157,8 +157,7 @@ class Port(BasePort, Generic[PortLinkType]):
         self._name = StringExpr()._bind(NameBinding(self))
 
     def _clear_initializers(self) -> None:
-        self._parameters.finalize()
-        for name, param in self._parameters.items():
+        for param in self._parameters:
             param.initializer = None
         for port in self._ports:
             port._clear_initializers()
@@ -166,11 +165,10 @@ class Port(BasePort, Generic[PortLinkType]):
     @override
     def _cloned_from(self: SelfType, other: SelfType) -> None:
         super()._cloned_from(other)
-        self._parameters.finalize()
-        for name, param in self._parameters.items():
-            other_param = other._parameters[name]
-            assert isinstance(other_param, type(param))
-            param.initializer = other_param.initializer
+        assert len(other._parameters) == len(self._parameters)
+        for self_param, other_param in zip(self._parameters, other._parameters):
+            assert type(other_param) is type(self_param)
+            self_param.initializer = other_param.initializer
         assert len(other._ports) == len(self._ports)
         for self_port, other_port in zip(self._ports, other._ports):
             assert type(other_port) is type(self_port)
@@ -227,7 +225,6 @@ class Port(BasePort, Generic[PortLinkType]):
     @override
     def _def_to_proto(self) -> edgir.Port:
         self._manager.validate_names(type(self))
-        self._parameters.finalize()
 
         pb = edgir.Port()
 
@@ -239,8 +236,8 @@ class Port(BasePort, Generic[PortLinkType]):
         for cls in indirect_bases:
             pb.super_superclasses.add().target.name = cls._static_def_name()
 
-        for name, param in self._parameters.items():
-            param._populate_decl_proto(edgir.add_pair(pb.params, name))
+        for param in self._parameters:
+            param._populate_decl_proto(edgir.add_pair(pb.params, self._name_of(param)))
         for port in self._ports:
             port._populate_portlike_proto(edgir.add_pair(pb.ports, self._name_of(port)))
 
@@ -257,8 +254,8 @@ class Port(BasePort, Generic[PortLinkType]):
         super()._build_ref_map(ref_map, prefix)
         ref_map[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
         ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
-        for name, param in self._parameters.items():
-            param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
+        for param in self._parameters:
+            param._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(param)))
         for port in self._ports:
             port._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(port)))
         if self._link_instance is not None:
@@ -266,10 +263,9 @@ class Port(BasePort, Generic[PortLinkType]):
 
     @override
     def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
-        self._parameters.finalize()
         initializers: List[Tuple[ConstraintExpr, List[str], ConstraintExpr]] = [
-            (param, path_prefix + [name], param.initializer)
-            for (name, param) in self._parameters.items()
+            (param, path_prefix + [self._name_of(param)], param.initializer)
+            for param in self._parameters
             if param.initializer is not None
         ]
         for port in self._ports:
@@ -311,7 +307,8 @@ class Port(BasePort, Generic[PortLinkType]):
     def Parameter(self, tpe: U) -> U:
         """Registers a parameter for this Port"""
         elt = tpe._bind(ParamBinding(self))
-        self._parameters.register(elt)
+        self._parameters.append(elt)
+        self._manager.add_expected(elt, SourceLocator.from_caller())
         return elt
 
     T = TypeVar("T", bound="Port")
