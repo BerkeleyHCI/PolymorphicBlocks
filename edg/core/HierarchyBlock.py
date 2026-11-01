@@ -403,7 +403,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
             connect_elts = connect.make_connection()
 
             connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
-            connect_names = [c for c in connect_names_opt if c is not None]
+            connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
             if len(connect_names) > 1:
                 raise UnconnectableError(f"Multiple assigned names {connect_names} for connect")
             elif len(connect_names) == 1:
@@ -412,7 +412,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 if connect in link_chain_names and not link_chain_names[connect][0].startswith("anon_"):
                     name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
                 elif isinstance(connect_elts, Connection.Export):
-                    port_pathname = "_".join(self._path_name_of(connect_elts.external_port))
+                    port_pathname = "_".join(self._path_of(connect_elts.external_port))
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.bridged_connects:
                     port_pathname = "_".join(self._path_of(connect_elts.bridged_connects[0][0]))
@@ -423,7 +423,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
                     name = link_chain_names[connect][0]
                 else:
-                    name = f"anon_link_{i}"
+                    name = connect_names_opt[0]
 
             if connect_elts is None:  # single port net - effectively discard
                 pass
@@ -502,7 +502,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
-        self._namer.validate_names()
+        self._namer.resolve_names()
 
         assert not self._mixins  # blocks with mixins can only be instantiated anonymously
         ref_map = self._create_ref_map()
@@ -623,7 +623,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
         chain = ChainConnect(chain_blocks, chain_links)
         self._chains.append(chain)
-        self._namer.add_expected(chain, SourceLocator.from_caller(), optional=True)
+        self._namer.add_expected(chain, SourceLocator.from_caller(), default_prefix="anon_chain")
         return chain
 
     def implicit_connect(self, *implicits: ImplicitConnect) -> ImplicitScope:

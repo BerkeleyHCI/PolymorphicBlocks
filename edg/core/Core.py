@@ -19,8 +19,13 @@ class SourceLocator:
     """Object that can be used to locate the source of a library element, for error reporting."""
 
     def __init__(self, top_frame: Optional[FrameType], depth: int) -> None:
-        self._top_frame = top_frame
-        self._depth = depth
+        frame = top_frame
+        assert frame is not None
+        for i in range(depth):
+            frame = frame.f_back
+            assert frame is not None
+        self._filename = frame.f_code.co_filename
+        self._line = frame.f_lineno
 
     @classmethod
     def from_caller(cls) -> SourceLocator:
@@ -29,13 +34,7 @@ class SourceLocator:
 
     @override
     def __repr__(self) -> str:
-        """Evaluation is lazy since the results are almost never used"""
-        frame = self._top_frame
-        assert frame is not None
-        for i in range(self._depth):
-            frame = frame.f_back
-            assert frame is not None
-        return f"{frame.f_code.co_filename}:{frame.f_lineno}"
+        return f"{self._filename}:{self._line}"
 
 
 class NamespaceManager:
@@ -47,7 +46,8 @@ class NamespaceManager:
     def __init__(self, parent: Any) -> None:
         self._parent = parent
         self._base_names = IdentityDict[Any, Union[SourceLocator, str, Callable[[], str]]]()
-        self._optional_names = IdentityDict[Any, bool]()
+        self._default_names = IdentityDict[Any, str]()
+        self._default_name_prefix_count: Dict[str, int] = {}
         self._assigned_names: Set[str] = set()
         self._aliases = IdentityDict[Any, Any]()
 
@@ -57,26 +57,47 @@ class NamespaceManager:
 
         return item in self._base_names
 
-    def validate_names(self) -> None:
-        # asserts that all names are given and valid
+    def resolve_names(self) -> None:
+        # asserts that all names are given and valid and resolves dependent and anonymous names
         missing_names: List[str] = []
+        error_names: List[Any] = []
         for obj, name in self._base_names.items():
             if isinstance(name, SourceLocator):
-                if obj not in self._optional_names:
-                    missing_names.append(f"{obj}@{name}")
+                default_name = self._default_names.get(obj, None)
+                if default_name is not None:
+                    self._base_names.update(obj, default_name)
+                    if default_name in self._assigned_names:
+                        raise ElementNamingError(type(self._parent), f"duplicate name {default_name}")
+                    self._assigned_names.add(default_name)
+                else:
+                    missing_names.append(f"{obj} @ {name}")
+            elif isinstance(name, FunctionType):
+                try:
+                    name = name()
+                    assert isinstance(name, str)
+                    if name in self._assigned_names:
+                        raise ElementNamingError(type(self._parent), f"duplicate name {name}")
+                    self._assigned_names.add(name)
+                    self._base_names.update(obj, name)
+                except Exception as e:
+                    error_names.append(f"{obj} = {e}")
             else:
                 pass  # has valid name
 
         if missing_names:
             raise ElementNamingError(type(self._parent), f"no name for objects {missing_names}")
+        if error_names:  # errors may be due to missing names, so check after missing names are resolved
+            raise ElementNamingError(type(self._parent), f"error generating names for objects {error_names}")
 
     def add_alias(self, src: Any, target: Any) -> None:
         self._aliases[src] = target
 
-    def add_expected(self, item: Any, source_locator: SourceLocator, *, optional: bool = False) -> None:
+    def add_expected(self, item: Any, source_locator: SourceLocator, *, default_prefix: Optional[str] = None) -> None:
         self._base_names[item] = source_locator
-        if optional:
-            self._optional_names[item] = True
+        if default_prefix:
+            count = self._default_name_prefix_count.get(default_prefix, 0)
+            self._default_name_prefix_count[default_prefix] = count + 1
+            self._default_names[item] = f"{default_prefix}{count}"
 
     def add_name(self, item: Any, name: Union[str, Callable[[], str]]) -> None:
         existing = self._base_names.get(item, None)
@@ -98,20 +119,25 @@ class NamespaceManager:
         else:
             raise ValueError("unexpected name entry type")
 
-    def name(self, item: Any) -> Optional[str]:
-        """Returns the final name of an item, if available."""
+    def name(self, item: Any, *, debug: bool = False) -> str:
+        """Returns the final name of an item, if available.
+        If debug, returns a debugging name if the final name is not available, otherwise raises."""
         if item in self._aliases:
-            return self.name(self._aliases[item])
+            return self.name(self._aliases[item], debug=debug)
 
         name = self._base_names.get(item, None)
         if isinstance(name, str):
             return name
         elif isinstance(name, FunctionType):
-            name = name()
-            assert isinstance(name, str)
-            return name
+            if debug:
+                return f"(name function for {item})"
+            else:
+                raise ValueError(f"name not resolved for function name for {item} (internal consistency error)")
         elif isinstance(name, SourceLocator):
-            return None
+            if debug:
+                return f"(unnamed {item})"
+            else:
+                raise ValueError(f"no name for {item}")
         else:
             raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
@@ -279,14 +305,7 @@ class NamingContainer:
             else:
                 return f"(unknown {elt.__class__.__name__})"
         else:
-            name = self._namer.name(elt)
-            if name is None:
-                if debug:
-                    return f"(unnamed {elt.__class__.__name__})"
-                else:
-                    raise ValueError(f"{self.__class__.__name__} has no name for {elt}")
-            else:
-                return name
+            return self._namer.name(elt, debug=debug)
 
 
 @non_library

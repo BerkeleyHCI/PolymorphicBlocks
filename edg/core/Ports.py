@@ -222,7 +222,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
     @override
     def _def_to_proto(self) -> edgir.Port:
-        self._namer.validate_names()
+        self._namer.resolve_names()
 
         pb = edgir.Port()
 

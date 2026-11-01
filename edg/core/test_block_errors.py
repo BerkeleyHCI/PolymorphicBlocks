@@ -83,12 +83,13 @@ class BadNamingTestCase(unittest.TestCase):
     class UnnamedParamBlock(Block):
         def __init__(self) -> None:
             super().__init__()
-            self.Parameter(FloatExpr())  # unnamed param, should error
+            self.Parameter(FloatExpr(0.0))  # unnamed param, should error
+            self.param = self.Parameter(IntExpr(2))  # frame continues, checks captured lineno is unaffected
 
     def test_unnamed_param(self) -> None:
         with self.assertRaises(ElementNamingError) as exc:
             self.UnnamedParamBlock()._elaborated_def_to_proto()
-            self.assertIn("86", str(exc))
+        self.assertIn("86", str(exc.exception))
 
     class DuplicateNameBlock(Block):
         def __init__(self) -> None:
@@ -99,4 +100,15 @@ class BadNamingTestCase(unittest.TestCase):
     def test_duplicate_name(self) -> None:
         with self.assertRaises(ElementNamingError) as exc:
             self.DuplicateNameBlock()._elaborated_def_to_proto()
-            self.assertIn("duplicate_name", str(exc))
+        self.assertIn("duplicate_name", str(exc.exception))
+
+    class DuplicateAnonNameBlock(Block):
+        def __init__(self) -> None:
+            super().__init__()
+            self.require(True)
+            self.anon_constr0 = self.require(True)  # duplicates a default unassigned name
+
+    def test_duplicate_anon_name(self) -> None:
+        with self.assertRaises(ElementNamingError) as exc:
+            self.DuplicateAnonNameBlock()._elaborated_def_to_proto()
+        self.assertIn("anon_constr0", str(exc.exception))

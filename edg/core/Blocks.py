@@ -369,7 +369,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        self._namer.validate_names()
+        self._namer.resolve_names()
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)
@@ -440,9 +440,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         )
 
         for i, constraint in enumerate(self._constraints):
-            name = self._namer.name(constraint)
-            if name is None:
-                name = f"anon_constr_{i}"
+            name = self._name_of(constraint)
             constraint._populate_expr_proto(edgir.add_pair(pb.constraints, name), ref_map)
 
     def _populate_def_proto_description(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
@@ -507,7 +505,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             self._check_constraint(constraint_typed)
 
         self._constraints.append(constraint_typed)
-        self._namer.add_expected(constraint_typed, SourceLocator.from_caller(), optional=True)
+        self._namer.add_expected(constraint_typed, SourceLocator.from_caller(), default_prefix="anon_constr")
 
         if name:  # TODO unify naming API with everything else?
             self._namer.add_name(constraint_typed, name)
@@ -533,7 +531,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
 
         constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
         self._constraints.append(constraint)
-        self._namer.add_expected(constraint, SourceLocator.from_caller(), optional=True)
+        self._namer.add_expected(constraint, SourceLocator.from_caller(), default_prefix="anon_constr")
 
         if name:  # TODO unify naming API with everything else?
             self._namer.add_name(constraint, name)
@@ -616,7 +614,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         if not existing_connects:
             connect = Connection(self, flatten)
             self._connects.append(connect)
-            self._namer.add_expected(connect, SourceLocator.from_caller(), optional=True)
+            self._namer.add_expected(connect, SourceLocator.from_caller(), default_prefix="anon_link")
         else:  # append to (potentially multiple) existing connect
             connect = existing_connects[0]  # first one is authoritative
             connect_flattens = set([connect.flatten for connect in existing_connects])
