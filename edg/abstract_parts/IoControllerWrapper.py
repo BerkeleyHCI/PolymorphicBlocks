@@ -204,7 +204,7 @@ class BaseIoControllerWrapper(BaseIoController):
             pin_type_dict[prefix] = type(port)
 
             for subport in port._ports:
-                recurse_port(subport, f"{prefix}.{self._name_of(subport)}")
+                recurse_port(subport, f"{prefix}.{port._name_of(subport)}")
 
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):
