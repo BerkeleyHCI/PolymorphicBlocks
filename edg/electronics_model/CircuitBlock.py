@@ -117,7 +117,7 @@ class FootprintBlock(Block):
             else:
                 pin_tuples = tuple(iter(pin_name))
             for pin in pin_tuples:
-                pinning_array.append(f"{pin}={pin_port._name_from(self)}")
+                pinning_array.append(f"{pin}={self._path_name_of(pin_port)}")
                 assert pin not in assigned_pins, f"duplicate pin name {pin} in footprint pinning"
                 assigned_pins.add(pin)
         self.assign(self.fp_pinning, pinning_array)
