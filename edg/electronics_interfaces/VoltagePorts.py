@@ -19,7 +19,7 @@ class VoltageLink(Link):
     def _voltage_range(cls, port: Port[VoltageLink]) -> RangeExpr:
         """Returns the voltage for a Voltage port, either sink or source"""
         if isinstance(port, VoltageSource):
-            return port.voltage  # type: ignore
+            return port.voltage
         elif isinstance(port, VoltageSink):
             return port.link().voltage
         else:
