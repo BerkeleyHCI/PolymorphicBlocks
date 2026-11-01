@@ -145,23 +145,23 @@ class Connection:
                 if port._block_parent() is self.parent:
                     if port._get_initializers([]):
                         raise UnconnectableError(
-                            f"Connected boundary port {port._name_from(self.parent, allow_unknown=True)} may not have initializers"
+                            f"Connected boundary port {self.parent._path_name_of(port, debug=True)} may not have initializers"
                         )
                     if not isinstance(port, Port):
                         raise UnconnectableError(
-                            f"Can't generate bridge for non-Port {port._name_from(self.parent, allow_unknown=True)}"
+                            f"Can't generate bridge for non-Port {self.parent._path_name_of(port, debug=True)}"
                         )
 
                     bridge = port._bridge()
                     if bridge is None:
-                        raise UnconnectableError(f"No bridge for {port._name_from(self.parent, allow_unknown=True)}")
+                        raise UnconnectableError(f"No bridge for {self.parent._path_name_of(port, debug=True)}")
                     link_facing_port = self.bridged_ports[port] = bridge.inner_link
                 else:
                     link_facing_port = port
             elif isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
                 if port._block_parent() is not self.parent:
                     raise UnconnectableError(
-                        f"Port {port._name_from(self.parent, allow_unknown=True)} not in containing link"
+                        f"Port {self.parent._path_name_of(port, debug=True)} not in containing link"
                     )
                 link_facing_port = port
             else:
@@ -174,18 +174,16 @@ class Connection:
             # allocate the connection
             if self._baseport_leaf_type(link_facing_port).link_type is not type(link):
                 raise UnconnectableError(
-                    f"Can't connect {port._name_from(self.parent, allow_unknown=True)} to link of type {type(link)}"
+                    f"Can't connect {self.parent._path_name_of(port, debug=True)} to link of type {type(link)}"
                 )
             port_type = type(self._baseport_leaf_type(link_facing_port))
             allocatable_link_ports = self.available_link_ports_by_type.get(port_type, None)
             if allocatable_link_ports is None:
                 raise UnconnectableError(
-                    f"No link port for {port._name_from(self.parent, allow_unknown=True)} of type {port_type}"
+                    f"No link port for {self.parent._path_name_of(port, debug=True)} of type {port_type}"
                 )
             if not allocatable_link_ports:
-                raise UnconnectableError(
-                    f"No remaining link ports to {port._name_from(self.parent, allow_unknown=True)}"
-                )
+                raise UnconnectableError(f"No remaining link ports to {self.parent._path_name_of(port, debug=True)}")
 
             allocated_link_port = allocatable_link_ports[0]
             if isinstance(allocated_link_port, BaseVector):  # array on link side, can connected multiple ports
