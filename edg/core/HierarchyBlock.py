@@ -27,7 +27,7 @@ from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty, BaseBlockMeta
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library
+from .Core import Refable, non_library, SourceLocator
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -335,19 +335,20 @@ class Block(BaseBlock, metaclass=BlockMeta):
         if hasattr(self, "_init_params"):  # used to propagate params generated in the metaclass __init__ hook
             self._init_params: Dict[str, ConstraintExpr]
             for param_name, param in self._init_params.items():
-                self._parameters.register(param)
-                self.manager.add_element(param_name, param)
+                self._parameters.append(param)
+                self._namer.add_expected(param, SourceLocator.from_caller())
+                self._namer.add_name(param, param_name)
             delattr(self, "_init_params")
 
         self._mixins: List["BlockInterfaceMixin"] = []
 
-        self._blocks = self.manager.new_dict(Block)
-        self._chains = self.manager.new_dict(ChainConnect, anon_prefix="anon_chain")
+        self._blocks: List[Block] = []
+        self._chains: List[ChainConnect] = []
         self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
     def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
         out = []
-        for block_port_name, block_port in self._ports.items():
+        for block_port in self._ports:
             assert isinstance(block_port, BasePort)
             port_tags: Set[PortTag] = self._port_tags.get(block_port, set())
             if port_tags.issuperset(tags):
@@ -362,9 +363,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
         for mixin in self._mixins:
             mixin._build_ref_map(ref_map, prefix)
         if not interface_only:
-            for name, block in self._blocks.items():
-                assert isinstance(block, Block)
-                block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
+            for block in self._blocks:
+                block._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(block)), interface_only=True)
 
     @override
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
@@ -372,19 +372,15 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert isinstance(pb, edgir.HierarchyBlock)
 
         # generate param defaults
-        for param_name, param in self._parameters.items():
+        for param in self._parameters:
             if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
                 # default values can't depend on anything so the ref_map is empty
                 param_typed_value = param._to_expr_type(param.binding.value)
-                param_typed_value._populate_expr_proto(pb.param_defaults[param_name], IdentityDict())
+                param_typed_value._populate_expr_proto(pb.param_defaults[self._name_of(param)], IdentityDict())
 
     def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
-        self._blocks.finalize()
-        self._connects.finalize()
-        self._chains.finalize()
-
-        for name, block in self._blocks.items():
-            new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem
+        for block in self._blocks:
+            new_block_lib = edgir.add_pair(pb.blocks, self._name_of(block)).lib_elem
             new_block_lib.base.target.name = block._get_def_name()
             for mixin in block._mixins:
                 new_block_lib.mixins.add().target.name = mixin._get_def_name()
@@ -392,37 +388,42 @@ class Block(BaseBlock, metaclass=BlockMeta):
         # actually generate the links and connects
         link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
         # TODO generate into primary data structures
-        for name, chain in self._chains.items_ordered():  # TODO work with net join
+        for i, chain in enumerate(self._chains):  # TODO work with net join
+            name = self._namer.name(chain)
+            if name is None:
+                name = f"anon_chain_{i}"
             for i, connect in enumerate(chain.links):
                 link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
         delegated_connects = self._all_delegated_connects()
-        for name, connect in self._connects.items_ordered():
+        for i, connect in enumerate(self._connects):
             if connect in delegated_connects:
                 continue
-            connect_names_opt = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
-            connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
-            if len(connect_names) > 1:
-                raise UnconnectableError(f"Multiple names {connect_names} for connect")
-            elif len(connect_names) == 1:
-                name = connect_names[0]
 
             connect_elts = connect.make_connection()
 
-            if name.startswith("anon_"):  # infer a non-anon name if possible
+            connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
+            connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
+            if len(connect_names) > 1:
+                raise UnconnectableError(f"Multiple assigned names {connect_names} for connect")
+            elif len(connect_names) == 1:
+                name = connect_names[0]
+            else:  # infer a better name if possible
                 if connect in link_chain_names and not link_chain_names[connect][0].startswith("anon_"):
                     name = link_chain_names[connect][0]  # arbitrarily pick the first chain name
                 elif isinstance(connect_elts, Connection.Export):
-                    port_pathname = connect_elts.external_port._name_from(self).replace(".", "_")
+                    port_pathname = "_".join(self._path_of(connect_elts.external_port))
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.bridged_connects:
-                    port_pathname = connect_elts.bridged_connects[0][0]._name_from(self).replace(".", "_")
+                    port_pathname = "_".join(self._path_of(connect_elts.bridged_connects[0][0]))
                     name = f"_{port_pathname}_link"
                 elif isinstance(connect_elts, Connection.ConnectedLink) and connect_elts.link_connects:
-                    port_pathname = connect_elts.link_connects[0][0]._name_from(self).replace(".", "_")
+                    port_pathname = "_".join(self._path_of(connect_elts.link_connects[0][0]))
                     name = f"_{port_pathname}_link"
                 elif connect in link_chain_names:  # if there's really nothing better, anon_chain is better than nothing
                     name = link_chain_names[connect][0]
+                else:
+                    name = connect_names_opt[0]
 
             if connect_elts is None:  # single port net - effectively discard
                 pass
@@ -448,7 +449,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     assert not connect_elts.is_link_array, "bridged arrays not supported"
                     assert self_port.bridge_type is not None
 
-                    port_name = self_port._name_from(self)
+                    port_name = self._path_name_of(self_port)
                     edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.base.target.name = (
                         self_port.bridge_type._static_def_name()
                     )
@@ -484,15 +485,15 @@ class Block(BaseBlock, metaclass=BlockMeta):
                 raise ValueError("unknown connect type")
 
         # generate block initializers
-        for block_name, block in self._blocks.items():
-            all_block_params = dict(block._parameters.items())
+        for block in self._blocks:
+            all_block_params = {block._name_of(param): param for param in block._parameters}
             for mixin in block._mixins:
-                all_block_params.update(mixin._parameters.items())
+                all_block_params.update({mixin._name_of(param): param for param in mixin._parameters})
             for block_param_name, block_param in all_block_params.items():
                 if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
                     param_typed_value = block_param._to_expr_type(block_param.binding.value)
                     AssignBinding.populate_assign_proto(
-                        edgir.add_pair(pb.constraints, f"(init){block_name}.{block_param_name}"),
+                        edgir.add_pair(pb.constraints, f"(init){self._name_of(block)}.{block_param_name}"),
                         block_param,
                         param_typed_value,
                         ref_map,
@@ -501,6 +502,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
+        self._namer.resolve_names()
+
         assert not self._mixins  # blocks with mixins can only be instantiated anonymously
         ref_map = self._create_ref_map()
 
@@ -509,8 +512,6 @@ class Block(BaseBlock, metaclass=BlockMeta):
         pb.prerefine_class.target.name = self._get_def_name()
         self._populate_def_proto_block_base(pb)
         self._populate_def_proto_port_init(pb, ref_map)
-
-        self._populate_def_proto_param_init(pb, ref_map)
 
         self._populate_def_proto_hierarchy(pb, ref_map)
         self._populate_def_proto_block_contents(pb, ref_map)
@@ -544,18 +545,18 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert self._parent is not None
 
         elt = tpe._bind(self._parent)
-        self._parent.manager.add_alias(elt, self)
+        self._parent._namer.add_alias(elt, self)
         self._mixins.append(elt)
 
         return elt
 
     def chain(self, *elts: Union[Connection, BasePort, Block]) -> Any:
-        if not elts:
-            return self._chains.register(ChainConnect([], []))
         chain_blocks = []
         chain_links = []
 
-        if isinstance(elts[0], (BasePort, Connection)):
+        if not elts:
+            current_port: Optional[Union[BasePort, Connection]] = None
+        elif isinstance(elts[0], (BasePort, Connection)):
             current_port = elts[0]
         elif isinstance(elts[0], Block):
             outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
@@ -570,6 +571,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
             raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Connection, Block))
 
         for i, elt in list(enumerate(elts))[1:-1]:
+            assert current_port is not None
+
             if not isinstance(elt, Block):
                 raise EdgTypeError(f"middle arguments elts[{i}] in chain", elt, Block)
             if elt._get_ports_by_tag({Input}) and elt._get_ports_by_tag({Output}):
@@ -600,9 +603,13 @@ class Block(BaseBlock, metaclass=BlockMeta):
                     type(self), f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports"
                 )
 
-        if isinstance(elts[-1], (BasePort, Connection)):
+        if not elts:
+            pass
+        elif isinstance(elts[-1], (BasePort, Connection)):
+            assert current_port is not None
             chain_links.append(self.connect(current_port, elts[-1]))
         elif isinstance(elts[-1], Block):
+            assert current_port is not None
             inable_ports = elts[-1]._get_ports_by_tag({Input}) + elts[-1]._get_ports_by_tag({InOut})
             if len(inable_ports) != 1:
                 raise BlockDefinitionError(
@@ -614,7 +621,10 @@ class Block(BaseBlock, metaclass=BlockMeta):
         else:
             raise EdgTypeError(f"last argument {len(elts) - 1} to chain", elts[-1], (BasePort, Connection, Block))
 
-        return self._chains.register(ChainConnect(chain_blocks, chain_links))
+        chain = ChainConnect(chain_blocks, chain_links)
+        self._chains.append(chain)
+        self._namer.add_expected(chain, SourceLocator.from_caller(), default_prefix="anon_chain")
+        return chain
 
     def implicit_connect(self, *implicits: ImplicitConnect) -> ImplicitScope:
         for implicit in implicits:
@@ -634,22 +644,31 @@ class Block(BaseBlock, metaclass=BlockMeta):
     # type ignore is needed because IntLike overlaps BoolLike
     @overload
     def ArgParameter(self, param: BoolLike, *, doc: Optional[str] = None) -> BoolExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: IntLike, *, doc: Optional[str] = None) -> IntExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...
+
     @overload
     def ArgParameter(self, param: RangeLike, *, doc: Optional[str] = None) -> RangeExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: StringLike, *, doc: Optional[str] = None) -> StringExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayBoolLike, *, doc: Optional[str] = None) -> ArrayBoolExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayIntLike, *, doc: Optional[str] = None) -> ArrayIntExpr: ...  # type: ignore
+
     @overload
     def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...
+
     @overload
     def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...
+
     @overload
     def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...
 
@@ -742,7 +761,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
             raise TypeError(f"param to Block(...) may not be DesignTop")
 
         elt = tpe._bind(self)
-        self._blocks.register(elt)
+        self._blocks.append(elt)
+        self._namer.add_expected(elt, SourceLocator.from_caller())
 
         return elt
 

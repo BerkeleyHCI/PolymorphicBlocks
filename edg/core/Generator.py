@@ -94,6 +94,8 @@ class GeneratorBlock(Block):
     #
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
+        self._namer.resolve_names()
+
         if (
             self._elaboration_state != BlockElaborationState.post_generate
         ):  # only write generator on the stub definition
@@ -146,11 +148,11 @@ class GeneratorBlock(Block):
                     self.generate()
                 except Exception as e:
                     params_list_str = ", ".join(
-                        f"{self._name_of_child(param, self, allow_unknown=True)}={self._generator_param_values[param]!r}"
+                        f"{self._name_of(param, debug=True)}={self._generator_param_values[param]!r}"
                         for param in self._generator_params_list
                     )
                     raise RuntimeError(
-                        f"Generator {self.__class__.__name__} with parameters {{{params_list_str}}} raised exception: {e!r}"
+                        f"Generator {self.__class__.__name__} with parameters {params_list_str} raised exception: {e!r}"
                     ) from e
             elif self._generator is not None:  # legacy generator style
                 fn_args = [

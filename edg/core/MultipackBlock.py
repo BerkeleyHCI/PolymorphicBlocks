@@ -10,7 +10,7 @@ from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
 from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
-from .Core import non_library, SubElementDict
+from .Core import non_library, SourceLocator
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
 from .HierarchyBlock import Block, BlockPrototype
@@ -132,7 +132,7 @@ class MultipackBlock(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
+
         # TODO should these be defined in terms of Refs?
         # packed block -> (exterior port -> packed block port)
         self._packed_connects_by_packed_block = IdentityDict[
@@ -163,7 +163,7 @@ class MultipackBlock(Block):
             raise BlockDefinitionError(type(self), "can only define multipack in init")
 
         elt = tpe._bind(self)  # TODO: does this actually need to be bound?
-        self._packed_blocks.register(elt)
+        self._namer.add_expected(elt, SourceLocator.from_caller())
         self._packed_connects_by_packed_block[elt] = IdentityDict[BasePort, PackedPortTypes]()
         self._packed_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, PackedParamTypes]()
         self._unpacked_assigns_by_packed_block[elt] = IdentityDict[ConstraintExpr, UnpackedParamTypes]()
@@ -252,7 +252,8 @@ class MultipackBlock(Block):
         else:
             raise TypeError()
         self.packed_assign(new_param, packed_param)
-        self._parameters.register(new_param)
+        self._parameters.append(new_param)
+        self._namer.add_expected(new_param, SourceLocator.from_caller())
         return new_param
 
     def unpacked_assign(self, packed_param: UnpackedParamTypes, self_param: ConstraintExpr) -> None:
@@ -274,7 +275,6 @@ class MultipackBlock(Block):
 
     def _get_block_packing_rule(self, packed_part: Union[Block, PackedBlockAllocate]) -> MultipackPackingRule:
         """Internal API, returns the packing rules (tunnel exports and assigns) for a constituent PackedPart."""
-        self._packed_blocks.finalize()
         if isinstance(packed_part, PackedBlockAllocate):
             packed_block: PackedBlockTypes = packed_part.parent
         else:

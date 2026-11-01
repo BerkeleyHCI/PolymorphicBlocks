@@ -49,7 +49,7 @@ class HasSubboardBlockApi(Block):
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
         # create this assign after the block definition has run
-        self.assign(self.fp_external_blocks, [self._blocks.name_of(block) for block in self._external_blocks])
+        self.assign(self.fp_external_blocks, [self._name_of(block) for block in self._external_blocks])
         return super()._def_to_proto()
 
     @override
@@ -57,7 +57,7 @@ class HasSubboardBlockApi(Block):
         super()._populate_def_proto_hierarchy(pb, ref_map)
 
         for exterior_port, internal_port in self._export_taps:
-            internal_port_name = internal_port._name_from(self).replace(".", "_")
+            internal_port_name = "_".join(self._path_of(internal_port))
             constraint_pb = edgir.add_pair(pb.constraints, f"(export_tap){internal_port_name}")
             if isinstance(exterior_port, Vector):
                 constraint_pb.exportedArray.exterior_port.ref.CopyFrom(ref_map[exterior_port])

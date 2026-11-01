@@ -271,7 +271,8 @@ class Passive(Port[PassiveLink]):
 
         # map initializers from that to constructor args
         adapter_init_kwargs = {}  # make everything kwargs for simplicity
-        for param_name, param in that._parameters.items():
+        for param in that._parameters:
+            param_name = that._name_of(param)
             assert param.initializer is not None, f"missing initializer for {param_name}"
             adapter_init_kwargs[param_name] = param.initializer
 

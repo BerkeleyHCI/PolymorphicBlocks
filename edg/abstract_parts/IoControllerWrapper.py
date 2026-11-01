@@ -80,8 +80,8 @@ class BaseIoControllerWrapped(BaseIoController):
             assert prefix not in pin_dict, f"duplicate pin name {prefix}"
             pin_dict[prefix] = port
 
-            for subport_name, subport in port._ports.items():
-                recurse_port(subport, f"{prefix}.{subport_name}")
+            for subport in port._ports:
+                recurse_port(subport, f"{prefix}.{port._name_of(subport)}")
 
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):
@@ -91,7 +91,7 @@ class BaseIoControllerWrapped(BaseIoController):
                     recurse_port(subport, subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
-                    port_name = io_port._name_from(self)
+                    port_name = self._path_name_of(io_port)
                     recurse_port(io_port, port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
@@ -203,8 +203,8 @@ class BaseIoControllerWrapper(BaseIoController):
             assert prefix not in pin_type_dict, f"duplicate pin name {prefix}"
             pin_type_dict[prefix] = type(port)
 
-            for subport_name, subport in port._ports.items():
-                recurse_port(subport, f"{prefix}.{subport_name}")
+            for subport in port._ports:
+                recurse_port(subport, f"{prefix}.{port._name_of(subport)}")
 
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):
@@ -212,7 +212,7 @@ class BaseIoControllerWrapper(BaseIoController):
                     recurse_port(io_port._tpe.empty(), subport_name)
             elif isinstance(io_port, Port):
                 if self.get(io_port.is_connected()):
-                    port_name = io_port._name_from(self)
+                    port_name = self._name_of(io_port)
                     recurse_port(io_port, port_name)
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")

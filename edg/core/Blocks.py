@@ -12,7 +12,15 @@ from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase
+from .Core import (
+    Refable,
+    HasMetadata,
+    builder,
+    non_library,
+    EltPropertiesBase,
+    SourceLocator,
+    NamingContainer,
+)
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -110,7 +118,7 @@ class Connection:
                 initializers = ext_port._get_initializers([])
                 if initializers:
                     raise UnconnectableError(
-                        f"Connected boundary port {ext_port._name_from(self.parent, allow_unknown=True)} may not have initializers, "
+                        f"Connected boundary port {self.parent._path_name_of(ext_port, debug=True)} may not have initializers, "
                         f"got {', '.join(['.'.join(path) + '=' + str(value) for _, path, value in initializers])}"
                     )
                 return  # is an export, not a connection
@@ -125,7 +133,7 @@ class Connection:
             assert not self.link_connected_ports
             assert not self.bridged_ports
             assert not self.available_link_ports_by_type
-            for name, port in link._ports.items():
+            for port in link._ports:
                 self.available_link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
         else:
             link = self.link_instance
@@ -136,23 +144,23 @@ class Connection:
                 if port._block_parent() is self.parent:
                     if port._get_initializers([]):
                         raise UnconnectableError(
-                            f"Connected boundary port {port._name_from(self.parent, allow_unknown=True)} may not have initializers"
+                            f"Connected boundary port {self.parent._path_name_of(port, debug=True)} may not have initializers"
                         )
                     if not isinstance(port, Port):
                         raise UnconnectableError(
-                            f"Can't generate bridge for non-Port {port._name_from(self.parent, allow_unknown=True)}"
+                            f"Can't generate bridge for non-Port {self.parent._path_name_of(port, debug=True)}"
                         )
 
                     bridge = port._bridge()
                     if bridge is None:
-                        raise UnconnectableError(f"No bridge for {port._name_from(self.parent, allow_unknown=True)}")
+                        raise UnconnectableError(f"No bridge for {self.parent._path_name_of(port, debug=True)}")
                     link_facing_port = self.bridged_ports[port] = bridge.inner_link
                 else:
                     link_facing_port = port
             elif isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
                 if port._block_parent() is not self.parent:
                     raise UnconnectableError(
-                        f"Port {port._name_from(self.parent, allow_unknown=True)} not in containing link"
+                        f"Port {self.parent._path_name_of(port, debug=True)} not in containing link"
                     )
                 link_facing_port = port
             else:
@@ -165,18 +173,16 @@ class Connection:
             # allocate the connection
             if self._baseport_leaf_type(link_facing_port).link_type is not type(link):
                 raise UnconnectableError(
-                    f"Can't connect {port._name_from(self.parent, allow_unknown=True)} to link of type {type(link)}"
+                    f"Can't connect {self.parent._path_name_of(port, debug=True)} to link of type {type(link)}"
                 )
             port_type = type(self._baseport_leaf_type(link_facing_port))
             allocatable_link_ports = self.available_link_ports_by_type.get(port_type, None)
             if allocatable_link_ports is None:
                 raise UnconnectableError(
-                    f"No link port for {port._name_from(self.parent, allow_unknown=True)} of type {port_type}"
+                    f"No link port for {self.parent._path_name_of(port, debug=True)} of type {port_type}"
                 )
             if not allocatable_link_ports:
-                raise UnconnectableError(
-                    f"No remaining link ports to {port._name_from(self.parent, allow_unknown=True)}"
-                )
+                raise UnconnectableError(f"No remaining link ports to {self.parent._path_name_of(port, debug=True)}")
 
             allocated_link_port = allocatable_link_ports[0]
             if isinstance(allocated_link_port, BaseVector):  # array on link side, can connected multiple ports
@@ -268,7 +274,7 @@ AbstractBlockProperty = EltPropertiesBase()
 
 
 @non_library
-class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
+class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
     """Base block that has ports (IOs), parameters, and constraints between them."""
 
     # __init__ should initialize the object with structural information (parameters, fields)
@@ -285,21 +291,19 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             None  # additional string field to be displayed as part of the tooltip for blocks
         )
 
-        self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
+        self._parameters: List[ConstraintExpr] = []
         self._param_docs = IdentityDict[ConstraintExpr, str]()
 
-        self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
+        self._ports: List[BasePort] = []
         self._required_ports = IdentityDict[BasePort, Optional[BoolExpr]]()  # port -> precondition for required
         self._port_docs = IdentityDict[BasePort, str]()
 
-        self._connects = self.manager.new_dict(Connection, anon_prefix="anon_link")
+        self._connects: List[Connection] = []
         self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
         self._connect_delegateds = IdentityDict[
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
-        self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(
-            ConstraintExpr, anon_prefix="anon_constr"
-        )
+        self._constraints: List[ConstraintExpr] = []
 
         self._name = StringExpr()._bind(NameBinding(self))
 
@@ -350,12 +354,12 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         metadata_dict: Dict[str, str] = {}
         if self.__doc__:
             metadata_dict[""] = inspect.cleandoc(self.__doc__)
-        for name, param in self._parameters.items():
+        for param in self._parameters:
             if param in self._param_docs:
-                metadata_dict[name] = self._param_docs[param]
-        for name, port in self._ports.items():
+                metadata_dict[self._name_of(param)] = self._param_docs[param]
+        for port in self._ports:
             if port in self._port_docs:
-                metadata_dict[name] = self._port_docs[port]
+                metadata_dict[self._name_of(port)] = self._port_docs[port]
         self._docs = self.Metadata(metadata_dict)
 
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
@@ -364,9 +368,6 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             self._elaboration_state == BlockElaborationState.post_contents
             or self._elaboration_state == BlockElaborationState.post_generate
         )
-
-        self._parameters.finalize()
-        self._ports.finalize()
 
         if (self.__class__, AbstractBlockProperty) in self._elt_properties:
             assert isinstance(pb, edgir.HierarchyBlock)
@@ -387,15 +388,15 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         for cls in indirect_bases:
             pb.super_superclasses.add().target.name = cls._static_def_name()
 
-        for name, param in self._parameters.items():
+        for param in self._parameters:
             assert isinstance(param.binding, ParamBinding)
-            param._populate_decl_proto(edgir.add_pair(pb.params, name))
+            param._populate_decl_proto(edgir.add_pair(pb.params, self._name_of(param)))
 
-        for name, port in self._ports.items():
-            port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
+        for port in self._ports:
+            port._populate_portlike_proto(edgir.add_pair(pb.ports, self._name_of(port)))
 
         ref_map = self._create_ref_map()
-        for name, port in self._ports.items():
+        for port in self._ports:
             if port in self._required_ports:
                 if isinstance(port, Port):
                     connected_condition = port.is_connected()
@@ -410,28 +411,23 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
                     connected_condition = precondition.implies(connected_condition)
 
                 # add required constraints first
-                connected_condition._populate_expr_proto(edgir.add_pair(pb.constraints, f"(reqd){name}"), ref_map)
-
-        self._constraints.finalize()  # needed for source locator generation
+                # TODO move to port declaration time
+                connected_condition._populate_expr_proto(
+                    edgir.add_pair(pb.constraints, f"(reqd){self._name_of(port)}"), ref_map
+                )
 
         self._add_doc_metadata()
-        self._populate_metadata(pb.meta, self._metadata, ref_map)
+        named_metadata = {self._name_of(metadata): metadata for metadata in self._metadata}
+        self._populate_metadata(pb.meta, named_metadata, ref_map)
 
     def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
-        for name, port in self._ports.items():
-            for param, path, initializer in port._get_initializers([name]):
+        for port in self._ports:
+            for param, path, initializer in port._get_initializers([self._name_of(port)]):
                 AssignBinding.populate_assign_proto(
                     edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}"),
                     param,
                     param._to_expr_type(initializer),
                     ref_map,
-                )
-
-    def _populate_def_proto_param_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
-        for name, param in self._parameters.items():
-            if param.initializer is not None:
-                AssignBinding.populate_assign_proto(
-                    edgir.add_pair(pb.constraints, f"(init){name}"), param, param.initializer, ref_map
                 )
 
     def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
@@ -441,7 +437,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        for name, constraint in self._constraints.items():
+        for i, constraint in enumerate(self._constraints):
+            name = self._name_of(constraint)
             constraint._populate_expr_proto(edgir.add_pair(pb.constraints, name), ref_map)
 
     def _populate_def_proto_description(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
@@ -454,10 +451,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
         super()._build_ref_map(ref_map, prefix)
         ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
-        for name, param in self._parameters.items():
-            param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
-        for name, port in self._ports.items():
-            port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
+        for param in self._parameters:
+            param._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(param)))
+        for port in self._ports:
+            port._build_ref_map(ref_map, edgir.localpath_concat(prefix, self._name_of(port)))
 
     def _bind_in_place(self, parent: Union[BaseBlock, Port]) -> None:
         self._parent = parent
@@ -494,16 +491,22 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     def require(self, constraint: BoolLike, name: Optional[str] = None, *, _unchecked: bool = False) -> BoolExpr:
         constraint_typed = BoolExpr._to_expr_type(constraint)
+        if isinstance(constraint_typed.binding, ParamBinding):
+            # if this otherwise would return the raw parameter, wrap in an expression
+            # otherwise, this may redefine the name of the parameter
+            constraint_typed = constraint_typed == True
+
         if not isinstance(name, (str, type(None))):
             raise EdgTypeError(f"require(...) name", name, (str, None))
 
         if not _unchecked:  # allow breaking structural / abstraction rules, used in some unit tests
             self._check_constraint(constraint_typed)
 
-        self._constraints.register(constraint_typed)
+        self._constraints.append(constraint_typed)
+        self._namer.add_expected(constraint_typed, SourceLocator.from_caller(), default_prefix="anon_constr")
 
         if name:  # TODO unify naming API with everything else?
-            self.manager.add_element(name, constraint_typed)
+            self._namer.add_name(constraint_typed, name)
 
         return constraint_typed
 
@@ -525,10 +528,11 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         self._check_constraint(expr_value)
 
         constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
-        self._constraints.register(constraint)
+        self._constraints.append(constraint)
+        self._namer.add_expected(constraint, SourceLocator.from_caller(), default_prefix="anon_constr")
 
         if name:  # TODO unify naming API with everything else?
-            self.manager.add_element(name, constraint)
+            self._namer.add_name(constraint, name)
 
         return constraint
 
@@ -546,7 +550,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             raise EdgTypeError(f"param to Port(...)", tpe, BasePort)
 
         elt = tpe._bind(self)
-        self._ports.register(elt)
+        self._ports.append(elt)
+        self._namer.add_expected(elt, SourceLocator.from_caller())
 
         if isinstance(optional, bool):
             if not optional:
@@ -575,9 +580,11 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
             raise EdgTypeError(f"param to Parameter(...)", tpe, ConstraintExpr)
 
         elt = tpe._bind(ParamBinding(self))
-        self._parameters.register(elt)
+        self._parameters.append(elt)
+        self._namer.add_expected(elt, SourceLocator.from_caller())
         if elt.initializer is not None:
-            self._check_constraint(elt.initializer)
+            assign = self.assign(elt, elt.initializer)
+            self._namer.add_name(assign, lambda: f"(init){self._name_of(elt)}")
 
         if doc is not None:
             self._param_docs[elt] = doc
@@ -604,7 +611,8 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
         existing_connects = connects_connects + connects_ports_connects
         if not existing_connects:
             connect = Connection(self, flatten)
-            self._connects.register(connect)
+            self._connects.append(connect)
+            self._namer.add_expected(connect, SourceLocator.from_caller(), default_prefix="anon_link")
         else:  # append to (potentially multiple) existing connect
             connect = existing_connects[0]  # first one is authoritative
             connect_flattens = set([connect.flatten for connect in existing_connects])

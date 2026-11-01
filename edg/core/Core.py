@@ -1,124 +1,138 @@
 from __future__ import annotations
 
+import inspect
+from types import FrameType, FunctionType
 from typing import *
 from abc import abstractmethod
 
 from typing_extensions import override
 
+from .HdlUserExceptions import ElementNamingError
 from .. import edgir
 from .Builder import builder
 from .IdentityDict import IdentityDict
-from .IdentitySet import IdentitySet
 
 ElementType = TypeVar("ElementType")
 
 
-class SubElementDict(Generic[ElementType]):
-    def __init__(self, anon_prefix: Optional[str] = None) -> None:
-        self.anons = IdentitySet[ElementType]()  # TODO this should be order-preserving?
-        self.anon_prefix = anon_prefix
-        self.container: Dict[str, ElementType] = {}
-        self.names = IdentityDict[ElementType, str]()  # TODO unify w/ container?
-        self.keys_list: List[str] = []
-        self.closed = False
+class SourceLocator:
+    """Object that can be used to locate the source of a library element, for error reporting."""
 
-    def register(self, item: ElementType) -> ElementType:
-        assert not self.closed, "adding items after closed"
-        self.anons.add(item)
-        return item
+    def __init__(self, top_frame: Optional[FrameType], depth: int) -> None:
+        frame = top_frame
+        assert frame is not None
+        for i in range(depth):
+            frame = frame.f_back
+            assert frame is not None
+        self._filename = frame.f_code.co_filename
+        self._line = frame.f_lineno
 
-    def add_element(self, name: str, item: Any) -> None:
-        assert not self.closed, "naming items after closed"
-        assert item in self.anons, f"attempted to add {name}={item}, but did not pre-register"
-        self.anons.remove(item)
-        assert name not in self.container, f"attempted to reassign {name}={item}"
+    @classmethod
+    def from_caller(cls) -> SourceLocator:
+        # returns the source locator for the calling frame of the caller
+        return cls(inspect.currentframe(), 2)
 
-        self.container[name] = item
-        self.names[item] = name
-        self.keys_list.append(name)
-
-    # TODO should this be automatically called?
-    def finalize(self) -> None:
-        if self.anon_prefix is None:
-            assert not self.anons, f"can't have unnamed objects: {self.anons}"
-        else:
-            for id, elt in enumerate(self.anons):
-                name = f"{self.anon_prefix}_{id}"
-                assert name not in self.container, f"duplicate name {name}"
-                self.container[name] = elt
-                self.names[elt] = name
-                self.keys_list.append(name)
-            self.anons = IdentitySet[ElementType]()  # TODO needs clear operation
-        self.closed = True
-
-    def all_values_temp(self) -> Iterable[ElementType]:  # TODO needs better API name, reconcile w/ values?
-        return list(self.container.values()) + list(self.anons)
-
-    # TODO the below allows this to be used like a dict, is this a good idea?
-    # TODO should these make sure the dict is closed?
-    def items(self) -> ItemsView[str, ElementType]:
-        return self.container.items()
-
-    def items_ordered(self) -> Iterable[Tuple[str, ElementType]]:
-        return [(key, self.container[key]) for key in self.keys_list]
-
-    def keys_ordered(self) -> Iterable[str]:  # TODO should this clone?
-        return self.keys_list
-
-    def values(self) -> ValuesView[ElementType]:
-        return self.container.values()
-
-    def __getitem__(self, item: str) -> ElementType:
-        return self.container[item]
-
-    def __contains__(self, item: str) -> bool:
-        return item in self.container
-
-    def name_of(self, elt: ElementType) -> Optional[str]:
-        if elt in self.names:
-            return self.names[elt]
-        else:
-            return None
+    @override
+    def __repr__(self) -> str:
+        return f"{self._filename}:{self._line}"
 
 
-class SubElementManager:
-    def __init__(self) -> None:
-        self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
-        self.aliases = IdentityDict[Any, Any]()
+class NamespaceManager:
+    """Manages names of objects in a naming container.
+    Supports source locators via inspect, before an object is given a name.
+    Supports delayed naming via callables, allowing names to depend on other names that may not yet be assigned.
+    """
 
-    def new_dict(
-        self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]], anon_prefix: Optional[str] = None
-    ) -> SubElementDict[ElementType]:
-        sub_dict = SubElementDict[ElementType](anon_prefix)
-        self.dicts.append((filter_type, sub_dict))
-        return sub_dict
+    def __init__(self, parent: Any) -> None:
+        self._parent = parent
+        self._base_names = IdentityDict[Any, Union[SourceLocator, str, Callable[[], str]]]()
+        self._default_names = IdentityDict[Any, str]()
+        self._default_name_prefix_count: Dict[str, int] = {}
+        self._assigned_names: Set[str] = set()
+        self._aliases = IdentityDict[Any, Any]()
+
+    def __contains__(self, item: Any) -> bool:
+        if item in self._aliases:
+            return self._aliases[item] in self
+
+        return item in self._base_names
+
+    def resolve_names(self) -> None:
+        # asserts that all names are given and valid and resolves anonymous names
+        missing_names: List[str] = []
+        error_names: List[Any] = []
+        for obj, name in self._base_names.items():
+            if isinstance(name, SourceLocator):
+                default_name = self._default_names.get(obj, None)
+                if default_name is not None:
+                    self._base_names.update(obj, default_name)
+                    if default_name in self._assigned_names:
+                        raise ElementNamingError(type(self._parent), f"duplicate name {default_name}")
+                    self._assigned_names.add(default_name)
+                else:
+                    missing_names.append(f"{obj} @ {name}")
+            else:
+                pass  # has valid name
+
+        if missing_names:
+            raise ElementNamingError(type(self._parent), f"no name for objects {missing_names}")
+        if error_names:  # errors may be due to missing names, so check after missing names are resolved
+            raise ElementNamingError(type(self._parent), f"error generating names for objects {error_names}")
 
     def add_alias(self, src: Any, target: Any) -> None:
-        self.aliases[src] = target
+        self._aliases[src] = target
 
-    def add_element(self, name: str, item: Any) -> None:
-        if isinstance(item, ElementDict):
-            item._set_parent((name, self))
-        else:
-            assigned = []
-            for tpe, dict in self.dicts:
-                if item in dict.anons:
-                    dict.add_element(name, item)
-                    assigned.append(dict)
-                else:  # require not conflicting name, or direct reassignment
-                    assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
-            assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
+    def add_expected(self, item: Any, source_locator: SourceLocator, *, default_prefix: Optional[str] = None) -> None:
+        self._base_names[item] = source_locator
+        if default_prefix:
+            count = self._default_name_prefix_count.get(default_prefix, 0)
+            self._default_name_prefix_count[default_prefix] = count + 1
+            self._default_names[item] = f"{default_prefix}{count}"
 
-    def name_of(self, item: Any) -> Optional[str]:
-        if item in self.aliases:
-            item = self.aliases[item]
-        name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
-        name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
-        assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
-        if not name_candidates_filtered:
-            return None
+    def add_name(self, item: Any, name: Union[str, Callable[[], str]]) -> None:
+        existing = self._base_names.get(item, None)
+        if existing is None:
+            if isinstance(item, ElementDict):
+                item._set_parent(self)
+                self._base_names[item] = name
+            else:
+                return  # not expected, ignore
+        elif isinstance(existing, SourceLocator):
+            if name in self._assigned_names:
+                raise ElementNamingError(type(self._parent), f"duplicate name {name}")
+            if isinstance(name, str):
+                self._assigned_names.add(name)
+
+            self._base_names.update(item, name)
+        elif existing is not None:
+            return  # reassignments, eg for aliasing for deprecation, ignored; first one takes
         else:
-            return name_candidates_filtered[0]
+            raise ValueError("unexpected name entry type")
+
+    def name(self, item: Any, *, debug: bool = False) -> str:
+        """Returns the name of an item.
+        If debug, returns a debugging name if the final name is not resolved, otherwise raises."""
+        if item in self._aliases:
+            return self.name(self._aliases[item], debug=debug)
+
+        name = self._base_names.get(item, None)
+        if isinstance(name, str):
+            return name
+        elif isinstance(name, FunctionType):
+            name = name()
+            assert isinstance(name, str)
+            self._base_names.update(item, name)
+            if name in self._assigned_names:
+                raise ElementNamingError(type(self._parent), f"duplicate name {name}")
+            self._assigned_names.add(name)
+            return name
+        elif isinstance(name, SourceLocator):
+            if debug:
+                return f"(unnamed {item}@{name})"
+            else:
+                raise ValueError(f"no name for {item}")
+        else:
+            raise ValueError(f"no name for unexpected {item} (internal consistency error)")
 
 
 class ElementDict(Generic[ElementType]):
@@ -127,16 +141,14 @@ class ElementDict(Generic[ElementType]):
     # TODO also have a KeyType? Perhaps enforce type bounds, eg must be str-able?
     def __init__(self) -> None:
         self.container: Dict[Union[str, int], ElementType] = {}
-        self._parent: Optional[Tuple[str, SubElementManager]] = None  # name prefix, pointer to top level
+        self._parent: Optional[NamespaceManager] = None  # name prefix, pointer to top level
 
-    def _set_parent(self, parent: Tuple[str, SubElementManager]) -> None:
+    def _set_parent(self, parent: NamespaceManager) -> None:
         self._parent = parent
 
     def __setitem__(self, key: Union[str, int], value: ElementType) -> None:
         assert self._parent is not None
-        self._parent[1].add_element(
-            f"{self._parent[0]}[{key}]", value
-        )  # TODO perhaps some kind of check to make sure this is required?
+        self._parent.add_name(value, lambda: f"{self._parent.name(self)}[{key}]")  # type: ignore[union-attr]
         self.container[key] = value
 
     def __getitem__(self, item: Union[str, int]) -> ElementType:
@@ -204,42 +216,38 @@ class LibraryElement(Refable):
     def __repr__(self) -> str:
         return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xFF)
 
-    def __init__(self) -> None:
-        self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
+    BaseType = TypeVar("BaseType", bound="LibraryElement")
 
-        self.manager = SubElementManager()
-        self.manager_ignored: Set[str] = set(["_parent"])
+    @classmethod
+    def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
+        """Returns all the base classes of this class, as a list of direct superclasses (including through non_library
+        elements) and a list of additional (indirect) superclasses. Direct superclasses are in MRO order, indirect
+        superclasses order is not defined (but MRO in current practice).
 
-    @override
-    def __setattr__(self, name: str, value: Any) -> None:
-        if hasattr(self, "manager_ignored") and name not in self.manager_ignored:
-            self.manager.add_element(name, value)
-        super().__setattr__(name, value)
+        mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
+        direct_bases: Set[Type[LibraryElement.BaseType]] = set()
 
-    def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
-        self_name = self.manager.name_of(subelt)
-        if self_name is not None:
-            return self_name
-        else:
-            if allow_unknown:
-                return f"(unknown {subelt.__class__.__name__})"
-            else:
-                raise ValueError(f"no name for {subelt}")
+        def process_direct_base(bcls: Type[LibraryElement.BaseType]) -> None:
+            if not issubclass(bcls, base_type):
+                return  # ignore above base_type
+            if (bcls, NonLibraryProperty) in bcls._elt_properties:  # non-library, recurse into parents
+                for bcls_base in bcls.__bases__:
+                    process_direct_base(bcls_base)
+            else:  # anything else, directly append if not existing
+                direct_bases.add(bcls)
 
-    def _path_from(self, base: LibraryElement, allow_unknown: bool = False) -> List[str]:
-        if base is self:
-            return []
-        else:
-            assert self._parent is not None, "can't get path / name for non-bound element"
-            return self._parent._path_from(base, allow_unknown) + [
-                self._parent._name_of_child(self, base, allow_unknown)
-            ]
+        for bcls in cls.__bases__:
+            process_direct_base(bcls)
 
-    def _name_from(self, base: LibraryElement, allow_unknown: bool = False) -> str:
-        """Returns the path name to (inclusive) this element from some starting point.
-        allow_unknown allows elements that haven't been assigned a name yet to not crash,
-        this is useful when called from an error so the _name_from error doesn't stomp the real error."""
-        return ".".join(self._path_from(base, allow_unknown))
+        ordered_direct_bases: List[Type[LibraryElement.BaseType]] = []
+        ordered_indirect_bases: List[Type[LibraryElement.BaseType]] = []
+        for mro_base in cls.__mro__[1:]:  # ignore self
+            if mro_base in direct_bases:
+                ordered_direct_bases.append(mro_base)
+            elif issubclass(mro_base, base_type) and (mro_base, NonLibraryProperty) not in mro_base._elt_properties:
+                ordered_indirect_bases.append(mro_base)
+
+        return ordered_direct_bases, ordered_indirect_bases
 
     @classmethod
     def _static_def_name(cls) -> str:
@@ -255,57 +263,61 @@ class LibraryElement(Refable):
     def _def_to_proto(self) -> Union[edgir.PortTypes, edgir.BlockLikeTypes]: ...
 
 
+class NamingContainer:
+    """Mixin class for objects that contain and name internal objects"""
+
+    def __init__(self) -> None:
+        self._parent: Optional[NamingContainer] = None  # set by binding, None means not bound
+        self._namer = NamespaceManager(self)
+
+    @override
+    def __setattr__(self, name: str, value: Any) -> None:
+        if hasattr(self, "_namer"):  # don't access before definition
+            self._namer.add_name(value, name)
+        super().__setattr__(name, value)
+
+    def _path_of(self, elt: Any, *, debug: bool = False) -> List[str]:
+        """Returns the name path of an inner element.
+        If debug is true, will return the best-effort name even if it is not yet assigned.
+        If debug is false, raises an error for unassigned names."""
+        if elt is self:
+            return []
+        else:
+            assert elt._parent is not None, "can't get path / name for non-bound element"
+            return self._path_of(elt._parent, debug=debug) + [elt._parent._name_of(elt, debug=debug)]
+
+    def _path_name_of(self, elt: Any, *, debug: bool = False) -> str:
+        """Convenience stringify wrapper around _path_of."""
+        return ".".join(self._path_of(elt, debug=debug))
+
+    def _name_of(self, elt: Any, *, debug: bool = False) -> str:
+        """Returns the name of a contained element, non-recursively."""
+        if elt not in self._namer:
+            if not debug:
+                raise ValueError(f"{self.__class__.__name__} has no {elt}")
+            else:
+                return f"(unknown {elt.__class__.__name__})"
+        else:
+            return self._namer.name(elt, debug=debug)
+
+
 @non_library
-class HasMetadata(LibraryElement):
+class HasMetadata(LibraryElement, NamingContainer):
     """A library element with the metadata dict-like field"""
 
     def __init__(self) -> None:
         super().__init__()
-        self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)
+        self._metadata: List[Any] = []
 
-    MetadataType = TypeVar(
-        "MetadataType", bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]]
-    )
+    MetadataType = TypeVar("MetadataType", bound=Union[str, Mapping[str, Any], IdentityDict[Any, Any]])
 
     def Metadata(self, value: MetadataType) -> MetadataType:
         """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
         Value may be changed until proto generation.
         Utility method for library builders."""
-        self._metadata.register(value)
+        self._metadata.append(value)
+        self._namer.add_expected(value, SourceLocator.from_caller())
         return value
-
-    BaseType = TypeVar("BaseType", bound="HasMetadata")
-
-    @classmethod
-    def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
-        """Returns all the base classes of this class, as a list of direct superclasses (including through non_library
-        elements) and a list of additional (indirect) superclasses. Direct superclasses are in MRO order, indirect
-        superclasses order is not defined (but MRO in current practice).
-
-        mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
-        direct_bases: Set[Type[HasMetadata.BaseType]] = set()
-
-        def process_direct_base(bcls: Type[HasMetadata.BaseType]) -> None:
-            if not issubclass(bcls, base_type):
-                return  # ignore above base_type
-            if (bcls, NonLibraryProperty) in bcls._elt_properties:  # non-library, recurse into parents
-                for bcls_base in bcls.__bases__:
-                    process_direct_base(bcls_base)
-            else:  # anything else, directly append if not existing
-                direct_bases.add(bcls)
-
-        for bcls in cls.__bases__:
-            process_direct_base(bcls)
-
-        ordered_direct_bases: List[Type[HasMetadata.BaseType]] = []
-        ordered_indirect_bases: List[Type[HasMetadata.BaseType]] = []
-        for mro_base in cls.__mro__[1:]:  # ignore self
-            if mro_base in direct_bases:
-                ordered_direct_bases.append(mro_base)
-            elif issubclass(mro_base, base_type) and (mro_base, NonLibraryProperty) not in mro_base._elt_properties:
-                ordered_indirect_bases.append(mro_base)
-
-        return ordered_direct_bases, ordered_indirect_bases
 
     def _populate_metadata(self, pb: edgir.Metadata, src: Any, ref_map: Refable.RefMapType) -> None:
         """Generate metadata from a given object."""
@@ -313,9 +325,7 @@ class HasMetadata(LibraryElement):
             pb.text_leaf = src
         elif isinstance(src, bytes):
             pb.bin_leaf = src
-        elif isinstance(src, dict) or isinstance(src, SubElementDict) or isinstance(src, IdentityDict):
-            if isinstance(src, SubElementDict):  # used at the top-level, for Metadata(...)
-                src.finalize()  # TODO should this be here?
+        elif isinstance(src, dict) or isinstance(src, IdentityDict):
             for key, val in src.items():
                 assert isinstance(key, str), f"must overload _metadata_to_proto for non-str dict key {key}"
                 self._populate_metadata(pb.members.node[key], val, ref_map)

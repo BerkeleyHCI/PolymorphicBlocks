@@ -172,7 +172,7 @@ class BaseIoController(PinMappable, Block):
                 if transform_fn is None:
                     self.connect(self_io, inner_io)
                 else:
-                    connect_port_transformed(self_io, lambda: inner_io, self_io._name_from(self))
+                    connect_port_transformed(self_io, lambda: inner_io, self._path_name_of(self_io))
             else:
                 raise NotImplementedError(f"unknown port type {self_io}")
 
@@ -293,9 +293,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
                 allocation_list.append((io_port.elt_type(), self.get(io_port.requested())))
             elif isinstance(io_port, Port):  # derive Port connections from is_connected
                 if self.get(io_port.is_connected()):
-                    requested = [
-                        self._name_of_child(io_port, self)
-                    ]  # generate requested name from port name if connected
+                    requested = [self._name_of(io_port)]  # generate requested name from port name if connected
                 else:
                     requested = []
                 allocation_list.append((type(io_port), requested))

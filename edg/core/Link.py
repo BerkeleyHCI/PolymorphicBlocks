@@ -42,27 +42,28 @@ class Link(BaseBlock, metaclass=LinkMeta):
 
     @override
     def _def_to_proto(self) -> edgir.Link:
+        self._namer.resolve_names()
         ref_map = self._create_ref_map()
 
         pb = edgir.Link()
         self._populate_def_proto_block_base(pb)
-        self._populate_def_proto_param_init(pb, ref_map)
         self._populate_def_proto_block_contents(pb, ref_map)
         self._populate_def_proto_description(pb, ref_map)
         # specifically ignore the port initializers
 
         # actually generate the links and connects
-        self._connects.finalize()
         delegated_connects = self._all_delegated_connects()
-        for name, connect in self._connects.items_ordered():
+        for i, connect in enumerate(self._connects):
             if connect in delegated_connects:
                 continue
-            connect_names_opt = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
+            connect_names_opt = [self._namer.name(c) for c in self._all_connects_of(connect)]
             connect_names = [c for c in connect_names_opt if c is not None and not c.startswith("anon_")]
             if len(connect_names) > 1:
                 raise UnconnectableError(f"Multiple names {connect_names} for connect")
             elif len(connect_names) == 1:
                 name = connect_names[0]
+            else:
+                name = connect_names_opt[0]
 
             connect_elts = connect.make_connection()
             assert isinstance(connect_elts, Connection.ConnectedLink)
@@ -80,7 +81,7 @@ class Link(BaseBlock, metaclass=LinkMeta):
                         ref_map[self_port.base]
                     )
                     constraint_pb.exportedArray.exterior_port.map_extract.path.steps.add().name = (
-                        self_port.target._name_from(self_port.base._get_elt_sample())
+                        self_port.base._get_elt_sample()._name_of(self_port.target)
                     )
                     constraint_pb.exportedArray.internal_block_port.ref.CopyFrom(
                         edgir.localpath_concat(link_path, link_port_path)

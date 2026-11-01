@@ -57,3 +57,7 @@ class BlockDefinitionError(EdslUserError):
 
 class ChainError(BlockDefinitionError):
     """Base error for bad elements in a chain connect"""
+
+
+class ElementNamingError(BlockDefinitionError):
+    """Error for when an element has an invalid (missing, duplicated) name"""
