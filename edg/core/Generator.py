@@ -43,13 +43,15 @@ class GeneratorBlock(Block):
             )
         for param in params:
             if not isinstance(param, ConstraintExpr):
-                raise EdgTypeError(f"generator_param(...) param", param, ConstraintExpr)
+                raise EdgTypeError(
+                    f"generator_param(...) param {self._name_of(param, debug=True)}", param, ConstraintExpr
+                )
             if param.binding is None:
                 raise BlockDefinitionError(type(self), "generator_param(...) param must be bound")
             if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
                 raise BlockDefinitionError(
                     type(self),
-                    "generator_param(...) param must be an __init__ param, port requested, or port is_connected",
+                    f"generator_param(...) param {self._name_of(param, debug=True)} must be an __init__ param, port requested, or port is_connected",
                 )
 
             self._generator_params_list.append(param)
