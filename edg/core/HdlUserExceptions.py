@@ -79,6 +79,6 @@ class OverassignParameterError(EdslUserError):
 
     def __init__(self, block: "BaseBlock", param: "ConstraintExpr") -> None:
         super().__init__(
-            f"{type(block).__name__} parameter has conflicting assignment (assigned multiple times)",
+            f"{type(block).__name__} parameter {block._name_of(param, debug=True)} has conflicting assignment (assigned multiple times)",
             "remove an assignment",
         )

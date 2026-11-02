@@ -323,11 +323,12 @@ class TableDeratingCapacitor(TableCapacitor):
     def _row_generate(self, row: PartsTableRow) -> None:
         """This one is weird. Because this is the last in the class order, this is called last.
         So the top subclass needs explicit logic to handle parallel capacitors."""
-        super()._row_generate(row)
+        PartsTableSelector._row_generate(self, row)  # ignore Capacitor _row_generate
         if row[self.PARALLEL_COUNT] == 1:
+            self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+            self.assign(self.actual_capacitance, row[self.CAPACITANCE])
             self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
         else:
-            self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
             self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
             self.assign(self.actual_capacitance, row[self.PARALLEL_CAPACITANCE])
             self.assign(self.actual_derated_capacitance, row[self.PARALLEL_DERATED_CAPACITANCE])
