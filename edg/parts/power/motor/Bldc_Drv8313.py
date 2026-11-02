@@ -107,6 +107,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C92482")
+        self.assign(self.actual_basic_part, False)
 
 
 class Drv8313(BldcDriver, GeneratorBlock):

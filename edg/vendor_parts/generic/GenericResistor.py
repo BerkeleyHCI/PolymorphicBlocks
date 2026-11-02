@@ -64,6 +64,7 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
         if not suitable_packages:
             raise ValueError("no suitable resistor packages")
 
+        self.assign(self.actual_voltage_rating, Range.all())  # ideal resistor
         self.assign(self.actual_resistance, selected_range)
         self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
