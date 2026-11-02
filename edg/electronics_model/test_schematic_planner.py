@@ -43,6 +43,14 @@ class SchematicPlannerTest(unittest.TestCase):
         self.assertEqual(first.sheets[0].regions[0].region_id, "power")
         self.assertEqual(first.regions[0].components, ("controller.part",))
 
+    def test_reserves_native_title_block(self):
+        plan = self.planner.plan_regions([region("a", 200, 200), region("b", 140, 80), region("c", 140, 80)], "f")
+        regions = {r.id: r for r in plan.regions}
+        for sheet in plan.sheets:
+            for p in sheet.regions:
+                r = regions[p.region_id]
+                self.assertTrue(p.x + r.bounds[2] - r.bounds[0] <= 230 or p.y + r.bounds[3] - r.bounds[1] <= 245)
+
     def test_json_round_trip_is_strict_and_does_not_alias_input(self):
         plan = self.planner.plan_regions([region("power")], "fingerprint")
         data = json.loads(json.dumps(plan.to_dict()))

@@ -120,7 +120,11 @@ def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver
             mapping = {("SH" if number == "S1" else number): number for number in pins}
             return _checked_mapping(component, resolver, "Connector:USB_C_Receptacle_USB2.0_16P", mapping)
 
-    if cls == "edg.vendor_parts.jlc.JlcFet.JlcFet" or cls == "lib.power.Ao3400a.Ao3400a":
+    if cls in {
+        "edg.vendor_parts.jlc.JlcFet.JlcFet",
+        "edg.vendor_parts.jlc.JlcFet.JlcSwitchFet",
+        "lib.power.Ao3400a.Ao3400a",
+    }:
         roles = _role_pins(component)
         if set(roles) == {"gate", "source", "drain"}:
             mapping = {"1": roles["gate"], "2": roles["source"], "3": roles["drain"]}
@@ -131,6 +135,21 @@ def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver
                 # Verified PB model records gate/source/drain; this PMOS pin order
                 # is explicitly 1=G, 2=S, 3=D in the generic standard symbol.
                 return _checked_mapping(component, resolver, "Transistor_FET:Q_PMOS_GSD", mapping)
+
+    if cls == "edg.vendor_parts.jlc.JlcBjt.JlcBjt" and identifier in {
+        "MMBT3904",
+        "MMBT3906",
+    }:
+        # Exact KiCad definitions use 1=B, 2=E, 3=C. PB physical pad roles,
+        # rather than SOT-23 ordering, determine the remapping.
+        roles = _role_pins(component)
+        if set(roles) == {"base", "emitter", "collector"}:
+            return _checked_mapping(
+                component,
+                resolver,
+                "Transistor_BJT:" + identifier,
+                {"1": roles["base"], "2": roles["emitter"], "3": roles["collector"]},
+            )
 
     diode_classes = {
         "edg.vendor_parts.jlc.JlcDiode.JlcDiode": "Device:D",

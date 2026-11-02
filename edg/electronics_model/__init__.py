@@ -77,3 +77,5 @@ from .KiCadSchematicPlanner import (
 )
 
 from .KiCadSchematicOverview import SchematicOverview, SchematicOverviewBlock, SchematicOverviewLink
+
+from .KiCadSchematicPresentation import SchematicPresentation

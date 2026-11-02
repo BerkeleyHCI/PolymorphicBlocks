@@ -20,6 +20,7 @@ Bounds = Tuple[float, float, float, float]
 USABLE_BOUNDS: Bounds = (20, 40, 395, 265)
 OVERVIEW_BOUNDS: Bounds = (20, 205, 395, 265)
 GUTTER = 8.0
+TITLE_BLOCK_BOUNDS: Bounds = (230, 245, 410, 287)
 
 
 def _string(value: Any, name: str, allow_empty: bool = False) -> None:
@@ -189,6 +190,10 @@ def _separated(first: Bounds, second: Bounds) -> bool:
     )
 
 
+def _outside_title_block(rect: Bounds) -> bool:
+    return rect[2] <= TITLE_BLOCK_BOUNDS[0] or rect[3] <= TITLE_BLOCK_BOUNDS[1]
+
+
 def _inside(rect: Bounds, usable: Bounds) -> bool:
     tolerance = 1e-7
     return (
@@ -258,7 +263,7 @@ class SchematicSheetPlan:
                 covered.add(region.id)
                 rectangle = _rect(region, placement)
                 usable = OVERVIEW_BOUNDS if sheet.id == "overview" else USABLE_BOUNDS
-                if not _inside(rectangle, usable):
+                if not _inside(rectangle, usable) or not _outside_title_block(rectangle):
                     raise ValueError(f"region outside usable sheet bounds: {region.id}")
                 if any(not _separated(rectangle, previous) for previous in occupied):
                     raise ValueError(f"region overlap or insufficient {GUTTER:g} mm gutter: {region.id}")
@@ -369,7 +374,11 @@ class SchematicSheetPlanner:
             for x in xs:
                 candidate = SchematicRegionPlacement(region.id, x, y)
                 rectangle = _rect(region, candidate)
-                if _inside(rectangle, usable) and all(_separated(rectangle, other) for other in occupied):
+                if (
+                    _inside(rectangle, usable)
+                    and _outside_title_block(rectangle)
+                    and all(_separated(rectangle, other) for other in occupied)
+                ):
                     return candidate
         return None
 
@@ -486,7 +495,15 @@ class SchematicSheetPlanner:
                 if title == "Overview":
                     sheet_id, sheet_title = "overview", "Overview"
                 else:
-                    base = title or "Schematic"
+                    if title is None:
+                        # Exact PB group names convey ownership without inventing function.
+                        labels = list(dict.fromkeys(by_id[p.region_id].title.split(" /")[0] for p in placements))
+                        base = " + ".join(labels[:2])
+                        if len(labels) > 2:
+                            base += " + others"
+                        base = base[:60]
+                    else:
+                        base = title
                     sheet_title = base if len(pages) == 1 else f"{base} /{index + 1}"
                     token = json.dumps([scope, title, index], ensure_ascii=False).encode("utf-8")
                     sheet_id = "sheet_" + hashlib.sha256(token).hexdigest()[:16]

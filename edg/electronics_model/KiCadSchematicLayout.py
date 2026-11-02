@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import heapq
 import math
+import textwrap
 from collections import defaultdict
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple
+
+from .KiCadSchematicPatterns import discover_patterns, terminal_roles
 
 GRID = 1.27
 
@@ -20,18 +23,24 @@ def snap(value: float) -> float:
 
 def transform(x: float, y: float, angle: int) -> Tuple[float, float]:
     r = math.radians(angle)
-    return round(x * math.cos(r) + y * math.sin(r), 4), round(-x * math.sin(r) + y * math.cos(r), 4)
+    return round(x * math.cos(r) + y * math.sin(r), 4), round(
+        -x * math.sin(r) + y * math.cos(r), 4
+    )
 
 
 def pins(view: Any, x: float, y: float, angle: int) -> list:
     result = []
     for number, dx, dy, direction in view.pins:
         tx, ty = transform(dx, dy, angle)
-        result.append((number, round(x + tx, 4), round(y + ty, 4), (direction + angle) % 360))
+        result.append(
+            (number, round(x + tx, 4), round(y + ty, 4), (direction + angle) % 360)
+        )
     return result
 
 
-def graphic_bounds(view: Any, angle: int = 0, include_pins: bool = True) -> Tuple[float, float, float, float]:
+def graphic_bounds(
+    view: Any, angle: int = 0, include_pins: bool = True
+) -> Tuple[float, float, float, float]:
     points = []
 
     def collect(tree):
@@ -41,8 +50,13 @@ def graphic_bounds(view: Any, angle: int = 0, include_pins: bool = True) -> Tupl
         if name in ("property", "pin"):
             return
         if name == "circle":
-            center = next((v for v in tree if isinstance(v, list) and str(v[0]) == "center"), None)
-            radius = next((v[1] for v in tree if isinstance(v, list) and str(v[0]) == "radius"), None)
+            center = next(
+                (v for v in tree if isinstance(v, list) and str(v[0]) == "center"), None
+            )
+            radius = next(
+                (v[1] for v in tree if isinstance(v, list) and str(v[0]) == "radius"),
+                None,
+            )
             if center is not None and radius is not None:
                 for dx, dy in ((radius, 0), (-radius, 0), (0, radius), (0, -radius)):
                     points.append(transform(center[1] + dx, -center[2] + dy, angle))
@@ -57,7 +71,12 @@ def graphic_bounds(view: Any, angle: int = 0, include_pins: bool = True) -> Tupl
         points.extend((transform(p[1], p[2], angle)) for p in view.pins)
     if not points:
         return -5, -5, 5, 5
-    return min(p[0] for p in points), min(p[1] for p in points), max(p[0] for p in points), max(p[1] for p in points)
+    return (
+        min(p[0] for p in points),
+        min(p[1] for p in points),
+        max(p[0] for p in points),
+        max(p[1] for p in points),
+    )
 
 
 def ground_rotation(direction: float) -> int:
@@ -76,24 +95,123 @@ def ground_bounds(x: float, y: float, direction: float):
     )
 
 
+def annotation_bounds(component, x, y, rotation):
+    """Conservative visible reference/value/description bounds in sheet axes."""
+    visible = getattr(component, "display_value", "") or component.value
+    lines = (
+        textwrap.wrap(visible, 30)
+        if visible != component.value
+        else visible.splitlines()
+    ) or [""]
+    boxes = []
+    for text, cy in [(component.refdes, y)] + [
+        (line, y + 2.54 + (i - (len(lines) - 1) / 2) * 1.65)
+        for i, line in enumerate(lines)
+    ]:
+        half = max(1, len(text)) * 0.64 + 1
+        if rotation % 180:
+            boxes.append((x - 1.5, cy - half, x + 1.5, cy + half))
+        else:
+            boxes.append((x - half, cy - 1.5, x + half, cy + 1.5))
+    count = 0
+    for description in getattr(component, "descriptions", ()):
+        for line in textwrap.wrap(description, 42):
+            half = len(line) * 0.6 + 1
+            cy = y + 10 + count * 2.54
+            boxes.append((x - half, cy - 1.5, x + half, cy + 1.5))
+            count += 1
+    return (
+        min(b[0] for b in boxes),
+        min(b[1] for b in boxes),
+        max(b[2] for b in boxes),
+        max(b[3] for b in boxes),
+    )
+
+
+def annotation_obstacles(component, view, x, y, rotation):
+    """Own symbol and pin outward corridors, including long external labels."""
+    xmin, ymin, xmax, ymax = graphic_bounds(view, rotation)
+    result = [(x + xmin, y + ymin, x + xmax, y + ymax)]
+    labels = getattr(component, "net_labels", {})
+    for number, px, py, direction in pins(view, x, y, rotation):
+        r = math.radians(direction)
+        ex, ey = px - 5.08 * math.cos(r), py + 5.08 * math.sin(r)
+        result.append(
+            (min(px, ex) - 0.8, min(py, ey) - 0.8, max(px, ex) + 0.8, max(py, ey) + 0.8)
+        )
+        name = labels.get(number, "")
+        if not name:
+            continue
+        if name.lower().split(".")[-1] == "gnd":
+            result.append(ground_bounds(ex, ey, direction))
+            continue
+        width = len(name) * 1.27 + 2
+        if direction == 0:
+            result.append((ex - width, ey - 1.5, ex + 1, ey + 1.5))
+        elif direction == 180:
+            result.append((ex - 1, ey - 1.5, ex + width, ey + 1.5))
+        elif direction == 270:
+            result.append((ex - 1.5, ey - width, ex + 1.5, ey + 1))
+        else:
+            result.append((ex - 1.5, ey - 1, ex + 1.5, ey + width))
+    return result
+
+
 def annotation_position(component, view, x, y, rotation):
     if getattr(component, "annotation", None) is not None:
         return component.annotation[0], component.annotation[1], ""
     xmin, ymin, xmax, ymax = graphic_bounds(view, rotation)
-    width = max(len(component.refdes), len(getattr(component, "display_value", "") or component.value)) * 0.8
-    if "FET" in view.lib_id or "Q_NMOS" in view.lib_id or "Q_PMOS" in view.lib_id:
-        if rotation in (0, 180):
-            return x + xmax + 3.81 + width / 2, y - 1.27, ""
-        gate = next((p for p in pins(view, x, y, rotation) if p[0] == "1"), None)
-        return (x, y + ymin - 6.35, "") if gate and gate[2] > y else (x, y + ymax + 3.81, "")
+    local = annotation_bounds(component, 0, 0, rotation)
+    half_width = (local[2] - local[0]) / 2
+    half_height = (local[3] - local[1]) / 2
+    # Existing preferred placement remains first; repair examines a finite list
+    # of side/corner positions, never a time-dependent unconstrained search.
+    preferred = (x, y + ymax + 12.7)
     terminals = pins(view, x, y, rotation)
-    if len(terminals) == 2 and abs(terminals[0][1] - terminals[1][1]) < 0.01:
-        return x + xmax + 3.81 + width / 2, y - 1.27, ""
-    return x, y + ymax + 12.7, ""
+    if (
+        "FET" in view.lib_id or "Q_NMOS" in view.lib_id or "Q_PMOS" in view.lib_id
+    ) and rotation in (0, 180):
+        preferred = (x + xmax + 3.81 + half_width, y - 1.27)
+    elif len(terminals) == 2 and abs(terminals[0][1] - terminals[1][1]) < 0.01:
+        preferred = (x + xmax + 3.81 + half_width, y - 1.27)
+    candidates = [preferred]
+    for margin in (3.81, 8.89, 15.24):
+        left, right = x + xmin - margin - half_width, x + xmax + margin + half_width
+        top, bottom = y + ymin - margin - half_height, y + ymax + margin + half_height
+        candidates.extend(
+            (
+                (right, y),
+                (left, y),
+                (x, top),
+                (x, bottom),
+                (right, top),
+                (left, top),
+                (right, bottom),
+                (left, bottom),
+            )
+        )
+    obstacles = annotation_obstacles(component, view, x, y, rotation)
+
+    def score(candidate):
+        box = annotation_bounds(component, *candidate, rotation)
+        overlap = sum(
+            max(0, min(box[2], b[2]) - max(box[0], b[0]))
+            * max(0, min(box[3], b[3]) - max(box[1], b[1]))
+            for b in obstacles
+        )
+        return overlap, abs(candidate[0] - preferred[0]) + abs(
+            candidate[1] - preferred[1]
+        )
+
+    chosen = min(enumerate(candidates), key=lambda pair: (*score(pair[1]), pair[0]))[1]
+    return chosen[0], chosen[1], ""
 
 
-def regroup(components: Sequence[Any], pin_nets: dict) -> None:
+def regroup(
+    components: Sequence[Any], pin_nets: dict, views: Optional[dict] = None
+) -> None:
     """Co-locate small sibling circuits; IC/control groups stay boundaries."""
+    original_groups = {c.path: c.group for c in components}
     groups = defaultdict(list)
     for c in components:
         groups[c.group].append(c)
@@ -110,7 +228,8 @@ def regroup(components: Sequence[Any], pin_nets: dict) -> None:
         by_net[net].add(path)
     for net, paths in sorted(by_net.items()):
         if len(paths) > 8 or any(
-            word.startswith("pwr") or word in ("gnd", "v3v3", "vbus", "vusb", "vbat", "power")
+            word.startswith("pwr")
+            or word in ("gnd", "v3v3", "vbus", "vusb", "vbat", "power")
             for word in net.lower().split(".")
         ):
             continue
@@ -118,7 +237,8 @@ def regroup(components: Sequence[Any], pin_nets: dict) -> None:
             {
                 root(by_path[p].group)
                 for p in paths
-                if p in by_path and max([len(c.pins) for c in groups[by_path[p].group]] + [0]) <= 6
+                if p in by_path
+                and max([len(c.pins) for c in groups[by_path[p].group]] + [0]) <= 6
             }
         )
         if len(candidates) < 2:
@@ -127,6 +247,18 @@ def regroup(components: Sequence[Any], pin_nets: dict) -> None:
             parent[root(g)] = root(candidates[0])
     for c in components:
         c.group = root(c.group)
+    # Explicit feedback terminal + conventional resistor symbols justify a
+    # complete local divider region, even across nested PB implementation blocks.
+    for pattern in discover_patterns(components, pin_nets, views):
+        if pattern.kind in (
+            "feedback_divider",
+            "indicator_branch",
+            "converter_output",
+            "amplifier_feedback",
+        ):
+            owner = original_groups[pattern.components[0]]
+            for path in pattern.components:
+                by_path[path].group = owner
 
 
 def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
@@ -150,13 +282,18 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
             edge_pins[(b, a)] = next(pin for p, pin in endpoints if p == b)
     by_path = {c.path: c for c in components}
     chain = (
-        bool(components) and all(len(c.pins) == 2 for c in components) and all(len(v) <= 2 for v in adjacency.values())
+        bool(components)
+        and all(len(c.pins) == 2 for c in components)
+        and all(len(v) <= 2 for v in adjacency.values())
     )
     order = []
     if chain:
         todo = sorted(
             (p for p in adjacency if len(adjacency[p]) == 1),
-            key=lambda p: ("Resistor" in views[p].lib_id or ":R_" in views[p].lib_id, p),
+            key=lambda p: (
+                "Resistor" in views[p].lib_id or ":R_" in views[p].lib_id,
+                p,
+            ),
         )
         if todo:
             current = todo[0]
@@ -171,7 +308,9 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
         order = []
         remaining = set(by_path)
         while remaining:
-            start = max(remaining, key=lambda p: (len(by_path[p].pins), len(adjacency[p]), p))
+            start = max(
+                remaining, key=lambda p: (len(by_path[p].pins), len(adjacency[p]), p)
+            )
             queue = [start]
             while queue:
                 current = queue.pop(0)
@@ -180,6 +319,30 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
                 remaining.remove(current)
                 order.append(current)
                 queue.extend(sorted(adjacency[current] & remaining))
+    # Serial order follows verified DIN/DOUT connections, not lexical paths.
+    patterns = discover_patterns(components, pin_nets, views)
+    serial_order = [
+        p
+        for pattern in patterns
+        if pattern.kind == "serial_data_chain"
+        for p in pattern.components
+    ]
+    serial_members = set(serial_order)
+    supports = defaultdict(list)
+    for p in order:
+        if p in serial_members or len(by_path[p].pins) != 2:
+            continue
+        if not views[p].lib_id.startswith("Device:C"):
+            continue
+        parent = p.rpartition(".")[0]
+        candidates = [q for q in serial_order if q.rpartition(".")[0] == parent]
+        if parent and len(candidates) == 1:
+            supports[candidates[0]].append(p)
+    support_members = {p for values in supports.values() for p in values}
+    if serial_order:
+        order = serial_order + [
+            p for p in order if p not in serial_members | support_members
+        ]
     placed = []
     x = 65.0
     y = 80.0
@@ -196,12 +359,45 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
             desired = 1 if i + 1 < len(order) else -1
             rotation = max(
                 (0, 90, 180, 270),
-                key=lambda a: desired * next(transform(dx, dy, a)[0] for n, dx, dy, _ in view.pins if n == target_pin),
+                key=lambda a: (
+                    desired
+                    * next(
+                        transform(dx, dy, a)[0]
+                        for n, dx, dy, _ in view.pins
+                        if n == target_pin
+                    )
+                ),
+            )
+        if path in serial_members:
+            # Use actual physical pin geometry to put DOUT to the right of DIN.
+            roles = terminal_roles(component)
+            rotation = max(
+                (0, 90, 180, 270),
+                key=lambda a: (
+                    next(
+                        transform(dx, dy, a)[0]
+                        for n, dx, dy, _ in view.pins
+                        if n == roles["dout"]
+                    )
+                    - next(
+                        transform(dx, dy, a)[0]
+                        for n, dx, dy, _ in view.pins
+                        if n == roles["din"]
+                    ),
+                    -a,
+                ),
             )
         xmin, ymin, xmax, ymax = graphic_bounds(view, rotation)
         # Space includes outward labels, annotation block, and local routing lanes.
         width = max(30, xmax - xmin + 20) if chain else max(60, xmax - xmin + 48)
         height = max(52, ymax - ymin + 32)
+        tx, ty, _ = annotation_position(component, view, 0, 0, rotation)
+        fx1, fy1, fx2, fy2 = annotation_bounds(component, tx, ty, rotation)
+        width = max(width, max(xmax, fx2) - min(xmin, fx1) + 10)
+        height = max(height, max(ymax, fy2) - min(ymin, fy1) + 10)
+        if supports[path]:
+            height += 38 + 30 * (len(supports[path]) - 1)
+            width = max(width, 60)
         if width > 340 or height > 205:
             raise ValueError("symbol exceeds page bounds: " + path)
         if x + width / 2 > 390:
@@ -215,6 +411,10 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
             y = 80
             row_height = 0
         page.append((component, snap(x), snap(y), rotation))
+        for index, support in enumerate(sorted(supports[path])):
+            page.append(
+                (by_path[support], snap(x), snap(y + ymax + 30 + index * 30), 90)
+            )
         x += width
         row_height = max(row_height, height)
     if page:
@@ -245,17 +445,23 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
     wires = []
     failures = []
     for c, x, y, rotation in placed:
-        xmin, ymin, xmax, ymax = graphic_bounds(views[c.path], rotation, include_pins=False)
+        xmin, ymin, xmax, ymax = graphic_bounds(
+            views[c.path], rotation, include_pins=False
+        )
         # Pin contacts remain outside the actual symbol graphics.
         a, b = grid(x + xmin, y + ymin)
         d, e = grid(x + xmax, y + ymax)
         if a <= d and b <= e:
-            obstacles.update((ix, iy) for ix in range(a, d + 1) for iy in range(b, e + 1))
+            obstacles.update(
+                (ix, iy) for ix in range(a, d + 1) for iy in range(b, e + 1)
+            )
         tx, ty, align = annotation_position(c, views[c.path], x, y, rotation)
-        text_width = max(len(c.refdes), len(getattr(c, "display_value", "") or c.value)) * 0.8
-        ax, ay = grid(tx if align else tx - text_width / 2, ty - 1.27)
-        bx, by = grid(tx + text_width if align else tx + text_width / 2, ty + 4)
-        obstacles.update((ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1))
+        field_box = annotation_bounds(c, tx, ty, rotation)
+        ax, ay = grid(field_box[0], field_box[1])
+        bx, by = grid(field_box[2], field_box[3])
+        obstacles.update(
+            (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
+        )
         for number, px, py, direction in pins(views[c.path], x, y, rotation):
             key = c.path, number
             net = pin_nets.get(key)
@@ -296,15 +502,21 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                 continue
             ax, ay = grid(bounds[0], bounds[1])
             bx, by = grid(bounds[2], bounds[3])
-            obstacles.update((ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1))
+            obstacles.update(
+                (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
+            )
     connected = set()
-    for net, entries in sorted(endpoints.items(), key=lambda pair: (len(pair[1]), pair[0])):
+    for net, entries in sorted(
+        endpoints.items(), key=lambda pair: (len(pair[1]), pair[0])
+    ):
         if len(entries) < 2 or net.lower().split(".")[-1] == "gnd":
             continue
         tree = {entries[0][1]}
         connected.add(entries[0][0])
         for key, start in entries[1:]:
-            target = min(tree, key=lambda p: abs(p[0] - start[0]) + abs(p[1] - start[1]))
+            target = min(
+                tree, key=lambda p: abs(p[0] - start[0]) + abs(p[1] - start[1])
+            )
             queue = [(0, 0, start, None)]
             cost = {start: 0}
             previous = {}
@@ -318,29 +530,46 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                     found = current
                     break
                 expanded += 1
-                for direction, (dx, dy) in enumerate(((1, 0), (-1, 0), (0, 1), (0, -1))):
+                for direction, (dx, dy) in enumerate(
+                    ((1, 0), (-1, 0), (0, 1), (0, -1))
+                ):
                     q = current[0] + dx, current[1] + dy
                     if not (25 <= q[0] <= 625 and 65 <= q[1] <= 425):
                         continue
                     if q in obstacles and q not in tree:
                         continue
                     axis = 0 if dx else 1
-                    others = {n: axes for n, axes in tracks.get(q, {}).items() if n != net}
+                    others = {
+                        n: axes for n, axes in tracks.get(q, {}).items() if n != net
+                    }
                     if others:
-                        if q in protected or any(axis in axes for axes in others.values()):
+                        if q in protected or any(
+                            axis in axes for axes in others.values()
+                        ):
                             continue
                     # Crossings must pass straight through, never terminate or
                     # turn on another net. No junction is emitted at crossings.
                     if any(n != net for n in tracks.get(current, {})):
                         if prior_direction != direction:
                             continue
-                    new_cost = distance + 1 + (3 if prior_direction is not None and prior_direction != direction else 0)
+                    new_cost = (
+                        distance
+                        + 1
+                        + (
+                            3
+                            if prior_direction is not None
+                            and prior_direction != direction
+                            else 0
+                        )
+                    )
                     if new_cost >= cost.get(q, float("inf")):
                         continue
                     cost[q] = new_cost
                     previous[q] = current
                     heuristic = abs(q[0] - target[0]) + abs(q[1] - target[1])
-                    heapq.heappush(queue, (new_cost + heuristic, new_cost, q, direction))
+                    heapq.heappush(
+                        queue, (new_cost + heuristic, new_cost, q, direction)
+                    )
             if found is None:
                 failures.append((key, net))
                 continue
@@ -382,3 +611,39 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
         if ey != gy:
             wires.append((net, (gx, ey), (gx, gy)))
     return wires, escapes, failures
+
+
+def split_group(placed: list, views: dict, pin_nets: dict):
+    """Split an oversized region at the nearest complete circuit/channel edge.
+
+    Return None when no legal split exists. A caller must then report the
+    oversized atomic circuit rather than clipping it or dropping support parts.
+    """
+    components = [entry[0] for entry in placed]
+    patterns = discover_patterns(components, pin_nets, views)
+    atoms = [set(p.components) for p in patterns if p.kind != "serial_data_chain"]
+    serial = {
+        path for p in patterns if p.kind == "serial_data_chain" for path in p.components
+    }
+    for path in sorted(serial):
+        parent = path.rpartition(".")[0]
+        support = {
+            c.path
+            for c in components
+            if parent
+            and c.path.rpartition(".")[0] == parent
+            and c.path != path
+            and len(c.pins) == 2
+            and views[c.path].lib_id.startswith("Device:C")
+        }
+        atoms.append({path} | support)
+    paths = [c.path for c in components]
+    choices = []
+    for cut in range(1, len(placed)):
+        left, right = set(paths[:cut]), set(paths[cut:])
+        if not any(atom & left and atom & right for atom in atoms):
+            choices.append(cut)
+    if not choices:
+        return None
+    cut = min(choices, key=lambda i: (abs(2 * i - len(placed)), i))
+    return placed[:cut], placed[cut:]

@@ -19,10 +19,16 @@ import sexpdata
 
 from ..core import CompiledDesign
 from .NetlistGenerator import NetlistTransform
-from .KiCadSchematicPlanner import SchematicRegion, SchematicSheetPlan, SchematicSheetPlanner
+from .KiCadSchematicPlanner import (
+    SchematicRegion,
+    SchematicSheetPlan,
+    SchematicSheetPlanner,
+)
+from .KiCadSchematicPresentation import SchematicPresentation
 from .KiCadSchematicOverview import SchematicOverview, build_overviews, render_overview
 from .KiCadSchematicLayout import (
     annotation_position,
+    annotation_bounds,
     ground_bounds,
     ground_rotation,
     graphic_bounds,
@@ -30,11 +36,12 @@ from .KiCadSchematicLayout import (
     place_group,
     regroup,
     route_local,
+    split_group,
 )
 
 NOTICE = "GENERATED FROM POLYMORPHICBLOCKS PYTHON — SOURCE OF TRUTH"
 INSTRUCTIONS = "Edit the PB Python source and regenerate. Schematic edits will be overwritten."
-VERSION = "4"
+VERSION = "5"
 S = sexpdata.Symbol
 
 
@@ -51,7 +58,11 @@ def uid(*parts: str) -> str:
 
 
 def effects(size: float = 1.27, hide: bool = False) -> list:
-    return node("effects", node("font", node("size", size, size)), *([S("hide")] if hide else []))
+    return node(
+        "effects",
+        node("font", node("size", size, size)),
+        *([S("hide")] if hide else []),
+    )
 
 
 @dataclass(frozen=True)
@@ -76,6 +87,7 @@ class SchematicExportOptions:
     sheet_assignments: Mapping[str, str] = field(default_factory=dict)
     sheet_plan: Optional[SchematicSheetPlan] = None
     overview: Optional[SchematicOverview] = None
+    presentation: Optional[SchematicPresentation] = None
 
 
 @dataclass(frozen=True)
@@ -119,6 +131,8 @@ class PhysicalComponent:
     group: str
     display_value: str = ""
     annotation: Optional[Tuple[float, float]] = None
+    descriptions: Tuple[str, ...] = ()
+    net_labels: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -207,7 +221,12 @@ class SymbolResolver:
             if not (
                 isinstance(v, list)
                 and v
-                and str(v[0]) in ("in_pos_files", "duplicate_pin_numbers_are_jumpers", "embedded_fonts")
+                and str(v[0])
+                in (
+                    "in_pos_files",
+                    "duplicate_pin_numbers_are_jumpers",
+                    "embedded_fonts",
+                )
             )
         ]
         for sub in children(definition, "symbol"):
@@ -231,7 +250,9 @@ def generic(component: PhysicalComponent) -> SymbolView:
     """
     lib_id = "PB:" + uid(component.path)
     sides = {"left": [], "right": [], "top": [], "bottom": []}
-    for number, name in sorted(component.pins.items()):
+    declared_names = (component.mapping or {}).get("pin_names", {})
+    display_pins = {number: declared_names.get(number, name) for number, name in component.pins.items()}
+    for number, name in sorted(display_pins.items()):
         role = name.removesuffix(".net").lower()
         if role in ("gnd", "vss", "com"):
             side = "bottom"
@@ -242,6 +263,9 @@ def generic(component: PhysicalComponent) -> SymbolView:
         else:
             side = "left"
         sides[side].append((number, name.removesuffix(".net")))
+    if len(display_pins) == 2:
+        entries = sorted(display_pins.items())
+        sides = {"left": [entries[0]], "right": [entries[1]], "top": [], "bottom": []}
     if len(sides["left"]) > 8 and not sides["right"]:
         midpoint = (len(sides["left"]) + 1) // 2
         sides["right"] = sides["left"][midpoint:]
@@ -250,7 +274,7 @@ def generic(component: PhysicalComponent) -> SymbolView:
     half_height = (rows + 1) * 1.27
     half_width = max(
         10.16,
-        max([len(v.removesuffix(".net")) for v in component.pins.values()] + [1]) * 0.8 + 5.08,
+        max([len(v.removesuffix(".net")) for v in display_pins.values()] + [1]) * 0.8 + 5.08,
         max(len(sides["top"]), len(sides["bottom"])) * 1.27 + 2.54,
     )
     body = node(
@@ -289,7 +313,9 @@ def generic(component: PhysicalComponent) -> SymbolView:
             )
             positions.append((number, x, y, angle))
     return SymbolView(
-        node("symbol", lib_id, node("in_bom", S("yes")), node("on_board", S("yes")), body), positions, lib_id
+        node("symbol", lib_id, node("in_bom", S("yes")), node("on_board", S("yes")), body),
+        positions,
+        lib_id,
     )
 
 
@@ -320,12 +346,19 @@ class KiCadSchematicExporter:
         return tuple(d.spec for b in boards for d in b.regions.values()), fingerprint
 
     def _prepare_boards(self, compiled: CompiledDesign, options: SchematicExportOptions):
+        presentation = options.presentation or SchematicPresentation()
+        if not isinstance(presentation, SchematicPresentation):
+            raise ValueError("presentation must be a SchematicPresentation")
+        presentation = SchematicPresentation.from_dict(presentation.to_dict())
         if options.overview is not None and not isinstance(options.overview, SchematicOverview):
             raise ValueError("overview must be a SchematicOverview")
         if compiled.errors:
             raise ValueError("cannot export a design with compilation errors")
         scopes = NetlistTransform(compiled).run()
-        digest = hashlib.sha256(compiled.design.SerializeToString(deterministic=True))
+        # Hash canonical solved physical state, not compiler source-location metadata:
+        # the latter contains machine-specific Python paths and line numbers.
+        digest = hashlib.sha256(VERSION.encode())
+        digest.update(options.source.encode("utf-8"))
         for scope, netlist in sorted(scopes.items(), key=lambda entry: str(entry[0])):
             resolved = {
                 "scope": str(scope),
@@ -354,6 +387,16 @@ class KiCadSchematicExporter:
             raise ValueError(
                 "schematic placement references missing components: " + str(sorted(all_hints - known_paths))
             )
+        presentation.validate(
+            {
+                str(b.full_path): dict(
+                    v.split("=", 1) for v in compiled.get_value(b.full_path.to_tuple() + ("fp_pinning",))
+                )
+                for n in scopes.values()
+                for b in n.blocks
+            }
+        )
+        used_groups = set()
         diagnostics: List[SchematicDiagnostic] = []
         for scope, netlist in scopes.items():
             scope_name = str(scope)
@@ -390,14 +433,56 @@ class KiCadSchematicExporter:
                         component.mapping = infer_symbol(component, classes, block.part, resolver)
                     except ImportError:
                         pass
+            for component in components:
+                entry = presentation.components.get(component.path, {})
+                if entry.get("display_value"):
+                    component.display_value = entry["display_value"]
+                from .KiCadSchematicRoles import infer_pin_names, infer_description
+
+                classes = [
+                    c.target.name
+                    for c in next(b for b in netlist.blocks if str(b.full_path) == component.path).path_classes
+                ]
+                physical_block = next(b for b in netlist.blocks if str(b.full_path) == component.path)
+                connector_length = compiled.get_value(physical_block.full_path.to_tuple() + ("length",))
+                inferred_names = infer_pin_names(component, classes, connector_length)
+                if inferred_names:
+                    component.mapping = dict(component.mapping or {})
+                    component.mapping["pin_names"] = dict(inferred_names, **component.mapping.get("pin_names", {}))
+                description = infer_description(component, classes, connector_length)
+                component.descriptions = presentation.descriptions(component.path) or (
+                    (description,) if description else ()
+                )
+                if entry.get("pin_names"):
+                    component.mapping = dict(component.mapping or {})
+                    component.mapping["pin_names"] = dict(
+                        (component.mapping or {}).get("pin_names", {}),
+                        **entry["pin_names"],
+                    )
+            from .KiCadCompositeSymbols import resistor_array_symbol
+
+            classes_by_path = {str(b.full_path): [c.target.name for c in b.path_classes] for b in netlist.blocks}
             views = {}
             for component in components:
+                composite = resistor_array_symbol(component, classes_by_path[component.path])
+                if composite is not None:
+                    views[component.path] = SymbolView(*composite)
+                    continue
                 try:
+                    if not (component.mapping or {}).get("lib_id"):
+                        raise LookupError("no schematic symbol mapping")
                     views[component.path] = resolver.resolve(component)
                 except (LookupError, FileNotFoundError) as error:
                     diagnostics.append(SchematicDiagnostic(component.path, str(error)))
                     views[component.path] = generic(component)
             for component in components:
+                view = views[component.path]
+                for body in children(view.definition, "symbol"):
+                    for pin in children(body, "pin"):
+                        number = str(children(pin, "number")[0][1])
+                        name = (component.mapping or {}).get("pin_names", {}).get(number)
+                        if name:
+                            children(pin, "name")[0][1] = name
                 hint = options.placements.get(component.path)
                 if hint:
                     component.annotation = hint.annotation
@@ -426,17 +511,21 @@ class KiCadSchematicExporter:
                             if match:
                                 body[1] = reflected_id.split(":", 1)[1] + "_" + match[1]
                         views[component.path] = SymbolView(
-                            definition, [(n, -x, y, (180 - angle) % 360) for n, x, y, angle in view.pins], reflected_id
+                            definition,
+                            [(n, -x, y, (180 - angle) % 360) for n, x, y, angle in view.pins],
+                            reflected_id,
                         )
             pin_nets = {(str(p.block_path), p.pin_name): n.name for n in netlist.nets for p in n.pins}
-            # Unique labels are encoded injectively; no truncation or ambiguous sanitization.
-            names = {
-                n.name: "N_" + n.name.encode("utf-8").hex() if re.search(r"[\s~{}]", n.name) else n.name
-                for n in netlist.nets
-            }
-            counts = {label: list(names.values()).count(label) for label in names.values()}
-            names = {name: label + ("_" + uid(name) if counts[label] > 1 else "") for name, label in names.items()}
-            regroup(components, pin_nets)
+            from .KiCadSchematicLabels import readable_labels
+
+            names = readable_labels(n.name for n in netlist.nets)
+            for component in components:
+                component.net_labels = {
+                    number: names[pin_nets[(component.path, number)]]
+                    for number in component.pins
+                    if (component.path, number) in pin_nets
+                }
+            regroup(components, pin_nets, views)
             for component in components:
                 hint = options.placements.get(component.path)
                 if hint:
@@ -448,6 +537,11 @@ class KiCadSchematicExporter:
                         raise ValueError("schematic annotations must be finite")
                     component.group = hint.group
 
+            for component in components:
+                selector = component.group
+                if selector in presentation.groups:
+                    component.group = presentation.groups[selector]
+                    used_groups.add(selector)
             board = _PreparedBoard(scope_name, prefix, root_id, views, pin_nets, names, {})
             for group in sorted({c.group for c in components}):
                 members = [c for c in components if c.group == group]
@@ -468,23 +562,34 @@ class KiCadSchematicExporter:
                     wires, _, failed = route_local(placed, views, pin_nets)
                     bounds = self._region_bounds(placed, views, pin_nets, names, wires, group)
                     width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
-                    if (width > 375 or height > 225) and len(placed) > 1 and not hinted:
-                        midpoint = len(placed) // 2
-                        for subset in (placed[:midpoint], placed[midpoint:]):
+                    if (
+                        (width > 375 or height > 225 or (width > 210 and height > 205))
+                        and len(placed) > 1
+                        and not hinted
+                    ):
+                        subsets = split_group(placed, views, pin_nets)
+                        if subsets is None:
+                            raise ValueError("indivisible functional region exceeds A3: " + group)
+                        for subset in subsets:
                             pending.extend(place_group([c for c, _, _, _ in subset], views, pin_nets))
                         diagnostics.append(
                             SchematicDiagnostic(
-                                group, "continuation: measured circuit region requires functional continuation"
+                                group,
+                                "continuation: measured circuit region requires functional continuation",
                             )
                         )
                         continue
-                    if width > 375 or height > 225:
+                    if width > 375 or height > 225 or (width > 210 and height > 205):
                         raise ValueError(
                             f"region {group!r} ({width:.1f} x {height:.1f} mm) exceeds A3; revise presentation without shrinking text"
                         )
                     part += 1
                     title = group if part == 1 else group + " /" + str(part)
-                    identity = json.dumps([scope_name, group, part], ensure_ascii=False, separators=(",", ":"))
+                    identity = json.dumps(
+                        [scope_name, group, part],
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
                     spec = SchematicRegion(
                         identity,
                         title,
@@ -498,7 +603,12 @@ class KiCadSchematicExporter:
                     board.regions[identity] = _RegionDrawing(spec, placed, wires, failed)
             if not board.regions:
                 spec = SchematicRegion(
-                    scope_name + "::Empty design", "Empty design", scope_name, (), (0, 0, 50, 10), kind="empty"
+                    scope_name + "::Empty design",
+                    "Empty design",
+                    scope_name,
+                    (),
+                    (0, 0, 50, 10),
+                    kind="empty",
                 )
                 board.regions[spec.id] = _RegionDrawing(spec, [], [], [])
             rendered = [c.path for drawing in board.regions.values() for c, _, _, _ in drawing.placed]
@@ -515,6 +625,11 @@ class KiCadSchematicExporter:
                         if net is not None:
                             board.net_regions.setdefault(net, set()).add(identity)
             boards.append(board)
+        if set(presentation.groups) - used_groups:
+            raise ValueError(
+                "presentation references unknown groups: " + str(sorted(set(presentation.groups) - used_groups))
+            )
+        digest.update(json.dumps(presentation.to_dict(), sort_keys=True, ensure_ascii=False).encode("utf-8"))
         # Bind plans to solved electrical state AND actual symbol/layout geometry.
         # Library, hint or source changes cannot silently reuse an old packing plan.
         geometry = [
@@ -532,7 +647,9 @@ class KiCadSchematicExporter:
         ]
         digest.update(
             json.dumps(
-                options.overview.to_dict() if options.overview is not None else None, sort_keys=True, ensure_ascii=False
+                options.overview.to_dict() if options.overview is not None else None,
+                sort_keys=True,
+                ensure_ascii=False,
             ).encode("utf-8")
         )
         digest.update(json.dumps(geometry, sort_keys=True, ensure_ascii=False, allow_nan=False).encode("utf-8"))
@@ -545,23 +662,17 @@ class KiCadSchematicExporter:
             xmin, ymin, xmax, ymax = graphic_bounds(views[c.path], angle)
             points.extend(((x + xmin, y + ymin), (x + xmax, y + ymax)))
             tx, ty, align = annotation_position(c, views[c.path], x, y, angle)
-            visible = c.display_value or c.value
-            lines = (textwrap.wrap(visible, 30) if visible != c.value else visible.splitlines()) or [""]
-            # Rendering preserves the original Value unwrapped when unchanged.
-            # Use conservative stroke-font advance, including wide glyphs.
-            width = max([len(c.refdes)] + [len(line) for line in lines]) * 1.27 + 2
-            points.extend(
-                (
-                    (tx if align else tx - width / 2, ty - 1.5 - len(lines) * 1.27),
-                    (tx + width if align else tx + width / 2, ty + 3.81 + len(lines) * 1.27),
-                )
-            )
+            ax1, ay1, ax2, ay2 = annotation_bounds(c, tx, ty, angle)
+            points.extend(((ax1, ay1), (ax2, ay2)))
             for number, px, py, direction in positioned_pins(views[c.path], x, y, angle):
                 net = pin_nets.get((c.path, number))
                 if net is None:
                     continue
                 r = math.radians(direction)
-                ex, ey = round(px - 5.08 * math.cos(r), 4), round(py + 5.08 * math.sin(r), 4)
+                ex, ey = (
+                    round(px - 5.08 * math.cos(r), 4),
+                    round(py + 5.08 * math.sin(r), 4),
+                )
                 if net.lower().split(".")[-1] == "gnd":
                     gx1, gy1, gx2, gy2 = ground_bounds(ex, ey, direction)
                     points.extend(((gx1, gy1), (gx2, gy2)))
@@ -583,8 +694,16 @@ class KiCadSchematicExporter:
         heading = textwrap.wrap(title + " /999", 42) or [""]
         xmin = min(p[0] for p in points) - 3
         ymin = min(p[1] for p in points) - (6 + len(heading) * 2.54)
-        xmax = max(max(p[0] for p in points) + 3, xmin + max(len(line) for line in heading) * 1.2 + 6)
-        return (round(xmin, 4), round(ymin, 4), round(xmax, 4), round(max(p[1] for p in points) + 3, 4))
+        xmax = max(
+            max(p[0] for p in points) + 3,
+            xmin + max(len(line) for line in heading) * 1.2 + 6,
+        )
+        return (
+            round(xmin, 4),
+            round(ymin, 4),
+            round(xmax, 4),
+            round(max(p[1] for p in points) + 3, 4),
+        )
 
     def _plan_compiled(self, compiled, options):
         boards, fingerprint, _, _ = self._prepare_boards(compiled, options)
@@ -616,6 +735,9 @@ class KiCadSchematicExporter:
         plan = self._plan_prepared(boards, fingerprint, options)
         return build_overviews(boards, plan, options.overview)
 
+    def readability(self, compiled: CompiledDesign, options: SchematicExportOptions) -> dict:
+        return json.loads(self.export(compiled, options).files["readability.json"])
+
     def export(self, compiled: CompiledDesign, options: SchematicExportOptions) -> SchematicExport:
         boards, fingerprint, resolver, diagnostics = self._prepare_boards(compiled, options)
         plan = self._plan_prepared(boards, fingerprint, options)
@@ -631,7 +753,8 @@ class KiCadSchematicExporter:
             root_sheet = overview or (content[0] if len(content) == 1 else None)
             if root_sheet is None:
                 raise ValueError("multiple sheets require an overview")
-            root = self._document(board.root_id, options, fingerprint, root_sheet.title)
+            root_title = root_sheet.title if board.scope in ("", "(root)") else board.scope + " / " + root_sheet.title
+            root = self._document(board.root_id, options, fingerprint, root_title)
             root.append(node("sheet_instances", node("path", "/", node("page", "1"))))
             root_filename = board.prefix + ".kicad_sch"
             board_records.append(dict(scope=board.scope, root=root_filename))
@@ -721,11 +844,27 @@ class KiCadSchematicExporter:
                 )
             if overview:
                 render_overview(
-                    root, board, next(d for d in overview_data["boards"] if d["scope"] == board.scope), options
+                    root,
+                    board,
+                    next(d for d in overview_data["boards"] if d["scope"] == board.scope),
+                    options,
                 )
             files[root_filename] = sexpdata.dumps(root) + "\n"
+        files["net-labels.json"] = json.dumps({b.scope: b.names for b in boards}, indent=2, ensure_ascii=False) + "\n"
         files["overview.json"] = json.dumps(overview_data, indent=2, ensure_ascii=False) + "\n"
         files["sheet-plan.json"] = json.dumps(plan.to_dict(), indent=2, ensure_ascii=False) + "\n"
+        from .KiCadSchematicReadability import inspect_documents
+        from .KiCadSchematicPatterns import discover_patterns
+
+        patterns = []
+        for board in boards:
+            components = [c for d in board.regions.values() for c, _, _, _ in d.placed]
+            patterns.extend(
+                dict(scope=board.scope, **p.to_dict())
+                for p in discover_patterns(components, board.pin_nets, board.views)
+            )
+        readability = inspect_documents(files, diagnostics, patterns)
+        files["readability.json"] = json.dumps(readability, indent=2, ensure_ascii=False) + "\n"
         manifest = dict(
             exporter_version=VERSION,
             source=options.source,
@@ -766,10 +905,27 @@ class KiCadSchematicExporter:
                     "Sheetname",
                     title,
                     node("at", x, y - 2, 0),
-                    node("effects", node("font", node("size", 1.27, 1.27)), node("justify", S("left"))),
+                    node(
+                        "effects",
+                        node("font", node("size", 1.27, 1.27)),
+                        node("justify", S("left")),
+                    ),
                 ),
-                node("property", "Sheetfile", filename, node("at", x, y + 10, 0), effects(hide=True)),
-                node("instances", node("project", prefix, node("path", parent_path, node("page", str(page))))),
+                node(
+                    "property",
+                    "Sheetfile",
+                    filename,
+                    node("at", x, y + 10, 0),
+                    effects(hide=True),
+                ),
+                node(
+                    "instances",
+                    node(
+                        "project",
+                        prefix,
+                        node("path", parent_path, node("page", str(page))),
+                    ),
+                ),
             )
         )
 
@@ -798,15 +954,26 @@ class KiCadSchematicExporter:
                     "text",
                     line,
                     node("at", location.x + 3, location.y + 3 + line_number * 2.54, 0),
-                    node("effects", node("font", node("size", 1.5, 1.5)), node("justify", S("left"))),
-                    node("uuid", uid(board.prefix, drawing.spec.id, "title", str(line_number))),
+                    node(
+                        "effects",
+                        node("font", node("size", 1.5, 1.5)),
+                        node("justify", S("left")),
+                    ),
+                    node(
+                        "uuid",
+                        uid(board.prefix, drawing.spec.id, "title", str(line_number)),
+                    ),
                 )
             )
         doc.append(
             node(
                 "rectangle",
                 node("start", location.x, location.y),
-                node("end", round(location.x + bounds[2] - bounds[0], 4), round(location.y + bounds[3] - bounds[1], 4)),
+                node(
+                    "end",
+                    round(location.x + bounds[2] - bounds[0], 4),
+                    round(location.y + bounds[3] - bounds[1], 4),
+                ),
                 node("stroke", node("width", 0.15), node("type", S("default"))),
                 node("fill", node("type", S("none"))),
                 node("uuid", uid(board.prefix, drawing.spec.id, "border")),
@@ -818,7 +985,7 @@ class KiCadSchematicExporter:
                     "text",
                     "No physical components in compiled design",
                     node("at", location.x + 3, location.y + 7, 0),
-                    effects(1.1),
+                    node("effects", node("font", node("size", 1.1, 1.1)), node("justify", S("left"))),
                     node("uuid", uid(board.prefix, "empty")),
                 )
             )
@@ -833,7 +1000,10 @@ class KiCadSchematicExporter:
         labeled_nets = set()
         for original, x, y, rotation in drawing.placed:
             x, y = move((x, y))
-            component = replace(original, annotation=move(original.annotation) if original.annotation else None)
+            component = replace(
+                original,
+                annotation=move(original.annotation) if original.annotation else None,
+            )
             view = views[component.path]
             instance_id = uid(board.prefix, component.path, "symbol")
             instance = node(
@@ -884,13 +1054,34 @@ class KiCadSchematicExporter:
                         ),
                     )
                 )
+            description_line = 0
+            for description in component.descriptions:
+                for line in textwrap.wrap(description, 42):
+                    doc.append(
+                        node(
+                            "text",
+                            line,
+                            node("at", px, py + 10 + description_line * 2.54, 0),
+                            effects(1.1),
+                            node(
+                                "uuid",
+                                uid(instance_id, "description", str(description_line)),
+                            ),
+                        )
+                    )
+                    description_line += 1
             instance.append(
                 node(
                     "instances",
                     node(
                         "project",
                         board.prefix,
-                        node("path", instance_path, node("reference", component.refdes), node("unit", 1)),
+                        node(
+                            "path",
+                            instance_path,
+                            node("reference", component.refdes),
+                            node("unit", 1),
+                        ),
                     ),
                 )
             )
@@ -931,15 +1122,32 @@ class KiCadSchematicExporter:
                                 node("on_board", S("yes")),
                                 node("dnp", S("no")),
                                 node("uuid", gid),
-                                node("property", "Reference", ref, node("at", lx, ly, 0), effects(hide=True)),
-                                node("property", "Value", names[net], node("at", lx, ly + 5.08, 0), effects(hide=True)),
+                                node(
+                                    "property",
+                                    "Reference",
+                                    ref,
+                                    node("at", lx, ly, 0),
+                                    effects(hide=True),
+                                ),
+                                node(
+                                    "property",
+                                    "Value",
+                                    names[net],
+                                    node("at", lx, ly + 5.08, 0),
+                                    effects(hide=True),
+                                ),
                                 node("pin", "1", node("uuid", uid(gid, "pin"))),
                                 node(
                                     "instances",
                                     node(
                                         "project",
                                         board.prefix,
-                                        node("path", instance_path, node("reference", ref), node("unit", 1)),
+                                        node(
+                                            "path",
+                                            instance_path,
+                                            node("reference", ref),
+                                            node("unit", 1),
+                                        ),
                                     ),
                                 ),
                             )
@@ -950,7 +1158,11 @@ class KiCadSchematicExporter:
                 eff = effects()
                 eff.append(node("justify", S("left" if a in (0, 270) else "right")))
                 label = node(
-                    kind, names[net], node("at", lx, ly, a), eff, node("uuid", uid(instance_id, number, "label"))
+                    kind,
+                    names[net],
+                    node("at", lx, ly, a),
+                    eff,
+                    node("uuid", uid(instance_id, number, "label")),
                 )
                 if kind == "global_label":
                     label.append(node("shape", S("bidirectional")))
@@ -996,7 +1208,10 @@ class KiCadSchematicExporter:
                 x, y = round(x + dx, 4), round(y + dy, 4)
                 c = replace(
                     original,
-                    annotation=(original.annotation[0] + dx, original.annotation[1] + dy)
+                    annotation=(
+                        original.annotation[0] + dx,
+                        original.annotation[1] + dy,
+                    )
                     if original.annotation
                     else None,
                 )
@@ -1052,7 +1267,11 @@ class KiCadSchematicExporter:
             )
 
         def crosses_segment(a, b, c, d):
-            return crosses_box(a, b, (min(c[0], d[0]), min(c[1], d[1]), max(c[0], d[0]), max(c[1], d[1])))
+            return crosses_box(
+                a,
+                b,
+                (min(c[0], d[0]), min(c[1], d[1]), max(c[0], d[0]), max(c[1], d[1])),
+            )
 
         candidates = []
         for net, entries in terminals.items():
@@ -1082,7 +1301,10 @@ class KiCadSchematicExporter:
                     "wire",
                     node("pts", node("xy", *a), node("xy", *b)),
                     node("stroke", node("width", 0), node("type", S("default"))),
-                    node("uuid", uid(sheet_id, net, ra, rb, str(a), str(b), "region-wire")),
+                    node(
+                        "uuid",
+                        uid(sheet_id, net, ra, rb, str(a), str(b), "region-wire"),
+                    ),
                 )
             )
             for point in (a, b):
@@ -1121,7 +1343,10 @@ class KiCadSchematicExporter:
                         "wire",
                         node("pts", node("xy", *a), node("xy", *b)),
                         node("stroke", node("width", 0), node("type", S("default"))),
-                        node("uuid", uid(sheet_id, region_id, net, str(a), str(b), "wire")),
+                        node(
+                            "uuid",
+                            uid(sheet_id, region_id, net, str(a), str(b), "wire"),
+                        ),
                     )
                 )
             for p, degree in sorted(degrees.items()):
@@ -1132,13 +1357,27 @@ class KiCadSchematicExporter:
                             node("at", *p),
                             node("diameter", 0),
                             node("color", 0, 0, 0, 0),
-                            node("uuid", uid(sheet_id, region_id, net, str(p), "junction")),
+                            node(
+                                "uuid",
+                                uid(sheet_id, region_id, net, str(p), "junction"),
+                            ),
                         )
                     )
 
     @staticmethod
     def _display_value(compiled, block) -> str:
-        for parameter, unit in (("actual_resistance", "Ω"), ("actual_capacitance", "F"), ("actual_inductance", "H")):
+        classes = [c.target.name.rsplit(".", 1)[-1].lower() for c in block.path_classes]
+        leaf = classes[-1] if classes else ""
+        quantities = []
+        if "crystal" in leaf or "oscillator" in leaf:
+            quantities = [("actual_frequency", "Hz")]
+        elif "resistor" in leaf:
+            quantities = [("actual_resistance", "Ω")]
+        elif "capacitor" in leaf:
+            quantities = [("actual_capacitance", "F")]
+        elif "inductor" in leaf:
+            quantities = [("actual_inductance", "H")]
+        for parameter, unit in quantities:
             value = compiled.get_value(block.full_path.to_tuple() + (parameter,))
             if value is None:
                 value = compiled.get_value(block.full_path.to_tuple() + (parameter.removeprefix("actual_"),))
@@ -1159,7 +1398,7 @@ class KiCadSchematicExporter:
                     (1e-9, "n"),
                     (1e-12, "p"),
                 ):
-                    if abs(nominal) >= scale:
+                    if abs(nominal) >= scale * (1 - 1e-10):
                         return f"{nominal / scale:.3g}{prefix}{unit}"
                 return "0" + unit
         color = compiled.get_value(block.full_path.to_tuple() + ("actual_color",))
@@ -1187,14 +1426,22 @@ class KiCadSchematicExporter:
                 "text",
                 NOTICE,
                 node("at", 20, 15, 0),
-                node("effects", node("font", node("size", 2, 2)), node("justify", S("left"))),
+                node(
+                    "effects",
+                    node("font", node("size", 2, 2)),
+                    node("justify", S("left")),
+                ),
                 node("uuid", uid(identity, "notice")),
             ),
             node(
                 "text",
                 INSTRUCTIONS,
                 node("at", 20, 22, 0),
-                node("effects", node("font", node("size", 1.27, 1.27)), node("justify", S("left"))),
+                node(
+                    "effects",
+                    node("font", node("size", 1.27, 1.27)),
+                    node("justify", S("left")),
+                ),
                 node("uuid", uid(identity, "instructions")),
             ),
         )

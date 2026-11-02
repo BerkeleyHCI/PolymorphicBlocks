@@ -49,7 +49,8 @@ class KiCadSymbolRegistryTest(unittest.TestCase):
 
     def test_exact_module_identity_and_omitted_unmodeled_pins(self):
         component = SimpleNamespace(
-            footprint="Espressif:ESP32-C6-WROOM-1", pins={"1": "gnd.net", "2": "pwr.net", "29": "gnd.net"}
+            footprint="Espressif:ESP32-C6-WROOM-1",
+            pins={"1": "gnd.net", "2": "pwr.net", "29": "gnd.net"},
         )
         classes = ["lib.esp32.Esp32c6.Esp32c6_Wroom_1_Device"]
         resolver = FixtureResolver({"Espressif:ESP32-C6-WROOM-1": [str(i) for i in range(1, 30)]})
@@ -78,12 +79,33 @@ class KiCadSymbolRegistryTest(unittest.TestCase):
         )
         self.assertEqual(result["pinning"], {"1": "7", "2": "4"})
 
+    def test_exact_bjt_uses_verified_role_mapping(self):
+        component = SimpleNamespace(
+            footprint="Test:Package",
+            pins={"7": "base", "8": "collector", "9": "emitter"},
+        )
+        classes = ["edg.vendor_parts.jlc.JlcBjt.JlcBjt"]
+        result = infer_symbol(
+            component,
+            classes,
+            "MMBT3904",
+            FixtureResolver({"Transistor_BJT:MMBT3904": ["1", "2", "3"]}),
+        )
+        self.assertEqual(result["pinning"], {"1": "7", "2": "9", "3": "8"})
+        self.assertIsNone(infer_symbol(component, classes, "UNKNOWN", FixtureResolver({})))
+
     def test_fet_unknown_part_cannot_guess_polarity(self):
         component = SimpleNamespace(
-            footprint="Package_TO_SOT_SMD:SOT-23", pins={"1": "gate", "2": "source", "3": "drain"}
+            footprint="Package_TO_SOT_SMD:SOT-23",
+            pins={"1": "gate", "2": "source", "3": "drain"},
         )
         self.assertIsNone(
-            infer_symbol(component, ["edg.vendor_parts.jlc.JlcFet.JlcFet"], "UNKNOWN_FET", FixtureResolver({}))
+            infer_symbol(
+                component,
+                ["edg.vendor_parts.jlc.JlcFet.JlcFet"],
+                "UNKNOWN_FET",
+                FixtureResolver({}),
+            )
         )
 
     def test_usb_shield_pin_rename_between_kicad_versions(self):
@@ -93,14 +115,25 @@ class KiCadSymbolRegistryTest(unittest.TestCase):
         )
         cls = ["edg.parts.connector.UsbPorts.UsbCReceptacle_Device"]
         lib_id = "Connector:USB_C_Receptacle_USB2.0_16P"
-        old = infer_symbol(component, cls, "USB-C Receptacle", FixtureResolver({lib_id: ["A1", "A6", "S1"]}))
-        new = infer_symbol(component, cls, "USB-C Receptacle", FixtureResolver({lib_id: ["A1", "A6", "SH"]}))
+        old = infer_symbol(
+            component,
+            cls,
+            "USB-C Receptacle",
+            FixtureResolver({lib_id: ["A1", "A6", "S1"]}),
+        )
+        new = infer_symbol(
+            component,
+            cls,
+            "USB-C Receptacle",
+            FixtureResolver({lib_id: ["A1", "A6", "SH"]}),
+        )
         self.assertEqual(old["pinning"]["S1"], "S1")
         self.assertEqual(new["pinning"]["SH"], "S1")
 
     def test_rgb_family_graphic_alias_explicitly_remaps_pads(self):
         component = SimpleNamespace(
-            footprint="fp:LED_SK6812SIDE_A_S", pins={"1": "din.net", "2": "vdd.net", "3": "dout.net", "4": "gnd.net"}
+            footprint="fp:LED_SK6812SIDE_A_S",
+            pins={"1": "din.net", "2": "vdd.net", "3": "dout.net", "4": "gnd.net"},
         )
         result = infer_symbol(
             component,
@@ -112,7 +145,14 @@ class KiCadSymbolRegistryTest(unittest.TestCase):
 
     def test_missing_library_is_not_an_unsafe_substitution(self):
         component = SimpleNamespace(footprint="Test:LED", pins={"1": "k", "2": "a"})
-        self.assertIsNone(infer_symbol(component, ["edg.vendor_parts.jlc.JlcLed.JlcLed"], "LED", FixtureResolver({})))
+        self.assertIsNone(
+            infer_symbol(
+                component,
+                ["edg.vendor_parts.jlc.JlcLed.JlcLed"],
+                "LED",
+                FixtureResolver({}),
+            )
+        )
 
 
 if __name__ == "__main__":

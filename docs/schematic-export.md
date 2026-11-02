@@ -252,3 +252,76 @@ Python placement/reflection, whole-region packing, stale/invalid plans, measured
 bounds, exact component coverage, named continuations and index pagination. Interactive GUI navigation has
 not been tested. Generic passive pin types do not reproduce PB electrical checks
 or establish electrical design/manufacturing acceptance.
+
+## Functional presentation and readability evidence
+
+Exporter version 5 accepts optional `SchematicPresentation` data. It changes
+visible descriptions, pin names and group titles without changing physical pins,
+values, footprints or connectivity. Keep board-specific descriptions beside the
+Python board source; reusable part semantics belong in the part model.
+
+```python
+from edg import SchematicPresentation
+
+presentation = SchematicPresentation.from_dict({
+    "schema": 1,
+    "components": {"target": {"description": "Programming target interface",
+                               "pin_names": {"2": "EN / reset"}}},
+    "interfaces": [{"component": "target", "pin": "2", "name": "Target reset"}],
+    "groups": {"programming": "Target programming"},
+})
+options = SchematicExportOptions("MyBoard", presentation=presentation)
+```
+
+Replace these illustrative component paths and physical pad numbers with verified
+paths from the target design. Missing components, pins and groups are errors.
+Annotations describe existing endpoints; they do not create wires or terminals.
+`display_value` may supply a concise source-owned visible field; the original
+compiled Value remains in its symbol property. Python `from_dict` accepts an
+omitted schema as version 1; canonical JSON and MCP input use explicit schema 1.
+
+The exporter records actual recognized circuit patterns and conservative graphical
+findings in `readability.json`, included in the generated manifest. The same
+report is available through `KiCadSchematicExporter.readability(compiled, options)`.
+It records text collisions, text outside page margins, wire/text intersections,
+symbol fallbacks and local route fallbacks. Bounds use conservative font estimates
+and may need visual disposition. Legal no-dot wire crossings are not shorts.
+`visual_approval` remains `pending`: native fidelity and machine scene checks do
+not establish that a person can explain the circuit from the sheets.
+
+Imports preserve verified symbol identity, physical pin mapping and pin names in
+compiled metadata. Packed resistor arrays use a single physical instance with
+separate visible branches, paired by the model's declared a/b indices. Missing
+libraries retain explicit functional fallback diagnostics. Automatic circuit
+patterns use verified terminal roles and actual nets; ambiguous patterns fall
+back rather than inventing a topology.
+
+Labels use the shortest unambiguous suffix starting at three PB path segments;
+`net-labels.json` retains every complete PB net name. Unsafe label characters are
+encoded, and collisions are resolved deterministically. The compiled-design
+fingerprint covers canonical solved physical components, modeled pinning, nets,
+exporter version and resolved presentation; compiler source-location metadata is
+excluded so checkout paths and source line numbers do not change it.
+
+Automatic field placement examines a fixed set of positions around each symbol,
+avoiding its pin escape stubs, labels and ground graphics. Source-authored field
+coordinates remain constraints. Recognized feedback/converter/amplifier patterns
+improve grouping and preserve local support during pagination; complex analog
+circuits still use the general routing algorithm and may need authored planning.
+Machine findings remain visible even when an independent reader can trace a
+candidate successfully. A review pass does not imply publication-quality spacing.
+
+`examples/schematic_presentations.py` contains source-verified descriptions for
+seven examples whose interfaces or module power context benefit from explicit
+notes. Pass `presentation_for(BoardClass.__name__)` as `options.presentation` to
+use them. This is optional presentation data: the default automatic export is
+measured separately from annotation-assisted output. No hand-authored coordinates
+or electrical changes are needed for those descriptions.
+
+The planner reserves the native title-block area in addition to page margins.
+Whole circuits that cannot fit the remaining space continue onto another sheet;
+page counts may increase rather than draw through provenance or shrink text.
+Display connector names follow verified device connection maps, including an
+explicit FPC flip only when its exact adapter and compiled length are known.
+
+![Native KiCad 10 packed resistor-array branches, retaining one physical RN1 reference](images/schematic-packed-resistors.png)
