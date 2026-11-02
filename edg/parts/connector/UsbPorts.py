@@ -246,7 +246,7 @@ class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
             datasheet="https://www.ti.com/lit/ds/symlink/tpd2e009.pdf",
         )
         self.assign(self.lcsc_part, "C2871371")
-        self.asign(self.actual_basic_part, False)
+        self.assign(self.actual_basic_part, False)
 
 
 class Pesd5v0x1bt(UsbEsdDiode, FootprintBlock, JlcPart):

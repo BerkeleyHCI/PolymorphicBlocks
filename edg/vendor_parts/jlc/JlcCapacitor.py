@@ -119,6 +119,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
             super()._row_generate(row)  # creates the footprint
         else:
             TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+            self.assign(self.lcsc_part, "")
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
 
@@ -139,6 +140,8 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
             self.c[i] = self.Block(cap_model)
             self.connect(self.c[i].pos, self.pos)
             self.connect(self.c[i].neg, self.neg)
+
+        self.footprint("", "", {})  # no footprint, but needed to satisfy required params
 
 
 class JlcDummyCapacitor(JlcPart, DummyCapacitorFootprint):
