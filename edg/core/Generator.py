@@ -100,6 +100,16 @@ class GeneratorBlock(Block):
         super()._check_params_assigned()
 
     @override
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
+        # generators can inspect ports for connected-ness, if not connected, it does not need an assignment
+        if self._elaboration_state == BlockElaborationState.post_generate:
+            if isinstance(container_port, Port):
+                port_connected = container_port.is_connected()
+                if port_connected in self._generator_param_values and not self.get(port_connected):
+                    return []  # port is not connected, so no assignment needed
+        return super()._collect_unassigned_port_params(container_port, path)
+
+    @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
         self._namer.resolve_names()
 
