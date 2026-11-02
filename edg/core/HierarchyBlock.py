@@ -499,6 +499,26 @@ class Block(BaseBlock, metaclass=BlockMeta):
                         ref_map,
                     )
 
+    @override
+    def _collect_unassigned_params(self) -> List[List[str]]:
+        unassigned = super()._collect_unassigned_params()
+
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return []  # abstract blocks do not need assigned parameters
+
+        # TODO instead of filtering by binding, init should have assign record
+
+        for block in self._blocks:
+            for param in block._parameters:
+                if (
+                    param not in self._assigns
+                    and isinstance(param.binding, InitParamBinding)
+                    and (isinstance(param.binding, InitParamBinding) and param.binding.value is None)
+                ):
+                    unassigned.append([self._name_of(block), block._name_of(param)])
+
+        return unassigned
+
     # TODO make this non-overriding?
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:

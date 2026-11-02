@@ -53,7 +53,7 @@ class TestGeneratorPortVector(unittest.TestCase):
 class InnerBlockInvalid(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.ports = self.Port(Vector(TestPortSink()))
+        self.ports = self.Port(Vector(TestPortSink.empty()))
         self.ports.append_elt(TestPortSink(), "haha")
 
 

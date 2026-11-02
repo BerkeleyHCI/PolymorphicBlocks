@@ -55,7 +55,6 @@ class SpiController(Port[SpiLink]):
         self.miso = self.Port(DigitalSink.from_bidir(model))
 
         self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))
-        self.mode = self.Parameter(RangeExpr())  # modes supported, in [0, 3]  TODO: what about sparse modes?
 
 
 class SpiPeripheral(Port[SpiLink]):
@@ -72,7 +71,6 @@ class SpiPeripheral(Port[SpiLink]):
         # TODO: (?) CS is defined separately
 
         self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))  # range of acceptable frequencies
-        self.mode_limit = self.Parameter(RangeExpr())  # range of acceptable modes, in [0, 3]
 
 
 # legacy names

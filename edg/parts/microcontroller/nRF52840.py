@@ -667,7 +667,6 @@ class Feather_Nrf52840(
     IoController,
     WrapperSubboardBlock,
     GeneratorBlock,
-    FootprintBlock,
 ):
     """Feather nRF52840 socketed dev board as either power source or sink"""
 

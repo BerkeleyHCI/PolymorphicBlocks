@@ -17,6 +17,7 @@ class SmtLed(Led, FootprintBlock):
             },
             part="LED",
         )
+        self.assign(self.actual_color, "")
 
 
 class ThtLed(Led, FootprintBlock):
@@ -32,6 +33,7 @@ class ThtLed(Led, FootprintBlock):
             },
             part="LED",
         )
+        self.assign(self.actual_color, "")
 
 
 class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):

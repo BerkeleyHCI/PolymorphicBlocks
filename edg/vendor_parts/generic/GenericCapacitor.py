@@ -164,6 +164,9 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
                 self.c[i] = self.Block(cap_model)
                 self.connect(self.c[i].pos, self.pos)
                 self.connect(self.c[i].neg, self.neg)
+
+            self.footprint("", "", {})  # no footprint, but needed to satisfy required params
+
         else:
             value = ESeriesUtil.choose_preferred_number(nominal_capacitance, ESeriesUtil.SERIES[24], 0)
             assert value is not None, "cannot select a preferred number"

@@ -5,7 +5,7 @@ from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
 class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    def __init__(self, peak_output_current: FloatLike):
+    def __init__(self):
         super().__init__()
 
         self.gnd = self.Port(Ground(), [Common])
@@ -70,7 +70,7 @@ class Tps92200(PowerConditioner):
     ) -> None:
         super().__init__()
 
-        self.ic = self.Block(Tps92200_Device(FloatExpr()))
+        self.ic = self.Block(Tps92200_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vin, [Power])
         self.pwm = self.Export(self.ic.dim)
