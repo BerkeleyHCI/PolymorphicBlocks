@@ -118,7 +118,9 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
         if row[self.PARALLEL_COUNT] == 1:
             super()._row_generate(row)  # creates the footprint
         else:
-            TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+            TableDeratingCapacitor._row_generate(
+                self, row
+            )  # skips creating the footprint in PartsTableSelectorFootprint
             self.assign(self.lcsc_part, "")
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
