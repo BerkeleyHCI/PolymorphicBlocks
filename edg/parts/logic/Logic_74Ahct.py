@@ -51,6 +51,7 @@ class L74Ahct1g125_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C842287")
+        self.assign(self.actual_basic_part, False)
 
 
 class L74Ahct1g125(Interface, GeneratorBlock):
