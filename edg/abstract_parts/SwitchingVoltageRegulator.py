@@ -81,6 +81,7 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
         )
         self.pwr_out.init_from(VoltageSource(voltage=effective_output_voltage))
         self.reset.init_from(DigitalSink())
+        self.assign(self.actual_frequency, RangeExpr.EMPTY)
 
 
 @abstract_block_default(lambda: IdealBoostConverter)
@@ -113,6 +114,7 @@ class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
         )
         self.pwr_out.init_from(VoltageSource(voltage=effective_output_voltage))
         self.reset.init_from(DigitalSink())
+        self.assign(self.actual_frequency, RangeExpr.EMPTY)
 
 
 @abstract_block_default(lambda: BuckBoostConverter)
@@ -121,7 +123,10 @@ class BuckBoostConverter(SwitchingVoltageRegulator):
 
 
 class IdealBuckBoostConverter(IdealVoltageRegulator, BuckBoostConverter):
-    pass
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.assign(self.actual_frequency, RangeExpr.EMPTY)
 
 
 class DiscreteBuckBoostConverter(BuckBoostConverter):

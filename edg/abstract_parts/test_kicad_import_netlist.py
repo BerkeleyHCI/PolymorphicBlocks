@@ -3,7 +3,7 @@ import unittest
 
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
-from ..electronics_model import Passive, FootprintBlock
+from ..electronics_model import Passive, FootprintBlock, Ohm, Volt, Watt, DummyDevice
 from ..electronics_interfaces.test_netlist import NetlistTestCase, Net, net_pin, net_block
 from ..electronics_interfaces.test_kicad_import_blackbox import KiCadBlackboxBlock
 from .Resistor import Resistor
@@ -24,7 +24,7 @@ class KiCadBlackboxTop(Block):
         (self.dummyout,), _ = self.chain(self.dut.out, self.Block(PassiveDummy()))
 
 
-class DummyResistor(Resistor, FootprintBlock):
+class DummyResistor(Resistor, DummyDevice, FootprintBlock):
     def __init__(self) -> None:
         super().__init__(Range.all())
         self.footprint(
@@ -35,6 +35,9 @@ class DummyResistor(Resistor, FootprintBlock):
                 "2": self.b,
             },
         )
+        self.assign(self.actual_resistance, (0, 0) * Ohm)
+        self.assign(self.actual_power_rating, (0, 0) * Watt)
+        self.assign(self.actual_voltage_rating, (0, 0) * Volt)
 
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):

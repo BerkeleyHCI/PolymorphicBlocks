@@ -338,7 +338,7 @@ class TableDeratingCapacitor(TableCapacitor):
         ...
 
 
-class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
+class DummyCapacitorFootprint(Capacitor, DummyDevice, FootprintBlock):
     """Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
     Used as the leaf block for generating parallel capacitors.
 
