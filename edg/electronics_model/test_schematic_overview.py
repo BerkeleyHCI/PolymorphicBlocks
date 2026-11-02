@@ -1,0 +1,285 @@
+"""Overview relationships are witnessed presentation, never electrical wiring."""
+
+import json
+import unittest
+from dataclasses import replace
+import tempfile
+import shutil
+import subprocess
+from pathlib import Path
+import sexpdata
+from types import SimpleNamespace
+
+from .KiCadSchematicOverview import (
+    SchematicOverview,
+    SchematicOverviewBlock,
+    SchematicOverviewLink,
+    build_overviews,
+    render_overview,
+)
+from .KiCadSchematicPlanner import SchematicRegion, SchematicSheetPlanner
+from .KiCadSchematicExporter import KiCadSchematicExporter, SchematicExportOptions, children, uid
+
+
+def fixture(count=3, scope="board"):
+    regions = tuple(
+        SchematicRegion(scope + str(i), "Function " + str(i), scope, (scope + str(i) + ".part",), (0, 0, 50, 20))
+        for i in range(count)
+    )
+    plan = SchematicSheetPlanner().plan_regions(regions, "fingerprint", assignments={r.id: r.title for r in regions})
+    board = SimpleNamespace(
+        scope=scope,
+        prefix=scope,
+        regions={r.id: SimpleNamespace(spec=r) for r in regions},
+        net_regions={
+            "gnd": set(r.id for r in regions),
+            "supply": set(r.id for r in regions),
+            "data": set(r.id for r in regions[:2]),
+        },
+    )
+    return board, plan
+
+
+class SchematicOverviewTest(unittest.TestCase):
+    def test_data_contract_and_malformed_inputs(self):
+        data = {
+            "blocks": [dict(sheet="Function 0", title="Source", summary="Power entry", column=0, row=1)],
+            "links": [dict(source="Function 0", target="Function 1", label="Supply", nets=["supply"], directed=True)],
+        }
+        self.assertEqual(SchematicOverview.from_dict(data).to_dict(), data)
+        for invalid in (
+            {"callback": "execute"},
+            {"blocks": {}},
+            {"links": {}},
+            {"blocks": [dict(data["blocks"][0], column=True)]},
+            {"blocks": [dict(data["blocks"][0], row=4)]},
+            {"blocks": [dict(data["blocks"][0], title="x" * 49)]},
+            {"links": [dict(data["links"][0], directed="yes")]},
+            {"links": [dict(data["links"][0], nets=[{}])]},
+            {"links": [dict(data["links"][0], nets=[])]},
+        ):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                SchematicOverview.from_dict(invalid)
+
+    def test_authored_flow_requires_actual_shared_nets(self):
+        board, plan = fixture()
+        custom = SchematicOverview(
+            links=(SchematicOverviewLink("Function 0", "Function 1", "Supply", ("supply",), True),)
+        )
+        data = build_overviews([board], plan, custom)["boards"][0]
+        link = data["connections"][0]
+        self.assertTrue(link["directed"])
+        self.assertEqual(link["origin"], "authored")
+        self.assertEqual(link["nets"], ["supply"])
+        for net in ("invented", "gnd"):
+            with self.assertRaisesRegex(ValueError, "does not connect"):
+                build_overviews(
+                    [board],
+                    plan,
+                    SchematicOverview(links=(SchematicOverviewLink("Function 0", "Function 1", "Invalid", (net,)),)),
+                )
+        with self.assertRaisesRegex(ValueError, "different sheets"):
+            build_overviews(
+                [board],
+                plan,
+                SchematicOverview(links=(SchematicOverviewLink("Function 0", "Function 0", "Self", ("supply",)),)),
+            )
+        with self.assertRaisesRegex(ValueError, "unknown or ambiguous"):
+            build_overviews(
+                [board],
+                plan,
+                SchematicOverview(links=(SchematicOverviewLink("Unknown", "Function 0", "Missing", ("supply",)),)),
+            )
+
+    def test_automatic_relationships_are_undirected_and_repeatable(self):
+        board, plan = fixture()
+        a = build_overviews([board], plan)
+        b = build_overviews([board], plan)
+        self.assertEqual(json.dumps(a, sort_keys=True), json.dumps(b, sort_keys=True))
+        data = a["boards"][0]
+        self.assertEqual(data["components"], 3)
+        self.assertEqual(len(data["nodes"]), 3)
+        self.assertTrue(data["connections"])
+        self.assertTrue(all(not l["directed"] and "gnd" not in l["nets"] for l in data["connections"]))
+        self.assertEqual(data["omitted_connection_pairs"], 1)
+
+    def test_custom_cards_reserve_cells_and_detect_duplicates(self):
+        board, plan = fixture()
+        a = SchematicOverviewBlock("Function 1", "Controller", "Unicode μC", 0, 0)
+        data = build_overviews([board], plan, SchematicOverview(blocks=(a,)))["boards"][0]
+        self.assertEqual(len({(n["column"], n["row"]) for n in data["nodes"]}), 3)
+        b = SchematicOverviewBlock("Function 0", "Input", "Power", 0, 0)
+        with self.assertRaisesRegex(ValueError, "same grid cell"):
+            build_overviews([board], plan, SchematicOverview(blocks=(a, b)))
+        with self.assertRaisesRegex(ValueError, "duplicate overview block"):
+            build_overviews([board], plan, SchematicOverview(blocks=(a, a)))
+
+    def test_lines_are_graphics_and_sheet_navigation_is_preserved(self):
+        board, plan = fixture()
+        data = build_overviews([board], plan)["boards"][0]
+        doc = []
+        for n in data["nodes"]:
+            KiCadSchematicExporter._sheet_link(
+                doc,
+                board.prefix,
+                uid(board.prefix, n["sheet_id"]),
+                "/root",
+                n["sheet_title"],
+                n["sheet_id"] + ".kicad_sch",
+                20,
+                50,
+                n["page"],
+            )
+        before = [children(s, "instances") for s in children(doc, "sheet")]
+        render_overview(doc, board, data, SchematicExportOptions("Overview"))
+        self.assertEqual(before, [children(s, "instances") for s in children(doc, "sheet")])
+        self.assertEqual(len(children(doc, "sheet")), 3)
+        self.assertTrue(children(doc, "polyline"))
+        self.assertFalse(children(doc, "wire"))
+        self.assertFalse(children(doc, "symbol"))
+        self.assertFalse(any(children(s, "pin") for s in children(doc, "sheet")))
+        for s in children(doc, "sheet"):
+            self.assertEqual(children(s, "size")[0][1:], [83.82, 27.94])
+        for link in data["connections"]:
+            for p, q in zip(link["path"], link["path"][1:]):
+                self.assertTrue(p[0] == q[0] or p[1] == q[1])
+
+    def test_dense_branch_routes_reserve_stubs_and_clear_identifier_text(self):
+        from .KiCadSchematicOverview import _segment_cells, _tag_box, _intersects
+
+        board, plan = fixture(7)
+        cells = ((0, 1), (1, 1), (2, 1), (3, 0), (3, 1), (3, 2), (3, 3))
+        pairs = ((0, 1), (1, 2), (2, 3), (2, 4), (2, 5), (2, 6), (0, 2))
+        custom = SchematicOverview(
+            blocks=tuple(
+                SchematicOverviewBlock(f"Function {i}", f"Function {i}", "Support circuit", *cell)
+                for i, cell in enumerate(cells)
+            ),
+            links=tuple(
+                SchematicOverviewLink(f"Function {a}", f"Function {b}", f"Relationship {i}", ("supply",), True)
+                for i, (a, b) in enumerate(pairs)
+            ),
+        )
+        data = build_overviews([board], plan, custom)["boards"][0]
+        self.assertFalse(data["diagnostics"])
+        occupied = set()
+        strokes = []
+        for link in data["connections"]:
+            self.assertEqual(link["status"], "drawn")
+            self.assertIsNotNone(link["tag"])
+            path = link["path"]
+            route = set()
+            for a, b in zip(path, path[1:]):
+                route.update(_segment_cells(a, b))
+                strokes.append(
+                    (min(a[0], b[0]) - 0.125, min(a[1], b[1]) - 0.125, max(a[0], b[0]) + 0.125, max(a[1], b[1]) + 0.125)
+                )
+            self.assertFalse(route & occupied, link["id"])
+            occupied.update(route)
+            for a, b, c in zip(path, path[1:], path[2:]):
+                self.assertGreaterEqual((b[0] - a[0]) * (c[0] - b[0]) + (b[1] - a[1]) * (c[1] - b[1]), 0)
+        boxes = [_tag_box(link["tag"]) for link in data["connections"]]
+        for i, box in enumerate(boxes):
+            self.assertFalse(any(_intersects(box, line) for line in strokes))
+            self.assertFalse(any(_intersects(box, other) for other in boxes[i + 1 :]))
+            self.assertFalse(any(_intersects(box, n["bounds"]) for n in data["nodes"]))
+
+    def test_multi_board_selectors_and_cross_scope_links(self):
+        from .KiCadSchematicPlanner import SchematicSheetPlan
+
+        a, pa = fixture(2, "a")
+        b, pb = fixture(2, "b")
+        plan = SchematicSheetPlan("fingerprint", pa.regions + pb.regions, pa.sheets + pb.sheets)
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            build_overviews(
+                [a, b],
+                plan,
+                SchematicOverview(blocks=(SchematicOverviewBlock("Function 0", "Title", "Summary", 0, 0),)),
+            )
+        sa = next(s for s in pa.sheets if s.id != "overview")
+        sb = next(s for s in pb.sheets if s.id != "overview")
+        with self.assertRaisesRegex(ValueError, "one board scope"):
+            build_overviews(
+                [a, b], plan, SchematicOverview(links=(SchematicOverviewLink(sa.id, sb.id, "Cross", ("supply",)),))
+            )
+        data = build_overviews([a, b], plan)
+        self.assertEqual(len(data["boards"]), 2)
+        self.assertTrue(all(d["components"] == 2 for d in data["boards"]))
+        self.assertTrue(all([n["page"] for n in d["nodes"]] == [2, 3] for d in data["boards"]))
+
+    def test_large_inventory_falls_back_without_dropping_sheets(self):
+        board, plan = fixture(41)
+        data = build_overviews([board], plan)["boards"][0]
+        self.assertEqual(data["mode"], "directory")
+        self.assertEqual(len(data["nodes"]), 41)
+        self.assertFalse(data["connections"])
+        self.assertEqual(data["components"], 41)
+        with self.assertRaisesRegex(ValueError, "at most 16 sheets"):
+            build_overviews(
+                [board],
+                plan,
+                SchematicOverview(blocks=(SchematicOverviewBlock("Function 0", "Title", "Summary", 0, 0),)),
+            )
+
+    def test_compiled_preview_bundle_staleness_and_native_truth(self):
+        from ..core import ScalaCompiler
+        from ..electronics_interfaces.test_netlist import TestBasicCircuit
+        from .RefdesRefinementPass import RefdesRefinementPass
+        from .NetlistGenerator import NetlistTransform
+        from .SchematicVerification import verify_schematic_netlist
+        from .KiCadSchematicExporter import SchematicPlacement
+
+        compiled = ScalaCompiler.compile(TestBasicCircuit)
+        compiled.append_values(RefdesRefinementPass().run(compiled))
+        options = SchematicExportOptions(
+            "OverviewFixture",
+            placements={"source": SchematicPlacement("Power", 70, 80), "sink": SchematicPlacement("Load", 100, 80)},
+            sheet_assignments={"Power": "Power", "Load": "Load"},
+        )
+        old_plan = SchematicSheetPlanner().plan(compiled, options)
+        nets = next(iter(NetlistTransform(compiled).run().values()))
+        shared = next(n.name for n in nets.nets if len(n.pins) > 1 and "gnd" not in n.name.lower())
+        custom = SchematicOverview(
+            blocks=(
+                SchematicOverviewBlock("Power", "Input", "Source support", 0, 1),
+                SchematicOverviewBlock("Load", "Output", "Load support", 1, 1),
+            ),
+            links=(SchematicOverviewLink("Power", "Load", "Physical association", (shared,), True),),
+        )
+        options = replace(options, overview=custom)
+        exporter = KiCadSchematicExporter()
+        with self.assertRaisesRegex(ValueError, "stale sheet plan"):
+            exporter.export(compiled, replace(options, sheet_plan=old_plan))
+        bundle = exporter.export(compiled, options)
+        self.assertEqual(json.loads(bundle.files["overview.json"]), exporter.overview(compiled, options))
+        self.assertEqual(bundle.files, exporter.export(compiled, options).files)
+        manifest = json.loads(bundle.files["manifest.json"])
+        root = manifest["boards"][0]["root"]
+        tree = sexpdata.loads(bundle.files[root])
+        page = children(children(children(tree, "sheet_instances")[0], "path")[0], "page")[0][1]
+        self.assertEqual(page, "1")
+        self.assertEqual(sum(n.endswith(".kicad_sch") for n in bundle.files), 3)
+        if shutil.which("kicad-cli"):
+            with tempfile.TemporaryDirectory() as directory:
+                bundle.write(Path(directory))
+                xml = Path(directory) / "truth.xml"
+                subprocess.run(
+                    [
+                        "kicad-cli",
+                        "sch",
+                        "export",
+                        "netlist",
+                        "--format",
+                        "kicadxml",
+                        "-o",
+                        str(xml),
+                        str(Path(directory) / root),
+                    ],
+                    check=True,
+                    capture_output=True,
+                )
+                verify_schematic_netlist(nets, xml)
+
+
+if __name__ == "__main__":
+    unittest.main()

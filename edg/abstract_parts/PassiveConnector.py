@@ -101,3 +101,11 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
             pnp_rot=self.part_footprint_pnp_rot(length),
             pnp_offset=self.part_footprint_pnp_offset(length),
         )
+        # Generic connector symbols preserve the actual modeled physical pad numbers.
+        # Do not invent pins for unmodeled positions in a partially allocated connector.
+        modeled_pins = {pin for pin, _ in self.pins.items()}
+        if 1 <= length <= 40 and modeled_pins == {str(pin) for pin in range(1, length + 1)}:
+            self.schematic_symbol(
+                f"Connector_Generic:Conn_01x{length:02d}",
+                {pin: pin for pin in modeled_pins},
+            )

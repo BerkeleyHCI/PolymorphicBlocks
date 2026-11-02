@@ -40,7 +40,18 @@ class StandardFootprint(Generic[StandardPinningType]):
     @classmethod
     def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Returns the pinning for a footprint for a specific block's pins"""
-        return cls._footprint_pinning_map()[footprint](block)
+        pinning = cls._footprint_pinning_map()[footprint](block)
+        # Only these explicitly verified two-terminal standard mappings are supported.
+        from .Resistor import ResistorStandardFootprint
+        from .Capacitor import CapacitorStandardFootprint
+        from .Inductor import InductorStandardFootprint
+
+        symbols = {ResistorStandardFootprint: "Device:R", CapacitorStandardFootprint: "Device:C",
+                   InductorStandardFootprint: "Device:L"}
+        if (cls in symbols and set(pinning) == {"1", "2"} and isinstance(block, FootprintBlock)
+                and (cls is not CapacitorStandardFootprint or footprint.startswith("Capacitor_SMD:C_"))):
+            block.schematic_symbol(symbols[cls], {"1": "1", "2": "2"})
+        return pinning
 
 
 @non_library

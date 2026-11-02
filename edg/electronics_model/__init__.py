@@ -69,3 +69,11 @@ from .SvgPcbBackend import SvgPcbBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
 
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
+
+from .KiCadSchematicExporter import KiCadSchematicExporter, SchematicExportOptions, SchematicExport, SchematicPlacement
+from .KiCadSchematicPlanner import (
+    SchematicSheetPlanner, SchematicSheetPlan, SchematicSheet,
+    SchematicRegion, SchematicRegionPlacement,
+)
+
+from .KiCadSchematicOverview import SchematicOverview, SchematicOverviewBlock, SchematicOverviewLink

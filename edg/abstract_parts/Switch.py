@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Mapping, Optional, Tuple
 from typing_extensions import override
 
 from ..electronics_interfaces import *
@@ -12,6 +12,24 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == "Switch:SW_SPST"
         return {"1": self.sw, "2": self.com}
+
+    def _schematic_symbol_for_footprint(
+        self, pinning: Mapping[str, Passive]
+    ) -> Optional[Tuple[str, Mapping[str, str]]]:
+        """Map only footprints whose modeled pads are exactly the two switch contacts."""
+        sw_pads = sorted(pin for pin, port in pinning.items() if port is self.sw)
+        com_pads = sorted(pin for pin, port in pinning.items() if port is self.com)
+        if len(sw_pads) + len(com_pads) != len(pinning):
+            return None
+        if len(sw_pads) == len(com_pads) == 1:
+            symbol = "Switch:SW_Push" if isinstance(self, (TactileSwitch, MechanicalKeyswitch)) else "Switch:SW_SPST"
+            return symbol, {"1": sw_pads[0], "2": com_pads[0]}
+        if len(sw_pads) == len(com_pads) == 2 and isinstance(self, TactileSwitch):
+            # SW_Push_Dual's two left contact pins are 1/3; right contact pins 2/4.
+            return "Switch:SW_Push_Dual", {
+                "1": sw_pads[0], "3": sw_pads[1], "2": com_pads[0], "4": com_pads[1]
+            }
+        return None
 
     def __init__(self, voltage: RangeLike, current: RangeLike = 0 * Amp(tol=0)) -> None:
         super().__init__()

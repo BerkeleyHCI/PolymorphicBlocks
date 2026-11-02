@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, Union
 from typing_extensions import override
 
 from ..electronics_interfaces import *
@@ -37,6 +37,15 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
 
 class LedStandardFootprint(StandardFootprint[Led]):
     REFDES_PREFIX = "D"
+
+    @classmethod
+    @override
+    def _make_pinning(cls, block: Led, footprint: str) -> Dict[str, Union[Passive, HasPassivePort]]:
+        pinning = super()._make_pinning(block, footprint)
+        # Device:LED has 1=K, 2=A, matching these verified standard packages.
+        if isinstance(block, FootprintBlock) and set(pinning) == {"1", "2"}:
+            block.schematic_symbol("Device:LED", {"1": "1", "2": "2"})
+        return pinning
 
     FOOTPRINT_PINNING_MAP = {
         (

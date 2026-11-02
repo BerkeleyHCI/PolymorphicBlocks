@@ -205,3 +205,8 @@ Check out our papers (all open-access), which have more details:
   [Embedded Device Generation](https://dl.acm.org/doi/10.1145/3083157.3083159) (or more generally Electronic Device Generation) was a prior version of this project that focused on algorithms and models for embedded device synthesis, though it lacked a user-facing component.
   This project is a continuation of that work focusing on an end-to-end system, and for most of its development cycle has been called `edg`.
   But, for the purposes of writing research papers, naming collisions are confusing and bad, and we chose to keep the repo and paper name consistent.
+
+### Generated KiCad schematic views (opt-in)
+
+See [schematic export](docs/schematic-export.md) for generated review schematics,
+symbol mappings, and validation requirements. PB Python remains the source of truth.
