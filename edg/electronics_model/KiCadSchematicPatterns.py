@@ -33,6 +33,65 @@ def terminal_roles(component: Any) -> dict:
     return roles
 
 
+def decoupling_associations(
+    components: Sequence[Any], pin_nets: Mapping, views: Optional[Mapping] = None
+) -> Tuple[SchematicPattern, ...]:
+    """Associate typed local bypass wrappers with their unique powered device.
+
+    A common supply does not establish ownership. The compiled DecouplingCapacitor
+    ancestor establishes the functional owner's subtree; actual supply and return
+    pins then verify the association. Ambiguous owners remain unclassified.
+    """
+    by_path = {c.path: c for c in components}
+    roles = {c.path: terminal_roles(c) for c in components}
+    associations = {}
+    for cap in sorted(components, key=lambda c: c.path):
+        if len(cap.pins) != 2:
+            continue
+        symbol = (
+            views[cap.path].lib_id if views is not None and cap.path in views
+            else (getattr(cap, "mapping", None) or {}).get("lib_id", "")
+        ).split("_PB_", 1)[0]
+        if symbol not in ("Device:C", "Device:C_Polarized"):
+            continue
+        wrappers = [
+            path for path, cls in getattr(cap, "hierarchy", ())
+            if cls.removeprefix("PolymorphicBlocks.")
+            == "edg.abstract_parts.Capacitor.DecouplingCapacitor"
+        ]
+        if not wrappers:
+            continue
+        wrapper = max(wrappers, key=lambda path: len(path.split(".")))
+        owner = wrapper.rpartition(".")[0]
+        if not owner:
+            continue
+        cap_nets = {pin_nets.get((cap.path, n)) for n in cap.pins}
+        if len(cap_nets) != 2 or None in cap_nets:
+            continue
+        candidates = []
+        for path, role in roles.items():
+            if not path.startswith(owner + ".") or path.startswith(wrapper + "."):
+                continue
+            if len(by_path[path].pins) < 3:
+                continue
+            supplies = {pin_nets.get((path, n)) for r, n in role.items()
+                        if r in ("vdd", "vcc", "pwr", "vin")}
+            grounds = {pin_nets.get((path, n)) for r, n in role.items()
+                       if r in ("gnd", "vss")}
+            matches = {(supply, ground) for supply in supplies for ground in grounds
+                       if supply != ground and {supply, ground} == cap_nets}
+            if len(matches) == 1:
+                candidates.append((path, next(iter(matches))))
+        if len(candidates) != 1:
+            continue
+        path, nets = candidates[0]
+        associations.setdefault((path, nets), []).append(cap.path)
+    return tuple(
+        SchematicPattern("local_decoupling", (path, *caps), nets)
+        for (path, nets), caps in sorted(associations.items())
+    )
+
+
 def discover_patterns(
     components: Sequence[Any], pin_nets: Mapping, views: Optional[Mapping] = None
 ) -> Tuple[SchematicPattern, ...]:
@@ -201,4 +260,4 @@ def discover_patterns(
                     "amplifier_feedback", (anchor, *feedback), (negative, output)
                 )
             )
-    return tuple(patterns)
+    return tuple(patterns) + decoupling_associations(components, pin_nets, views)

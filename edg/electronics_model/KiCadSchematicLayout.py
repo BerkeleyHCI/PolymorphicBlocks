@@ -12,7 +12,7 @@ import textwrap
 from collections import defaultdict
 from typing import Any, Optional, Sequence, Tuple
 
-from .KiCadSchematicPatterns import discover_patterns, terminal_roles
+from .KiCadSchematicPatterns import decoupling_associations, discover_patterns, terminal_roles
 
 GRID = 1.27
 
@@ -255,6 +255,7 @@ def regroup(
             "indicator_branch",
             "converter_output",
             "amplifier_feedback",
+            "local_decoupling",
         ):
             owner = original_groups[pattern.components[0]]
             for path in pattern.components:
@@ -329,20 +330,13 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
     ]
     serial_members = set(serial_order)
     supports = defaultdict(list)
-    for p in order:
-        if p in serial_members or len(by_path[p].pins) != 2:
-            continue
-        if not views[p].lib_id.startswith("Device:C"):
-            continue
-        parent = p.rpartition(".")[0]
-        candidates = [q for q in serial_order if q.rpartition(".")[0] == parent]
-        if parent and len(candidates) == 1:
-            supports[candidates[0]].append(p)
+    for pattern in patterns:
+        if pattern.kind == "local_decoupling":
+            supports[pattern.components[0]].extend(pattern.components[1:])
     support_members = {p for values in supports.values() for p in values}
-    if serial_order:
-        order = serial_order + [
-            p for p in order if p not in serial_members | support_members
-        ]
+    order = serial_order + [
+        p for p in order if p not in serial_members | support_members
+    ]
     placed = []
     x = 65.0
     y = 80.0
@@ -505,18 +499,43 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
             obstacles.update(
                 (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
             )
+    # Preserve verified functional ownership even for explicitly positioned
+    # circuits: bypass branches terminate at their own device's supply escape,
+    # never at a neighbouring capacitor simply because it is geometrically near.
+    local_targets = {}
+    components = [c for c, _, _, _ in placed]
+    for association in decoupling_associations(components, pin_nets, views):
+        device, *capacitors = association.components
+        supply, _ = association.nets
+        device_entries = [(key, pos) for key, pos in endpoints[supply] if key[0] == device]
+        if len(device_entries) != 1:
+            continue
+        for key, pos in endpoints[supply]:
+            if key[0] in capacitors:
+                local_targets[key] = device_entries[0]
     connected = set()
     for net, entries in sorted(
         endpoints.items(), key=lambda pair: (len(pair[1]), pair[0])
     ):
         if len(entries) < 2 or net.lower().split(".")[-1] == "gnd":
             continue
+        # Build the device backbone first; attach each local bypass directly
+        # to its verified owner. Sorting also removes input traversal dependence.
+        entries = sorted(entries, key=lambda entry: (entry[0] in local_targets, entry[0]))
         tree = {entries[0][1]}
         connected.add(entries[0][0])
         for key, start in entries[1:]:
+            targets = {local_targets[key][1]} if key in local_targets else tree
             target = min(
-                tree, key=lambda p: abs(p[0] - start[0]) + abs(p[1] - start[1])
+                targets, key=lambda p: (abs(p[0] - start[0]) + abs(p[1] - start[1]), p)
             )
+            own_stub = set()
+            if key in local_targets:
+                px, py, _, _, _ = escapes[key]
+                pin = grid(px, py)
+                own_stub = {(ix, iy)
+                            for ix in range(min(pin[0], start[0]), max(pin[0], start[0]) + 1)
+                            for iy in range(min(pin[1], start[1]), max(pin[1], start[1]) + 1)} - {start}
             queue = [(0, 0, start, None)]
             cost = {start: 0}
             previous = {}
@@ -526,7 +545,7 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                 _, distance, current, prior_direction = heapq.heappop(queue)
                 if distance != cost.get(current):
                     continue
-                if current in tree:
+                if current in targets:
                     found = current
                     break
                 expanded += 1
@@ -536,7 +555,9 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                     q = current[0] + dx, current[1] + dy
                     if not (25 <= q[0] <= 625 and 65 <= q[1] <= 425):
                         continue
-                    if q in obstacles and q not in tree:
+                    if q in obstacles and q not in targets:
+                        continue
+                    if q in own_stub:
                         continue
                     axis = 0 if dx else 1
                     others = {
@@ -577,6 +598,14 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
             while path[-1] != start:
                 path.append(previous[path[-1]])
             path.reverse()
+            if key in local_targets:
+                direct = abs(start[0] - target[0]) + abs(start[1] - target[1])
+                other_caps = {pos for other, pos in entries if other != key and other in local_targets}
+                # Conflicting hints must not turn a local bypass into a remote
+                # loop or a chain through another bypass endpoint.
+                if len(path) - 1 > 2 * direct + 16 or other_caps.intersection(path):
+                    failures.append((key, net))
+                    continue
             tree.update(path)
             connected.add(key)
             protected.update((path[0], path[-1]))
@@ -599,7 +628,7 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                 if a != b:
                     wires.append((net, point(a), point(b)))
     routed_nets = {net for net, _, _ in wires}
-    for key, (_, _, ex, ey, _) in escapes.items():
+    for key, (_, _, ex, ey, _) in sorted(escapes.items()):
         net = pin_nets[key]
         if net not in routed_nets:
             continue
@@ -622,21 +651,6 @@ def split_group(placed: list, views: dict, pin_nets: dict):
     components = [entry[0] for entry in placed]
     patterns = discover_patterns(components, pin_nets, views)
     atoms = [set(p.components) for p in patterns if p.kind != "serial_data_chain"]
-    serial = {
-        path for p in patterns if p.kind == "serial_data_chain" for path in p.components
-    }
-    for path in sorted(serial):
-        parent = path.rpartition(".")[0]
-        support = {
-            c.path
-            for c in components
-            if parent
-            and c.path.rpartition(".")[0] == parent
-            and c.path != path
-            and len(c.pins) == 2
-            and views[c.path].lib_id.startswith("Device:C")
-        }
-        atoms.append({path} | support)
     paths = [c.path for c in components]
     choices = []
     for cut in range(1, len(placed)):

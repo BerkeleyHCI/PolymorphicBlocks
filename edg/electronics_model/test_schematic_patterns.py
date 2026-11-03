@@ -2,7 +2,7 @@
 
 import unittest
 
-from .KiCadSchematicPatterns import discover_patterns, terminal_roles
+from .KiCadSchematicPatterns import discover_patterns, terminal_roles, decoupling_associations
 from .KiCadSchematicLayout import place_group
 from .KiCadSchematicExporter import generic, PhysicalComponent, SymbolView
 
@@ -30,6 +30,70 @@ def nets(parts):
 
 
 class SchematicPatternsTest(unittest.TestCase):
+    def decoupling_fixture(self, count=8, prefix="array"):
+        devices = [led(f"{prefix}.pixel[{i}].implementation.device") for i in range(count)]
+        wiring = nets(devices)
+        caps = []
+        for i, device in enumerate(devices):
+            owner = f"{prefix}.pixel[{i}]"
+            cap = PhysicalComponent(
+                owner + ".bypass.wrapper.cap", f"C{i}", "FP", "100nF",
+                {"1": "pos", "2": "neg"}, {"lib_id": "Device:C"}, "caps",
+            )
+            cap.hierarchy = ((owner, "edg.parts.human_interface.Neopixel.Sk6812Mini_E"),
+                             (owner + ".bypass", "edg.abstract_parts.Capacitor.DecouplingCapacitor"))
+            wiring[cap.path, "1"] = "arbitrary_common_supply"
+            wiring[cap.path, "2"] = "arbitrary_common_return"
+            caps.append(cap)
+        return devices, caps, wiring
+
+    def test_nested_decoupling_owner_single_and_repeated(self):
+        from .KiCadSchematicLayout import regroup, split_group
+
+        for count in (1, 8):
+            devices, caps, wiring = self.decoupling_fixture(count)
+            parts = devices + caps
+            patterns = decoupling_associations(parts, wiring)
+            self.assertEqual(len(patterns), count)
+            self.assertEqual([p.components for p in patterns],
+                             [(d.path, c.path) for d, c in zip(devices, caps)])
+            self.assertEqual(patterns, decoupling_associations(list(reversed(parts)), wiring))
+            regroup(parts, wiring)
+            self.assertTrue(all(c.group == d.group for c, d in zip(caps, devices)))
+            views = {c.path: generic(c) for c in parts}
+            for cap in caps:
+                views[cap.path] = SymbolView(generic(cap).definition,
+                    [("1", 0, -2.54, 270), ("2", 0, 2.54, 90)], "Device:C")
+            pages = place_group(parts, views, wiring)
+            for device, cap in zip(devices, caps):
+                containing = [page for page in pages if any(e[0] is device for e in page)]
+                self.assertEqual(len(containing), 1)
+                self.assertTrue(any(e[0] is cap for e in containing[0]))
+            pair = [(devices[0], 0, 0, 0), (caps[0], 0, 30, 0)]
+            self.assertIsNone(split_group(pair, views, wiring))
+
+    def test_two_arrays_sharing_rails_do_not_share_cap_ownership(self):
+        a, ca, wa = self.decoupling_fixture(2, "first")
+        b, cb, wb = self.decoupling_fixture(2, "second")
+        patterns = decoupling_associations(a + b + ca + cb, {**wa, **wb})
+        self.assertEqual({p.components for p in patterns},
+                         {(d.path, c.path) for d, c in zip(a + b, ca + cb)})
+
+    def test_decoupling_requires_typed_owner_and_both_matching_rails(self):
+        devices, caps, wiring = self.decoupling_fixture(1)
+        parts = devices + caps
+        cap = caps[0]
+        original = cap.hierarchy
+        cap.hierarchy = ()
+        self.assertEqual(decoupling_associations(parts, wiring), ())
+        cap.hierarchy = original
+        wiring[cap.path, "2"] = "different_return"
+        self.assertEqual(decoupling_associations(parts, wiring), ())
+        wiring[cap.path, "2"] = "arbitrary_common_return"
+        duplicate = led("array.pixel[0].other.device")
+        wiring.update(nets([duplicate]))
+        self.assertEqual(decoupling_associations(parts + [duplicate], wiring), ())
+
     def test_chain_follows_physical_pins_and_is_permutation_invariant(self):
         parts = [led("led[2].ic"), led("led[0].ic"), led("led[10].ic")]
         actual = discover_patterns(parts, nets(parts))
@@ -229,10 +293,14 @@ class SchematicPatternsTest(unittest.TestCase):
                 "chain",
             )
         ]
+        caps[0].hierarchy = (("ch[0].cap", "edg.abstract_parts.Capacitor.DecouplingCapacitor"),)
         views = {c.path: generic(c) for c in parts + caps}
         views[caps[0].path].lib_id = "Device:C"
         placed = [(parts[0], 10, 10, 0), (caps[0], 10, 40, 0), (parts[1], 80, 10, 0)]
-        left, right = split_group(placed, views, nets(parts))
+        wiring = nets(parts)
+        wiring[caps[0].path, "1"] = "arbitrary_common_supply"
+        wiring[caps[0].path, "2"] = "arbitrary_common_return"
+        left, right = split_group(placed, views, wiring)
         self.assertEqual([e[0].path for e in left], ["ch[0].ic", "ch[0].cap"])
         self.assertEqual([e[0].path for e in right], ["ch[1].ic"])
 
@@ -243,6 +311,7 @@ class SchematicPatternsTest(unittest.TestCase):
         cap = PhysicalComponent(
             "ch[0].cap", "C1", "Test:C", "1u", {"1": "pos", "2": "neg"}, None, "chain"
         )
+        cap.hierarchy = (("ch[0].cap", "edg.abstract_parts.Capacitor.DecouplingCapacitor"),)
         parts.append(cap)
         views[cap.path] = SymbolView(
             views[parts[0].path].definition,

@@ -325,3 +325,28 @@ Display connector names follow verified device connection maps, including an
 explicit FPC flip only when its exact adapter and compiled length are known.
 
 ![Native KiCad 10 packed resistor-array branches, retaining one physical RN1 reference](images/schematic-packed-resistors.png)
+
+### Local bypass ownership
+
+The exporter preserves compiled block ancestry and recognizes typed
+`DecouplingCapacitor` wrappers. A capacitor is associated with a unique device
+inside the same functional owner only when both its actual supply and return
+nets match the device's explicit terminal roles. Shared rails or array indices
+alone never establish ownership. Ambiguous cases remain general circuits.
+
+Recognized device/bypass units stay together during automatic grouping and page
+splitting. With either automatic or explicit placement, the router builds the
+device supply backbone and attaches each bypass to its own device. It rejects
+excessive local detours and paths through another bypass endpoint, retaining
+net labels and reporting the existing local-wire fallback diagnostic. Source
+placement hints may still require refinement. `readability.json` records
+`local_decoupling` patterns and reports `decoupling_split` if explicit sheet
+choices separate an associated unit; machine findings do not grant visual approval.
+
+### Ground symbol style
+
+`SchematicExportOptions(..., ground_style="bars")` uses the traditional
+three-bar ground by default. Set `ground_style="triangle"` for the previous
+KiCad triangle. MCP schematic options accept the same field and values.
+Only embedded symbol graphics change; the PB ground net and power-pin semantics
+remain unchanged. This is not a selection of earth, chassis or isolated ground.

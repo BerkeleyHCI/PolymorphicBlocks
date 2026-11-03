@@ -58,6 +58,7 @@ def text_item(identity, text, at, effect, owner, kind):
 def inspect_documents(files, diagnostics, patterns=()):
     findings = []
     scenes = []
+    component_sheets = {}
 
     def finding(code, sheet, objects, detail):
         identity = hashlib.sha256((code + "|" + sheet + "|" + "|".join(sorted(objects))).encode()).hexdigest()[:20]
@@ -101,6 +102,8 @@ def inspect_documents(files, diagnostics, patterns=()):
         for symbol in children(doc, "symbol"):
             props = children(symbol, "property")
             owner = next((p[2] for p in props if p[1] == "PBPath"), "")
+            if owner:
+                component_sheets[owner] = filename
             for p in props:
                 at = children(p, "at")
                 ef = children(p, "effects")
@@ -192,6 +195,13 @@ def inspect_documents(files, diagnostics, patterns=()):
                         "Wire intersects visible text bounds",
                     )
         scenes.append(dict(sheet=filename, texts=[asdict(t) for t in texts]))
+    for pattern in patterns:
+        if pattern["kind"] == "local_decoupling":
+            members = pattern["components"]
+            sheets = {component_sheets.get(path) for path in members}
+            if None in sheets or len(sheets) != 1:
+                finding("decoupling_split", "", members,
+                        "A verified device and its local bypass capacitors are not on one sheet")
     for d in diagnostics:
         reason = d.reason
         if reason == "no schematic symbol mapping" or reason.startswith("local wire"):

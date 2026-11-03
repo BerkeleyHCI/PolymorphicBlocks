@@ -41,7 +41,7 @@ from .KiCadSchematicLayout import (
 
 NOTICE = "GENERATED FROM POLYMORPHICBLOCKS PYTHON — SOURCE OF TRUTH"
 INSTRUCTIONS = "Edit the PB Python source and regenerate. Schematic edits will be overwritten."
-VERSION = "5"
+VERSION = "6"
 S = sexpdata.Symbol
 
 
@@ -88,6 +88,31 @@ class SchematicExportOptions:
     sheet_plan: Optional[SchematicSheetPlan] = None
     overview: Optional[SchematicOverview] = None
     presentation: Optional[SchematicPresentation] = None
+    ground_style: str = "bars"
+
+    def __post_init__(self):
+        if self.ground_style not in ("bars", "triangle"):
+            raise ValueError("ground_style must be bars or triangle")
+
+
+def ground_symbol(resolver, style: str) -> list:
+    """Change only ground graphics, retaining the original power-net semantics.
+
+    Do not substitute Earth/GNDREF: those are different electrical net names in
+    some supported KiCad versions. Both styles fit the router's ground bounds.
+    """
+    definition = copy.deepcopy(resolver.load("power:GND"))
+    if style == "bars":
+        body = next(body for body in children(definition, "symbol") if body[1].endswith("_0_1"))
+        body[:] = body[:2]
+        for a, b in (((0, 0), (0, -1.27)),
+                     ((-1.27, -1.27), (1.27, -1.27)),
+                     ((-0.635, -1.905), (0.635, -1.905)),
+                     ((-0.127, -2.54), (0.127, -2.54))):
+            body.append(node("polyline", node("pts", node("xy", *a), node("xy", *b)),
+                             node("stroke", node("width", 0), node("type", S("default"))),
+                             node("fill", node("type", S("none")))))
+    return definition
 
 
 @dataclass(frozen=True)
@@ -133,6 +158,7 @@ class PhysicalComponent:
     annotation: Optional[Tuple[float, float]] = None
     descriptions: Tuple[str, ...] = ()
     net_labels: Mapping[str, str] = field(default_factory=dict)
+    hierarchy: Tuple[Tuple[str, str], ...] = ()
 
 
 @dataclass
@@ -366,6 +392,7 @@ class KiCadSchematicExporter:
                     list(b[:4])
                     + [
                         str(b.full_path),
+                        [cls.target.name for cls in b.path_classes],
                         compiled.get_value(b.full_path.to_tuple() + ("fp_pinning",)),
                         compiled.get_value(b.full_path.to_tuple() + ("sch_symbol",)),
                     ]
@@ -424,6 +451,10 @@ class KiCadSchematicExporter:
                     )
                 )
                 component = components[-1]
+                component.hierarchy = tuple(
+                    (".".join(block.full_path.blocks[:i + 1]), cls.target.name)
+                    for i, cls in enumerate(block.path_classes)
+                )
                 component.display_value = self._display_value(compiled, block)
                 if component.mapping is None:
                     try:
@@ -787,7 +818,7 @@ class KiCadSchematicExporter:
                     for c, _, _, _ in board.regions[location.region_id].placed:
                         definitions[board.views[c.path].lib_id] = board.views[c.path].definition
                 try:
-                    ground = resolver.load("power:GND")
+                    ground = ground_symbol(resolver, options.ground_style)
                     definitions["power:GND"] = ground
                 except (LookupError, FileNotFoundError):
                     ground = None
