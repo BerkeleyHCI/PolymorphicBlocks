@@ -350,3 +350,27 @@ three-bar ground by default. Set `ground_style="triangle"` for the previous
 KiCad triangle. MCP schematic options accept the same field and values.
 Only embedded symbol graphics change; the PB ground net and power-pin semantics
 remain unchanged. This is not a selection of earth, chassis or isolated ground.
+
+### Experimental fixed-placement routing optimizer
+
+Set `SchematicExportOptions(..., optimize_routes=True)` (or the matching MCP
+option) to evaluate seven deterministic candidates per circuit region: the
+baseline, X/Y/reversed endpoint orders, short-net-first order, and two
+direction-aware searches for attachments to the existing tree. The latter use
+an admissible target-envelope heuristic; search expansion and candidate budgets
+are fixed, not time-based. No global optimum is claimed.
+
+Components, rotations and annotations are immutable. Baseline region bounds are
+retained so sheet packing and page coordinates do not change. Candidates with
+new failed endpoints, more cross-net intersections, longer union wire length,
+or an expanded route envelope are rejected. The remaining candidates are ranked
+by failures, crossings, then wire length plus a 2.54 mm equivalent bend penalty;
+exact ties preserve the earlier candidate. Verified local bypass attachments
+remain enforced. The original route is always available as fallback.
+
+`routing.json` records before/after union wire length, bends, crossings, failed
+endpoints and candidate selection per region. These measurements exclude fixed
+pin stubs, ground symbols and inter-region wiring. Native electrical round trips
+and visual inspection remain required. Optimization defaults off pending broader
+visual qualification; this is a route-order/local-search optimizer, not a
+placement optimizer or an ERC/electrical-design optimizer.

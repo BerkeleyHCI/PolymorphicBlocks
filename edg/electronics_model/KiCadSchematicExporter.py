@@ -89,8 +89,11 @@ class SchematicExportOptions:
     overview: Optional[SchematicOverview] = None
     presentation: Optional[SchematicPresentation] = None
     ground_style: str = "bars"
+    optimize_routes: bool = False
 
     def __post_init__(self):
+        if type(self.optimize_routes) is not bool:
+            raise ValueError("optimize_routes must be a boolean")
         if self.ground_style not in ("bars", "triangle"):
             raise ValueError("ground_style must be bars or triangle")
 
@@ -351,6 +354,7 @@ class _RegionDrawing:
     placed: list
     wires: list
     failed_routes: list
+    routing: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -590,8 +594,17 @@ class KiCadSchematicExporter:
                 part = 0
                 while pending:
                     placed = pending.pop(0)
-                    wires, _, failed = route_local(placed, views, pin_nets)
-                    bounds = self._region_bounds(placed, views, pin_nets, names, wires, group)
+                    baseline = route_local(placed, views, pin_nets)
+                    from .KiCadSchematicRouting import optimize_fixed_routes, route_metrics
+                    if options.optimize_routes:
+                        routed, routing = optimize_fixed_routes(placed, views, pin_nets, baseline, route_local)
+                    else:
+                        routed = baseline
+                        metric = route_metrics(baseline[0], baseline[2])
+                        routing = dict(before=metric, after=metric, selected="baseline", candidates=1)
+                    wires, _, failed = routed
+                    # Routing trials must not move any component through repacking.
+                    bounds = self._region_bounds(placed, views, pin_nets, names, baseline[0], group)
                     width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
                     if (
                         (width > 375 or height > 225 or (width > 210 and height > 205))
@@ -631,7 +644,7 @@ class KiCadSchematicExporter:
                         if group == "Mechanical notes" and all(not c.pins for c in members)
                         else "circuit",
                     )
-                    board.regions[identity] = _RegionDrawing(spec, placed, wires, failed)
+                    board.regions[identity] = _RegionDrawing(spec, placed, wires, failed, routing)
             if not board.regions:
                 spec = SchematicRegion(
                     scope_name + "::Empty design",
@@ -896,6 +909,12 @@ class KiCadSchematicExporter:
             )
         readability = inspect_documents(files, diagnostics, patterns)
         files["readability.json"] = json.dumps(readability, indent=2, ensure_ascii=False) + "\n"
+        files["routing.json"] = json.dumps(dict(
+            schema=1, optimize_routes=options.optimize_routes,
+            metric_scope="Local routed wires only; excludes fixed pin stubs and inter-region links",
+            regions=[dict(scope=b.scope, region=d.spec.title, **d.routing)
+                     for b in boards for d in b.regions.values() if d.routing],
+        ), indent=2) + "\n"
         manifest = dict(
             exporter_version=VERSION,
             source=options.source,

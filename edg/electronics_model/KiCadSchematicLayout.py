@@ -416,7 +416,7 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
     return pages
 
 
-def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, list]:
+def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline") -> Tuple[list, dict, list]:
     """Route a same-net tree between pin escapes on a grid, avoiding other copper.
 
     No crossings or near misses are accepted. All failed endpoints retain a label.
@@ -513,15 +513,29 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
         for key, pos in endpoints[supply]:
             if key[0] in capacitors:
                 local_targets[key] = device_entries[0]
+    def net_order(pair):
+        net, entries = pair
+        if strategy == "short_first":
+            xs, ys = zip(*(p for _, p in entries))
+            return (max(xs) - min(xs) + max(ys) - min(ys), len(entries), net)
+        return (len(entries), net)
+
     connected = set()
-    for net, entries in sorted(
-        endpoints.items(), key=lambda pair: (len(pair[1]), pair[0])
-    ):
+    for net, entries in sorted(endpoints.items(), key=net_order):
         if len(entries) < 2 or net.lower().split(".")[-1] == "gnd":
             continue
         # Build the device backbone first; attach each local bypass directly
         # to its verified owner. Sorting also removes input traversal dependence.
         entries = sorted(entries, key=lambda entry: (entry[0] in local_targets, entry[0]))
+        if strategy in ("x", "y", "reverse", "tree_reverse"):
+            anchors = [entry for entry in entries if entry[0] not in local_targets]
+            supports = [entry for entry in entries if entry[0] in local_targets]
+            if strategy in ("reverse", "tree_reverse"):
+                anchors.reverse()
+            else:
+                axis = 0 if strategy == "x" else 1
+                anchors.sort(key=lambda entry: (entry[1][axis], entry[1][1-axis], entry[0]))
+            entries = anchors + supports
         tree = {entries[0][1]}
         connected.add(entries[0][0])
         for key, start in entries[1:]:
@@ -536,17 +550,25 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                 own_stub = {(ix, iy)
                             for ix in range(min(pin[0], start[0]), max(pin[0], start[0]) + 1)
                             for iy in range(min(pin[1], start[1]), max(pin[1], start[1]) + 1)} - {start}
+            direction_search = strategy in ("tree_search", "tree_reverse")
+            # Direction is part of the state when turn costs apply. A bounding
+            # box heuristic is admissible for every point in the target tree;
+            # aiming at one preselected point can miss a shorter tree attachment.
+            target_box = (min(p[0] for p in targets), min(p[1] for p in targets),
+                          max(p[0] for p in targets), max(p[1] for p in targets))
+            start_state = (start, None) if direction_search else start
             queue = [(0, 0, start, None)]
-            cost = {start: 0}
+            cost = {start_state: 0}
             previous = {}
             found = None
             expanded = 0
             while queue and expanded < 20000:
                 _, distance, current, prior_direction = heapq.heappop(queue)
-                if distance != cost.get(current):
+                state = (current, prior_direction) if direction_search else current
+                if distance != cost.get(state):
                     continue
                 if current in targets:
-                    found = current
+                    found = state
                     break
                 expanded += 1
                 for direction, (dx, dy) in enumerate(
@@ -583,11 +605,16 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                             else 0
                         )
                     )
-                    if new_cost >= cost.get(q, float("inf")):
+                    next_state = (q, direction) if direction_search else q
+                    if new_cost >= cost.get(next_state, float("inf")):
                         continue
-                    cost[q] = new_cost
-                    previous[q] = current
-                    heuristic = abs(q[0] - target[0]) + abs(q[1] - target[1])
+                    cost[next_state] = new_cost
+                    previous[next_state] = state
+                    if direction_search:
+                        heuristic = (max(target_box[0] - q[0], 0, q[0] - target_box[2])
+                                     + max(target_box[1] - q[1], 0, q[1] - target_box[3]))
+                    else:
+                        heuristic = abs(q[0] - target[0]) + abs(q[1] - target[1])
                     heapq.heappush(
                         queue, (new_cost + heuristic, new_cost, q, direction)
                     )
@@ -595,9 +622,11 @@ def route_local(placed: list, views: dict, pin_nets: dict) -> Tuple[list, dict, 
                 failures.append((key, net))
                 continue
             path = [found]
-            while path[-1] != start:
+            while path[-1] != start_state:
                 path.append(previous[path[-1]])
             path.reverse()
+            if direction_search:
+                path = [point for point, _ in path]
             if key in local_targets:
                 direct = abs(start[0] - target[0]) + abs(start[1] - target[1])
                 other_caps = {pos for other, pos in entries if other != key and other in local_targets}
