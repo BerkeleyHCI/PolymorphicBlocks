@@ -5,6 +5,27 @@ schematics are a one-way view of that compiled design. Every sheet says to edit
 Python and regenerate; KiCad edits are overwritten. The existing PB netlist
 remains the supported PCB update workflow.
 
+## PB owns schematic generation
+
+The exporter is a native PB capability. Compilation, physical connectivity,
+symbol resolution, functional placement, orientation search, routing, sheet
+planning and KiCad serialization all run inside PB. Generation does not require
+`agentic-pcb`, an MCP server, or an agent session.
+
+Use `compile_board(..., schematic=options)` or
+`compile_board_inplace(..., schematic=options)` for integrated generation, or
+`KiCadSchematicExporter().export(compiled, options)` for an in-memory bundle
+after successful compilation and reference assignment. The PB CLI example below
+uses this same native path.
+
+The companion agentic-pcb tools adapt these APIs for agents: they validate
+requests, manage isolated candidates and provenance, and invoke native checks.
+They do not supply a second schematic generator. Given identical compiled
+input, options, libraries and sheet plan, the adapter and direct PB call produce
+identical artifact contents. The standalone regression runs PB's CLI in a fresh
+interpreter with all `agentic_pcb` imports blocked; companion parity tests compare
+the actual native and adapter bundles.
+
 ## Compile and open
 
 ```python
