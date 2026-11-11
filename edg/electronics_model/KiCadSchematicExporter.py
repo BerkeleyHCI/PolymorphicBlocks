@@ -26,10 +26,13 @@ from .KiCadSchematicPlanner import (
 )
 from .KiCadSchematicPresentation import SchematicPresentation
 from .KiCadSchematicOverview import SchematicOverview, build_overviews, render_overview
+from .KiCadSchematicScene import pin_label_bounds, text_width
 from .KiCadSchematicLayout import (
     annotation_position,
     annotation_bounds,
+    freeze_annotations,
     ground_bounds,
+    ground_label_position,
     ground_rotation,
     graphic_bounds,
     pins as positioned_pins,
@@ -41,7 +44,7 @@ from .KiCadSchematicLayout import (
 
 NOTICE = "GENERATED FROM POLYMORPHICBLOCKS PYTHON — SOURCE OF TRUTH"
 INSTRUCTIONS = "Edit the PB Python source and regenerate. Schematic edits will be overwritten."
-VERSION = "6"
+VERSION = "8"
 S = sexpdata.Symbol
 
 
@@ -75,6 +78,11 @@ class SchematicPlacement:
     rotation: int = 0
     flip_horizontal: bool = False
     annotation: Optional[Tuple[float, float]] = None
+    lock_rotation: bool = True
+
+    def __post_init__(self):
+        if type(self.lock_rotation) is not bool:
+            raise ValueError("lock_rotation must be a boolean")
 
 
 @dataclass(frozen=True)
@@ -89,9 +97,15 @@ class SchematicExportOptions:
     overview: Optional[SchematicOverview] = None
     presentation: Optional[SchematicPresentation] = None
     ground_style: str = "bars"
-    optimize_routes: bool = False
+    optimize_routes: bool = True
+    optimize_orientations: bool = True
+    orientation_mode: str = "half_turn"
 
     def __post_init__(self):
+        if self.orientation_mode not in ("half_turn", "passive_quarter_turn"):
+            raise ValueError("orientation_mode must be half_turn or passive_quarter_turn")
+        if type(self.optimize_orientations) is not bool:
+            raise ValueError("optimize_orientations must be a boolean")
         if type(self.optimize_routes) is not bool:
             raise ValueError("optimize_routes must be a boolean")
         if self.ground_style not in ("bars", "triangle"):
@@ -162,6 +176,8 @@ class PhysicalComponent:
     descriptions: Tuple[str, ...] = ()
     net_labels: Mapping[str, str] = field(default_factory=dict)
     hierarchy: Tuple[Tuple[str, str], ...] = ()
+    ground_net_labels: Mapping[str, str] = field(default_factory=dict)
+    symbol_coverage: Dict[str, object] = field(default_factory=dict)
 
 
 @dataclass
@@ -280,14 +296,21 @@ def generic(component: PhysicalComponent) -> SymbolView:
     lib_id = "PB:" + uid(component.path)
     sides = {"left": [], "right": [], "top": [], "bottom": []}
     declared_names = (component.mapping or {}).get("pin_names", {})
+    declared_roles = getattr(component, "presentation_pin_roles", {})
     display_pins = {number: declared_names.get(number, name) for number, name in component.pins.items()}
     for number, name in sorted(display_pins.items()):
         role = name.removesuffix(".net").lower()
-        if role in ("gnd", "vss", "com"):
+        if number in declared_roles:
+            side = {"input": "left", "output": "right", "supply": "top", "return": "bottom",
+                    "control": "left", "feedback": "left", "bidirectional": "right"}[declared_roles[number]]
+        elif role in ("gnd", "vss", "com"):
             side = "bottom"
         elif role in ("pwr", "vdd", "vcc", "vs", "vddio"):
             side = "top"
-        elif role.startswith(("out", "vout", "bat", "chrg", "alrt", "alert", "int", "dout")):
+        elif (role.startswith(("out", "vout", "bat", "chrg", "alrt", "alert", "int", "dout"))
+              or re.fullmatch(r"(?:gate|sw|boot|cboot|bst|btst|hidrv|lodrv|tgup|tgdn|gh|gl)\d*", role)):
+            # Declared gate-drive/switch ports face the adjacent power stage.
+            # This changes graphics only, never pin numbers or connectivity.
             side = "right"
         else:
             side = "left"
@@ -300,11 +323,16 @@ def generic(component: PhysicalComponent) -> SymbolView:
         sides["right"] = sides["left"][midpoint:]
         sides["left"] = sides["left"][:midpoint]
     rows = max(len(sides["left"]), len(sides["right"]), 2)
-    half_height = (rows + 1) * 1.27
+    # Dense fallback ICs must leave room for native global-label outlines and
+    # pin text. Physical pin inventory is unchanged; only the drawing grows.
+    side_pitch = 3.81
+    rail_pitch = 5.08
+    rail_name_depth = max([text_width(name, 1.27) for _, name in sides["top"] + sides["bottom"]] + [0])
+    half_height = (rows + 1) * side_pitch / 2 + max(0, rail_name_depth + 2.54 - side_pitch)
     half_width = max(
         10.16,
-        max([len(v.removesuffix(".net")) for v in display_pins.values()] + [1]) * 0.8 + 5.08,
-        max(len(sides["top"]), len(sides["bottom"])) * 1.27 + 2.54,
+        max([text_width(v.removesuffix(".net"), 1.27) for v in display_pins.values()] + [1]) + 5.08,
+        max(len(sides["top"]), len(sides["bottom"])) * rail_pitch / 2 + 2.54,
     )
     body = node(
         "symbol",
@@ -320,7 +348,7 @@ def generic(component: PhysicalComponent) -> SymbolView:
     positions = []
     for side, entries in sides.items():
         for i, (number, name) in enumerate(entries):
-            offset = (i - (len(entries) - 1) / 2) * 2.54
+            offset = (i - (len(entries) - 1) / 2) * (side_pitch if side in ("left", "right") else rail_pitch)
             if side == "left":
                 x, y, angle = -half_width - 2.54, offset, 0
             elif side == "right":
@@ -355,6 +383,10 @@ class _RegionDrawing:
     wires: list
     failed_routes: list
     routing: dict = field(default_factory=dict)
+    heading_positions: tuple = ()
+    heading_boxes: tuple = ()
+    route_snapshot: Any = None
+    source_annotations: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -367,6 +399,7 @@ class _PreparedBoard:
     names: dict
     regions: dict
     net_regions: dict = field(default_factory=dict)
+    circuit_model: Any = None
 
 
 class KiCadSchematicExporter:
@@ -376,6 +409,309 @@ class KiCadSchematicExporter:
         return tuple(d.spec for b in boards for d in b.regions.values()), fingerprint
 
     def _prepare_boards(self, compiled: CompiledDesign, options: SchematicExportOptions):
+        boards, fingerprint, resolver, diagnostics, prefix = self._prepare_legacy_boards(compiled, options)
+        boards, fingerprint = self._prepare_led_bucks(boards, fingerprint, prefix, resolver, diagnostics, options)
+        if not options.optimize_orientations or options.orientation_mode == "half_turn":
+            return boards, fingerprint, resolver, diagnostics
+        from .KiCadSchematicOrientation import (optimize_passive_orientations, orientation_metrics,
+                                               passive_orientation_rank, orientation_conflict_identities)
+        from .KiCadSchematicRouting import optimize_fixed_routes, route_metrics
+        # Provisional scene checks do not adopt a plan whose fingerprint belongs
+        # to the eventual quarter-turn geometry. The public serializer validates
+        # that requested plan only after the geometry has been selected.
+        provisional = replace(options, sheet_plan=None, overview=None)
+        baseline_bundle = self._serialize_prepared(boards, fingerprint, resolver, list(diagnostics), provisional)
+        candidate_boards, changed_scopes = [], set()
+        for board in boards:
+            candidate_board = copy.copy(board)
+            candidate_board.regions = dict(board.regions)
+            candidate_boards.append(candidate_board)
+            for identity, drawing in board.regions.items():
+                if drawing.route_snapshot is None:
+                    continue
+                strategy = drawing.routing.get("selected", "baseline")
+                router = lambda items, views, nets, strategy=strategy: route_local(items, views, nets, strategy=strategy)
+                locked = {c.path for c, _, _, _ in drawing.placed
+                          if (hint := options.placements.get(c.path)) is not None and hint.lock_rotation}
+                placed, route, evidence = optimize_passive_orientations(
+                    drawing.placed, board.views, board.pin_nets, router, locked=locked,
+                    baseline=drawing.route_snapshot, source_annotations=drawing.source_annotations,
+                    region_bounds=lambda items, result: self._region_bounds(
+                        items, board.views, board.pin_nets, board.names, result[0], drawing.spec.title))
+                selected = copy.copy(drawing)
+                selected.routing = copy.deepcopy(drawing.routing)
+                selected.routing["passive_orientation"] = evidence
+                candidate_board.regions[identity] = selected
+                if not evidence["changed"]:
+                    evidence["accepted"] = False
+                    continue
+                final_route, order_evidence = (optimize_fixed_routes(placed, board.views, board.pin_nets, route, route_local)
+                                               if options.optimize_routes else (route, None))
+                final_metric = orientation_metrics(placed, board.views, board.pin_nets, final_route)
+                old_metric = orientation_metrics(drawing.placed, board.views, board.pin_nets, drawing.route_snapshot)
+                old_conflicts = orientation_conflict_identities(
+                    drawing.placed, board.views, board.pin_nets, drawing.route_snapshot)
+                final_conflicts = orientation_conflict_identities(placed, board.views, board.pin_nets, final_route)
+                bounds, headings, heading_boxes = self._region_geometry(
+                    placed, board.views, board.pin_nets, board.names, final_route[0], drawing.spec.title)
+                w, h = bounds[2]-bounds[0], bounds[3]-bounds[1]
+                valid = (set(final_route[2]) <= set(drawing.failed_routes)
+                         and all(final_conflicts[key] <= old_conflicts[key] for key in old_conflicts)
+                         and final_metric["visual_conflicts"] <= old_metric["visual_conflicts"]
+                         and passive_orientation_rank(final_metric) < passive_orientation_rank(old_metric)
+                         and w <= 375 and h <= 225 and not (w > 210 and h > 205))
+                if not valid:
+                    self._rollback_passive(selected, drawing, "final routing or page-fit guard")
+                    continue
+                selected.placed, selected.wires, selected.failed_routes = placed, final_route[0], final_route[2]
+                selected.route_snapshot = final_route
+                selected.spec = replace(drawing.spec, bounds=bounds)
+                selected.heading_positions, selected.heading_boxes = headings, heading_boxes
+                evidence.update(accepted=True, after=final_metric)
+                selected.routing["after"] = route_metrics(final_route[0], final_route[2])
+                if order_evidence is not None:
+                    selected.routing["passive_route_order"] = order_evidence
+                    if order_evidence["selected"] != "baseline":
+                        selected.routing["selected"] = order_evidence["selected"]
+                changed_scopes.add(board.scope)
+        if changed_scopes:
+            candidate_fingerprint = self._prepared_fingerprint(prefix, candidate_boards, options)
+            try:
+                candidate_bundle = self._serialize_prepared(
+                    candidate_boards, candidate_fingerprint, resolver, list(diagnostics), provisional)
+                old_issues = self._passive_scene_issues(baseline_bundle)
+                new_issues = self._passive_scene_issues(candidate_bundle)
+                rejected = {scope for scope in changed_scopes if any(
+                    severity > old_issues.get(scope, {}).get(key, 0) + 1e-7
+                    for key, severity in new_issues.get(scope, {}).items())}
+            except ValueError as error:
+                rejected = set(changed_scopes)
+                scene_reason = "serialized candidate could not be planned: " + str(error)
+            else:
+                scene_reason = "new blocking serialized scene finding"
+            for old_board, new_board in zip(boards, candidate_boards):
+                if old_board.scope in rejected:
+                    for identity, new_drawing in new_board.regions.items():
+                        if new_drawing.routing.get("passive_orientation", {}).get("accepted"):
+                            self._rollback_passive(new_drawing, old_board.regions[identity], scene_reason)
+        fingerprint = self._prepared_fingerprint(prefix, candidate_boards, options)
+        return candidate_boards, fingerprint, resolver, diagnostics
+
+    def _prepare_led_bucks(self, boards, fingerprint, prefix, resolver, diagnostics, options):
+        """Bounded converter proposals, followed by a cached serialized-scene gate."""
+        from .KiCadSchematicPower import led_buck_topology, compare_led_buck_variants
+        from .KiCadSchematicRouting import optimize_fixed_routes, route_metrics
+        from .KiCadSchematicOrientation import orientation_metrics, passive_orientation_rank
+        bundle = None
+        provisional = replace(options, sheet_plan=None, overview=None)
+        for board in boards:
+            for identity, drawing in list(board.regions.items()):
+                by_path = {c.path: c for c, _, _, _ in drawing.placed}
+                topology, reason = led_buck_topology(tuple(sorted(by_path)), by_path, board.views, board.pin_nets)
+                if topology is None and reason is None:
+                    continue
+                if any(c.path in options.placements for c in by_path.values()):
+                    drawing.routing['led_buck'] = dict(accepted=False, reason='authored placements take precedence',
+                                                       route_trials=0, trials=[])
+                    continue
+                if topology is None:
+                    drawing.routing['led_buck'] = dict(accepted=False, reason=reason, route_trials=0, trials=[])
+                    continue
+                if bundle is None:
+                    bundle = self._serialize_prepared(boards, fingerprint, resolver, list(diagnostics), provisional)
+                strategy = drawing.routing.get('selected', 'baseline')
+                router = lambda items, views, nets, strategy=strategy: route_local(items, views, nets, strategy=strategy)
+                placed, route, evidence = compare_led_buck_variants(
+                    drawing.placed, board.views, board.pin_nets, drawing.route_snapshot, router,
+                    source_annotations=drawing.source_annotations,
+                    region_bounds=lambda items, result: self._region_bounds(
+                        items, board.views, board.pin_nets, board.names, result[0], drawing.spec.title))
+                drawing.routing['led_buck'] = evidence
+                if not evidence['accepted']:
+                    continue
+                final_route, order = (optimize_fixed_routes(placed, board.views, board.pin_nets, route, route_local)
+                                      if options.optimize_routes else (route, None))
+                metric = orientation_metrics(placed, board.views, board.pin_nets, final_route)
+                if (not set(final_route[2]) <= set(drawing.failed_routes)
+                        or metric['visual_conflicts'] > evidence['before']['visual_conflicts']
+                        or passive_orientation_rank(metric) >= passive_orientation_rank(evidence['before'])):
+                    final_route, order, metric = route, None, evidence['after']
+                bounds, headings, heading_boxes = self._region_geometry(
+                    placed, board.views, board.pin_nets, board.names, final_route[0], drawing.spec.title)
+                content_bounds = bounds
+                old_width = drawing.spec.bounds[2]-drawing.spec.bounds[0]
+                old_height = drawing.spec.bounds[3]-drawing.spec.bounds[1]
+                if bounds[2]-bounds[0] <= old_width and bounds[3]-bounds[1] <= old_height:
+                    # A local improvement must not disturb unrelated circuits'
+                    # established packing. Retain the incumbent's measured cell
+                    # size as explicit whitespace when the new content fits.
+                    # Its origin follows the newly measured content, so no pins,
+                    # wires or authored field coordinates need translating.
+                    bounds = (bounds[0], bounds[1], bounds[0]+old_width, bounds[1]+old_height)
+                selected = copy.copy(drawing)
+                selected.routing = copy.deepcopy(drawing.routing)
+                selected.routing['led_buck'].update(after=metric, route_order=order,
+                                                    content_bounds=content_bounds, reserved_bounds=bounds)
+                selected.routing['after'] = route_metrics(final_route[0], final_route[2])
+                # "baseline" in the additional search means its supplied
+                # incumbent, which may already use tree_search or another
+                # strategy. Preserve that strategy for subsequent quarter turns.
+                selected.routing['selected'] = (order['selected'] if order and order['selected'] != 'baseline'
+                                                else strategy)
+                selected.placed, selected.wires, selected.failed_routes = placed, final_route[0], final_route[2]
+                selected.route_snapshot = final_route
+                selected.spec = replace(drawing.spec, bounds=bounds)
+                selected.heading_positions, selected.heading_boxes = headings, heading_boxes
+                board.regions[identity] = selected
+                candidate_fingerprint = self._prepared_fingerprint(prefix, boards, options)
+                rejection = None
+                try:
+                    candidate_bundle = self._serialize_prepared(
+                        boards, candidate_fingerprint, resolver, list(diagnostics), provisional)
+                    old = self._passive_scene_issues(bundle).get(board.scope, {})
+                    new = self._passive_scene_issues(candidate_bundle).get(board.scope, {})
+                    scene_changes = [dict(identity=list(key), before=old.get(key, 0), after=value)
+                                     for key, value in sorted(new.items()) if value > old.get(key, 0)+1e-6]
+                    before_pages = sum(name.endswith('.kicad_sch') and name.startswith(board.prefix)
+                                       for name in bundle.files)
+                    after_pages = sum(name.endswith('.kicad_sch') and name.startswith(board.prefix)
+                                      for name in candidate_bundle.files)
+                    selected.routing['led_buck']['scene_gate'] = dict(
+                        before_findings=len(old), after_findings=len(new), new_or_worsened=scene_changes,
+                        before_sheets=before_pages, after_sheets=after_pages)
+                    if after_pages > before_pages:
+                        rejection = 'increased schematic sheet fragmentation'
+                    elif scene_changes:
+                        rejection = 'new or worsened blocking serialized scene finding'
+                except ValueError as error:
+                    rejection = 'serialized candidate could not be planned: ' + str(error)
+                if rejection:
+                    board.regions[identity] = drawing
+                    evidence.update(accepted=False, rollback_reason=rejection, attempted_after=metric,
+                                    after=evidence['before'])
+                    evidence['scene_gate'] = selected.routing['led_buck'].get('scene_gate')
+                else:
+                    bundle, fingerprint = candidate_bundle, candidate_fingerprint
+        return boards, fingerprint
+
+    @staticmethod
+    def _rollback_passive(candidate, baseline, reason):
+        evidence = candidate.routing["passive_orientation"]
+        evidence.update(accepted=False, rollback_reason=reason,
+                        final_rotations={c.path: angle for c, _, _, angle in baseline.placed})
+        evidence["attempted_after"] = evidence["after"]
+        evidence["after"] = evidence["before"]
+        candidate.placed, candidate.wires, candidate.failed_routes = baseline.placed, baseline.wires, baseline.failed_routes
+        candidate.route_snapshot, candidate.spec = baseline.route_snapshot, baseline.spec
+        candidate.heading_positions, candidate.heading_boxes = baseline.heading_positions, baseline.heading_boxes
+        candidate.routing = copy.deepcopy(baseline.routing)
+        candidate.routing["passive_orientation"] = evidence
+
+    @staticmethod
+    def _passive_scene_issues(bundle):
+        """Compare actual serialized contacts, including existing bad labels.
+
+        A label UUID alone cannot distinguish its old overlap from a new body
+        contact. Stable collider identities and overlap area detect both new
+        contacts and worsening existing ones. Wire indices are not identities.
+        """
+        from types import SimpleNamespace
+        from .KiCadSchematicReadability import text_item
+        from .KiCadSchematicScene import pin_name_items, pin_number_items, instance_property_at
+        manifest = json.loads(bundle.files["manifest.json"])
+        scopes = {Path(b["root"]).stem: b["scope"] for b in manifest["boards"]}
+        result, sheet_scopes = {}, {}
+        def scope_for(filename):
+            return next(scope for prefix, scope in scopes.items() if filename.startswith(prefix))
+        def area(a, b):
+            return max(0, min(a[2], b[2])-max(a[0], b[0])+0.25) * max(0, min(a[3], b[3])-max(a[1], b[1])+0.25)
+        for filename, content in bundle.files.items():
+            if filename.endswith(".kicad_sch"):
+                doc = sexpdata.loads(content)
+                scope = scope_for(filename)
+                sheet_scopes[children(doc, "uuid")[0][1]] = scope
+                issues = result.setdefault(scope, {})
+                definitions = {d[1]: d for lib in children(doc, "lib_symbols") for d in children(lib, "symbol")}
+                texts, bodies = [], []
+                for symbol in children(doc, "symbol"):
+                    at = children(symbol, "at")[0]
+                    props = {p[1]: p for p in children(symbol, "property")}
+                    owner = props["PBPath"][2] if "PBPath" in props else children(symbol, "uuid")[0][1]
+                    lib_id = children(symbol, "lib_id")[0][1]
+                    definition = definitions.get(lib_id)
+                    if definition is not None:
+                        x1,y1,x2,y2 = graphic_bounds(SimpleNamespace(definition=definition, pins=[]), int(at[3]), False)
+                        bodies.append((owner, (at[1]+x1,at[2]+y1,at[1]+x2,at[2]+y2)))
+                        texts.extend(SimpleNamespace(**item) for item in (
+                            pin_name_items(definition, *at[1:4], owner)
+                            + pin_number_items(definition, *at[1:4], owner)))
+                    for name, prop in props.items():
+                        positions, effects_nodes = children(prop, "at"), children(prop, "effects")
+                        if positions and effects_nodes:
+                            item = text_item(owner+":"+name, prop[2], instance_property_at(positions[0],at),
+                                             effects_nodes[0], owner, "field")
+                            if item is not None:
+                                texts.append(item)
+                for kind in ("text", "label", "global_label"):
+                    for item in children(doc, kind):
+                        positions, effects_nodes = children(item,"at"), children(item,"effects")
+                        if positions and effects_nodes:
+                            text = text_item(children(item,"uuid")[0][1], item[1],positions[0],effects_nodes[0],"",kind)
+                            if text is not None:
+                                texts.append(text)
+                for index, text in enumerate(texts):
+                    for owner, box in bodies:
+                        # Pin text is intentionally inside its own symbol.
+                        if text.owner == owner and text.kind.startswith("pin_"):
+                            continue
+                        severity = area(text.bounds, box)
+                        if severity:
+                            key = ("text_body_contact", text.identity, owner)
+                            issues[key] = max(issues.get(key,0), severity)
+                    for other in texts[index+1:]:
+                        severity = area(text.bounds,other.bounds)
+                        if severity:
+                            key = ("text_contact", *sorted((text.identity,other.identity)))
+                            issues[key] = max(issues.get(key,0), severity)
+                    # Quantify crossings too: an already affected text UUID
+                    # must not whitelist another or longer wire through it.
+                    spans = {}
+                    for wire in children(doc, "wire"):
+                        points = [tuple(p[1:3]) for pts in children(wire,"pts") for p in children(pts,"xy")]
+                        if len(points) != 2:
+                            continue
+                        a, b = points
+                        x1,y1,x2,y2 = text.bounds
+                        axis = 1 if a[0] == b[0] else 0
+                        fixed = a[1-axis]
+                        low, high = (y1+0.3,y2-0.3) if axis else (x1+0.3,x2-0.3)
+                        inside = x1+0.3 < fixed < x2-0.3 if axis else y1+0.3 < fixed < y2-0.3
+                        lo, hi = max(min(a[axis],b[axis]),low), min(max(a[axis],b[axis]),high)
+                        if inside and hi > lo:
+                            spans.setdefault((axis,fixed),[]).append((lo,hi))
+                    length = 0.0
+                    for intervals in spans.values():
+                        merged = []
+                        for lo,hi in sorted(intervals):
+                            if merged and lo <= merged[-1][1]:
+                                merged[-1] = (merged[-1][0],max(hi,merged[-1][1]))
+                            else:
+                                merged.append((lo,hi))
+                        length += sum(hi-lo for lo,hi in merged)
+                    if length:
+                        issues["text_wire_contact",text.identity] = length
+        for entry in json.loads(bundle.files["layout.json"])["label_placement"]:
+            issues = result.setdefault(sheet_scopes[entry["sheet"]], {})
+            issues.update({("label_collision", item["identity"]): 1 for item in entry["conflicts"]})
+            issues.update({("unresolved_anchor", item["identity"]): 1 for item in entry["unresolved_anchors"]})
+        for finding in json.loads(bundle.files["readability.json"])["findings"]:
+            if finding["code"] not in ("text_collision", "text_outside_page", "wire_through_text"):
+                continue
+            objects = tuple(o for o in finding["objects"] if not o.startswith("wire:"))
+            result.setdefault(scope_for(finding["sheet"]), {})[(finding["code"], *objects)] = 1
+        return result
+
+    def _prepare_legacy_boards(self, compiled: CompiledDesign, options: SchematicExportOptions):
         presentation = options.presentation or SchematicPresentation()
         if not isinstance(presentation, SchematicPresentation):
             raise ValueError("presentation must be a SchematicPresentation")
@@ -459,17 +795,28 @@ class KiCadSchematicExporter:
                     (".".join(block.full_path.blocks[:i + 1]), cls.target.name)
                     for i, cls in enumerate(block.path_classes)
                 )
-                component.display_value = self._display_value(compiled, block)
+                component.display_value = self._display_value(compiled, block, component.mapping)
+                component.symbol_coverage = dict(
+                    component=path, refdes=component.refdes,
+                    compiled_class=block.path_classes[-1].target.name if block.path_classes else "",
+                    mapping_source="explicit" if component.mapping is not None else "registry",
+                )
                 if component.mapping is None:
                     try:
                         from .KiCadSymbolRegistry import infer_symbol
 
                         classes = [c.target.name for c in block.path_classes]
-                        component.mapping = infer_symbol(component, classes, block.part, resolver)
+                        component.mapping = infer_symbol(component, classes, block.part, resolver,
+                                                         component.symbol_coverage)
                     except ImportError:
                         pass
             for component in components:
                 entry = presentation.components.get(component.path, {})
+                component.presentation_pin_roles = {
+                    boundary["pin"]: boundary["role"]
+                    for circuit in presentation.circuits for boundary in circuit.get("boundaries", ())
+                    if boundary["component"] == component.path
+                }
                 if entry.get("display_value"):
                     component.display_value = entry["display_value"]
                 from .KiCadSchematicRoles import infer_pin_names, infer_description
@@ -502,13 +849,27 @@ class KiCadSchematicExporter:
                 composite = resistor_array_symbol(component, classes_by_path[component.path])
                 if composite is not None:
                     views[component.path] = SymbolView(*composite)
+                    component.symbol_coverage.update(status="resolved", category="composite", lib_id=views[component.path].lib_id)
                     continue
                 try:
                     if not (component.mapping or {}).get("lib_id"):
                         raise LookupError("no schematic symbol mapping")
                     views[component.path] = resolver.resolve(component)
+                    component.symbol_coverage.update(status="resolved", category="library_symbol",
+                                                     lib_id=component.mapping["lib_id"])
                 except (LookupError, FileNotFoundError) as error:
-                    diagnostics.append(SchematicDiagnostic(component.path, str(error)))
+                    coverage = component.symbol_coverage
+                    category = ("missing_library" if isinstance(error, FileNotFoundError) else
+                                "unsupported_multi_unit" if str(error) == "multi-unit symbol unsupported" else
+                                "unsupported_symbol" if str(error) == "stacked or repeated symbol pins unsupported" else
+                                "missing_symbol" if isinstance(error, KeyError) else "missing_mapping")
+                    # Registry lookup may already have identified an unavailable
+                    # library before returning None. Preserve that exact reason.
+                    coverage.update(status="fallback", category=coverage.get("category", category),
+                                    reason=coverage.get("reason", str(error)))
+                    if (component.mapping or {}).get("lib_id"):
+                        coverage["lib_id"] = component.mapping["lib_id"]
+                    diagnostics.append(SchematicDiagnostic(component.path, str(coverage["reason"])))
                     views[component.path] = generic(component)
             for component in components:
                 view = views[component.path]
@@ -551,10 +912,24 @@ class KiCadSchematicExporter:
                             reflected_id,
                         )
             pin_nets = {(str(p.block_path), p.pin_name): n.name for n in netlist.nets for p in n.pins}
+            from .KiCadSchematicCircuits import build_circuits
+
+            circuit_model = build_circuits(components, pin_nets, views, presentation)
+            for diagnostic in circuit_model.diagnostics:
+                diagnostics.append(SchematicDiagnostic(scope_name, str(diagnostic)))
+            by_component = {path: circuit for circuit in circuit_model.circuits for path in circuit.components}
+            for component in components:
+                component.circuit_model = circuit_model
+                component.functional_circuit = by_component.get(component.path)
             from .KiCadSchematicLabels import readable_labels
 
             names = readable_labels(n.name for n in netlist.nets)
+            ground_nets = {n.name for n in netlist.nets if n.name.lower().split(".")[-1] == "gnd"}
             for component in components:
+                component.ground_net_labels = {
+                    number: names[net] for number in component.pins
+                    if (net := pin_nets.get((component.path, number))) in ground_nets
+                } if len(ground_nets) > 1 else {}
                 component.net_labels = {
                     number: names[pin_nets[(component.path, number)]]
                     for number in component.pins
@@ -562,6 +937,9 @@ class KiCadSchematicExporter:
                 }
             regroup(components, pin_nets, views)
             for component in components:
+                circuit = component.functional_circuit
+                if circuit is not None and circuit.provenance == "explicit":
+                    component.group = circuit.title
                 hint = options.placements.get(component.path)
                 if hint:
                     if hint.rotation not in (0, 90, 180, 270):
@@ -578,6 +956,7 @@ class KiCadSchematicExporter:
                     component.group = presentation.groups[selector]
                     used_groups.add(selector)
             board = _PreparedBoard(scope_name, prefix, root_id, views, pin_nets, names, {})
+            board.circuit_model = circuit_model
             for group in sorted({c.group for c in components}):
                 members = [c for c in components if c.group == group]
                 hints = [options.placements.get(c.path) for c in members]
@@ -589,12 +968,33 @@ class KiCadSchematicExporter:
                 elif group == "Mechanical notes":
                     batches = [[(c, 40 + (i % 9) * 35, 220 + (i // 9) * 25, 0) for i, c in enumerate(members)]]
                 else:
-                    batches = place_group(members, views, pin_nets)
+                    batches = place_group(members, views, pin_nets, optimize_orientations=options.optimize_orientations)
                 pending = list(batches)
                 part = 0
                 while pending:
-                    placed = pending.pop(0)
+                    source_placed = pending.pop(0)
+                    placed = freeze_annotations(source_placed, views)
                     baseline = route_local(placed, views, pin_nets)
+                    orientation = None
+                    bridge_comparison = None
+                    if options.optimize_orientations:
+                        from .KiCadSchematicOrientation import optimize_orientations
+                        rotation_locks = {c.path for c, _, _, _ in source_placed
+                                          if (hint := options.placements.get(c.path)) is not None
+                                          and hint.lock_rotation}
+                        placed, baseline, orientation = optimize_orientations(
+                            source_placed, views, pin_nets, route_local,
+                            locked=rotation_locks, baseline=baseline,
+                            region_bounds=lambda items, route: self._region_bounds(
+                                items, views, pin_nets, names, route[0], group))
+                    if options.optimize_orientations and not hinted:
+                        from .KiCadSchematicPower import compare_bridge_variants
+                        placed, baseline, bridge_comparison = compare_bridge_variants(
+                            placed, views, pin_nets, baseline, route_local,
+                            region_bounds=lambda items, route: self._region_bounds(
+                                items, views, pin_nets, names, route[0], group),
+                            source_annotations={c.path: getattr(c, "annotation", None)
+                                                for c, _, _, _ in source_placed})
                     from .KiCadSchematicRouting import optimize_fixed_routes, route_metrics
                     if options.optimize_routes:
                         routed, routing = optimize_fixed_routes(placed, views, pin_nets, baseline, route_local)
@@ -602,10 +1002,24 @@ class KiCadSchematicExporter:
                         routed = baseline
                         metric = route_metrics(baseline[0], baseline[2])
                         routing = dict(before=metric, after=metric, selected="baseline", candidates=1)
+                    if orientation is not None:
+                        routing["orientation"] = orientation
+                    if bridge_comparison is not None:
+                        routing["bridge_comparison"] = bridge_comparison
                     wires, _, failed = routed
-                    # Routing trials must not move any component through repacking.
-                    bounds = self._region_bounds(placed, views, pin_nets, names, baseline[0], group)
+                    # Measure the selected route so detours reserve their actual packing area.
+                    bounds = self._region_bounds(placed, views, pin_nets, names, wires, group)
                     width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
+                    if routed is not baseline and (width > 375 or height > 225 or (width > 210 and height > 205)):
+                        original = self._region_bounds(placed, views, pin_nets, names, baseline[0], group)
+                        original_width, original_height = original[2] - original[0], original[3] - original[1]
+                        if original_width <= 375 and original_height <= 225 and not (original_width > 210 and original_height > 205):
+                            routing["rejected_for_page_fit"] = routing["selected"]
+                            routing["selected"] = "baseline"
+                            routing["after"] = routing["before"]
+                            routed = baseline
+                            wires, _, failed = baseline
+                            bounds, width, height = original, original_width, original_height
                     if (
                         (width > 375 or height > 225 or (width > 210 and height > 205))
                         and len(placed) > 1
@@ -613,9 +1027,12 @@ class KiCadSchematicExporter:
                     ):
                         subsets = split_group(placed, views, pin_nets)
                         if subsets is None:
-                            raise ValueError("indivisible functional region exceeds A3: " + group)
+                            raise ValueError(f"indivisible functional region exceeds A3: {group} ({width:.1f} x {height:.1f} mm); components: " + ", ".join(c.path for c, _, _, _ in placed))
+                        # Repacking must resolve automatic fields afresh at the
+                        # new placement, not retain this rejected region's fields.
+                        originals = {c.path: c for c, _, _, _ in source_placed}
                         for subset in subsets:
-                            pending.extend(place_group([c for c, _, _, _ in subset], views, pin_nets))
+                            pending.extend(place_group([originals[c.path] for c, _, _, _ in subset], views, pin_nets, optimize_orientations=options.optimize_orientations))
                         diagnostics.append(
                             SchematicDiagnostic(
                                 group,
@@ -629,6 +1046,18 @@ class KiCadSchematicExporter:
                         )
                     part += 1
                     title = group if part == 1 else group + " /" + str(part)
+                    # Identify the actual repeated-channel indices on this sheet.
+                    match = re.fullmatch(r"(.+)\[0\]", group)
+                    if match and not hinted:
+                        prefix = (scope_name + "." if scope_name != "(root)" else "") + match.group(1)
+                        indices = set()
+                        for component, _, _, _ in placed:
+                            item = re.match(re.escape(prefix) + r"\[(\d+)\](?:\.|$)", component.path)
+                            if item:
+                                indices.add(int(item.group(1)))
+                        if indices:
+                            title = match.group(1) + "[" + ",".join(str(i) for i in sorted(indices)) + "]"
+
                     identity = json.dumps(
                         [scope_name, group, part],
                         ensure_ascii=False,
@@ -644,7 +1073,22 @@ class KiCadSchematicExporter:
                         if group == "Mechanical notes" and all(not c.pins for c in members)
                         else "circuit",
                     )
-                    board.regions[identity] = _RegionDrawing(spec, placed, wires, failed, routing)
+                    rendered_heading = self._region_heading_lines(title, placed)
+                    if len(rendered_heading) == len(textwrap.wrap(title, 42) or [""]):
+                        # Retain existing automatic geometry even when the final
+                        # channel/continuation title differs from its group key.
+                        headings = tuple((line, size, bounds[0] + 3, bounds[1] + 3 + i * 2.54)
+                                         for i, (line, size) in enumerate(rendered_heading))
+                        heading_boxes = ((bounds[0], bounds[1], bounds[2],
+                                          bounds[1] + 5 + 2.54 * len(rendered_heading)),)
+                    else:
+                        _, headings, heading_boxes = self._region_geometry(
+                            placed, views, pin_nets, names, wires, title,
+                        )
+                    board.regions[identity] = _RegionDrawing(
+                        spec, placed, wires, failed, routing, headings, heading_boxes,
+                        routed, {c.path: c.annotation for c, _, _, _ in source_placed},
+                    )
             if not board.regions:
                 spec = SchematicRegion(
                     scope_name + "::Empty design",
@@ -674,6 +1118,11 @@ class KiCadSchematicExporter:
                 "presentation references unknown groups: " + str(sorted(set(presentation.groups) - used_groups))
             )
         digest.update(json.dumps(presentation.to_dict(), sort_keys=True, ensure_ascii=False).encode("utf-8"))
+        return boards, self._prepared_fingerprint(digest, boards, options), resolver, diagnostics, digest
+
+    @staticmethod
+    def _prepared_fingerprint(prefix, boards, options):
+        digest = prefix.copy()
         # Bind plans to solved electrical state AND actual symbol/layout geometry.
         # Library, hint or source changes cannot silently reuse an old packing plan.
         geometry = [
@@ -697,10 +1146,39 @@ class KiCadSchematicExporter:
             ).encode("utf-8")
         )
         digest.update(json.dumps(geometry, sort_keys=True, ensure_ascii=False, allow_nan=False).encode("utf-8"))
-        return boards, digest.hexdigest(), resolver, diagnostics
+        return digest.hexdigest()
+
+    @staticmethod
+    def _region_heading_lines(title, placed):
+        lines = [(line, 1.5) for line in (textwrap.wrap(title, 42) or [""])]
+        members = {c.path: c for c, _, _, _ in placed}
+        circuits = {c.functional_circuit.id: c.functional_circuit for c in members.values()
+                    if getattr(c, "functional_circuit", None) is not None
+                    and c.functional_circuit.provenance == "explicit"}
+        for circuit in sorted(circuits.values(), key=lambda c: c.id):
+            lines.extend((line, 1.1) for line in textwrap.wrap(circuit.summary, 52))
+            for boundary in circuit.boundaries:
+                if boundary.component in members:
+                    component = members[boundary.component]
+                    label = component.net_labels.get(boundary.pin, "unconnected")
+                    note = f"{boundary.name}: {component.refdes}.{boundary.pin} [{label}]"
+                    lines.extend((line, 1.1) for line in textwrap.wrap(note, 52))
+        return lines
 
     @staticmethod
     def _region_bounds(placed, views, pin_nets, names, wires, title=""):
+        return KiCadSchematicExporter._region_geometry(
+            placed, views, pin_nets, names, wires, title,
+        )[0]
+
+    @staticmethod
+    def _region_geometry(placed, views, pin_nets, names, wires, title=""):
+        """Measure circuit and explanatory notes with one shared layout.
+
+        Ordinary headings retain their historical geometry. When authored notes
+        would overflow the usable A3 height, a measured right-hand column may
+        preserve the complete circuit without shrinking or dropping any text.
+        """
         points = []
         for c, x, y, angle in placed:
             xmin, ymin, xmax, ymax = graphic_bounds(views[c.path], angle)
@@ -708,6 +1186,7 @@ class KiCadSchematicExporter:
             tx, ty, align = annotation_position(c, views[c.path], x, y, angle)
             ax1, ay1, ax2, ay2 = annotation_bounds(c, tx, ty, angle)
             points.extend(((ax1, ay1), (ax2, ay2)))
+            connector_labels = []
             for number, px, py, direction in positioned_pins(views[c.path], x, y, angle):
                 net = pin_nets.get((c.path, number))
                 if net is None:
@@ -718,36 +1197,76 @@ class KiCadSchematicExporter:
                     round(py + 5.08 * math.sin(r), 4),
                 )
                 if net.lower().split(".")[-1] == "gnd":
-                    gx1, gy1, gx2, gy2 = ground_bounds(ex, ey, direction)
+                    gx1, gy1, gx2, gy2 = ground_bounds(
+                        ex, ey, direction, c.ground_net_labels.get(number, ""),
+                    )
                     points.extend(((gx1, gy1), (gx2, gy2)))
                     continue
-                length = len(names[net]) * 1.27 + 3
-                if direction == 0:
-                    bounds = (ex - length, ey - 1.5, ex, ey + 1.5)
-                elif direction == 180:
-                    bounds = (ex, ey - 1.5, ex + length, ey + 1.5)
-                elif direction == 270:
-                    bounds = (ex - 1.5, ey - length, ex + 1.5, ey)
-                else:
-                    bounds = (ex - 1.5, ey, ex + 1.5, ey + length)
+                bounds = pin_label_bounds(names[net], ex, ey, direction)
                 points.extend(((bounds[0], bounds[1]), (bounds[2], bounds[3])))
+                if views[c.path].lib_id.startswith("Connector") and direction in (0, 180):
+                    connector_labels.append((direction, bounds, names[net]))
+            # Dense connector pin rows can mix local text and outlined global
+            # labels. Reserve an outer lane only when their measured boxes
+            # conflict, so the final scene can stagger them without clipping.
+            from .KiCadSchematicScene import overlap
+            for direction, bounds, name in connector_labels:
+                if any(other_direction == direction and other_bounds != bounds and overlap(bounds, other_bounds)
+                       for other_direction, other_bounds, _ in connector_labels):
+                    extra = math.ceil((text_width(name, 1.27) + 5.08) / 2.54) * 2.54
+                    side = bounds[0] - extra if direction == 0 else bounds[2] + extra
+                    points.append((side, bounds[1]))
         for _, a, b in wires:
             points.extend((a, b))
         if not points:
-            return (0, 0, 50, 10)
-        heading = textwrap.wrap(title + " /999", 42) or [""]
+            return (0, 0, 50, 10), (), ()
+        measured = KiCadSchematicExporter._region_heading_lines(title + " /999", placed)
+        rendered = KiCadSchematicExporter._region_heading_lines(title, placed)
+        title_count = len(textwrap.wrap(title, 42) or [""])
+        measured_title_count = len(textwrap.wrap(title + " /999", 42) or [""])
+        notes = rendered[title_count:]
         xmin = min(p[0] for p in points) - 3
-        ymin = min(p[1] for p in points) - (6 + len(heading) * 2.54)
-        xmax = max(
-            max(p[0] for p in points) + 3,
-            xmin + max(len(line) for line in heading) * 1.2 + 6,
-        )
-        return (
-            round(xmin, 4),
-            round(ymin, 4),
-            round(xmax, 4),
-            round(max(p[1] for p in points) + 3, 4),
-        )
+        bottom = max(p[1] for p in points) + 3
+
+        def top_layout(lines, reserved, header_gap=6):
+            ymin = min(p[1] for p in points) - (header_gap + len(reserved) * 2.54)
+            xmax = max(max(p[0] for p in points) + 3,
+                       xmin + max(text_width(line, size) for line, size in reserved) + 6)
+            bounds = tuple(round(v, 4) for v in (xmin, ymin, xmax, bottom))
+            headings = tuple((line, size, xmin + 3, ymin + 3 + i * 2.54)
+                             for i, (line, size) in enumerate(lines))
+            boxes = ((xmin, ymin, xmax, ymin + 5 + 2.54 * len(lines)),)
+            return bounds, headings, boxes
+
+        def fits(bounds):
+            width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
+            return width <= 375 and height <= 225 and not (width > 210 and height > 205)
+
+        top = top_layout(rendered, measured)
+        if not notes or fits(top[0]):
+            return top
+        # Keep the original title above the circuit. The notes occupy their own
+        # obstacle column with measured padding and the same font/line spacing.
+        for header_gap in (6, 4.73, 3):
+            body = top_layout(rendered[:title_count], measured[:measured_title_count], header_gap)
+            body_bounds, body_headings, body_boxes = body
+            # Compact only whitespace; keep at least one grid of clearance
+            # below the title glyphs, above the measured circuit content.
+            if max(y + size / 2 for _, size, _, y in body_headings) > min(p[1] for p in points) - 1.27:
+                continue
+            column_x = body_bounds[2] + 5.08
+            column_width = max(text_width(line, size) for line, size in notes) + 6
+            column_bottom = body_bounds[1] + 6 + len(notes) * 2.54
+            side_bounds = (body_bounds[0], body_bounds[1], column_x + column_width,
+                           max(body_bounds[3], column_bottom))
+            if not fits(side_bounds):
+                continue
+            note_positions = tuple((line, size, column_x + 3, body_bounds[1] + 3 + i * 2.54)
+                                   for i, (line, size) in enumerate(notes))
+            note_box = (column_x, body_bounds[1], column_x + column_width, column_bottom)
+            return (tuple(round(v, 4) for v in side_bounds), body_headings + note_positions,
+                    body_boxes + (note_box,))
+        return top
 
     def _plan_compiled(self, compiled, options):
         boards, fingerprint, _, _ = self._prepare_boards(compiled, options)
@@ -779,15 +1298,23 @@ class KiCadSchematicExporter:
         plan = self._plan_prepared(boards, fingerprint, options)
         return build_overviews(boards, plan, options.overview)
 
+    def layout(self, compiled: CompiledDesign, options: SchematicExportOptions) -> dict:
+        """Return deterministic native layout evidence from the exported artifact."""
+        return json.loads(self.export(compiled, options).files["layout.json"])
+
     def readability(self, compiled: CompiledDesign, options: SchematicExportOptions) -> dict:
         return json.loads(self.export(compiled, options).files["readability.json"])
 
     def export(self, compiled: CompiledDesign, options: SchematicExportOptions) -> SchematicExport:
         boards, fingerprint, resolver, diagnostics = self._prepare_boards(compiled, options)
+        return self._serialize_prepared(boards, fingerprint, resolver, list(diagnostics), options)
+
+    def _serialize_prepared(self, boards, fingerprint, resolver, diagnostics, options):
         plan = self._plan_prepared(boards, fingerprint, options)
         overview_data = build_overviews(boards, plan, options.overview)
         files = {}
         board_records = []
+        label_evidence = []
         for board in boards:
             sheets = [s for s in plan.sheets if s.scope == board.scope]
             if not sheets:
@@ -854,6 +1381,15 @@ class KiCadSchematicExporter:
                         )
                     )
                 self._inter_region_wires(doc, board, sheet, sheet_id, sheet_segments)
+                from .KiCadSchematicScene import place_document_labels
+                evidence = place_document_labels(doc, sheet_segments, sheet_id)
+                label_evidence.append(evidence)
+                for unknown in evidence["unresolved_anchors"]:
+                    diagnostics.append(SchematicDiagnostic(unknown["identity"],
+                        "label anchor missing or ambiguous on sheet " + sheet.title))
+                for conflict in evidence["conflicts"]:
+                    diagnostics.append(SchematicDiagnostic(conflict["identity"],
+                        "label collision on sheet " + sheet.title + ": " + json.dumps(conflict, sort_keys=True)))
                 if is_root:
                     continue
                 filename = board.prefix + "_" + uid(sheet.id)[:12] + ".kicad_sch"
@@ -898,15 +1434,15 @@ class KiCadSchematicExporter:
         files["overview.json"] = json.dumps(overview_data, indent=2, ensure_ascii=False) + "\n"
         files["sheet-plan.json"] = json.dumps(plan.to_dict(), indent=2, ensure_ascii=False) + "\n"
         from .KiCadSchematicReadability import inspect_documents
-        from .KiCadSchematicPatterns import discover_patterns
-
         patterns = []
         for board in boards:
-            components = [c for d in board.regions.values() for c, _, _, _ in d.placed]
             patterns.extend(
                 dict(scope=board.scope, **p.to_dict())
-                for p in discover_patterns(components, board.pin_nets, board.views)
+                for p in board.circuit_model.patterns
             )
+        files["circuit-model.json"] = json.dumps(dict(schema=1, boards=[
+            dict(scope=b.scope, **b.circuit_model.to_dict()) for b in boards
+        ]), indent=2, ensure_ascii=False) + "\n"
         readability = inspect_documents(files, diagnostics, patterns)
         files["readability.json"] = json.dumps(readability, indent=2, ensure_ascii=False) + "\n"
         files["routing.json"] = json.dumps(dict(
@@ -915,6 +1451,22 @@ class KiCadSchematicExporter:
             regions=[dict(scope=b.scope, region=d.spec.title, **d.routing)
                      for b in boards for d in b.regions.values() if d.routing],
         ), indent=2) + "\n"
+        placement_records = [dict(scope=b.scope, region=d.spec.title,
+            components=[dict(path=c.path, **getattr(c, "placement_evidence", {})) for c, _, _, _ in d.placed])
+            for b in boards for d in b.regions.values()]
+        atom_evidence = {(b.scope, tuple(getattr(c, "placement_evidence", {}).get("atom", [c.path]))):
+                         getattr(c, "placement_evidence", {})
+                         for b in boards for d in b.regions.values() for c, _, _, _ in d.placed}
+        layout = dict(schema=1, exporter_version=VERSION, patterns=patterns,
+            regions=placement_records, label_placement=label_evidence,
+            summary=dict(label_conflicts=sum(len(e["conflicts"]) for e in label_evidence),
+                         label_moves=sum(len(e["moves"]) for e in label_evidence),
+                         route_fallbacks=sum(len(d.failed_routes) for b in boards for d in b.regions.values()),
+                         regions=len(plan.regions), sheets=len(plan.sheets),
+                         atomic_groups=len({tuple(getattr(c, "placement_evidence", {}).get("atom", [c.path]))
+                            for b in boards for d in b.regions.values() for c, _, _, _ in d.placed}),
+                         search_candidates=sum(e.get("candidates", 0) for e in atom_evidence.values())))
+        files["layout.json"] = json.dumps(layout, indent=2, ensure_ascii=False) + "\n"
         manifest = dict(
             exporter_version=VERSION,
             source=options.source,
@@ -929,6 +1481,11 @@ class KiCadSchematicExporter:
                 diagnostics=list(plan.diagnostics),
             ),
             diagnostics=[vars(d) for d in diagnostics],
+            symbol_coverage=[dict(component.symbol_coverage, scope=board.scope)
+                             for board in boards
+                             for component in sorted(
+                                 {c.path: c for drawing in board.regions.values()
+                                  for c, _, _, _ in drawing.placed}.values(), key=lambda c: c.path)],
         )
         files["manifest.json"] = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
         return SchematicExport(files, diagnostics)
@@ -998,15 +1555,19 @@ class KiCadSchematicExporter:
         def move(p):
             return (round(p[0] + dx, 4), round(p[1] + dy, 4))
 
-        for line_number, line in enumerate(textwrap.wrap(drawing.spec.title, 42) or [""]):
+        headings = drawing.heading_positions or tuple(
+            (line, size, bounds[0] + 3, bounds[1] + 3 + i * 2.54)
+            for i, (line, size) in enumerate(self._region_heading_lines(drawing.spec.title, drawing.placed))
+        )
+        for line_number, (line, size, hx, hy) in enumerate(headings):
             doc.append(
                 node(
                     "text",
                     line,
-                    node("at", location.x + 3, location.y + 3 + line_number * 2.54, 0),
+                    node("at", *move((hx, hy)), 0),
                     node(
                         "effects",
-                        node("font", node("size", 1.5, 1.5)),
+                        node("font", node("size", size, size)),
                         node("justify", S("left")),
                     ),
                     node(
@@ -1045,9 +1606,10 @@ class KiCadSchematicExporter:
         local_wires = [(net, move(a), move(b)) for net, a, b in drawing.wires]
         for key, net in drawing.failed_routes:
             diagnostics.append(SchematicDiagnostic(key[0], "local wire route retained net label: " + net))
-        routed_nets = {net for net, _, _ in local_wires}
         all_segments = list(local_wires)
-        labeled_nets = set()
+        from .KiCadSchematicScene import label_islands
+        selected_labels = label_islands(drawing.placed, views, pin_nets, drawing.wires,
+            {net for net, regions in board.net_regions.items() if len(regions) > 1})
         for original, x, y, rotation in drawing.placed:
             x, y = move((x, y))
             component = replace(
@@ -1144,19 +1706,8 @@ class KiCadSchematicExporter:
                 lx = round(px - 5.08 * math.cos(r), 4)
                 ly = round(py + 5.08 * math.sin(r), 4)
                 all_segments.append((net, (px, py), (lx, ly)))
-                if (
-                    net in routed_nets
-                    and len(board.net_regions[net]) == 1
-                    and not any(n == net for _, n in drawing.failed_routes)
-                ):
+                if (component.path, number) not in selected_labels and net.lower().split(".")[-1] != "gnd":
                     continue
-                if (
-                    net in routed_nets
-                    and net in labeled_nets
-                    and not any(k == (component.path, number) for k, _ in drawing.failed_routes)
-                ):
-                    continue
-                labeled_nets.add(net)
                 if net.lower().split(".")[-1] == "gnd" and ground_definition is not None:
                     if (lx, ly) not in ground_positions:
                         ground_positions.add((lx, ly))
@@ -1202,11 +1753,17 @@ class KiCadSchematicExporter:
                                 ),
                             )
                         )
+                        label = component.ground_net_labels.get(number)
+                        if label:
+                            gx, gy = ground_label_position(lx, ly, angle)
+                            doc.append(node("text", label, node("at", gx, gy, 0), effects(),
+                                            node("uuid", uid(gid, "return-identity"))))
                     continue
                 kind = "global_label" if len(net_pages[net]) > 1 else "label"
                 a = (180 - int(angle)) % 360
                 eff = effects()
-                eff.append(node("justify", S("left" if a in (0, 270) else "right")))
+                eff.append(node("justify", S("left" if a in (0, 270) else "right"),
+                                *([S("bottom")] if kind == "label" else [])))
                 label = node(
                     kind,
                     names[net],
@@ -1243,17 +1800,12 @@ class KiCadSchematicExporter:
             drawing = board.regions[location.region_id]
             bounds = drawing.spec.bounds
             dx, dy = location.x - bounds[0], location.y - bounds[1]
-            boxes.append(
-                (
-                    None,
-                    (
-                        location.x,
-                        location.y,
-                        location.x + bounds[2] - bounds[0],
-                        location.y + 5 + 2.54 * len(textwrap.wrap(drawing.spec.title, 42)),
-                    ),
-                )
-            )
+            heading_boxes = drawing.heading_boxes or ((
+                bounds[0], bounds[1], bounds[2],
+                bounds[1] + 5 + 2.54 * len(KiCadSchematicExporter._region_heading_lines(drawing.spec.title, drawing.placed)),
+            ),)
+            boxes.extend((None, (x1 + dx, y1 + dy, x2 + dx, y2 + dy))
+                         for x1, y1, x2, y2 in heading_boxes)
             for original, x, y, angle in drawing.placed:
                 x, y = round(x + dx, 4), round(y + dy, 4)
                 c = replace(
@@ -1291,17 +1843,9 @@ class KiCadSchematicExporter:
                     ex = round(px - 5.08 * math.cos(r), 4)
                     ey = round(py + 5.08 * math.sin(r), 4)
                     if net.lower().split(".")[-1] == "gnd":
-                        boxes.append((None, ground_bounds(ex, ey, direction)))
+                        boxes.append((None, ground_bounds(ex, ey, direction, c.ground_net_labels.get(number, ""))))
                         continue
-                    length = len(board.names[net]) * 1.27 + 3
-                    if direction == 0:
-                        rect = (ex - length, ey - 1.5, ex, ey + 1.5)
-                    elif direction == 180:
-                        rect = (ex, ey - 1.5, ex + length, ey + 1.5)
-                    elif direction == 270:
-                        rect = (ex - 1.5, ey - length, ex + 1.5, ey)
-                    else:
-                        rect = (ex - 1.5, ey, ex + 1.5, ey + length)
+                    rect = pin_label_bounds(board.names[net], ex, ey, direction)
                     boxes.append((net, rect))
                     terminals.setdefault(net, []).append((location.region_id, (ex, ey)))
 
@@ -1415,11 +1959,18 @@ class KiCadSchematicExporter:
                     )
 
     @staticmethod
-    def _display_value(compiled, block) -> str:
+    def _display_value(compiled, block, mapping=None) -> str:
         classes = [c.target.name.rsplit(".", 1)[-1].lower() for c in block.path_classes]
         leaf = classes[-1] if classes else ""
         quantities = []
-        if "crystal" in leaf or "oscillator" in leaf:
+        declared = (mapping or {}).get("lib_id", "")
+        if declared in ("Device:C", "Device:C_Polarized"):
+            quantities = [("actual_capacitance", "F")]
+        elif declared == "Device:R":
+            quantities = [("actual_resistance", "Ω")]
+        elif declared == "Device:L":
+            quantities = [("actual_inductance", "H")]
+        elif "crystal" in leaf or "oscillator" in leaf:
             quantities = [("actual_frequency", "Hz")]
         elif "resistor" in leaf:
             quantities = [("actual_resistance", "Ω")]

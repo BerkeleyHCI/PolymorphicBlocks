@@ -63,6 +63,38 @@ class SchematicExportTest(unittest.TestCase):
         cls.compiled = ScalaCompiler.compile(TestBasicCircuit)
         cls.compiled.append_values(RefdesRefinementPass().run(cls.compiled))
 
+    def test_manifest_symbol_coverage_has_compiled_identity_and_fallback_reason(self):
+        result = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("Coverage"))
+        coverage = json.loads(result.files["manifest.json"])["symbol_coverage"]
+        expected = {str(b.full_path) for n in NetlistTransform(self.compiled).run().values() for b in n.blocks}
+        self.assertEqual({entry["component"] for entry in coverage}, expected)
+        for entry in coverage:
+            self.assertTrue(entry["compiled_class"])
+            self.assertEqual(entry["status"], "fallback")
+            self.assertEqual(entry["category"], "missing_mapping")
+            self.assertEqual(entry["reason"], "no schematic symbol mapping")
+
+    def test_explicit_mapping_precedence_and_failure_evidence(self):
+        from unittest.mock import patch
+        compiled = ScalaCompiler.compile(GeneratedMappedBoard)
+        compiled.append_values(RefdesRefinementPass().run(compiled))
+        for error, category in ((FileNotFoundError("Device:R"), "missing_library"),
+                                (KeyError("R"), "missing_symbol"),
+                                (LookupError("multi-unit symbol unsupported"), "unsupported_multi_unit"),
+                                (LookupError("stacked or repeated symbol pins unsupported"), "unsupported_symbol")):
+            with self.subTest(category=category), patch(
+                    "edg.electronics_model.KiCadSymbolRegistry.infer_symbol", side_effect=AssertionError("explicit mapping replaced")), patch.object(
+                    SymbolResolver, "resolve", side_effect=error):
+                result = KiCadSchematicExporter().export(compiled, SchematicExportOptions("Coverage"))
+                entry, = json.loads(result.files["manifest.json"])["symbol_coverage"]
+                self.assertEqual(entry["mapping_source"], "explicit")
+                self.assertEqual(entry["lib_id"], "Device:R")
+                self.assertEqual(entry["category"], category)
+                self.assertEqual(entry["status"], "fallback")
+        with patch.object(SymbolResolver, "resolve", side_effect=ValueError("unmapped library pin 3")):
+            with self.assertRaisesRegex(ValueError, "unmapped library pin"):
+                KiCadSchematicExporter().export(compiled, SchematicExportOptions("Invalid"))
+
     def test_generated_symbol_metadata_and_long_description(self):
         compiled = ScalaCompiler.compile(GeneratedMappedBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
@@ -77,6 +109,18 @@ class SchematicExportTest(unittest.TestCase):
         properties = {prop[1]: prop[2] for prop in children(symbols[0], "property")}
         self.assertEqual(properties["Value"], "Long supplier description " * 8)
         self.assertIn("\n", properties["PBDisplayValue"])
+
+    def test_oversized_optimized_route_retains_fitting_baseline(self):
+        from unittest import mock
+        from .KiCadSchematicRouting import route_metrics
+        def oversized(placed, views, nets, baseline, router):
+            metric = route_metrics(baseline[0], baseline[2])
+            candidate = (baseline[0] + [("oversized-trial", (15, 40), (400, 40))], baseline[1], baseline[2])
+            return candidate, dict(before=metric, after=metric, selected="trial", candidates=2)
+        with mock.patch("edg.electronics_model.KiCadSchematicRouting.optimize_fixed_routes", oversized):
+            result = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("PageFit"))
+        self.assertIn('rejected_for_page_fit', result.files['routing.json'])
+        self.assertNotIn('oversized-trial', ''.join(v for k, v in result.files.items() if k.endswith('.kicad_sch')))
 
     def test_paginated_index_hierarchy(self):
         compiled = ScalaCompiler.compile(ManyGroupsBoard)

@@ -24,7 +24,8 @@ A runnable opt-in example is
 `python -m examples.export_schematic --output /tmp/pb-schematic-example --symbol-dir /usr/share/kicad/symbols`
 from the PB checkout to generate the existing LED design in a dedicated
 destination. The example uses Python presentation hints to keep the LED and
-its current-limiting resistor in circuit order.
+its current-limiting resistor in circuit order. The LED rotation stays locked;
+the resistor explicitly allows fixed-center 180-degree trials.
 
 ![Native KiCad 9 excerpt of the opt-in LED example](images/schematic-example.png)
 
@@ -36,6 +37,80 @@ Library directories are searched in order, followed by `KICAD9_SYMBOL_DIR`
 (or the major version selected in options). The output embeds the definitions,
 so readers do not need the original symbol libraries installed. Generation does
 not download files or require a running KiCad GUI.
+
+## Circuit meaning and engineering handoff
+
+`SchematicPresentation` schema 2 adds source-owned `circuits` to the existing
+schema-1 descriptions, interfaces and group titles. Schema 1 remains accepted.
+Use compiled physical component paths and pin numbers, for example:
+
+```python
+from edg import SchematicPresentation
+
+presentation = SchematicPresentation.from_dict({
+    "schema": 2,
+    "circuits": [{
+        "id": "reset_interface",
+        "title": "Reset interface",
+        "summary": "Controller reset signal passes through the series resistor.",
+        "components": ["reset_resistor"],
+        "boundaries": [
+            {"component": "reset_resistor", "pin": "1", "name": "Controller reset", "role": "input"},
+            {"component": "reset_resistor", "pin": "2", "name": "Target reset", "role": "output"},
+        ],
+    }],
+})
+```
+
+Pass this object as `SchematicExportOptions.presentation`. Replace the example
+paths and physical pins with the actual compiled inventory. Circuit titles and
+summaries appear on the detailed drawing; boundary notes identify the physical
+terminal and generated net label. Their bounds are reserved before sheet packing.
+The exported `circuit-model.json` records membership, pattern evidence, terminal
+net witnesses and authored versus automatic provenance.
+
+Generic pin names initially describe PB ports. A strap pad connected to SDA or
+SCL can therefore inherit that connected-port name rather than its physical
+function. Use verified `components[path].pin_names` presentation entries to name
+such pads A0/A1 while keeping their actual connections unchanged. Only annotate
+modeled physical pins; do not invent omitted pads or NC declarations.
+
+Each circuit requires `id`, `title`, `summary` and `components`. Optional
+`stages` contain ordered `{id, components}` objects. Optional `template` is
+`auto` (default), `generic`, `buck`, `four_switch_bridge`, `gate_driver`,
+`repeated_channel`, `connector_protection`, `mcu_support`, `series_path`, or
+`controller_support`; non-generic templates require compiled topology evidence.
+Boundary roles are `input`, `output`, `supply`, `return`, `control`, `feedback`
+and `bidirectional`. Roles express authored intent, not electrical validation.
+Unknown paths/pins, overlapping circuit membership, duplicate titles within a
+board scope and circuits crossing independent scopes are errors. Ordered stages
+must share a non-supply connection or an explicitly declared power-path boundary.
+
+The framework discovers patterns once per board scope, preserving ambiguous
+support ownership instead of rediscovering a misleading association from a
+smaller page. Placement evaluates at most eight deterministic whole-circuit
+proposals, including the baseline, and routes at most three shortlisted proposals
+plus that baseline. Candidates may not introduce failed endpoints, crossings,
+collisions or page clipping. Selection prioritizes primary-path visibility,
+crossings, unrelated-stage intrusion, bends, wire length and area. Fixed placement
+hints remain authoritative. Complete circuits may use additional pages rather
+than smaller text; oversized circuits continue at authored stages or child-circuit
+boundaries.
+
+Local routing and label tails reserve 1.27 mm of visual clearance around
+foreign parallel wires, endpoints and bends. Straight perpendicular interior
+crossings remain permitted. This prevents electrically distinct half-grid buses
+from looking joined in the drawing. When a board scope contains multiple ground
+nets, every ground glyph displays its net identity so raw battery negative and
+protected system return remain distinguishable. The configured ground graphic
+style and physical connectivity are preserved.
+
+Validate automatic and curated outputs separately. Native KiCad equality proves
+representation truth. For engineering handoff, fresh reviewers must explain
+power paths, control, feedback, protection, decoupling and cross-sheet interfaces
+from rendered drawings alone. Score those explanations against a separately
+prepared source-backed checklist. Missing or guessed critical relationships block
+handoff acceptance, even when native checks and geometry metrics pass.
 
 ## Actual symbols and pin mappings
 
@@ -76,6 +151,30 @@ Value and Footprint properties remain intact. Procurement descriptions do not
 need to occupy the drawing. Failed local routes retain matching net labels and
 produce diagnostics rather than changing connectivity.
 
+Repeated channels and power stages are grouped before packing. Complete circuits
+that exceed A3 continue at compiled child-subcircuit boundaries, with the reason
+and preserved sections recorded in placement evidence. Numeric channel and
+continuation order is retained. Verified buck and four-switch bridge patterns
+use switch-pin geometry and compiled gate/rail connections for placement; a
+boost input coil or ambiguous topology declines the buck template. Gate-driver,
+bootstrap and FET branches can stay together across sibling block boundaries.
+Parallel pads establish a terminal role only when their compiled nets agree.
+Multiple owned bypass capacitors wrap beside a large IC instead of extending
+an unbounded vertical stack. Generic driver views put declared gate, switch
+and bootstrap ports toward the power stage; physical pin identities stay intact.
+
+Annotation coordinates are resolved before routing and retained through page
+translation; regeneration never reselects a different field location after the
+router has reserved its space. Label repair prefers paths without crossings.
+When a label is trapped, a straight perpendicular interior crossing can be
+used without a junction; endpoints, bends, anchors and collinear overlaps remain
+prohibited. Native tests verify that such label tails do not merge nets.
+
+Routing and label repair protect visible pin text and reference/value fields,
+including KiCad's relative field rotation on rotated symbols. Dense connector
+labels can use a measured outer lane reserved before sheet packing. The bounded
+router searches toward the actual target tree rather than its bounding box.
+
 Automatic grouping and placement are a baseline, not a guarantee of readable
 circuit topology. Complex circuits can use Python-owned presentation hints:
 
@@ -87,14 +186,16 @@ options = SchematicExportOptions(
     symbol_library_dirs=("/usr/share/kicad/symbols",),
     placements={
         "led.package": SchematicPlacement("Status LED", 70, 80, rotation=180),
-        "led.res": SchematicPlacement("Status LED", 100, 80, rotation=90),
+        "led.res": SchematicPlacement("Status LED", 100, 80, rotation=90, lock_rotation=False),
     },
 )
 ```
 
 A placement contains a functional region, millimetre coordinates, an orthogonal
 rotation, optional horizontal reflection, and optional reference/value annotation
-coordinates. Hints define presentation only: the compiled physical graph still
+coordinates. `lock_rotation` is appended to the placement fields and defaults to
+`True`, preserving authored rotations. Set it to `False` to permit a 180-degree
+trial while retaining the same center and any explicit annotation. Hints define presentation only: the compiled physical graph still
 defines every wire. Missing component paths and incomplete hinted groups fail
 explicitly. Hints arrange a circuit within a region; the shared sheet planner
 then translates whole regions onto A3 landscape pages, preserving their scale,
@@ -351,26 +452,302 @@ KiCad triangle. MCP schematic options accept the same field and values.
 Only embedded symbol graphics change; the PB ground net and power-pin semantics
 remain unchanged. This is not a selection of earth, chassis or isolated ground.
 
-### Experimental fixed-placement routing optimizer
+### Deterministic local routing optimizer
 
-Set `SchematicExportOptions(..., optimize_routes=True)` (or the matching MCP
-option) to evaluate seven deterministic candidates per circuit region: the
-baseline, X/Y/reversed endpoint orders, short-net-first order, and two
-direction-aware searches for attachments to the existing tree. The latter use
-an admissible target-envelope heuristic; search expansion and candidate budgets
-are fixed, not time-based. No global optimum is claimed.
+`SchematicExportOptions.optimize_routes` defaults to `True`; set it to `False`
+to compare against the baseline router. MCP uses the same default. The bounded
+search evaluates eight candidates: baseline, X/Y/reversed endpoint orders,
+short-net-first, two direction-aware tree searches, and a crossing-averse search.
+Search budgets are fixed, not time-based; no global optimum is claimed.
 
-Components, rotations and annotations are immutable. Baseline region bounds are
-retained so sheet packing and page coordinates do not change. Candidates with
-new failed endpoints, more cross-net intersections, longer union wire length,
-or an expanded route envelope are rejected. The remaining candidates are ranked
-by failures, crossings, then wire length plus a 2.54 mm equivalent bend penalty;
-exact ties preserve the earlier candidate. Verified local bypass attachments
-remain enforced. The original route is always available as fallback.
+Component poses remain fixed during each routing search. Candidates cannot add
+failed endpoints or crossings. A longer route is accepted only when it removes
+crossings; otherwise union wire length must not increase. Selected routes are
+measured before region packing, including any detours beyond the original route
+envelope. Candidate order breaks ties deterministically. Visible symbol pin
+names and numbers, properties, power graphics and labels are routing obstacles.
+Final label repair keeps labels within their originating functional region.
 
 `routing.json` records before/after union wire length, bends, crossings, failed
-endpoints and candidate selection per region. These measurements exclude fixed
-pin stubs, ground symbols and inter-region wiring. Native electrical round trips
-and visual inspection remain required. Optimization defaults off pending broader
-visual qualification; this is a route-order/local-search optimizer, not a
-placement optimizer or an ERC/electrical-design optimizer.
+endpoints and candidate selection per region. Metrics exclude fixed pin stubs,
+ground symbols and inter-region wiring. Native electrical round trips and
+independent visual review remain separate acceptance gates.
+
+### Fixed-center orientation optimization
+
+See the [native comparison and validation report](schematic-orientation-benchmark.md)
+for matched USB-C renders, corpus results, runtime and visual limitations.
+
+`SchematicExportOptions.optimize_orientations` defaults to `True`. Each unlocked
+component receives a 180-degree trial in stable PB-path order, for at most two
+sweeps; a sweep without improvement terminates the search. Position constraints
+and rotation constraints are independent. Graphics, physical pins and their
+numbers rotate together; polarity and connectivity never change. Automatic
+reference/value fields are recalculated for each trial, while explicit field
+coordinates are preserved.
+
+The incumbent baseline route is cached. Each geometrically viable rotation uses
+one baseline-router call, at most `2N` calls for `N` eligible components. The
+route-order optimizer runs after orientation selection. Trials cannot add failed
+endpoints, worsen collisions, overflow their page envelope or degrade visual
+wire clearance. Valid trials rank primary-path fallbacks, crossings, unrelated
+stage intrusion, bends, detour and total local wire length, with ties retaining
+the incumbent. The detour estimate uses a Manhattan bounding lower bound, not an
+optimal Steiner tree. Metrics include fixed pin stubs; final repaired label tails
+and inter-region links remain outside the orientation score.
+
+For a source-declared `four_switch_bridge` circuit with uniquely verified
+physical topology, the exporter then compares four
+measured conventional arrangements (two bridge spacings by two controller
+clearances) against the cached, orientation-optimized result. These add at most
+four baseline-router calls. The controller's actual gate-pin geometry orders the
+legs; rail identities and bidirectionality come from compiled connectivity.
+Half-bridges are vertical, the inductor joins their switch nodes, and banks,
+shunts and bootstrap branches stay with their verified rails. Driver-supply
+bypass sits beside its actual controller supply pin. Bank rows grow from the
+controller outward so the baseline router can extend each connected rail tree. No orientation
+sweep is repeated for each bridge variant. Explicit component placement regions
+skip this position-changing comparison.
+
+Primary-path scoring identifies physical endpoints on the verified controller,
+FET, inductor, series shunt and bootstrap paths, even when authored external
+boundaries are classified as supplies. Parallel bulk/bypass banks are reported
+separately as `noncore_converter_fallbacks`; a bank label does not break the main
+conversion path. Shared ground is excluded. Authored primary nets outside a
+verified converter retain their original semantics. This prevents
+an apparently lower-crossing candidate from winning by hiding the inductor path
+behind labels. A better primary path may therefore win despite more crossings;
+the comparison records that tradeoff rather than claiming every metric improved.
+
+`routing.json` records eligibility, every attempted angle, rejection reasons and
+selected rotations. `bridge_comparison` records all four measured candidates,
+including topology, symbol/field, escape and overflow rejection reasons, routed
+metrics and the selected result. `orientation.after` and `selected_rotations`
+describe the fixed-center stage; a later winning bridge can change those poses.
+The region-level `after` metrics describe the final route-order result, and final
+symbol poses are serialized in the schematic. Setting `optimize_orientations=False`
+skips the fixed-center angle passes and this bridge comparison; automatic
+functional placement, including the compact LED-buck pass below, remains active.
+Search is finite but potentially
+expensive for dense circuits: electrical equality and better metrics still need
+native drawing review.
+
+### Verified capacitor coverage and compact LED bucks
+
+Ordinary `GenericMlcc` capacitors resolve to `Device:C` for the model's six
+verified standard ceramic packages, with physical 1=pos and 2=neg. This applies
+to Datalogger's direct generic capacitors as well as the existing verified
+parallel-capacitor leaves. Model identity, package and pin roles must all match;
+reference prefixes and names do not select symbols. Polarized capacitors retain
+their separate mappings. Explicit declarations take precedence and invalid
+explicit pin maps remain errors.
+
+`manifest.json` includes `symbol_coverage` per physical component: compiled
+class, mapping source, selected symbol, status and a categorized fallback reason.
+Missing mappings, unavailable libraries, missing library symbols and unsupported
+symbols are distinct conditions. Symbols are still embedded in generated files.
+
+Verified TPS92200 buck LED-driver regions automatically compare the cached
+incumbent with four compact arrangements after legacy orientation and routing,
+before optional passive quarter turns. Compiled connections identify the exact
+BOOT–SW capacitor, FB-to-ground current-sense resistor, output inductor and
+separate input/output banks. BOOT is recognized from this verified model, not a
+global alias applied to arbitrary ICs. Ambiguous circuits decline specialization.
+Virtual off-board LED loads do not require inventing a connector or another pad.
+
+The bootstrap capacitor stays beside BOOT/SW; the sense resistor occupies a
+separate feedback corridor. Authored placements skip this position-changing
+pass, including placements with unlocked rotation. Automatic fields are
+recomputed while authored field coordinates are retained. No public option is
+added: this bounded functional placement is automatic, independently of the
+orientation-pass switch. `optimize_orientations=False` still bypasses both
+fixed-center orientation passes.
+
+Each region adds at most four routing trials using the incumbent's selected
+strategy. Primary-path visibility, crossings and unrelated-circuit intrusion
+precede wire length plus 2.54 mm per bend; ties keep the incumbent. New failed
+endpoints, escape conflicts, collisions, overflow and degraded wire clearance
+reject proposals. An additional bounded route-order search follows selection.
+The fully serialized candidate must introduce no new or worse blocking scene
+finding or increase the board scope's sheet count; failure restores the exact
+cached region. A smaller circuit retains its incumbent packing-cell size as
+explicit whitespace so unrelated regions keep their established sheet placement;
+`content_bounds` and `reserved_bounds` disclose both measurements. Final geometry determines
+bounds and plan fingerprints.
+
+`routing.json` stores `regions[].led_buck`: topology witnesses, all candidate
+decisions, route-call counts, before/after metrics, serialized-scene evidence and
+any rollback. Metrics and native netlist equality do not imply visual approval.
+See the [symbol and converter gap report](schematic-symbol-converter-gaps.md)
+for matched drawings, regression results and runtime measurements.
+
+### Opt-in passive quarter-turn refinement
+
+`SchematicExportOptions.orientation_mode` defaults to `"half_turn"`, retaining
+that pipeline. Explicitly select `"passive_quarter_turn"` to test all four
+orthogonal orientations for verified two-terminal passive symbols:
+
+```python
+options = SchematicExportOptions(
+    "MyBoard",
+    symbol_library_dirs=("/usr/share/kicad/symbols",),
+    orientation_mode="passive_quarter_turn",
+)
+```
+
+The additional pass runs after 180-degree optimization, converter-template
+selection and their routing search. Templates cannot overwrite its selected
+angles. Eligibility requires a resolved single-unit `Device:R`, `Device:R_US`,
+`Device:C`, `Device:C_Polarized` or `Device:L` view with two distinct terminal
+attachment positions. Stacked parallel physical pads remain distinct identities;
+generic fallback boxes, other symbols and rotation-locked placements are not
+quarter-turned. Reference prefixes and footprint names do not establish
+eligibility. Explicit placements still require `lock_rotation=False` to participate.
+
+The cached incumbent keeps its centers and selected routing strategy. The pass
+visits each eligible passive once in stable PB-path order, evaluates the three
+other absolute angles from the same incumbent, then commits the best valid
+candidate. At most `3P` additional router calls are made for `P` eligible passives;
+geometric rejection needs no route call. Automatic fields are recomputed from
+their original policy, while authored field coordinates are preserved. Rotation
+never swaps physical pin numbers, changes polarity or rewires the compiled graph.
+
+Primary-path fallbacks, crossings and unrelated-circuit intrusion remain the
+leading priorities. Otherwise the pass minimizes local wire length plus 2.54 mm
+per bend, rounded to four decimal places. Equal weighted cost retains the
+incumbent when those leading priorities also tie; there is no secondary bend,
+detour or length tie-breaker. Equally good improving alternatives retain the first
+one in stable angle order. Trials
+cannot add failed endpoints, pin-neck reentry, collisions, clipping or degraded
+wire clearance. Each region with proposed changes receives at most one additional
+bounded route-order search when `optimize_routes=True`. Existing placement,
+180-degree and bridge searches remain separate costs from the `3P` bound.
+
+The exporter reuses the prepared baseline and compares fully serialized scenes,
+including labels, properties, pin text and GND graphics. A new or worsened
+blocking scene contact rolls back all accepted passive changes in that independent
+board scope to its cached baseline; other scopes can keep their improvements.
+Rollback restores cached poses, routes and bounds without another optimization
+loop. Final chosen geometry supplies bounds and fingerprints, and adopted sheet
+plans are validated against that result. No generated schematic is manually repaired.
+
+`routing.json` records `passive_orientation` evidence per region: eligibility,
+allowed and attempted angles, reasons, route-call counts, final angles and any
+rollback. Retained baseline geometry is a valid result when no safe improvement
+exists. `optimize_orientations=False` bypasses both orientation passes regardless
+of mode. Source-of-truth notices and the existing compile return values are unchanged.
+
+The final functional run passed 228 schematic tests (including KiCad 9/10),
+25 MCP tests, all 51 valid automatic corpus targets and six curated mode/board
+cases. Two expected compile rejections and one empty design remain separate.
+All 69 curated default-mode files were byte-identical to the legacy output.
+The automatic corpus retained 28 rotations across ten valid targets (13 at 90°,
+12 at 270° and three at 180°), using 5,765 routing calls for 1,941 eligible passives
+against the 5,823-call bound. Curated PDU retained one 90° turn, saving 10.16 mm
+of wire with one extra bend; curated Ballu and USB-C retained their baselines.
+Serialized scene findings were unchanged. These checks establish selective safe
+improvements, not drawing-only readability approval.
+
+Single cold first-export observations under eight concurrent workers were
+135.4/239.6 seconds for Ballu, 333.2/638.5 for PDU and 578.4/1,047.1 for USB-C
+(`half_turn` / `passive_quarter_turn`). These are loaded, single observations,
+not controlled performance measurements. MCP's default 300-second timeout and
+900-second maximum can both be exceeded. Use the native API or batch harness
+for longer experiments and retain the default mode for interactive work when
+its runtime fits better.
+
+A separate sequential USB-C benchmark reused one compiled design, warmed each
+mode once, then measured three exports per mode in alternating AB/BA/AB order
+on logical CPU 10. Default-mode median was 415.9436 seconds (range
+372.6785–417.3414); quarter-turn median was 779.7176 seconds (range
+700.8048–794.9586), or 1.8746 times the default median. All six exports passed
+input/source/symbol/hash guards; curated USB-C retained the same 20 schematic
+documents. Three observations per mode establish neither statistical significance
+nor a general latency bound. CPU frequency, sibling activity and host load were
+not reserved or controlled, and peak memory was not measured.
+
+Quarter turns remain opt-in. See the
+[passive quarter-turn benchmark](schematic-passive-quarter-turn-benchmark.md)
+for matched legacy/new views, verification scope and observed limitations.
+
+### Native functional layout and label geometry
+
+Automatic export now places recognized circuits as complete functional atoms:
+feedback networks, converters, indicator branches, and owned local bypasses.
+Overlapping support patterns share one atom. A bounded two-pass search evaluates
+up to 32 position transforms per atom per pass, then compares up to three improving
+finalists with the template using the actual router. New failed endpoints or increased crossings reject the
+finalist. This default placement search is separate from `optimize_routes`.
+Explicit source-owned component centers remain fixed. Rotation is locked unless
+the placement explicitly sets `lock_rotation=False`. Disabling orientation
+optimization also restores the earlier mixed position/angle proposal search.
+
+Complete repeated channels are established from compiled sibling class ownership
+and private internal nets. Verified power-terminal roles and inductor mappings
+identify power-circuit groups. Larger power circuits retain controller/stage
+boundaries; smaller bypass patterns cannot join these boundaries back together.
+Measured multirow templates place each whole channel before sheet packing.
+FET source/drain geometry and inductor terminals establish stage orientation.
+A route detour that would break A3 fit falls back to a fitting baseline route.
+Pin escape conflicts include neighboring visible pin names and numbers, in
+addition to cross-net contacts. Continuation titles for repeated groups name the
+actual channel indices drawn on that sheet.
+
+
+Continuation splitting preserves atoms and minimizes non-supply signal cuts.
+The sheet planner considers signal neighbours and hierarchy before unrelated
+free space. Large overviews use a grouped directory with page references and
+component counts; names remain source-derived unless authored presentation
+metadata supplies descriptions. Connectivity does not imply directed flow.
+
+The exporter chooses labels per connected graphical island. Distinct islands of
+the same physical net retain labels; a routed bus does not need a label at every
+pin. Final-sheet label placement tries horizontal text and short orthogonal
+extensions without moving the original electrical anchor. Candidate paths must
+avoid fields, pin names, symbols and other labels; unrelated nets may only be
+crossed under the strict interior-crossing rules above. Missing or
+ambiguous anchors retain their original representation and report diagnostics.
+Text and global-label outlines use shared conservative geometry for routing,
+region measurement and serialized-document inspection. Unresolved collisions
+are reported rather than silently hidden.
+
+`layout.json` (schema 1), also available through
+`KiCadSchematicExporter.layout(compiled, options)`, records recognized patterns,
+component/atom membership, bounded search counts, routing finalist decisions,
+label moves, unresolved anchors and label conflicts. Its `summary` provides
+counts for MCP consumers. `readability.json` independently inspects the final
+serialized documents. Neither artifact grants visual approval. Timing belongs
+in external benchmark reports, not deterministic bundle contents. New measured
+bounds may invalidate an old authored sheet plan; regenerate its plan rather
+than discarding authored placements or shrinking its text.
+
+When a pin's label cannot be placed safely, the final-sheet search can try up to
+eight vertices, sampling both near and far parts of that same existing wire island. A shared
+net name does not establish a drawn connection: disconnected islands are never
+interchanged. Original pins and wires stay fixed, and label tails pass through
+the normal wire/junction serializer. Native regressions cover T-junction tails,
+same-island reanchoring, and all four readable label orientations in KiCad 9/10.
+
+Bypass ownership first establishes the nearest physical-device boundary, including
+a footprint block that directly owns its bypass. Devices with ambiguous supply
+roles still establish that boundary; the exporter leaves the association
+unclassified rather than handing an outer device's capacitors to nested memory
+merely because its supply roles are easier to recognize.
+
+
+### Rendered complex example
+
+These are native KiCad 10 exports of the same compiled USB source/measure
+example. The earlier layout separates the current-amplifier feedback diodes;
+the new layout keeps U41, D8/D9 and its owned bypass together. Physical
+connectivity is independently round-tripped in KiCad 9 and 10. The new automatic
+layout remains a generated reference, with generic-symbol fallbacks and some
+long routes; publication-quality spacing is not claimed.
+
+Before:
+
+![USB source/measure amplifier layout before functional atoms](images/schematic-native-smu-before.png)
+
+After:
+
+![USB source/measure amplifier layout with feedback and local support together](images/schematic-native-smu-after.png)

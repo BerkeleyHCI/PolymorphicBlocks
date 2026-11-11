@@ -3,17 +3,13 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 import hashlib
-import math
-import unicodedata
+from .KiCadSchematicScene import text_width as text_width, text_bounds, label_bounds, pin_name_items, pin_number_items, instance_property_at
 import sexpdata
 
 
 def children(tree, name):
     return [v for v in tree if isinstance(v, list) and v and str(v[0]) == name]
 
-
-def text_width(text, size):
-    return sum((2 if unicodedata.east_asian_width(c) in ("W", "F") else 1) for c in text) * size * 0.8
 
 
 @dataclass(frozen=True)
@@ -30,29 +26,15 @@ def text_item(identity, text, at, effect, owner, kind):
         return None
     font = children(effect, "font")
     size = children(font[0], "size")[0][1] if font and children(font[0], "size") else 1.27
-    lines = str(text).splitlines() or [""]
-    w = max(text_width(line, size) for line in lines)
-    h = size * 1.4 * len(lines)
     justify = children(effect, "justify")
     terms = {str(v) for v in justify[0][1:]} if justify else set()
-    x, y = float(at[1]), float(at[2])
     angle = float(at[3]) if len(at) > 3 else 0
-    lo = 0 if "left" in terms else -w if "right" in terms else -w / 2
-    corners = [(lo, -h / 2), (lo + w, -h / 2), (lo + w, h / 2), (lo, h / 2)]
-    r = math.radians(angle)
-    pts = [(x + a * math.cos(r) + b * math.sin(r), y - a * math.sin(r) + b * math.cos(r)) for a, b in corners]
-    return SceneText(
-        identity,
-        str(text),
-        (
-            min(a for a, b in pts),
-            min(b for a, b in pts),
-            max(a for a, b in pts),
-            max(b for a, b in pts),
-        ),
-        owner,
-        kind,
-    )
+    arguments = (text, float(at[1]), float(at[2]), angle, size,
+                 "left" if "left" in terms else "right" if "right" in terms else "center",
+                 kind == "global_label")
+    bounds = (label_bounds(*arguments, bottom="bottom" in terms)
+              if kind in ("label", "global_label") else text_bounds(*arguments))
+    return SceneText(identity, str(text), bounds, owner, kind)
 
 
 def inspect_documents(files, diagnostics, patterns=()):
@@ -108,55 +90,16 @@ def inspect_documents(files, diagnostics, patterns=()):
                 at = children(p, "at")
                 ef = children(p, "effects")
                 if at and ef:
-                    t = text_item(owner + ":" + str(p[1]), p[2], at[0], ef[0], owner, "field")
+                    symbol_at = children(symbol, "at")
+                    visible_at = instance_property_at(at[0], symbol_at[0]) if symbol_at else at[0]
+                    t = text_item(owner + ":" + str(p[1]), p[2], visible_at, ef[0], owner, "field")
                     if t:
                         texts.append(t)
             lib = children(symbol, "lib_id")
             ats = children(symbol, "at")
             if lib and ats and lib[0][1] in definitions:
                 definition = definitions[lib[0][1]]
-                name_options = children(definition, "pin_names")
-                hide_names = name_options and any(str(v) == "hide" for v in name_options[0][1:])
-                if not hide_names:
-                    sx, sy, rotation = ats[0][1:4]
-                    r = math.radians(rotation)
-                    for body in children(definition, "symbol"):
-                        for pin in children(body, "pin"):
-                            names = children(pin, "name")
-                            pat = children(pin, "at")
-                            lengths = children(pin, "length")
-                            if not names or names[0][1] in ("~", "") or not pat or not lengths:
-                                continue
-                            px, py, angle = pat[0][1:4]
-                            a = math.radians(angle)
-                            px += (lengths[0][1] + 0.508) * math.cos(a)
-                            py += (lengths[0][1] + 0.508) * math.sin(a)
-                            # Library Y is up; sheet Y is down, before instance rotation.
-                            x = sx + px * math.cos(r) - py * math.sin(r)
-                            y = sy - px * math.sin(r) - py * math.cos(r)
-                            number = children(pin, "number")[0][1]
-                            effective = (angle + rotation) % 360
-                            # Pin-name text remains readable at 0/90 degrees.
-                            textangle = 0 if effective in (0, 180) else 90
-                            justify = "left" if effective in (0, 90) else "right"
-                            ef = [
-                                sexpdata.Symbol("effects"),
-                                [
-                                    sexpdata.Symbol("font"),
-                                    [sexpdata.Symbol("size"), 1.27, 1.27],
-                                ],
-                                [sexpdata.Symbol("justify"), sexpdata.Symbol(justify)],
-                            ]
-                            t = text_item(
-                                owner + ":pin:" + str(number),
-                                names[0][1],
-                                ["at", x, y, textangle],
-                                ef,
-                                owner,
-                                "pin_name",
-                            )
-                            if t:
-                                texts.append(t)
+                texts.extend(SceneText(**item) for item in pin_name_items(definition, *ats[0][1:4], owner) + pin_number_items(definition, *ats[0][1:4], owner))
         for i, a in enumerate(texts):
             x1, y1, x2, y2 = a.bounds
             if x1 < 10 or y1 < 8 or x2 > 410 or y2 > 287:

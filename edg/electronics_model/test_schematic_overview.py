@@ -103,6 +103,44 @@ class SchematicOverviewTest(unittest.TestCase):
         self.assertTrue(all(not l["directed"] and "gnd" not in l["nets"] for l in data["connections"]))
         self.assertEqual(data["omitted_connection_pairs"], 1)
 
+    def test_key_only_relationship_names_actual_endpoint_pages(self):
+        board, plan = fixture(10)
+        data = build_overviews([board], plan)["boards"][0]
+        by_id = {n["sheet_id"]: n for n in data["nodes"]}
+        self.assertEqual(len(data["connections"]), 8)
+        for link in data["connections"]:
+            # Exercise the fallback independently of routing-order heuristics.
+            link["path"] = []
+            link["status"] = "legend_only"
+            self.assertEqual(link["endpoints"], [
+                dict(sheet_id=identity, sheet_title=by_id[identity]["sheet_title"],
+                     page=by_id[identity]["page"])
+                for identity in (link["source"], link["target"])
+            ])
+        doc = []
+        render_overview(doc, board, data, SchematicExportOptions("Overview"))
+        texts = {children(t, "uuid")[0][1]: t for t in children(doc, "text")}
+        for link in data["connections"]:
+            item = texts[uid(board.prefix, "overview", link["id"] + "-key")]
+            for endpoint in link["endpoints"]:
+                self.assertIn(f"Sheet {endpoint['page']}", item[1])
+            self.assertIn("key only", item[1])
+            for role in ("-key", "-key-label"):
+                item = texts[uid(board.prefix, "overview", link["id"] + role)]
+                x, y, angle = children(item, "at")[0][1:]
+                self.assertGreaterEqual(y, 190)
+                self.assertLess(y + 1.27, 203)
+                self.assertLess(x + len(item[1]) * 1.27, 410)
+
+    def test_summary_does_not_contradict_sheet_continuation_title(self):
+        board, plan = fixture(2)
+        original = next(iter(board.regions))
+        board.regions[original].spec = replace(board.regions[original].spec, title="Balance /5")
+        data = build_overviews([board], plan)["boards"][0]
+        item = next(n for n in data["nodes"] if "Balance /5" in n["regions"])
+        self.assertEqual(item["summary"], "Balance")
+        self.assertEqual(item["sheet_title"], next(s.title for s in plan.sheets if s.id == item["sheet_id"]))
+
     def test_custom_cards_reserve_cells_and_detect_duplicates(self):
         board, plan = fixture()
         a = SchematicOverviewBlock("Function 1", "Controller", "Unicode μC", 0, 0)
@@ -214,12 +252,53 @@ class SchematicOverviewTest(unittest.TestCase):
         self.assertEqual(len(data["nodes"]), 41)
         self.assertFalse(data["connections"])
         self.assertEqual(data["components"], 41)
+        self.assertTrue(all(node["section"] for node in data["nodes"]))
+        self.assertEqual({node["page"] for node in data["nodes"]}, set(range(2, 43)))
+        self.assertTrue(all(node["bounds"][2] < 410 and node["bounds"][3] < 205 for node in data["nodes"]))
         with self.assertRaisesRegex(ValueError, "at most 16 sheets"):
             build_overviews(
                 [board],
                 plan,
                 SchematicOverview(blocks=(SchematicOverviewBlock("Function 0", "Title", "Summary", 0, 0),)),
             )
+
+    def test_paginated_directory_machine_geometry_matches_actual_links(self):
+        # Contents nesting begins at 41; 49 must remain supported rather than
+        # overflowing the old grouped-directory capacity or dropping navigation.
+        for count in (41, 49):
+            with self.subTest(count=count):
+                board, plan = fixture(count)
+                data = build_overviews([board], plan)["boards"][0]
+                self.assertEqual(data["directory_layout"], "paginated")
+                self.assertEqual(sum(p["sheets"] for p in data["directory_pages"]), count)
+                options = SchematicExportOptions("Directory")
+                root = KiCadSchematicExporter._document(uid("root"), options, "f", "Overview")
+                documents = {}
+                for page in data["directory_pages"]:
+                    identity = uid(board.prefix, "contents", str(page["index"]))
+                    documents[page["filename"]] = KiCadSchematicExporter._document(identity, options, "f", page["title"])
+                    x, y = page["bounds"][:2]
+                    KiCadSchematicExporter._sheet_link(root, board.prefix, identity, "/root",
+                        page["title"], page["filename"], x, y, page["page"])
+                for index, item in enumerate(data["nodes"]):
+                    slot = index % 40
+                    document = documents[item["directory_document"]]
+                    # Actual serializer placement, independently of evidence.
+                    x, y = 20 + (slot // 10) * 90, 50 + (slot % 10) * 14
+                    KiCadSchematicExporter._sheet_link(document, board.prefix,
+                        uid(board.prefix, item["sheet_id"]), "/contents", item["sheet_title"],
+                        "circuit.kicad_sch", x, y, item["page"])
+                    link = children(document, "sheet")[-1]
+                    at, size = children(link, "at")[0][1:], children(link, "size")[0][1:]
+                    self.assertEqual(item["bounds"], [at[0], at[1], at[0] + size[0], at[1] + size[1]])
+                render_overview(root, board, data, options)
+                links = children(root, "sheet")
+                self.assertEqual(len(links), len(data["directory_pages"]))
+                for link, page in zip(links, data["directory_pages"]):
+                    at, size = children(link, "at")[0][1:], children(link, "size")[0][1:]
+                    self.assertEqual(page["bounds"], [at[0], at[1], at[0] + size[0], at[1] + size[1]])
+                titles = [item[1] for item in children(root, "text")]
+                self.assertTrue(any("40 sheets / 40 components" in text for text in titles))
 
     def test_compiled_preview_bundle_staleness_and_native_truth(self):
         from ..core import ScalaCompiler

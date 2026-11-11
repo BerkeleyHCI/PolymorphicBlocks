@@ -9,6 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, TYPE_CHECKING, Union
 
@@ -22,6 +24,48 @@ OVERVIEW_BOUNDS: Bounds = (20, 205, 395, 265)
 GUTTER = 8.0
 TITLE_BLOCK_BOUNDS: Bounds = (230, 245, 410, 287)
 
+
+
+def natural_order(value: str) -> tuple:
+    """Stable human ordering for continuation and array indices."""
+    return tuple((1, int(part)) if part.isdecimal() else (0, part)
+                 for part in re.split(r"(\d+)", value))
+
+
+def _continuation_order(sheets, regions, diagnostics):
+    """Keep source-region continuations ordered even on mixed-title pages."""
+    def key(sheet):
+        title = sheet.title.rsplit(" /", 1)
+        continuation = int(title[1]) if len(title) == 2 and title[1].isdigit() else 0
+        return sheet.scope, sheet.id != "overview", natural_order(title[0]), continuation, sheet.id
+    families = {}
+    for index, sheet in enumerate(sheets):
+        for placement in sheet.regions:
+            region = regions[placement.region_id]
+            suffix = region.title.rsplit(" /", 1)
+            number = int(suffix[1]) if len(suffix) == 2 and suffix[1].isdigit() else 1
+            family = suffix[0] if len(suffix) == 2 and suffix[1].isdigit() else region.title
+            families.setdefault((sheet.scope, family), []).append((number, index))
+            array = re.fullmatch(r"(.*)\[([0-9, ]+)\](.*)", family)
+            if array:
+                indices = [int(item.strip()) for item in array[2].split(",")]
+                array_family = (sheet.scope, "array", array[1], array[3])
+                families.setdefault(array_family, []).append((min(indices), index))
+    before = {i: set() for i in range(len(sheets))}
+    for entries in families.values():
+        for first_number, first in entries:
+            for second_number, second in entries:
+                if first_number < second_number and first != second:
+                    before[second].add(first)
+    remaining, ordered = set(before), []
+    while remaining:
+        eligible = [i for i in remaining if not before[i] & remaining]
+        if not eligible:
+            diagnostics.append("continuation_order_conflict: mixed sheet assignments impose a cycle; retaining stable title order")
+            eligible = list(remaining)
+        chosen = min(eligible, key=lambda i: key(sheets[i]))
+        ordered.append(sheets[chosen]); remaining.remove(chosen)
+    return ordered
 
 def _string(value: Any, name: str, allow_empty: bool = False) -> None:
     if not isinstance(value, str) or (not allow_empty and not value):
@@ -455,6 +499,26 @@ class SchematicSheetPlanner:
                     r.id,
                 ),
             )
+            # Keep signal neighbours contiguous in the packing order, rather than
+            # letting unrelated large rectangles consume their available space.
+            # Adjacency is measured upstream with common rails excluded.
+            remaining = list(ordered)
+            ordered = []
+            while remaining:
+                if not ordered:
+                    chosen = remaining[0]
+                else:
+                    previous = ordered[-1]
+                    chosen = min(
+                        remaining,
+                        key=lambda r: (
+                            -edges.get(tuple(sorted((previous.id, r.id))), 0),
+                            -(previous.title.split(" /")[0] == r.title.split(" /")[0]),
+                            remaining.index(r),
+                        ),
+                    )
+                remaining.remove(chosen)
+                ordered.append(chosen)
             for region in ordered:
                 if self._position(region, (), usable) is None:
                     width = region.bounds[2] - region.bounds[0]
@@ -481,7 +545,9 @@ class SchematicSheetPlanner:
                             for pair, weight in edges.items()
                             if region.id in pair and bool((set(pair) - {region.id}) & placed_elsewhere)
                         )
-                        candidates.append(((-inside, crossing, placement.y, placement.x, index), index, placement))
+                        family = region.title.split(" /")[0]
+                        siblings = sum(by_id[p.region_id].title.split(" /")[0] == family for p in placements)
+                        candidates.append(((-inside, -siblings, crossing, placement.y, placement.x, index), index, placement))
                 if candidates:
                     _, index, placement = min(candidates, key=lambda candidate: candidate[0])
                     pages[index].append(placement)
@@ -491,23 +557,29 @@ class SchematicSheetPlanner:
                             "explicit Overview regions do not fit the reserved lower inset; revise their grouping or geometry"
                         )
                     pages.append([self._position(region, (), usable)])
+            # Continuation numbers are local to a functional title. A single
+            # Control page must not become /17 because sixteen other pages exist.
+            pages.sort(key=lambda placements: min(
+                (natural_order(by_id[p.region_id].title), by_id[p.region_id].id) for p in placements))
+            bases = []
+            for placements in pages:
+                if title is not None:
+                    bases.append(title)
+                else:
+                    labels = sorted(set(by_id[p.region_id].title.split(" /")[0] for p in placements))
+                    base = " + ".join(labels[:2]) + (" + others" if len(labels) > 2 else "")
+                    bases.append(base[:60])
+            totals, counts = Counter(bases), Counter()
             for index, placements in enumerate(pages):
                 if title == "Overview":
                     sheet_id, sheet_title = "overview", "Overview"
                 else:
-                    if title is None:
-                        # Exact PB group names convey ownership without inventing function.
-                        labels = list(dict.fromkeys(by_id[p.region_id].title.split(" /")[0] for p in placements))
-                        base = " + ".join(labels[:2])
-                        if len(labels) > 2:
-                            base += " + others"
-                        base = base[:60]
-                    else:
-                        base = title
-                    sheet_title = base if len(pages) == 1 else f"{base} /{index + 1}"
-                    token = json.dumps([scope, title, index], ensure_ascii=False).encode("utf-8")
+                    base = bases[index]
+                    counts[base] += 1
+                    sheet_title = base if totals[base] == 1 else f"{base} /{counts[base]}"
+                    token = json.dumps([scope, title, sorted(p.region_id for p in placements)], ensure_ascii=False).encode("utf-8")
                     sheet_id = "sheet_" + hashlib.sha256(token).hexdigest()[:16]
-                    if title is not None and index:
+                    if title is not None and counts[base] > 1:
                         diagnostics.append(
                             f"continuation: explicit sheet {title!r} in scope {scope!r} continues as {sheet_title!r}"
                         )
@@ -519,7 +591,7 @@ class SchematicSheetPlanner:
             content = [sheet for sheet in sheets if sheet.scope == scope and sheet.id != "overview"]
             if overview and len(content) > 1 and not any(s.scope == scope and s.id == "overview" for s in sheets):
                 sheets.append(SchematicSheet("overview", "Overview", scope, ()))
-        sheets = sorted(sheets, key=lambda sheet: (sheet.scope, sheet.id != "overview", sheet.title, sheet.id))
+        sheets = _continuation_order(sheets, by_id, diagnostics)
         return SchematicSheetPlan(
             fingerprint,
             prepared,

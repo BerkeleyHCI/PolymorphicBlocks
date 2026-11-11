@@ -94,6 +94,61 @@ class SchematicPatternsTest(unittest.TestCase):
         wiring.update(nets([duplicate]))
         self.assertEqual(decoupling_associations(parts + [duplicate], wiring), ())
 
+    def test_outer_bypass_cannot_fall_through_ambiguous_fpga_to_nested_memory(self):
+        fpga = PhysicalComponent('fpga.ic', 'U1', 'FP', 'FPGA',
+            {'1': 'vdd.0', '2': 'vdd.1', '3': 'gnd.0', '4': 'gnd.1'}, None, 'fpga')
+        memory = PhysicalComponent('fpga.mem.ic', 'U2', 'FP', 'memory',
+            {'1': 'vcc', '2': 'gnd', '3': 'clk'}, None, 'memory')
+        self.assertEqual(terminal_roles(fpga), {})
+        caps = []
+        wiring = {(fpga.path, '1'): 'rail', (fpga.path, '2'): 'rail',
+                  (fpga.path, '3'): 'return', (fpga.path, '4'): 'return',
+                  (memory.path, '1'): 'rail', (memory.path, '2'): 'return', (memory.path, '3'): 'clock'}
+        for wrapper in ('fpga.vio_cap0', 'fpga.vio_cap1', 'fpga.vpp_cap', 'fpga.mem.vcc_cap'):
+            cap = PhysicalComponent(wrapper + '.cap', 'C' + str(len(caps)), 'FP', '100n',
+                {'1': 'pos', '2': 'neg'}, {'lib_id': 'Device:C'}, 'capacitors')
+            cap.hierarchy = ((wrapper, 'edg.abstract_parts.Capacitor.DecouplingCapacitor'),)
+            wiring[cap.path, '1'], wiring[cap.path, '2'] = 'rail', 'return'
+            caps.append(cap)
+        parts = [fpga, memory, *caps]
+        expected = [(memory.path, caps[-1].path)]
+        patterns = decoupling_associations(parts, wiring)
+        self.assertEqual([p.components for p in patterns], expected)
+        self.assertEqual(patterns, decoupling_associations(list(reversed(parts)), wiring))
+        # If the direct owner's supplies become independently verifiable, the
+        # outer bypasses belong to that owner, while memory retains its own cap.
+        fpga.pins = {'1': 'vdd', '3': 'gnd', '4': 'clk'}
+        wiring[fpga.path, '4'] = 'fpga_clock'
+        patterns = decoupling_associations(parts, wiring)
+        self.assertEqual({p.components for p in patterns},
+                         {(fpga.path, *(c.path for c in caps[:-1])), (memory.path, caps[-1].path)})
+
+    def test_footprint_owner_at_exact_wrapper_parent_blocks_nested_memory(self):
+        owner = PhysicalComponent('fpga', 'U1', 'FP', 'FPGA',
+            {'1': 'vdd.0', '2': 'vdd.1', '3': 'gnd.0', '4': 'gnd.1'}, None, 'fpga')
+        owner.hierarchy = (('fpga', 'Test.FootprintWrapper'),)
+        memory = PhysicalComponent('fpga.mem.ic', 'U2', 'FP', 'memory',
+            {'1': 'vcc', '2': 'gnd', '3': 'clk'}, None, 'memory')
+        outer = PhysicalComponent('fpga.bypass.cap', 'C1', 'FP', '100n',
+            {'1': 'pos', '2': 'neg'}, {'lib_id': 'Device:C'}, 'outer')
+        outer.hierarchy = (('fpga', 'Test.FootprintWrapper'),
+                           ('fpga.bypass', 'edg.abstract_parts.Capacitor.DecouplingCapacitor'))
+        local = PhysicalComponent('fpga.mem.bypass.cap', 'C2', 'FP', '100n',
+            {'1': 'pos', '2': 'neg'}, {'lib_id': 'Device:C'}, 'local')
+        local.hierarchy = (('fpga.mem.bypass', 'edg.abstract_parts.Capacitor.DecouplingCapacitor'),)
+        wiring = {(owner.path, '1'): 'rail', (owner.path, '2'): 'rail',
+                  (owner.path, '3'): 'return', (owner.path, '4'): 'return',
+                  (memory.path, '1'): 'rail', (memory.path, '2'): 'return', (memory.path, '3'): 'clock'}
+        for cap in (outer, local):
+            wiring[cap.path, '1'], wiring[cap.path, '2'] = 'rail', 'return'
+        parts = [owner, memory, outer, local]
+        patterns = decoupling_associations(parts, wiring)
+        self.assertEqual([p.components for p in patterns], [(memory.path, local.path)])
+        owner.pins = {'1': 'vdd', '3': 'gnd', '4': 'clk'}
+        wiring[owner.path, '4'] = 'fpga_clock'
+        patterns = decoupling_associations(parts, wiring)
+        self.assertEqual({p.components for p in patterns}, {(owner.path, outer.path), (memory.path, local.path)})
+
     def test_chain_follows_physical_pins_and_is_permutation_invariant(self):
         parts = [led("led[2].ic"), led("led[0].ic"), led("led[10].ic")]
         actual = discover_patterns(parts, nets(parts))
@@ -159,6 +214,9 @@ class SchematicPatternsTest(unittest.TestCase):
             (lo.path, "1"): "feedback",
             (lo.path, "2"): "return",
         }
+        # Parallel exposed/ground pads must not hide an otherwise exact FB role.
+        ic.pins["4"] = "gnd"
+        wiring[ic.path, "4"] = "return"
         p = discover_patterns([lo, ic, hi], wiring)[0]
         self.assertEqual(p.kind, "feedback_divider")
         self.assertEqual(p.components, (ic.path, hi.path, lo.path))
@@ -235,7 +293,7 @@ class SchematicPatternsTest(unittest.TestCase):
         c.annotation = (100, 120)
         self.assertEqual(annotation_position(c, view, 100, 100, 0), (100, 120, ""))
 
-    def test_rotated_multiline_fields_have_vertical_glyph_bounds(self):
+    def test_rotated_instance_multiline_fields_remain_native_horizontal(self):
         from .KiCadSchematicLayout import annotation_bounds
 
         c = led("a")
@@ -244,7 +302,8 @@ class SchematicPatternsTest(unittest.TestCase):
         a = annotation_bounds(c, 0, 0, 0)
         b = annotation_bounds(c, 0, 0, 90)
         self.assertLess(b[0], b[2])
-        self.assertGreater(b[3] - b[1], a[3] - a[1])
+        self.assertEqual(b, a)
+        self.assertGreater(b[2] - b[0], b[3] - b[1])
 
     def test_amplifier_feedback_uses_explicit_negative_input(self):
         ic = PhysicalComponent(
@@ -277,6 +336,42 @@ class SchematicPatternsTest(unittest.TestCase):
         )
         wiring[resistor.path, "2"] = "signal"
         self.assertEqual(discover_patterns([resistor, ic], wiring), ())
+
+    def test_packed_amplifier_channels_require_matching_explicit_roles(self):
+        from .KiCadSchematicPatterns import amplifier_channels
+
+        for names in (
+            {"1": "outa", "2": "inna", "3": "inpa", "5": "inpb", "6": "innb", "7": "outb"},
+            {"1": "out.0", "2": "inn.0", "3": "inp.0", "5": "inp.1", "6": "inn.1", "7": "out.1"},
+        ):
+            amp = PhysicalComponent("packed.ic", "U1", "FP", "dual", names, None, "packed")
+            feedback = [PhysicalComponent("support." + name, ref, "FP", "part", {"1": "a", "2": "b"},
+                         {"lib_id": symbol}, "support")
+                        for name, ref, symbol in (("diode", "D1", "Device:D"), ("resistor", "R1", "Device:R"),
+                                                 ("wrong_channel", "R2", "Device:R"))]
+            diode, resistor, wrong = feedback
+            wiring = {(amp.path, "1"): "out0", (amp.path, "2"): "neg0", (amp.path, "3"): "signal0",
+                      (amp.path, "7"): "out1", (amp.path, "6"): "neg1", (amp.path, "5"): "signal1",
+                      (diode.path, "1"): "out0", (diode.path, "2"): "neg0",
+                      (resistor.path, "1"): "out1", (resistor.path, "2"): "neg1",
+                      (wrong.path, "1"): "out0", (wrong.path, "2"): "neg1"}
+            self.assertEqual(len(amplifier_channels(amp)), 2)
+            patterns = [p for p in discover_patterns([amp, *feedback], wiring) if p.kind == "amplifier_feedback"]
+            self.assertEqual({p.components for p in patterns}, {(amp.path, diode.path), (amp.path, resistor.path)})
+            self.assertEqual(patterns, [p for p in discover_patterns([*reversed(feedback), amp], wiring)
+                                        if p.kind == "amplifier_feedback"])
+            # A duplicate explicit negative role invalidates its own channel.
+            amp.pins["9"] = amp.pins["2"]
+            self.assertEqual(len(amplifier_channels(amp)), 1)
+            remaining = [p for p in discover_patterns([amp, *feedback], wiring) if p.kind == "amplifier_feedback"]
+            self.assertEqual([p.components for p in remaining], [(amp.path, resistor.path)])
+
+    def test_unknown_diode_symbol_does_not_establish_feedback(self):
+        amp = PhysicalComponent("amp.ic", "U1", "FP", "amp", {"1": "outa", "2": "inna", "3": "inpa"}, None, "amp")
+        branch = PhysicalComponent("amp.diode", "D1", "FP", "diode", {"1": "a", "2": "b"}, None, "amp")
+        wiring = {(amp.path, "1"): "output", (amp.path, "2"): "negative", (amp.path, "3"): "signal",
+                  (branch.path, "1"): "output", (branch.path, "2"): "negative"}
+        self.assertEqual(discover_patterns([amp, branch], wiring), ())
 
     def test_atomic_split_keeps_channel_bypass_together(self):
         from .KiCadSchematicLayout import split_group

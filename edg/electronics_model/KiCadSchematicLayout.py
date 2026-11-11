@@ -6,15 +6,55 @@ Failed local routes retain labels and are reported, rather than guessed wires.
 
 from __future__ import annotations
 
+import bisect
 import heapq
 import math
 import textwrap
 from collections import defaultdict
 from typing import Any, Optional, Sequence, Tuple
 
+from .KiCadSchematicScene import pin_label_bounds, pin_name_items, pin_number_items
 from .KiCadSchematicPatterns import decoupling_associations, discover_patterns, terminal_roles
 
 GRID = 1.27
+
+
+def tree_distance(targets):
+    """Cached exact Manhattan distance to a route tree, an admissible A* bound."""
+    columns = defaultdict(list)
+    for x, y in targets:
+        columns[x].append(y)
+    columns = {x: sorted(set(ys)) for x, ys in columns.items()}
+    xs = sorted(columns)
+    cache = {}
+
+    def distance(point):
+        if point in cache:
+            return cache[point]
+        x, y = point
+        right = bisect.bisect_left(xs, x)
+        left = right - 1
+        best = float("inf")
+        while left >= 0 or right < len(xs):
+            dl = abs(xs[left] - x) if left >= 0 else float("inf")
+            dr = abs(xs[right] - x) if right < len(xs) else float("inf")
+            if min(dl, dr) >= best:
+                break
+            if dl <= dr:
+                cx = xs[left]
+                left -= 1
+            else:
+                cx = xs[right]
+                right += 1
+            ys = columns[cx]
+            index = bisect.bisect_left(ys, y)
+            for i in (index - 1, index):
+                if 0 <= i < len(ys):
+                    best = min(best, abs(cx - x) + abs(ys[i] - y))
+        cache[point] = best
+        return best
+
+    return distance
 
 
 def snap(value: float) -> float:
@@ -84,48 +124,49 @@ def ground_rotation(direction: float) -> int:
     return int(direction + 270) % 360
 
 
-def ground_bounds(x: float, y: float, direction: float):
+def ground_bounds(x: float, y: float, direction: float, label: str = ""):
     angle = ground_rotation(direction)
     corners = [transform(dx, dy, angle) for dx in (-2.54, 2.54) for dy in (0, 4.445)]
-    return (
+    bounds = (
         x + min(p[0] for p in corners),
         y + min(p[1] for p in corners),
         x + max(p[0] for p in corners),
         y + max(p[1] for p in corners),
     )
+    if label:
+        from .KiCadSchematicScene import text_bounds
+        lx, ly = ground_label_position(x, y, direction)
+        text = text_bounds(label, lx, ly, size=1.27)
+        bounds = (min(bounds[0], text[0]), min(bounds[1], text[1]),
+                  max(bounds[2], text[2]), max(bounds[3], text[3]))
+    return bounds
+
+
+def ground_label_position(x: float, y: float, direction: float):
+    """Keep distinct return identities horizontal below the ground glyph."""
+    bounds = ground_bounds(x, y, direction)
+    return round((bounds[0] + bounds[2]) / 2, 4), round(bounds[3] + 2.54, 4)
 
 
 def annotation_bounds(component, x, y, rotation):
-    """Conservative visible reference/value/description bounds in sheet axes."""
+    """Visible field bounds matching serialized instance-relative text angles.
+
+    Exported Reference/Value angles equal the symbol rotation modulo 180, so
+    native KiCad renders these fields horizontally for every symbol orientation.
+    """
+    from .KiCadSchematicScene import text_bounds
     visible = getattr(component, "display_value", "") or component.value
-    lines = (
-        textwrap.wrap(visible, 30)
-        if visible != component.value
-        else visible.splitlines()
-    ) or [""]
-    boxes = []
-    for text, cy in [(component.refdes, y)] + [
-        (line, y + 2.54 + (i - (len(lines) - 1) / 2) * 1.65)
-        for i, line in enumerate(lines)
-    ]:
-        half = max(1, len(text)) * 0.64 + 1
-        if rotation % 180:
-            boxes.append((x - 1.5, cy - half, x + 1.5, cy + half))
-        else:
-            boxes.append((x - half, cy - 1.5, x + half, cy + 1.5))
+    value = "\n".join(textwrap.wrap(visible, 30)) if visible != component.value else visible
+    boxes = [text_bounds(component.refdes, x, y, size=1.27),
+             text_bounds(value, x, y + 2.54, size=1.27)]
     count = 0
     for description in getattr(component, "descriptions", ()):
         for line in textwrap.wrap(description, 42):
-            half = len(line) * 0.6 + 1
-            cy = y + 10 + count * 2.54
-            boxes.append((x - half, cy - 1.5, x + half, cy + 1.5))
+            boxes.append(text_bounds(line, x, y + 10 + count * 2.54, size=1.1))
             count += 1
-    return (
-        min(b[0] for b in boxes),
-        min(b[1] for b in boxes),
-        max(b[2] for b in boxes),
-        max(b[3] for b in boxes),
-    )
+    # Reserve stroke clearance beyond the font envelope.
+    return (min(b[0] for b in boxes) - 0.3, min(b[1] for b in boxes) - 0.3,
+            max(b[2] for b in boxes) + 0.3, max(b[3] for b in boxes) + 0.3)
 
 
 def annotation_obstacles(component, view, x, y, rotation):
@@ -139,27 +180,24 @@ def annotation_obstacles(component, view, x, y, rotation):
         result.append(
             (min(px, ex) - 0.8, min(py, ey) - 0.8, max(px, ex) + 0.8, max(py, ey) + 0.8)
         )
-        name = labels.get(number, "")
+        ground_label = getattr(component, "ground_net_labels", {}).get(number, "")
+        name = labels.get(number, "") or ground_label
         if not name:
             continue
-        if name.lower().split(".")[-1] == "gnd":
-            result.append(ground_bounds(ex, ey, direction))
+        if ground_label or name.lower().split(".")[-1] == "gnd":
+            result.append(ground_bounds(ex, ey, direction, ground_label))
             continue
-        width = len(name) * 1.27 + 2
-        if direction == 0:
-            result.append((ex - width, ey - 1.5, ex + 1, ey + 1.5))
-        elif direction == 180:
-            result.append((ex - 1, ey - 1.5, ex + width, ey + 1.5))
-        elif direction == 270:
-            result.append((ex - 1.5, ey - width, ex + 1.5, ey + 1))
-        else:
-            result.append((ex - 1.5, ey - 1, ex + 1.5, ey + width))
+        result.append(pin_label_bounds(name, ex, ey, direction))
+
     return result
 
 
 def annotation_position(component, view, x, y, rotation):
     if getattr(component, "annotation", None) is not None:
         return component.annotation[0], component.annotation[1], ""
+    # Score locally so translation cannot change a floating-point tie.
+    origin_x, origin_y = x, y
+    x = y = 0.0
     xmin, ymin, xmax, ymax = graphic_bounds(view, rotation)
     local = annotation_bounds(component, 0, 0, rotation)
     half_width = (local[2] - local[0]) / 2
@@ -204,7 +242,24 @@ def annotation_position(component, view, x, y, rotation):
         )
 
     chosen = min(enumerate(candidates), key=lambda pair: (*score(pair[1]), pair[0]))[1]
-    return chosen[0], chosen[1], ""
+    return chosen[0] + origin_x, chosen[1] + origin_y, ""
+
+
+def freeze_annotations(placed, views):
+    """Resolve fields once for routing, measurement, and final serialization.
+
+    Copies retain placement evidence without leaking generated coordinates into
+    source components, which may subsequently be split and placed again.
+    """
+    from copy import copy
+
+    result = []
+    for component, x, y, rotation in placed:
+        resolved = copy(component)
+        ax, ay, _ = annotation_position(component, views[component.path], x, y, rotation)
+        resolved.annotation = (ax, ay)
+        result.append((resolved, x, y, rotation))
+    return result
 
 
 def regroup(
@@ -249,11 +304,14 @@ def regroup(
         c.group = root(c.group)
     # Explicit feedback terminal + conventional resistor symbols justify a
     # complete local divider region, even across nested PB implementation blocks.
-    for pattern in discover_patterns(components, pin_nets, views):
+    model = getattr(components[0], "circuit_model", None) if components else None
+    patterns = model.patterns if model is not None else discover_patterns(components, pin_nets, views)
+    for pattern in patterns:
         if pattern.kind in (
             "feedback_divider",
             "indicator_branch",
             "converter_output",
+            "gate_driver_stage",
             "amplifier_feedback",
             "local_decoupling",
         ):
@@ -262,7 +320,32 @@ def regroup(
                 by_path[path].group = owner
 
 
-def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
+def place_group(components: Sequence[Any], views: dict, pin_nets: dict, *, optimize_orientations=True) -> list:
+    """Place whole functional atoms; retain established inline serial chains."""
+    from .KiCadSchematicPlacement import functional_atoms, place_functional
+
+    _, patterns = functional_atoms(components, pin_nets, views)
+    nonserial = [p for p in patterns if p.kind != "serial_data_chain"]
+    authored = any(p.kind == "authored_circuit" for p in patterns)
+    chains = [p for p in patterns if p.kind == "serial_data_chain"]
+    circuits = {c.functional_circuit.id: c.functional_circuit for c in components
+                if getattr(c, "functional_circuit", None) is not None
+                and c.functional_circuit.provenance == "explicit"}
+    # A declared repeated channel without ordered stages selects the proven
+    # inline chain template, including its locally owned bypass capacitors.
+    # Ordered stages remain authoritative and use functional placement.
+    inline_authored = authored and bool(circuits) and all(
+        circuit.template == "repeated_channel" and not circuit.stages and any(
+            set(chain.components) <= set(circuit.components) for chain in chains)
+        for circuit in circuits.values())
+    if inline_authored or (not authored and (chains or (
+        all(len(c.pins) == 2 for c in components) and not nonserial
+    ))):
+        return _place_group_legacy(components, views, pin_nets)
+    return place_functional(components, views, pin_nets, optimize_orientations=optimize_orientations)
+
+
+def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
     """Compact graph ordering; simple two-terminal chains get inline orientation."""
     components = sorted(components, key=lambda c: c.path)
     adjacency = {c.path: set() for c in components}
@@ -416,10 +499,70 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
     return pages
 
 
+class _NearForeignCache:
+    """Monotonic exact cache of the eight-neighbor visual-clearance rule.
+
+    A source track forbids its own axes in neighboring cells; protected source
+    points forbid both axes. The source cell itself is intentionally excluded:
+    exact perpendicular interior crossings use the existing track rule.
+    """
+    def __init__(self, tracks, protected):
+        self.tracks = tracks
+        self.protected = protected
+        self.owners = (defaultdict(set), defaultdict(set))
+        for point, nets in tracks.items():
+            for net, axes in nets.items():
+                self._reserve(point, net, axes)
+
+    def _reserve(self, point, net, axes):
+        axes = (0, 1) if point in self.protected else axes
+        x, y = point
+        for nx in (x - 1, x, x + 1):
+            for ny in (y - 1, y, y + 1):
+                if (nx, ny) != point:
+                    for axis in axes:
+                        self.owners[axis][nx, ny].add(net)
+
+    def add_track(self, point, net, axes):
+        existing = self.tracks[point].setdefault(net, set())
+        existing.update(axes)
+        self._reserve(point, net, existing)
+
+    def protect(self, points):
+        for point in points:
+            if point in self.protected:
+                continue
+            self.protected.add(point)
+            for net, axes in self.tracks.get(point, {}).items():
+                self._reserve(point, net, axes)
+
+    def blocked(self, point, axis, net):
+        owners = self.owners[axis].get(point)
+        return bool(owners) and (len(owners) > 1 or net not in owners)
+
+
+def _pin_lengths(definition):
+    """Read the resolved embedded symbol's actual library pin-leg lengths."""
+    result = {}
+    def visit(tree):
+        if not isinstance(tree, list) or not tree:
+            return
+        if str(tree[0]) == "pin":
+            number = next((v[1] for v in tree if isinstance(v,list) and v and str(v[0]) == "number"),None)
+            length = next((v[1] for v in tree if isinstance(v,list) and v and str(v[0]) == "length"),None)
+            if number is not None and length is not None:
+                result[str(number)] = float(length)
+        for child in tree:
+            visit(child)
+    visit(definition)
+    return result
+
+
 def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline") -> Tuple[list, dict, list]:
     """Route a same-net tree between pin escapes on a grid, avoiding other copper.
 
-    No crossings or near misses are accepted. All failed endpoints retain a label.
+    Crossings remain straight and junction-free; crossing-averse trials penalize
+    them explicitly. All failed endpoints retain a label.
     Router output is independently checked through native KiCad netlist export.
     """
     step = 0.635
@@ -431,9 +574,12 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
         return round(p[0] * step, 4), round(p[1] * step, 4)
 
     obstacles = set()
+    label_obstacles = defaultdict(set)
     occupied = {}
     tracks = defaultdict(dict)
     protected = set()
+    fixed_clearance = defaultdict(set)
+    pin_necks = set()
     endpoints = defaultdict(list)
     escapes = {}
     wires = []
@@ -456,6 +602,14 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
         obstacles.update(
             (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
         )
+        for item in (pin_name_items(views[c.path].definition, x, y, rotation, c.path)
+                     + pin_number_items(views[c.path].definition, x, y, rotation, c.path)):
+            lo_x, lo_y, hi_x, hi_y = item["bounds"]
+            # Only grid points actually inside the text box are obstacles.
+            obstacles.update((ix, iy)
+                             for ix in range(math.ceil(lo_x / step), math.floor(hi_x / step) + 1)
+                             for iy in range(math.ceil(lo_y / step), math.floor(hi_y / step) + 1))
+        pin_lengths = _pin_lengths(views[c.path].definition)
         for number, px, py, direction in pins(views[c.path], x, y, rotation):
             key = c.path, number
             net = pin_nets.get(key)
@@ -467,6 +621,36 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
             escape = grid(ex, ey)
             escapes[key] = (px, py, ex, ey, direction)
             endpoints[net].append((key, escape))
+            # Reserve true-coordinate stub geometry, including its off-grid
+            # transition, by a full 1.27 mm. Rounded grid occupancy alone lets
+            # distinct buses approach within 0.635 mm and look joined.
+            from .KiCadSchematicScene import WIRE_VISUAL_CLEARANCE
+            gx,gy = point(escape)
+            # Routes join fixed stubs only at outward escape anchors. Reserve
+            # the entire inward neck, including the red library pin leg, even
+            # from the SAME net. Otherwise a path may backtrack through its pin
+            # and hide against the symbol body while the visible stub hangs bare.
+            inward = (round(math.cos(r)), -round(math.sin(r)))
+            length = pin_lengths.get(number, 0.0)
+            body = (px + length*inward[0], py + length*inward[1])
+            lo_x,hi_x = sorted((gx,body[0]));lo_y,hi_y = sorted((gy,body[1]))
+            for ix in range(math.floor((lo_x-1.27)/step),math.ceil((hi_x+1.27)/step)+1):
+                for iy in range(math.floor((lo_y-1.27)/step),math.ceil((hi_y+1.27)/step)+1):
+                    qx,qy = point((ix,iy))
+                    along = (qx-gx)*inward[0] + (qy-gy)*inward[1]
+                    across = abs((qx-gx)*inward[1] - (qy-gy)*inward[0])
+                    extent = (body[0]-gx)*inward[0] + (body[1]-gy)*inward[1]
+                    if 0.0001 < along <= extent+0.0001 and across < 1.27-0.0001:
+                        pin_necks.add((ix,iy))
+            for first,last in (((px,py),(ex,ey)),((ex,ey),(gx,ey)),((gx,ey),(gx,gy))):
+                lo_x,hi_x = sorted((first[0],last[0]));lo_y,hi_y = sorted((first[1],last[1]))
+                margin = WIRE_VISUAL_CLEARANCE
+                for ix in range(math.floor((lo_x-margin)/step),math.ceil((hi_x+margin)/step)+1):
+                    for iy in range(math.floor((lo_y-margin)/step),math.ceil((hi_y+margin)/step)+1):
+                        qx,qy = point((ix,iy))
+                        distance = math.hypot(max(lo_x-qx,qx-hi_x,0),max(lo_y-qy,qy-hi_y,0))
+                        if distance < margin-0.0001:
+                            fixed_clearance[ix,iy].add(net)
             # Reserve the entire escape stub from unrelated nets.
             start = grid(px, py)
             protected.update((start, escape))
@@ -478,27 +662,34 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
     # Ground glyphs and external net-label text are real graphical obstacles,
     # even though they are not physical components in the compiled netlist.
     for net, entries in endpoints.items():
+        # Repeated physical pins on one IC still need one external island
+        # label. Reserve its canonical side-facing anchor before a foreign
+        # pin bus can trap it; final label_islands uses this same ordering.
+        single_component = len({key[0] for key, _ in entries}) == 1
+        label_key = min(entries, key=lambda entry: (escapes[entry[0]][4] % 180 != 0, entry[0]))[0]
         for key, _ in entries:
             _, _, ex, ey, direction = escapes[key]
             if net.lower().split(".")[-1] == "gnd":
-                bounds = ground_bounds(ex, ey, direction)
-            elif len(entries) == 1:
-                width = len(net) * 0.8 + 2.54
-                if direction == 0:
-                    bounds = (ex - width, ey - 1.27, ex - 1.27, ey + 1.27)
-                elif direction == 180:
-                    bounds = (ex + 1.27, ey - 1.27, ex + width, ey + 1.27)
-                elif direction == 270:
-                    bounds = (ex - 1.27, ey - width, ex + 1.27, ey - 1.27)
-                else:
-                    bounds = (ex - 1.27, ey + 1.27, ex + 1.27, ey + width)
+                component = next(c for c, _, _, _ in placed if c.path == key[0])
+                label = getattr(component, "ground_net_labels", {}).get(key[1], "")
+                bounds = ground_bounds(ex, ey, direction, label)
+            elif len(entries) == 1 or (single_component and key == label_key):
+                component = next(c for c, _, _, _ in placed if c.path == key[0])
+                name = getattr(component, "net_labels", {}).get(key[1], net)
+                bounds = pin_label_bounds(name, ex, ey, direction)
+
             else:
                 continue
             ax, ay = grid(bounds[0], bounds[1])
             bx, by = grid(bounds[2], bounds[3])
-            obstacles.update(
-                (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
-            )
+            for ix in range(ax, bx + 1):
+                for iy in range(ay, by + 1):
+                    if single_component and len(entries) > 1 and net.lower().split(".")[-1] != "gnd":
+                        # Its own tree may reach the label terminal; unrelated
+                        # nets must leave the full outline clear.
+                        label_obstacles[(ix, iy)].add(net)
+                    else:
+                        obstacles.add((ix, iy))
     # Preserve verified functional ownership even for explicitly positioned
     # circuits: bypass branches terminate at their own device's supply escape,
     # never at a neighbouring capacitor simply because it is geometrically near.
@@ -520,6 +711,8 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
             return (max(xs) - min(xs) + max(ys) - min(ys), len(entries), net)
         return (len(entries), net)
 
+    near_cache = _NearForeignCache(tracks, protected)
+    escape_anchors = {anchor for entries in endpoints.values() for _,anchor in entries}
     connected = set()
     for net, entries in sorted(endpoints.items(), key=net_order):
         if len(entries) < 2 or net.lower().split(".")[-1] == "gnd":
@@ -550,12 +743,10 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                 own_stub = {(ix, iy)
                             for ix in range(min(pin[0], start[0]), max(pin[0], start[0]) + 1)
                             for iy in range(min(pin[1], start[1]), max(pin[1], start[1]) + 1)} - {start}
-            direction_search = strategy in ("tree_search", "tree_reverse")
-            # Direction is part of the state when turn costs apply. A bounding
-            # box heuristic is admissible for every point in the target tree;
-            # aiming at one preselected point can miss a shorter tree attachment.
-            target_box = (min(p[0] for p in targets), min(p[1] for p in targets),
-                          max(p[0] for p in targets), max(p[1] for p in targets))
+            direction_search = strategy in ("tree_search", "tree_reverse", "crossing_averse")
+            # Distance to the actual tree stays informative inside its bounding
+            # box, avoiding budget exhaustion on sparse U-shaped route trees.
+            distance_to_tree = tree_distance(targets) if direction_search else None
             start_state = (start, None) if direction_search else start
             queue = [(0, 0, start, None)]
             cost = {start_state: 0}
@@ -577,11 +768,19 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                     q = current[0] + dx, current[1] + dy
                     if not (25 <= q[0] <= 625 and 65 <= q[1] <= 425):
                         continue
-                    if q in obstacles and q not in targets:
+                    if (q in obstacles or any(owner != net for owner in label_obstacles.get(q, ()))) and q not in targets:
                         continue
-                    if q in own_stub:
+                    if q in own_stub or (q in pin_necks and q not in escape_anchors):
+                        continue
+                    if any(owner != net for owner in fixed_clearance.get(q, ())):
                         continue
                     axis = 0 if dx else 1
+                    # A one-cell gap is electrically separate but visually
+                    # ambiguous beside a foreign bus, endpoint or bend. Keep
+                    # parallel tracks at least two 0.635 mm cells apart. A
+                    # strict perpendicular interior crossing remains legal.
+                    if near_cache.blocked(q, axis, net):
+                        continue
                     others = {
                         n: axes for n, axes in tracks.get(q, {}).items() if n != net
                     }
@@ -598,6 +797,7 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                     new_cost = (
                         distance
                         + 1
+                        + (24 if others and strategy == "crossing_averse" else 0)
                         + (
                             3
                             if prior_direction is not None
@@ -611,8 +811,7 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                     cost[next_state] = new_cost
                     previous[next_state] = state
                     if direction_search:
-                        heuristic = (max(target_box[0] - q[0], 0, q[0] - target_box[2])
-                                     + max(target_box[1] - q[1], 0, q[1] - target_box[3]))
+                        heuristic = distance_to_tree(q)
                     else:
                         heuristic = abs(q[0] - target[0]) + abs(q[1] - target[1])
                     heapq.heappush(
@@ -637,15 +836,15 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                     continue
             tree.update(path)
             connected.add(key)
-            protected.update((path[0], path[-1]))
+            near_cache.protect((path[0], path[-1]))
             for i, q in enumerate(path):
                 occupied[q] = net
                 axes = set()
                 for neighbor in path[max(0, i - 1) : i] + path[i + 1 : i + 2]:
                     axes.add(0 if neighbor[1] == q[1] else 1)
-                tracks[q].setdefault(net, set()).update(axes)
+                near_cache.add_track(q, net, axes)
                 if len(axes) > 1:
-                    protected.add(q)
+                    near_cache.protect((q,))
             compact = [path[0]]
             for i in range(1, len(path) - 1):
                 before = path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]
@@ -672,21 +871,23 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
 
 
 def split_group(placed: list, views: dict, pin_nets: dict):
-    """Split an oversized region at the nearest complete circuit/channel edge.
+    """Cut complete functional atoms, minimizing signal-net page boundaries."""
+    from .KiCadSchematicPlacement import functional_atoms, signal_nets, atom_bounds
 
-    Return None when no legal split exists. A caller must then report the
-    oversized atomic circuit rather than clipping it or dropping support parts.
-    """
     components = [entry[0] for entry in placed]
-    patterns = discover_patterns(components, pin_nets, views)
-    atoms = [set(p.components) for p in patterns if p.kind != "serial_data_chain"]
+    atoms, _ = functional_atoms(components, pin_nets, views)
     paths = [c.path for c in components]
+    endpoints = signal_nets(components, pin_nets)
     choices = []
     for cut in range(1, len(placed)):
         left, right = set(paths[:cut]), set(paths[cut:])
-        if not any(atom & left and atom & right for atom in atoms):
-            choices.append(cut)
+        if any(set(atom) & left and set(atom) & right for atom in atoms):
+            continue
+        crossing = sum(bool(ends & left) and bool(ends & right) for ends in endpoints.values())
+        a, b = atom_bounds(placed[:cut], views), atom_bounds(placed[cut:], views)
+        area_a, area_b = (a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])
+        choices.append(((crossing, abs(area_a - area_b), abs(2 * cut - len(placed)), tuple(sorted(left))), cut))
     if not choices:
         return None
-    cut = min(choices, key=lambda i: (abs(2 * i - len(placed)), i))
+    _, cut = min(choices)
     return placed[:cut], placed[cut:]

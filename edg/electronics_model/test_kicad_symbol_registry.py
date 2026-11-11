@@ -29,6 +29,70 @@ class FixtureResolver:
 
 
 class KiCadSymbolRegistryTest(unittest.TestCase):
+    def test_datalogger_generic_mlcc_requires_exact_model_package_and_roles(self):
+        classes = ["edg.vendor_parts.generic.GenericCapacitor.GenericMlcc"]
+        component = SimpleNamespace(footprint="Capacitor_SMD:C_0603_1608Metric", pins={"1": "pos", "2": "neg"})
+        resolver = FixtureResolver({"Device:C": ["1", "2"]})
+        result = infer_symbol(component, classes, "", resolver)
+        self.assertEqual(result["lib_id"], "Device:C")
+        self.assertEqual(result["pinning"], {"1": "1", "2": "2"})
+        self.assertIsNone(infer_symbol(component, ["custom.Capacitor"], "", resolver))
+        component.pins = {"1": "neg", "2": "pos"}
+        self.assertIsNone(infer_symbol(component, classes, "", resolver))
+        component.pins = {"1": "pos", "2": "neg", "3": "shield"}
+        self.assertIsNone(infer_symbol(component, classes, "", resolver))
+        component.pins = {"1": "pos", "2": "neg"}
+        for footprint in ("Capacitor_SMD:CP_Elec_5x5.8", "Capacitor_SMD:C_Custom"):
+            component.footprint = footprint
+            self.assertIsNone(infer_symbol(component, classes, "", resolver))
+
+    def test_symbol_lookup_evidence_distinguishes_mapping_symbol_and_library(self):
+        classes = ["edg.vendor_parts.generic.GenericCapacitor.GenericMlcc"]
+        component = SimpleNamespace(footprint="Capacitor_SMD:C_0603_1608Metric", pins={"1": "pos", "2": "neg"})
+        evidence = {}
+        self.assertIsNone(infer_symbol(component, ["custom.Capacitor"], "", FixtureResolver({}), evidence))
+        self.assertEqual(evidence["category"], "missing_mapping")
+        evidence = {}
+        self.assertIsNone(infer_symbol(component, classes, "", FixtureResolver({}), evidence))
+        self.assertEqual(evidence["category"], "missing_symbol")
+        self.assertEqual(evidence["attempts"][0]["lib_id"], "Device:C")
+        class MissingLibrary:
+            def load(self, lib_id):
+                raise FileNotFoundError(lib_id)
+        evidence = {}
+        self.assertIsNone(infer_symbol(component, classes, "", MissingLibrary(), evidence))
+        self.assertEqual(evidence["category"], "missing_library")
+        evidence = {}
+        self.assertIsNone(infer_symbol(component, classes, "", FixtureResolver({"Device:C": ["1"]}), evidence))
+        self.assertEqual(evidence["category"], "invalid_registry_mapping")
+
+    def test_custom_irf540n_requires_exact_part_package_and_terminal_order(self):
+        component = SimpleNamespace(
+            footprint="Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp",
+            pins={"1": "gate", "2": "drain", "3": "source"},
+        )
+        classes = ["edg.vendor_parts.generic.CustomFet.CustomFet"]
+        resolver = FixtureResolver({"Transistor_FET:IRF540N": ["1", "2", "3"]})
+        result = infer_symbol(component, classes, "IRF540N", resolver)
+        self.assertEqual(result["lib_id"], "Transistor_FET:IRF540N")
+        self.assertEqual(result["pinning"], {"1": "1", "2": "2", "3": "3"})
+        self.assertIsNone(infer_symbol(component, classes, "IRF9540", resolver))
+        component.pins["2"], component.pins["3"] = component.pins["3"], component.pins["2"]
+        self.assertIsNone(infer_symbol(component, classes, "IRF540N", resolver))
+
+    def test_lmv331_exact_package_and_declared_polarity(self):
+        component = SimpleNamespace(
+            footprint="Package_TO_SOT_SMD:SOT-353_SC-70-5",
+            pins={"1": "inp", "2": "gnd", "3": "inn", "4": "out", "5": "vcc"},
+        )
+        classes = ["edg.parts.analog.Comparator_Lmv331.Lmv331_Device"]
+        resolver = FixtureResolver({"Comparator:LMV331": ["1", "2", "3", "4", "5"]})
+        result = infer_symbol(component, classes, "LMV331IDCKR (Texas Instruments)", resolver)
+        self.assertEqual(result["lib_id"], "Comparator:LMV331")
+        self.assertEqual(result["pinning"], {str(n): str(n) for n in range(1, 6)})
+        component.pins["1"], component.pins["3"] = component.pins["3"], component.pins["1"]
+        self.assertIsNone(infer_symbol(component, classes, "LMV331IDCKR", resolver))
+
     def test_parallel_dummy_capacitor_uses_nonpolar_symbol_only(self):
         component = SimpleNamespace(footprint="Capacitor_SMD:C_1206_3216Metric", pins={"1": "pos", "2": "neg"})
         cls = ["PolymorphicBlocks.edg.vendor_parts.jlc.JlcCapacitor.JlcDummyCapacitor"]

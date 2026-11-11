@@ -47,25 +47,24 @@ def route_metrics(wires, failures):
 def optimize_fixed_routes(placed, views, pin_nets, baseline, router):
     """Evaluate a fixed set of orders; ties retain the earlier candidate.
 
-    Never accept new fallback endpoints, more crossings, longer routes, or routes
-    outside the baseline envelope. The caller retains baseline packing bounds.
+    Never accept new fallback endpoints or more crossings. A longer route may
+    remove crossings; the caller measures the selected route before packing.
     """
     before = route_metrics(baseline[0], baseline[2])
     best, score, selected = baseline, _score(before), "baseline"
     points = [p for _, a, b in baseline[0] for p in (a, b)]
     if not points:
         return best, dict(before=before, after=before, selected=selected, candidates=1)
-    bounds = (min(p[0] for p in points), min(p[1] for p in points),
-              max(p[0] for p in points), max(p[1] for p in points))
     evaluated = []
-    for strategy in ("x", "y", "reverse", "short_first", "tree_search", "tree_reverse"):
+    for strategy in ("x", "y", "reverse", "short_first", "tree_search", "tree_reverse", "crossing_averse"):
         candidate = router(placed, views, pin_nets, strategy=strategy)
         metric = route_metrics(candidate[0], candidate[2])
         acceptable = (
             set(candidate[2]) <= set(baseline[2])
             and metric["crossings"] <= before["crossings"]
-            and metric["length_mm"] <= before["length_mm"]
-            and all(bounds[0] <= p[0] <= bounds[2] and bounds[1] <= p[1] <= bounds[3]
+            and (metric["crossings"] < before["crossings"]
+                 or metric["length_mm"] <= before["length_mm"])
+            and all(15 <= p[0] <= 400 and 35 <= p[1] <= 275
                     for _, a, b in candidate[0] for p in (a, b))
         )
         evaluated.append(dict(strategy=strategy, metrics=metric, acceptable=acceptable))

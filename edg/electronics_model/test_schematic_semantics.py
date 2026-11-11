@@ -8,6 +8,31 @@ from .KiCadSchematicRoles import infer_pin_names, infer_description
 
 
 class SchematicSemanticsTest(unittest.TestCase):
+    def test_authored_boundary_roles_only_rearrange_generic_pin_graphics(self):
+        component = PhysicalComponent("interface", "U1", "Test:IC", "Interface",
+                                      {"1": "port_a", "2": "port_b", "3": "port_c", "4": "port_d"}, None, "Interface")
+        component.presentation_pin_roles = {"1": "input", "2": "output", "3": "supply", "4": "return"}
+        view = generic(component)
+        pins = {n: (x, y) for n, x, y, _ in view.pins}
+        self.assertEqual(set(pins), set(component.pins))
+        self.assertLess(pins["1"][0], 0)
+        self.assertGreater(pins["2"][0], 0)
+        self.assertLess(pins["3"][1], 0)
+        self.assertGreater(pins["4"][1], 0)
+
+    def test_declared_power_driver_ports_face_power_stage(self):
+        outputs = ("gate1", "sw", "cboot", "btst1", "btst2", "hidrv1", "lodrv2", "tgup", "tgdn")
+        names = {"1": "in1", **{str(i + 2): name for i, name in enumerate(outputs)}, "20": "gnd"}
+        component = PhysicalComponent("driver", "U1", "Test:Package", "Driver", names, None, "Power")
+        view = generic(component)
+        pins = {n: (x, y, a) for n, x, y, a in view.pins}
+        self.assertEqual(set(pins), set(component.pins))
+        self.assertLess(pins["1"][0], 0)
+        for number, name in names.items():
+            if name in outputs:
+                self.assertGreater(pins[number][0], 0)
+                self.assertEqual(pins[number][2], 180)
+
     def test_two_pin_fallback_escapes_opposite_sides(self):
         component = PhysicalComponent("filter", "FB1", "Test:Package", "Filter", {"1": "a", "2": "b"}, None, "Power")
         view = generic(component)
@@ -68,6 +93,8 @@ class SchematicSemanticsTest(unittest.TestCase):
         self.assertEqual(KiCadSchematicExporter._display_value(compiled, block("edg.ZenerDiode")), "VerifiedPart")
         values[("device", "actual_capacitance")] = 0.9999999999999999e-6
         self.assertEqual(KiCadSchematicExporter._display_value(compiled, block("edg.Capacitor")), "1µF")
+        self.assertEqual(KiCadSchematicExporter._display_value(
+            compiled, block("project.Bulk100Cap"), {"lib_id": "Device:C_Polarized"}), "1µF")
 
     def test_short_labels_are_injective_and_order_independent(self):
         names = ["a.b.c.d", "x.b.c.d", "v3v3", "unicode.接口", "a name", "N_61206e616d65"]

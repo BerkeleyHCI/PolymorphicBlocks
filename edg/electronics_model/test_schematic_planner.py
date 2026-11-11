@@ -182,6 +182,57 @@ class SchematicPlannerTest(unittest.TestCase):
         self.assertNotEqual(locations["a"], locations["c"])
         self.assertTrue(any(d.startswith("cross_sheet_connections:") for d in plan.diagnostics))
 
+    def test_continuations_are_numbered_within_functional_title(self):
+        regions = [region("a", 300, 150, title="Control"),
+                   region("b", 300, 150, title="Control /2"),
+                   region("c", 300, 150, title="USB")]
+        plan = self.planner.plan_regions(regions, "f")
+        self.assertEqual({s.title for s in plan.sheets}, {"Overview", "Control /1", "Control /2", "USB"})
+
+    def test_continuation_page_order_is_numeric(self):
+        regions = [region(f"r{i:02}", 300, 150, title="Control") for i in range(12)]
+        plan = self.planner.plan_regions(regions, "f")
+        self.assertEqual([s.title for s in plan.sheets if s.id != "overview"],
+                         [f"Control /{i}" for i in range(1, 13)])
+
+    def test_mixed_titles_follow_underlying_region_continuations(self):
+        from .KiCadSchematicPlanner import _continuation_order
+        regions = {r.id: r for r in [region('a', title='bms'), region('b', title='bms /2'),
+                                    region('c', title='bms /3'), region('d', title='epd'),
+                                    region('e', title='epd /2')]}
+        sheets = [SchematicSheet('a', 'bms + alert', '(root)', (SchematicRegionPlacement('a', 20, 40),)),
+                  SchematicSheet('b', 'bms + vbus', '(root)', (SchematicRegionPlacement('b', 20, 40),)),
+                  SchematicSheet('c', 'bms + logic', '(root)', (SchematicRegionPlacement('c', 20, 40),)),
+                  SchematicSheet('d', 'epd', '(root)', (SchematicRegionPlacement('d', 20, 40),)),
+                  SchematicSheet('e', 'balance + epd', '(root)', (SchematicRegionPlacement('e', 20, 40),))]
+        ordered = _continuation_order(list(reversed(sheets)), regions, [])
+        indices = {s.id: i for i, s in enumerate(ordered)}
+        self.assertLess(indices['a'], indices['b'])
+        self.assertLess(indices['b'], indices['c'])
+        self.assertLess(indices['d'], indices['e'])
+        self.assertEqual(ordered, _continuation_order(sheets, regions, []))
+
+    def test_array_ranges_remain_ordered_when_first_page_waits_for_epd(self):
+        from .KiCadSchematicPlanner import _continuation_order
+        regions = {r.id: r for r in [region('a', title='balance[0,1]'),
+                    region('b', title='balance[2,3]'), region('c', title='balance[4,5]'),
+                    region('d', title='epd'), region('e', title='epd /2')]}
+        sheets = [SchematicSheet('a', 'balance + epd', '(root)',
+                       (SchematicRegionPlacement('a', 20, 40), SchematicRegionPlacement('e', 20, 100))),
+                  SchematicSheet('b', 'balance', '(root)', (SchematicRegionPlacement('b', 20, 40),)),
+                  SchematicSheet('c', 'balance', '(root)', (SchematicRegionPlacement('c', 20, 40),)),
+                  SchematicSheet('d', 'epd', '(root)', (SchematicRegionPlacement('d', 20, 40),))]
+        diagnostics = []
+        ordered = _continuation_order(sheets, regions, diagnostics)
+        self.assertEqual([sheet.id for sheet in ordered], ['d', 'a', 'b', 'c'])
+        self.assertFalse(diagnostics)
+
+    def test_signal_neighbour_is_packed_before_unrelated_larger_region(self):
+        regions = [region("a", 250, 150), region("b", 200, 60), region("c", 100, 60)]
+        plan = self.planner.plan_regions(regions, "f", adjacency={("a", "c"): 5})
+        sheet = next(s for s in plan.sheets if any(p.region_id == "a" for p in s.regions))
+        self.assertEqual([p.region_id for p in sheet.regions][:2], ["a", "c"])
+
     def test_duplicate_component_ownership_and_unsafe_requested_assignment(self):
         with self.assertRaisesRegex(ValueError, "more than one region"):
             self.planner.plan_regions([region("a", components=("same",)), region("b", components=("same",))], "f")

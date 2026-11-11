@@ -17,6 +17,8 @@ class SchematicPresentation:
     components: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
     interfaces: tuple = ()
     groups: Mapping[str, str] = field(default_factory=dict)
+    circuits: tuple = ()
+    schema: int = 1
 
     @classmethod
     def from_dict(cls, value):
@@ -25,10 +27,18 @@ class SchematicPresentation:
             "components",
             "interfaces",
             "groups",
+            "circuits",
         }:
             raise ValueError("unknown presentation fields")
-        if type(value.get("schema", 1)) is not int or value.get("schema", 1) != 1:
+        if type(value.get("schema", 1)) is not int or value.get("schema", 1) not in (1, 2):
             raise ValueError("unsupported presentation schema")
+        circuits = value.get("circuits", [])
+        if not isinstance(circuits, (list, tuple)):
+            raise ValueError("presentation circuits must be an array")
+        if circuits and value.get("schema", 1) != 2:
+            raise ValueError("circuits require presentation schema 2")
+        from .KiCadSchematicCircuits import validate_circuit_entries
+        validate_circuit_entries(circuits)
         components = value.get("components", {})
         groups = value.get("groups", {})
         interfaces = value.get("interfaces", [])
@@ -71,17 +81,24 @@ class SchematicPresentation:
             copy.deepcopy(components),
             tuple(copy.deepcopy(interfaces)),
             copy.deepcopy(groups),
+            tuple(copy.deepcopy(circuits)),
+            value.get("schema", 1),
         )
 
     def to_dict(self):
-        return dict(
-            schema=1,
+        result = dict(
+            schema=2 if self.circuits else self.schema,
             components=copy.deepcopy(dict(self.components)),
             interfaces=copy.deepcopy(list(self.interfaces)),
             groups=dict(self.groups),
         )
+        if self.circuits or self.schema == 2:
+            result["circuits"] = copy.deepcopy(list(self.circuits))
+        return result
 
     def validate(self, inventories):
+        from .KiCadSchematicCircuits import validate_circuit_entries
+        validate_circuit_entries(self.circuits, inventories)
         known = set(inventories)
         requested = set(self.components) | {i["component"] for i in self.interfaces}
         if requested - known:

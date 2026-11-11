@@ -322,7 +322,10 @@ def build_overviews(boards, plan, custom=None):
                 column, row = free
                 used.add(free)
             groups = [board.regions[p.region_id].spec.title for p in sheet.regions]
-            summary = "; ".join(groups)
+            # Region continuation indices describe packing fragments, not circuit
+            # sheet numbers. Only the actual sheet title names a continuation.
+            summary_groups = list(dict.fromkeys(re.sub(r" /\d+$", "", group) for group in groups))
+            summary = "; ".join(summary_groups)
             if len(summary) > 96:
                 summary = summary[:76].rsplit(";", 1)[0] + f"; {len(groups)} circuit regions"
             x, y = round(20.32 + column * 96.52, 4), round(49.53 + row * 36.83, 4)
@@ -343,9 +346,42 @@ def build_overviews(boards, plan, custom=None):
                     page=sheets.index(sheet) + (2 if overview_present else 1),
                     components=sum(len(board.regions[p.region_id].spec.components) for p in sheet.regions),
                     regions=groups,
+                    section=groups[0].split(" /")[0] if groups else sheet.title,
                     bounds=[x, y, round(x + CARD_W, 4), round(y + CARD_H, 4)],
                 )
             )
+        directory_pages = []
+        if mode == "directory":
+            if len(nodes) > 40:
+                # The serializer inserts Contents pages above forty children.
+                # Record the real document owning each circuit link, and its
+                # legacy measured bounds there, rather than claiming those links
+                # exist on the overview root. Keep that pagination unbounded.
+                for index, item in enumerate(nodes):
+                    bucket, slot = divmod(index, 40)
+                    x, y = 20 + (slot // 10) * 90, 50 + (slot % 10) * 14
+                    item["column"], item["row"] = divmod(slot, 10)
+                    item["bounds"] = [x, y, x + 80, y + 8]
+                    item["directory_document"] = board.prefix + f"_contents_{bucket + 1}.kicad_sch"
+                for bucket in range((len(nodes) + 39) // 40):
+                    members = nodes[bucket * 40:(bucket + 1) * 40]
+                    x, y = 20 + (bucket // 10) * 90, 50 + (bucket % 10) * 14
+                    directory_pages.append(dict(
+                        index=bucket, title=f"Contents {bucket + 1}",
+                        filename=board.prefix + f"_contents_{bucket + 1}.kicad_sch",
+                        page=len(sheets) + bucket + 2, sheets=len(members),
+                        components=sum(n["components"] for n in members),
+                        bounds=[x, y, x + 80, y + 8],
+                    ))
+            else:
+                # Group navigation by actual source-owned functional titles.
+                directory_nodes = sorted(nodes, key=lambda n: (n["section"], n["sheet_title"], n["sheet_id"]))
+                for index, item in enumerate(directory_nodes):
+                    column, row = divmod(index, 10)
+                    x, y = round(20.32 + column * 96.52, 4), round(52.07 + row * 12.7, 4)
+                    item["column"], item["row"] = column, row
+                    item["bounds"] = [x, y, round(x + CARD_W, 4), round(y + 12, 4)]
+                    item["directory_document"] = board.prefix + ".kicad_sch"
         selected = []
         explicit = [(a, b, l) for a, b, l in links if a.scope == board.scope]
         if explicit and mode != "diagram":
@@ -430,6 +466,11 @@ def build_overviews(boards, plan, custom=None):
             stubs = link.pop("_stubs")
             path, cells = _route(stubs[0], stubs[1], [n["bounds"] for n in nodes], occupied | reserved)
             link["id"] = "L" + str(index + 1)
+            link["endpoints"] = [
+                dict(sheet_id=identity, sheet_title=by_id[identity]["sheet_title"],
+                     page=by_id[identity]["page"])
+                for identity in (link["source"], link["target"])
+            ]
             link["path"] = [ends[0], *path, ends[1]] if path else []
             link["status"] = "drawn" if path else "legend_only"
             if path:
@@ -462,6 +503,8 @@ def build_overviews(boards, plan, custom=None):
                 mechanical_components=mechanical,
                 circuit_sheets=len(sheets),
                 nodes=nodes,
+                directory_layout="paginated" if directory_pages else "grouped" if mode == "directory" else None,
+                directory_pages=directory_pages,
                 connections=selected,
                 diagnostics=diagnostics,
                 omitted_connection_pairs=max(0, len(available) - len(selected)),
@@ -499,12 +542,38 @@ def render_overview(doc, board, data, options):
         text(
             "directory", "SHEET DIRECTORY — complete connectivity is shown on the detailed circuit sheets", 20, 46, 1.1
         )
-        for sheet in children(doc, "sheet"):
-            x, y = children(sheet, "at")[0][1:3]
-            title = next(p for p in children(sheet, "property") if p[1] == "Sheetname")
-            title[-1] = effects(hide=True)
-            display = title[2] if len(title[2]) <= 54 else title[2][:51] + "..."
-            text("directory-" + children(sheet, "uuid")[0][1], display, x + 2, y + 4, 1.1)
+        actual = {children(sheet, "uuid")[0][1]: sheet for sheet in children(doc, "sheet")}
+        if data.get("directory_layout") == "paginated":
+            for item in data["directory_pages"]:
+                identity = uid(board.prefix, "contents", str(item["index"]))
+                sheet = actual.get(identity)
+                if sheet is None:
+                    continue
+                x, y, right, bottom = item["bounds"]
+                for prop in children(sheet, "property"):
+                    prop[-1] = effects(hide=True)
+                text("directory-" + identity + "-title", item["title"], x + 2, y + 2, 1.1)
+                text("directory-" + identity + "-count",
+                     f"Page {item['page']} / {item['sheets']} sheets / {item['components']} components",
+                     x + 2, y + 5.5, 1.1)
+            return
+        for item in data["nodes"]:
+            identity = uid(board.prefix, item["sheet_id"])
+            sheet = actual.get(identity)
+            if sheet is None:
+                continue
+            x, y, right, bottom = item["bounds"]
+            children(sheet, "at")[0][1:] = [x, y]
+            children(sheet, "size")[0][1:] = [right - x, bottom - y]
+            for prop in children(sheet, "property"):
+                prop[-1] = effects(hide=True)
+            section = item["section"]
+            section = section if len(section) <= 48 else section[:45] + "..."
+            display = item["title"]
+            display = display if len(display) <= 48 else display[:45] + "..."
+            text("directory-" + identity + "-section", section, x + 2, y + 2.5, 1.1)
+            text("directory-" + identity + "-title", display, x + 2, y + 6, 1.1)
+            text("directory-" + identity + "-count", f"Sheet {item['page']} / {item['components']} components", x + 2, y + 9.5, 1.1)
         return
     key_only = sum(link["status"] != "drawn" for link in data["connections"])
     text(
@@ -562,8 +631,17 @@ def render_overview(doc, board, data, options):
                     "arrow",
                     [[b[0] - dx * 1.8 - dy, b[1] - dy * 1.8 + dx], b, [b[0] - dx * 1.8 + dy, b[1] - dy * 1.8 - dx]],
                 )
-        label = link["id"] + " " + link["label"] + (" (key only)" if not path else "")
-        text(link["id"] + "-key", label, 20.32 + (index % 4) * 96.52, 194.31 + (index // 4) * 5.08, 1.4)
+        # Two bounded lines fit between the last card row and the mechanical
+        # inset at y=205. Page identities remain useful even with no drawn route
+        # or with long, repeated, or source-authored card titles.
+        source, target = link["endpoints"]
+        relation = "→" if link["directed"] else "↔"
+        label = f"{link['id']}  Sheet {source['page']} {relation} Sheet {target['page']}"
+        if not path:
+            label += " (key only)"
+        x, y = 20.32 + (index % 4) * 96.52, 191.0 + (index // 4) * 6.35
+        text(link["id"] + "-key", label, x, y, 1.27)
+        text(link["id"] + "-key-label", link["label"], x, y + 2.54, 1.27)
     text(
         "legend",
         "Functional relationships only; arrow direction is source-authored. See detail sheets for complete electrical connectivity.",

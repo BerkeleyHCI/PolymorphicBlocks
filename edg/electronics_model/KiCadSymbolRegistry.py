@@ -66,7 +66,37 @@ def _role_pins(component: Any) -> Dict[str, str]:
     return roles
 
 
-def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver: Any) -> Optional[Dict[str, Any]]:
+def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver: Any,
+                 evidence: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    """Resolve verified defaults, optionally retaining failed library lookup evidence."""
+    attempts = []
+
+    class RecordingResolver:
+        def load(self, lib_id):
+            attempt = {"lib_id": lib_id}
+            attempts.append(attempt)
+            try:
+                result = resolver.load(lib_id)
+            except (LookupError, FileNotFoundError) as error:
+                attempt.update(reason=str(error), category=("missing_library" if isinstance(error, FileNotFoundError)
+                                                            else "missing_symbol"))
+                raise
+            attempt["category"] = "loaded"
+            return result
+
+    result = _infer_symbol(component, class_names, part, RecordingResolver())
+    if evidence is not None:
+        evidence.update(attempts=attempts)
+        if result is None:
+            failure = next((a for a in reversed(attempts) if a["category"] != "loaded"), None)
+            evidence.update(category=failure["category"] if failure else (
+                "invalid_registry_mapping" if attempts else "missing_mapping"),
+                reason=failure["reason"] if failure else (
+                    "verified symbol does not match modeled pin inventory" if attempts else "no schematic symbol mapping"))
+    return result
+
+
+def _infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver: Any) -> Optional[Dict[str, Any]]:
     """Return explicit library-pin -> physical-pad mapping, or None if unverified.
 
     ``class_names`` is the compiled hierarchy's library class names in path order,
@@ -78,6 +108,50 @@ def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver
     cls = _leaf_class(class_names)
     identifier = part.split(" (", 1)[0].strip()
     pins = set(component.pins)
+
+    if (
+        cls == "edg.parts.analog.Comparator_Lmv331.Lmv331_Device"
+        and identifier == "LMV331IDCKR"
+        and component.footprint == "Package_TO_SOT_SMD:SOT-353_SC-70-5"
+        and _role_pins(component)
+        == {"inp": "1", "gnd": "2", "inn": "3", "out": "4", "vcc": "5"}
+    ):
+        # TI LMV331 datasheet, Pin Configuration and Functions (DBV/DCK):
+        # https://www.ti.com/lit/ds/symlink/lmv331.pdf
+        # 1=IN+, 2=GND, 3=IN-, 4=OUT, 5=VCC. The official single-unit
+        # Comparator:LMV331 symbol uses these same numbers in KiCad 9 and 10.
+        return _checked_mapping(component, resolver, "Comparator:LMV331")
+
+    if (
+        cls == "edg.vendor_parts.generic.CustomFet.CustomFet"
+        and identifier == "IRF540N"
+        and component.footprint in {
+            "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp",
+            "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown",
+            "Package_TO_SOT_THT:TO-220-3_Vertical",
+        }
+        and _role_pins(component) == {"gate": "1", "drain": "2", "source": "3"}
+    ):
+        # Infineon IRF540N datasheet TO-220 front view: 1=G, 2=D, 3=S.
+        # https://www.infineon.com/assets/row/public/documents/24/49/
+        # infineon-irf540n-datasheet-en.pdf
+        # Official KiCad single-unit IRF540N has the same physical inventory.
+        return _checked_mapping(component, resolver, "Transistor_FET:IRF540N")
+
+    if (
+        cls == "edg.vendor_parts.generic.GenericCapacitor.GenericMlcc"
+        and component.footprint in {
+            "Capacitor_SMD:C_0402_1005Metric", "Capacitor_SMD:C_0603_1608Metric",
+            "Capacitor_SMD:C_0805_2012Metric", "Capacitor_SMD:C_1206_3216Metric",
+            "Capacitor_SMD:C_1210_3225Metric", "Capacitor_SMD:C_1812_4532Metric",
+        }
+        and pins == {"1", "2"}
+        and _role_pins(component) == {"pos": "1", "neg": "2"}
+    ):
+        # GenericMlcc.PACKAGE_SPECS enumerates these nonpolar ceramic packages;
+        # generate() explicitly declares physical 1=pos,2=neg. This also covers
+        # Datalogger's direct generic capacitors, not only parallel dummy leaves.
+        return _checked_mapping(component, resolver, "Device:C")
 
     if (
         cls

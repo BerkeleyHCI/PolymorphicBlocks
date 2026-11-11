@@ -104,7 +104,9 @@ class SchematicRegionTest(unittest.TestCase):
         component = PhysicalComponent("x", "U1", "Test:FP", "W" * 40, {}, None, "Tiny")
         view = generic(component)
         bounds = KiCadSchematicExporter._region_bounds([(component, 70, 80, 0)], {"x": view}, {}, {}, [], "Tiny")
-        self.assertGreaterEqual(bounds[2] - bounds[0], 40 * 1.27 + 7.99)
+        # Full 40-character native line plus 0.3 mm stroke clearance on
+        # each side and the region's 3 mm left/right packing margin.
+        self.assertGreaterEqual(bounds[2] - bounds[0], 40 * 1.27 + 6.6 - 1e-6)
 
     def test_heading_wrap_and_measured_width(self):
         component = PhysicalComponent("x", "U1", "Test:FP", "part", {}, None, "Tiny")
@@ -120,7 +122,7 @@ class SchematicRegionTest(unittest.TestCase):
         compiled = ScalaCompiler.compile(ContinuationCollisionBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
 
-        def split_every_member(members, views, pin_nets):
+        def split_every_member(members, views, pin_nets, **options):
             return [[(c, 70, 80, 0)] for c in members]
 
         with patch.object(

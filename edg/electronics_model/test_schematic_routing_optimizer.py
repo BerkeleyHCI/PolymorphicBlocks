@@ -5,11 +5,24 @@ import unittest
 from collections import defaultdict
 
 from .KiCadSchematicExporter import PhysicalComponent, SymbolView, node
-from .KiCadSchematicLayout import route_local
+from .KiCadSchematicLayout import route_local, tree_distance
 from .KiCadSchematicRouting import optimize_fixed_routes, route_metrics
 
 
 class RoutingOptimizerTest(unittest.TestCase):
+    def test_tree_heuristic_matches_nearest_actual_tree_point(self):
+        # Inside a sparse U-shaped tree, bounding-box distance is zero but
+        # the actual remaining route still has a substantial lower bound.
+        targets = {(x, 0) for x in range(41)} | {(0, y) for y in range(41)} | {(40, y) for y in range(41)}
+        distance = tree_distance(targets)
+        self.assertEqual(distance((20, 30)), 20)
+        for x in range(-5, 46, 3):
+            for y in range(-5, 46, 3):
+                expected = min(abs(x - tx) + abs(y - ty) for tx, ty in targets)
+                self.assertEqual(distance((x, y)), expected)
+                self.assertEqual(distance((x, y)), expected)  # Cached query.
+
+
     def test_union_metrics_are_independent_of_duplicate_and_split_segments(self):
         wires = [("a", (0, 0), (10, 0)), ("a", (10, 0), (10, 10)),
                  ("b", (5, -2), (5, 2))]
@@ -98,6 +111,16 @@ class RoutingOptimizerTest(unittest.TestCase):
                 self.assertLessEqual(len(calls), 8)
                 self.assertEqual(len(calls), len(set(calls)))
                 self.assertTrue(all(not trial["acceptable"] for trial in report["trials"]))
+
+    def test_longer_detour_can_remove_crossing_outside_original_envelope(self):
+        baseline = ([("a", (50, 60), (70, 60)), ("b", (60, 50), (60, 70))], {}, [])
+        candidate = ([("a", (50, 60), (50, 45)), ("a", (50, 45), (70, 45)),
+                      ("a", (70, 45), (70, 60)), ("b", (60, 50), (60, 70))], {}, [])
+        actual, report = optimize_fixed_routes([], {}, {}, baseline,
+                                               lambda *args, **kwargs: candidate)
+        self.assertEqual(actual, candidate)
+        self.assertEqual(report["after"]["crossings"], 0)
+        self.assertGreater(report["after"]["length_mm"], report["before"]["length_mm"])
 
     def test_equal_score_keeps_baseline_and_empty_baseline_does_not_search(self):
         baseline = ([("a", (0, 0), (10, 0))], {}, [])
