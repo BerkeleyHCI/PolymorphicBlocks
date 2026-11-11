@@ -357,7 +357,14 @@ acceptance gate.
 `KiCadSchematicExporter.export(compiled, options)` returns an in-memory
 `SchematicExport` bundle and diagnostics. Compile successfully and assign
 reference designators before calling it. `bundle.write()` stages files before
-replacement and removes only stale manifest-owned files. `generate=False`
+replacement and removes only stale manifest-owned files. It retains backups until
+replacement and stale-file cleanup succeed, then publishes the manifest last.
+Recoverable write failures restore the previous bundle, including removed stale
+files, and remove newly introduced files. If rollback also fails, the exception
+identifies a retained `.schematic-recovery-*` directory containing recovery copies.
+This is exception rollback, not an atomic directory swap: concurrent readers can
+observe intermediate files, and process termination or power loss requires manual
+recovery. Avoid concurrent writers to the same destination. `generate=False`
 writes nothing.
 
 For every root, use KiCad's schematic netlist export in `kicadxml` format, then

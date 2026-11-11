@@ -8,6 +8,7 @@ import json
 import math
 import os
 import re
+import shutil
 import tempfile
 import textwrap
 import uuid
@@ -152,14 +153,58 @@ class SchematicExport:
         for name in list(self.files) + previous:
             if Path(name).name != name or name in (".", ".."):
                 raise ValueError("unsafe generated filename")
-        with tempfile.TemporaryDirectory(dir=directory) as stage:
+        # Roll back ordinary I/O failures, not process termination or power loss.
+        # Keep recovery files if rollback itself fails.
+        stage = Path(tempfile.mkdtemp(prefix=".schematic-recovery-", dir=directory))
+        changed: List[str] = []
+        retain_recovery = False
+        try:
+            incoming, backup = stage / "incoming", stage / "backup"
+            incoming.mkdir()
+            backup.mkdir()
             for name, content in self.files.items():
-                Path(stage, name).write_text(content, encoding="utf-8")
-            for name in sorted(self.files, key=lambda n: n == "manifest.json"):
-                os.replace(Path(stage, name), directory / name)
-        for name in previous:
-            if name not in self.files:
-                (directory / name).unlink(missing_ok=True)
+                (incoming / name).write_text(content, encoding="utf-8")
+            for name in sorted(set(self.files) | set(previous)):
+                destination = directory / name
+                if destination.is_symlink() or destination.exists():
+                    if destination.is_dir() and not destination.is_symlink():
+                        raise ValueError("generated file destination is a directory: " + name)
+                    shutil.copy2(destination, backup / name, follow_symlinks=False)
+            try:
+                for name in sorted(n for n in self.files if n != "manifest.json"):
+                    os.replace(incoming / name, directory / name)
+                    changed.append(name)
+                for name in sorted(set(previous) - set(self.files)):
+                    destination = directory / name
+                    if destination.exists() or destination.is_symlink():
+                        destination.unlink()
+                        changed.append(name)
+                # Publish ownership only after replacements and cleanup succeed.
+                if "manifest.json" in self.files:
+                    os.replace(incoming / "manifest.json", directory / "manifest.json")
+                    changed.append("manifest.json")
+            except BaseException as error:
+                failures = []
+                for name in reversed(changed):
+                    try:
+                        saved = backup / name
+                        if saved.exists() or saved.is_symlink():
+                            os.replace(saved, directory / name)
+                        else:
+                            (directory / name).unlink(missing_ok=True)
+                    except OSError as rollback_error:
+                        failures.append(f"{name}: {rollback_error}")
+                if failures:
+                    retain_recovery = True
+                    raise RuntimeError(
+                        f"schematic write failed and rollback was incomplete; recovery files retained at {stage}: "
+                        + "; ".join(failures)
+                    ) from error
+                raise
+        finally:
+            if not retain_recovery:
+                shutil.rmtree(stage, ignore_errors=True)
+
 
 
 @dataclass

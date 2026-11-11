@@ -365,6 +365,90 @@ class SchematicExportTest(unittest.TestCase):
             self.assertTrue((root / "keep.txt").exists())
             self.assertFalse((root / "old.kicad_sch").exists())
 
+    def test_write_rolls_back_replacement_and_cleanup_failures(self):
+        import os
+        from unittest.mock import patch
+
+        for failure in ("a.kicad_sch", "b.kicad_sch", "old.kicad_sch", "manifest.json"):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                original = {
+                    "b.kicad_sch": b"old B",
+                    "old.kicad_sch": b"obsolete sheet",
+                    "keep.txt": b"user content",
+                    "manifest.json": json.dumps({"files": ["b.kicad_sch", "old.kicad_sch"]}).encode(),
+                }
+                for name, content in original.items():
+                    (root / name).write_bytes(content)
+                bundle = SchematicExport({
+                    "a.kicad_sch": "new A", "b.kicad_sch": "new B",
+                    "manifest.json": json.dumps({"files": ["a.kicad_sch", "b.kicad_sch"]}),
+                }, [])
+                real_replace, real_unlink = os.replace, Path.unlink
+
+                def replace(source, destination):
+                    if Path(source).parent.name == "incoming" and Path(destination).name == failure:
+                        raise OSError("injected replacement failure")
+                    return real_replace(source, destination)
+
+                def unlink(path, *args, **kwargs):
+                    if path == root / failure and failure == "old.kicad_sch":
+                        raise OSError("injected cleanup failure")
+                    return real_unlink(path, *args, **kwargs)
+
+                with patch("os.replace", replace), patch.object(Path, "unlink", unlink):
+                    with self.assertRaisesRegex(OSError, "injected"):
+                        bundle.write(root)
+                self.assertEqual({p.name: p.read_bytes() for p in root.iterdir()}, original)
+                # A retry must complete normally and retire only owned stale files.
+                bundle.write(root)
+                self.assertEqual((root / "keep.txt").read_bytes(), original["keep.txt"])
+                self.assertFalse((root / "old.kicad_sch").exists())
+                for name, content in bundle.files.items():
+                    self.assertEqual((root / name).read_text(), content)
+
+    def test_write_staging_failure_does_not_touch_existing_bundle(self):
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = {"a.kicad_sch": b"old A", "manifest.json": b'{"files": ["a.kicad_sch"]}'}
+            for name, content in original.items():
+                (root / name).write_bytes(content)
+            real_write = Path.write_text
+
+            def write(path, *args, **kwargs):
+                if path.parent.name == "incoming" and path.name == "b.kicad_sch":
+                    raise OSError("injected staging failure")
+                return real_write(path, *args, **kwargs)
+
+            with patch.object(Path, "write_text", write):
+                with self.assertRaisesRegex(OSError, "injected staging failure"):
+                    SchematicExport({"a.kicad_sch": "new A", "b.kicad_sch": "new B"}, []).write(root)
+            self.assertEqual({p.name: p.read_bytes() for p in root.iterdir()}, original)
+
+    def test_write_retains_backups_if_rollback_fails(self):
+        import os
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "a.kicad_sch").write_text("old A")
+            (root / "manifest.json").write_text('{"files": ["a.kicad_sch"]}')
+            real_replace = os.replace
+
+            def replace(source, destination):
+                if Path(destination).name == "manifest.json" or Path(source).parent.name == "backup":
+                    raise OSError("injected persistent failure")
+                return real_replace(source, destination)
+
+            with patch("os.replace", replace):
+                with self.assertRaisesRegex(RuntimeError, "recovery files retained"):
+                    SchematicExport({"a.kicad_sch": "new A", "manifest.json": "{}"}, []).write(root)
+            recovery, = root.glob(".schematic-recovery-*")
+            self.assertEqual((recovery / "backup" / "a.kicad_sch").read_text(), "old A")
+            self.assertEqual((root / "manifest.json").read_text(), '{"files": ["a.kicad_sch"]}')
+
     def test_library_inheritance_and_mapping_validation(self):
         library = """(kicad_symbol_lib (version 20241209) (generator test)
           (symbol "Base" (symbol "Base_1_1"
