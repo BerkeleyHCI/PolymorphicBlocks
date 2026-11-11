@@ -7,6 +7,8 @@
 
 _subcircuit generator library based hardware description language for circuit board design_
 
+[Try it in the browser!](https://ducky64.github.io/edg-playground/) (alpha)
+
 Polymorphic Blocks is an open-source, Python-based [hardware description language (HDL)](https://en.wikipedia.org/wiki/Hardware_description_language) for schematic-equivalent design of printed circuit boards (PCBs).
 Its library of components provide a high-level abstraction for circuit design while subcircuit generators automate the calculation of fine details.
 Abstract component interfaces enable these libraries to be general across applications and component vendors.
