@@ -5,7 +5,7 @@ This file is pregenerated and committed to the repository, and used by the parts
 
 import os
 from typing import Dict, List, Tuple, Any, Optional
-import sexpdata  # type: ignore
+import sexpdata
 from pydantic import RootModel, BaseModel
 
 KICAD_FP_DIRECTORIES = [

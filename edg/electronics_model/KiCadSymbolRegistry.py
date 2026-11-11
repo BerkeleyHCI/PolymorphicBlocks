@@ -13,7 +13,15 @@ bundled here. Unmodeled pins are omitted deliberately; never emit invented NCs.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Optional, Sequence
+from typing import Any, Dict, Mapping, Optional, Sequence, Protocol, TYPE_CHECKING
+from .KiCadSchematicTypes import SExpr
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent
+
+
+class LibraryResolver(Protocol):
+    def load(self, lib_id: str) -> SExpr: ...
 
 
 def _leaf_class(class_names: Sequence[str]) -> str:
@@ -23,12 +31,12 @@ def _leaf_class(class_names: Sequence[str]) -> str:
     return class_names[-1].removeprefix("PolymorphicBlocks.")
 
 
-def _children(tree: list, name: str) -> list:
+def _children(tree: SExpr, name: str) -> list[SExpr]:
     return [item for item in tree if isinstance(item, list) and item and str(item[0]) == name]
 
 
 def _checked_mapping(
-    component: Any, resolver: Any, lib_id: str, pinning: Optional[Mapping[str, str]] = None
+    component: PhysicalComponent, resolver: LibraryResolver, lib_id: str, pinning: Optional[Mapping[str, str]] = None
 ) -> Optional[Dict[str, Any]]:
     """Require an installed definition and a complete one-to-one physical pin map."""
     try:
@@ -52,7 +60,7 @@ def _checked_mapping(
     return {"lib_id": lib_id, "pinning": mapping, "_omit_unmodeled": True}
 
 
-def _role_pins(component: Any) -> Dict[str, str]:
+def _role_pins(component: PhysicalComponent) -> Dict[str, str]:
     """Use declared PB terminal semantics, never a guess from copper or pad order."""
     aliases = {"a": "anode", "k": "cathode"}
     roles: Dict[str, str] = {}
@@ -66,20 +74,27 @@ def _role_pins(component: Any) -> Dict[str, str]:
     return roles
 
 
-def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver: Any,
-                 evidence: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+def infer_symbol(
+    component: PhysicalComponent,
+    class_names: Sequence[str],
+    part: str,
+    resolver: LibraryResolver,
+    evidence: Optional[Dict[str, Any]] = None,
+) -> Optional[Dict[str, Any]]:
     """Resolve verified defaults, optionally retaining failed library lookup evidence."""
     attempts = []
 
     class RecordingResolver:
-        def load(self, lib_id):
+        def load(self, lib_id: str) -> SExpr:
             attempt = {"lib_id": lib_id}
             attempts.append(attempt)
             try:
                 result = resolver.load(lib_id)
             except (LookupError, FileNotFoundError) as error:
-                attempt.update(reason=str(error), category=("missing_library" if isinstance(error, FileNotFoundError)
-                                                            else "missing_symbol"))
+                attempt.update(
+                    reason=str(error),
+                    category=("missing_library" if isinstance(error, FileNotFoundError) else "missing_symbol"),
+                )
                 raise
             attempt["category"] = "loaded"
             return result
@@ -89,14 +104,26 @@ def infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver
         evidence.update(attempts=attempts)
         if result is None:
             failure = next((a for a in reversed(attempts) if a["category"] != "loaded"), None)
-            evidence.update(category=failure["category"] if failure else (
-                "invalid_registry_mapping" if attempts else "missing_mapping"),
-                reason=failure["reason"] if failure else (
-                    "verified symbol does not match modeled pin inventory" if attempts else "no schematic symbol mapping"))
+            evidence.update(
+                category=(
+                    failure["category"] if failure else ("invalid_registry_mapping" if attempts else "missing_mapping")
+                ),
+                reason=(
+                    failure["reason"]
+                    if failure
+                    else (
+                        "verified symbol does not match modeled pin inventory"
+                        if attempts
+                        else "no schematic symbol mapping"
+                    )
+                ),
+            )
     return result
 
 
-def _infer_symbol(component: Any, class_names: Sequence[str], part: str, resolver: Any) -> Optional[Dict[str, Any]]:
+def _infer_symbol(
+    component: PhysicalComponent, class_names: Sequence[str], part: str, resolver: LibraryResolver
+) -> Optional[Dict[str, Any]]:
     """Return explicit library-pin -> physical-pad mapping, or None if unverified.
 
     ``class_names`` is the compiled hierarchy's library class names in path order,
@@ -113,8 +140,7 @@ def _infer_symbol(component: Any, class_names: Sequence[str], part: str, resolve
         cls == "edg.parts.analog.Comparator_Lmv331.Lmv331_Device"
         and identifier == "LMV331IDCKR"
         and component.footprint == "Package_TO_SOT_SMD:SOT-353_SC-70-5"
-        and _role_pins(component)
-        == {"inp": "1", "gnd": "2", "inn": "3", "out": "4", "vcc": "5"}
+        and _role_pins(component) == {"inp": "1", "gnd": "2", "inn": "3", "out": "4", "vcc": "5"}
     ):
         # TI LMV331 datasheet, Pin Configuration and Functions (DBV/DCK):
         # https://www.ti.com/lit/ds/symlink/lmv331.pdf
@@ -125,7 +151,8 @@ def _infer_symbol(component: Any, class_names: Sequence[str], part: str, resolve
     if (
         cls == "edg.vendor_parts.generic.CustomFet.CustomFet"
         and identifier == "IRF540N"
-        and component.footprint in {
+        and component.footprint
+        in {
             "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp",
             "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown",
             "Package_TO_SOT_THT:TO-220-3_Vertical",
@@ -140,10 +167,14 @@ def _infer_symbol(component: Any, class_names: Sequence[str], part: str, resolve
 
     if (
         cls == "edg.vendor_parts.generic.GenericCapacitor.GenericMlcc"
-        and component.footprint in {
-            "Capacitor_SMD:C_0402_1005Metric", "Capacitor_SMD:C_0603_1608Metric",
-            "Capacitor_SMD:C_0805_2012Metric", "Capacitor_SMD:C_1206_3216Metric",
-            "Capacitor_SMD:C_1210_3225Metric", "Capacitor_SMD:C_1812_4532Metric",
+        and component.footprint
+        in {
+            "Capacitor_SMD:C_0402_1005Metric",
+            "Capacitor_SMD:C_0603_1608Metric",
+            "Capacitor_SMD:C_0805_2012Metric",
+            "Capacitor_SMD:C_1206_3216Metric",
+            "Capacitor_SMD:C_1210_3225Metric",
+            "Capacitor_SMD:C_1812_4532Metric",
         }
         and pins == {"1", "2"}
         and _role_pins(component) == {"pos": "1", "neg": "2"}

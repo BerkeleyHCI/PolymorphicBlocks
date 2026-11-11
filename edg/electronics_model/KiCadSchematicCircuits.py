@@ -3,27 +3,48 @@
 This model describes existing compiled terminals only. Authored flow and function
 are presentation intent; they never redefine electrical topology.
 """
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Collection, Mapping, Optional, Sequence
+from .KiCadSchematicTypes import PinNets, Views
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent
+    from .KiCadSchematicPresentation import SchematicPresentation
+
 
 from collections import defaultdict
 from dataclasses import dataclass
 import hashlib
-from typing import Mapping, Optional, Tuple
+from typing import Tuple
 
 from .KiCadSchematicPatterns import SchematicPattern, discover_patterns, terminal_roles
 
 BOUNDARY_ROLES = frozenset(("input", "output", "supply", "return", "control", "feedback", "bidirectional"))
-TEMPLATES = frozenset(("auto", "generic", "buck", "four_switch_bridge", "gate_driver", "repeated_channel",
-                       "connector_protection", "mcu_support", "series_path", "controller_support"))
+TEMPLATES = frozenset(
+    (
+        "auto",
+        "generic",
+        "buck",
+        "four_switch_bridge",
+        "gate_driver",
+        "repeated_channel",
+        "connector_protection",
+        "mcu_support",
+        "series_path",
+        "controller_support",
+    )
+)
 SUPPLY_ROLES = frozenset(("gnd", "vss", "pgnd", "vdd", "vcc", "pwr", "vin", "vout", "pwr_in", "pwr_out", "vp", "vn"))
 
 
-def _text(value, what):
+def _text(value: object, what: str) -> None:
     if not isinstance(value, str) or not value.strip() or value != value.strip() or len(value) > 240:
         raise ValueError(what + " must be trimmed nonempty text of at most 240 characters")
 
 
-def _paths(value, what):
+def _paths(value: object, what: str) -> None:
     if not isinstance(value, (list, tuple)) or not value:
         raise ValueError(what + " must be a nonempty array")
     for item in value:
@@ -32,13 +53,17 @@ def _paths(value, what):
         raise ValueError(what + " contains duplicate component paths")
 
 
-def validate_circuit_entries(entries, inventories=None):
+def validate_circuit_entries(
+    entries: Sequence[Mapping[str, Any]], inventories: Optional[Mapping[str, Mapping[str, str]]] = None
+) -> None:
     """Validate input syntax and, when available, exact physical references."""
     ids, ownership = set(), {}
     for entry in entries:
-        if not isinstance(entry, Mapping) or set(entry) - {
-            "id", "title", "summary", "components", "template", "stages", "boundaries"
-        } or not {"id", "title", "summary", "components"} <= set(entry):
+        if (
+            not isinstance(entry, Mapping)
+            or set(entry) - {"id", "title", "summary", "components", "template", "stages", "boundaries"}
+            or not {"id", "title", "summary", "components"} <= set(entry)
+        ):
             raise ValueError("circuit has unknown or missing fields")
         for key in ("id", "title", "summary"):
             _text(entry[key], "circuit " + key)
@@ -61,7 +86,8 @@ def validate_circuit_entries(entries, inventories=None):
         boundaries = entry.get("boundaries", [])
         if not isinstance(stages, (list, tuple)) or not isinstance(boundaries, (list, tuple)):
             raise ValueError("circuit stages and boundaries must be arrays")
-        stage_ids, stage_members = set(), set()
+        stage_ids: set[str] = set()
+        stage_members: set[str] = set()
         for stage in stages:
             if not isinstance(stage, Mapping) or set(stage) != {"id", "components"}:
                 raise ValueError("circuit stage requires id and components")
@@ -98,7 +124,7 @@ class CircuitStage:
     id: str
     components: Tuple[str, ...]
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return dict(id=self.id, components=list(self.components))
 
 
@@ -110,7 +136,7 @@ class CircuitBoundary:
     role: str
     net: str
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return dict(component=self.component, pin=self.pin, name=self.name, role=self.role, net=self.net)
 
 
@@ -127,15 +153,27 @@ class SchematicCircuit:
     provenance: str = "automatic"
 
     @property
-    def primary_nets(self):
-        return tuple(sorted({b.net for b in self.boundaries if b.role in ("input", "output", "bidirectional")}
-                            | {n for p in self.patterns if p.kind == "serial_data_chain" for n in p.nets}))
+    def primary_nets(self) -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                {b.net for b in self.boundaries if b.role in ("input", "output", "bidirectional")}
+                | {n for p in self.patterns if p.kind == "serial_data_chain" for n in p.nets}
+            )
+        )
 
-    def to_dict(self):
-        return dict(id=self.id, title=self.title, summary=self.summary, components=list(self.components),
-                    template=self.template, stages=[s.to_dict() for s in self.stages],
-                    boundaries=[b.to_dict() for b in self.boundaries], patterns=[p.to_dict() for p in self.patterns],
-                    primary_nets=list(self.primary_nets), provenance=self.provenance)
+    def to_dict(self) -> dict[str, Any]:
+        return dict(
+            id=self.id,
+            title=self.title,
+            summary=self.summary,
+            components=list(self.components),
+            template=self.template,
+            stages=[s.to_dict() for s in self.stages],
+            boundaries=[b.to_dict() for b in self.boundaries],
+            patterns=[p.to_dict() for p in self.patterns],
+            primary_nets=list(self.primary_nets),
+            provenance=self.provenance,
+        )
 
 
 @dataclass(frozen=True)
@@ -144,18 +182,32 @@ class SchematicCircuitModel:
     patterns: Tuple[SchematicPattern, ...]
     diagnostics: Tuple[str, ...] = ()
 
-    def to_dict(self):
-        return dict(schema=1, circuits=[c.to_dict() for c in self.circuits],
-                    patterns=[p.to_dict() for p in self.patterns], diagnostics=list(self.diagnostics))
+    def to_dict(self) -> dict[str, Any]:
+        return dict(
+            schema=1,
+            circuits=[c.to_dict() for c in self.circuits],
+            patterns=[p.to_dict() for p in self.patterns],
+            diagnostics=list(self.diagnostics),
+        )
 
 
-def _rails(components, pin_nets):
-    return {pin_nets[c.path, number] for c in components
-            for role, number in terminal_roles(c, pin_nets).items()
-            if role in SUPPLY_ROLES and (c.path, number) in pin_nets}
+def _rails(components: Sequence[PhysicalComponent], pin_nets: PinNets) -> set[str]:
+    return {
+        pin_nets[c.path, number]
+        for c in components
+        for role, number in terminal_roles(c, pin_nets).items()
+        if role in SUPPLY_ROLES and (c.path, number) in pin_nets
+    }
 
 
-def _validate_template(entry, members, by_path, pin_nets, views, patterns):
+def _validate_template(
+    entry: Mapping[str, Any],
+    members: Collection[str],
+    by_path: Mapping[str, PhysicalComponent],
+    pin_nets: PinNets,
+    views: Views,
+    patterns: Sequence[SchematicPattern],
+) -> None:
     template = entry.get("template", "auto")
     if template in ("auto", "generic"):
         return
@@ -163,6 +215,7 @@ def _validate_template(entry, members, by_path, pin_nets, views, patterns):
     valid = False
     if template in ("buck", "four_switch_bridge"):
         from .KiCadSchematicPower import power_topology
+
         topology = power_topology(members, by_path, views, pin_nets) if views else None
         valid = topology is not None and topology["kind"] == {"buck": "buck", "four_switch_bridge": "bridge"}[template]
     elif template == "gate_driver":
@@ -178,21 +231,38 @@ def _validate_template(entry, members, by_path, pin_nets, views, patterns):
         # Merely sharing a rail or a connector-like name is insufficient.
         symbol = {p: views[p].lib_id.split("_PB_", 1)[0] for p in members} if views else {}
         connectors = {p for p, sid in symbol.items() if sid.startswith(("Connector_Generic:Conn_", "Connector:Conn_"))}
-        diodes = {p for p, sid in symbol.items() if sid in ("Device:D", "Device:D_Zener", "Device:D_TVS", "Device:D_Schottky")}
-        returns = {pin_nets[p, number] for p in members
-                   for role, number in terminal_roles(by_path[p], pin_nets).items()
-                   if role in ("gnd", "vss", "pgnd", "vn") and (p, number) in pin_nets}
+        diodes = {
+            p for p, sid in symbol.items() if sid in ("Device:D", "Device:D_Zener", "Device:D_TVS", "Device:D_Schottky")
+        }
+        returns = {
+            pin_nets[p, number]
+            for p in members
+            for role, number in terminal_roles(by_path[p], pin_nets).items()
+            if role in ("gnd", "vss", "pgnd", "vn") and (p, number) in pin_nets
+        }
         terminal_nets = {p: {pin_nets[p, pin] for pin in by_path[p].pins if (p, pin) in pin_nets} for p in members}
         rails = _rails([by_path[p] for p in members], pin_nets)
         valid = len(entry.get("stages", ())) >= 2 and any(
-            len(terminal_nets[d]) == 2 and bool(terminal_nets[d] & returns)
+            len(terminal_nets[d]) == 2
+            and bool(terminal_nets[d] & returns)
             and bool((terminal_nets[d] - rails - returns) & terminal_nets[c])
-            for d in diodes for c in connectors)
+            for d in diodes
+            for c in connectors
+        )
     if not valid:
-        raise ValueError("circuit template lacks required compiled connectivity evidence: " + entry["id"] + " (" + template + ")")
+        raise ValueError(
+            "circuit template lacks required compiled connectivity evidence: " + entry["id"] + " (" + template + ")"
+        )
 
 
-def build_circuits(components, pin_nets, views, presentation, *, scope_by_path: Optional[Mapping] = None):
+def build_circuits(
+    components: Sequence[PhysicalComponent],
+    pin_nets: PinNets,
+    views: Views,
+    presentation: SchematicPresentation,
+    *,
+    scope_by_path: Optional[Mapping[str, str]] = None,
+) -> SchematicCircuitModel:
     """Discover once, then overlay source-owned circuit boundaries and intent.
 
     Called per board scope: disjoint authored circuits are skipped and a partial
@@ -200,8 +270,9 @@ def build_circuits(components, pin_nets, views, presentation, *, scope_by_path: 
     callers to reject a circuit spanning independent board scopes.
     """
     by_path = {c.path: c for c in components}
-    patterns = tuple(sorted(discover_patterns(components, pin_nets, views),
-                            key=lambda p: (p.kind, p.components, p.nets)))
+    patterns = tuple(
+        sorted(discover_patterns(components, pin_nets, views), key=lambda p: (p.kind, p.components, p.nets))
+    )
     circuits, diagnostics, claimed = [], [], set()
     rails = _rails(components, pin_nets)
     endpoints = defaultdict(set)
@@ -236,20 +307,40 @@ def build_circuits(components, pin_nets, views, presentation, *, scope_by_path: 
             second_nets = {n for n, ends in endpoints.items() if ends & set(second.components)}
             authored_flow = {b.net for b in boundary if b.role in ("input", "output", "bidirectional")}
             if not ((first_nets & second_nets) - rails or first_nets & second_nets & authored_flow):
-                raise ValueError("ordered circuit stages lack a non-supply connection: " + entry["id"] + ":" + first.id + " -> " + second.id)
+                raise ValueError(
+                    "ordered circuit stages lack a non-supply connection: "
+                    + entry["id"]
+                    + ":"
+                    + first.id
+                    + " -> "
+                    + second.id
+                )
         local_patterns = tuple(p for p in patterns if set(p.components) <= members)
         _validate_template(entry, tuple(sorted(members)), by_path, pin_nets, views, local_patterns)
-        circuits.append(SchematicCircuit(entry["id"], entry["title"], entry["summary"], tuple(sorted(members)),
-                        entry.get("template", "auto"), stages, tuple(boundary), local_patterns, "explicit"))
+        circuits.append(
+            SchematicCircuit(
+                entry["id"],
+                entry["title"],
+                entry["summary"],
+                tuple(sorted(members)),
+                entry.get("template", "auto"),
+                stages,
+                tuple(boundary),
+                local_patterns,
+                "explicit",
+            )
+        )
         claimed.update(members)
     # Merge verified support ownership only. A serial chain records order but
     # remains cuttable between complete locally supported channels.
     remaining = set(by_path) - claimed
     parent = {p: p for p in remaining}
-    def root(p):
+
+    def root(p: str) -> str:
         while parent[p] != p:
             p = parent[p]
         return p
+
     for pattern in patterns:
         members = set(pattern.components)
         if pattern.kind == "serial_data_chain" or not members <= remaining:
@@ -261,27 +352,34 @@ def build_circuits(components, pin_nets, views, presentation, *, scope_by_path: 
     for path in sorted(remaining):
         groups[root(path)].add(path)
     for _, group in sorted(groups.items()):
-        members = tuple(sorted(group))
+        automatic_members = tuple(sorted(group))
         local = tuple(p for p in patterns if set(p.components) <= group)
-        identity = "auto_" + hashlib.sha256("\0".join(members).encode()).hexdigest()[:16]
+        identity = "auto_" + hashlib.sha256("\0".join(automatic_members).encode()).hexdigest()[:16]
         kinds = sorted({p.kind for p in local})
-        title = " / ".join(k.replace("_", " ") for k in kinds) if kinds else members[0]
+        title = " / ".join(k.replace("_", " ") for k in kinds) if kinds else automatic_members[0]
         # No automatic summary makes a functional claim beyond its evidence.
         boundary = []
-        for path in members:
+        for path in automatic_members:
             roles = terminal_roles(by_path[path], pin_nets)
             by_number = {number: role for role, number in roles.items()}
             for pin in sorted(by_path[path].pins):
-                net = pin_nets.get((path, pin))
-                if net is None or not endpoints[net] - group:
+                boundary_net = pin_nets.get((path, pin))
+                if boundary_net is None or not endpoints[boundary_net] - group:
                     continue
                 declared = by_number.get(pin)
-                role = ("return" if declared in ("gnd", "vss", "pgnd", "vn") else
-                        "supply" if declared in SUPPLY_ROLES else "bidirectional")
-                boundary.append(CircuitBoundary(path, pin, by_path[path].pins[pin], role, net))
-        circuits.append(SchematicCircuit(identity, title, "", members, boundaries=tuple(boundary), patterns=local))
+                role = (
+                    "return"
+                    if declared in ("gnd", "vss", "pgnd", "vn")
+                    else "supply" if declared in SUPPLY_ROLES else "bidirectional"
+                )
+                boundary.append(CircuitBoundary(path, pin, by_path[path].pins[pin], role, boundary_net))
+        circuits.append(
+            SchematicCircuit(identity, title, "", automatic_members, boundaries=tuple(boundary), patterns=local)
+        )
     associated = {p for pattern in patterns if pattern.kind == "local_decoupling" for p in pattern.components[1:]}
     for c in sorted(components, key=lambda c: c.path):
-        if c.path not in associated and any(cls.endswith(".DecouplingCapacitor") for _, cls in getattr(c, "hierarchy", ())):
+        if c.path not in associated and any(
+            cls.endswith(".DecouplingCapacitor") for _, cls in getattr(c, "hierarchy", ())
+        ):
             diagnostics.append("Unassigned bypass ownership: " + c.path + "; shared rails do not establish an owner")
     return SchematicCircuitModel(tuple(sorted(circuits, key=lambda c: c.id)), patterns, tuple(diagnostics))

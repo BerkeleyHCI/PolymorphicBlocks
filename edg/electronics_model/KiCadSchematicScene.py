@@ -10,13 +10,23 @@ from __future__ import annotations
 import math
 import unicodedata
 from dataclasses import dataclass
+from typing import Any, Iterable, Sequence
+from .KiCadSchematicTypes import Bounds, Point, SExpr, PinTextItem, Placements, Views, PinNets, Wire, PinKey
 
 
-def text_width(text, size):
+def text_width(text: object, size: float) -> float:
     return sum(2 if unicodedata.east_asian_width(c) in ("W", "F") else 1 for c in str(text)) * size
 
 
-def text_bounds(text, x, y, angle=0, size=1.27, justify="center", outline=False):
+def text_bounds(
+    text: object,
+    x: float,
+    y: float,
+    angle: float = 0,
+    size: float = 1.27,
+    justify: str = "center",
+    outline: bool = False,
+) -> Bounds:
     lines = str(text).splitlines() or [""]
     w = max(text_width(line, size) for line in lines)
     h = size * 1.4 * len(lines)
@@ -33,7 +43,16 @@ def text_bounds(text, x, y, angle=0, size=1.27, justify="center", outline=False)
     return min(p[0] for p in pts), min(p[1] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts)
 
 
-def label_bounds(text, x, y, angle=0, size=1.27, justify="center", outline=False, bottom=False):
+def label_bounds(
+    text: object,
+    x: float,
+    y: float,
+    angle: float = 0,
+    size: float = 1.27,
+    justify: str = "center",
+    outline: bool = False,
+    bottom: bool = False,
+) -> Bounds:
     """KiCad keeps labels readable at 0/180 and 90/270 degrees.
 
     Justification remains left/right in the readable text frame. Rotating a
@@ -58,16 +77,16 @@ def label_bounds(text, x, y, angle=0, size=1.27, justify="center", outline=False
     return bounds
 
 
-def pin_label_bounds(name, x, y, direction, outline=True):
+def pin_label_bounds(name: str, x: float, y: float, direction: float, outline: bool = True) -> Bounds:
     angle = (180 - int(direction)) % 360
     return label_bounds(name, x, y, angle, 1.27, "left" if angle in (0, 270) else "right", outline)
 
 
-def overlap(a, b, margin=0.25):
+def overlap(a: Bounds, b: Bounds, margin: float = 0.25) -> bool:
     return min(a[2], b[2]) - max(a[0], b[0]) > -margin and min(a[3], b[3]) - max(a[1], b[1]) > -margin
 
 
-def segment_box(a, b, box, margin=0.15):
+def segment_box(a: Point, b: Point, box: Bounds, margin: float = 0.15) -> bool:
     return (
         a[0] == b[0]
         and box[0] - margin <= a[0] <= box[2] + margin
@@ -79,7 +98,7 @@ def segment_box(a, b, box, margin=0.15):
     )
 
 
-def safe_wire_crossing(a, b, c, d, protected=()):
+def safe_wire_crossing(a: Point, b: Point, c: Point, d: Point, protected: Iterable[Point] = ()) -> Point | None:
     """Return the strict orthogonal interior crossing, or None for a touch.
 
     Endpoints, bends, pins, anchors, and junctions are never valid crossings.
@@ -87,7 +106,10 @@ def safe_wire_crossing(a, b, c, d, protected=()):
     """
     if a[0] == b[0] and c[1] == d[1]:
         point = (a[0], c[1])
-        inside = min(a[1], b[1]) + 0.15 < point[1] < max(a[1], b[1]) - 0.15 and min(c[0], d[0]) + 0.15 < point[0] < max(c[0], d[0]) - 0.15
+        inside = (
+            min(a[1], b[1]) + 0.15 < point[1] < max(a[1], b[1]) - 0.15
+            and min(c[0], d[0]) + 0.15 < point[0] < max(c[0], d[0]) - 0.15
+        )
     elif a[1] == b[1] and c[0] == d[0]:
         return safe_wire_crossing(c, d, a, b, protected)
     else:
@@ -102,18 +124,21 @@ def safe_wire_crossing(a, b, c, d, protected=()):
 WIRE_VISUAL_CLEARANCE = 1.27
 
 
-def wire_visual_conflict(a, b, c, d, protected=(), clearance=WIRE_VISUAL_CLEARANCE):
+def wire_visual_conflict(
+    a: Point, b: Point, c: Point, d: Point, protected: Iterable[Point] = (), clearance: float = WIRE_VISUAL_CLEARANCE
+) -> bool:
     """Reject near joins/parallel buses; permit clear interior crossings."""
     crossing = safe_wire_crossing(a, b, c, d, protected)
     if crossing is not None:
-        return any(math.hypot(crossing[0]-p[0],crossing[1]-p[1]) < clearance-0.0001
-                   for p in (a,b,c,d,*protected))
-    dx = max(min(a[0],b[0])-max(c[0],d[0]), min(c[0],d[0])-max(a[0],b[0]),0)
-    dy = max(min(a[1],b[1])-max(c[1],d[1]), min(c[1],d[1])-max(a[1],b[1]),0)
-    return math.hypot(dx,dy) < clearance-0.0001
+        return any(
+            math.hypot(crossing[0] - p[0], crossing[1] - p[1]) < clearance - 0.0001 for p in (a, b, c, d, *protected)
+        )
+    dx = max(min(a[0], b[0]) - max(c[0], d[0]), min(c[0], d[0]) - max(a[0], b[0]), 0)
+    dy = max(min(a[1], b[1]) - max(c[1], d[1]), min(c[1], d[1]) - max(a[1], b[1]), 0)
+    return math.hypot(dx, dy) < clearance - 0.0001
 
 
-def wire_through_text(a, b, rect):
+def wire_through_text(a: Point, b: Point, rect: Bounds) -> bool:
     x1, y1, x2, y2 = rect
     return (
         abs(a[0] - b[0]) < 0.001
@@ -126,7 +151,7 @@ def wire_through_text(a, b, rect):
     )
 
 
-def segments_touch(a, b, c, d):
+def segments_touch(a: Point, b: Point, c: Point, d: Point) -> bool:
     return segment_box(a, b, (min(c[0], d[0]), min(c[1], d[1]), max(c[0], d[0]), max(c[1], d[1])), 0.01)
 
 
@@ -134,11 +159,11 @@ def segments_touch(a, b, c, d):
 class SceneObject:
     identity: str
     kind: str
-    bounds: tuple
+    bounds: Bounds
     owner: str = ""
 
 
-def pin_name_items(definition, sx, sy, rotation, owner=""):
+def pin_name_items(definition: SExpr, sx: float, sy: float, rotation: float, owner: str = "") -> list[PinTextItem]:
     """Visible library pin names in sheet coordinates, including actual fonts."""
     from .KiCadSchematicExporter import children
 
@@ -147,7 +172,7 @@ def pin_name_items(definition, sx, sy, rotation, owner=""):
         return []
     offsets = children(options[0], "offset") if options else []
     offset = offsets[0][1] if offsets else 0.508
-    result = []
+    result: list[PinTextItem] = []
     r = math.radians(rotation)
     for body in children(definition, "symbol"):
         for pin in children(body, "pin"):
@@ -182,23 +207,23 @@ def pin_name_items(definition, sx, sy, rotation, owner=""):
     return result
 
 
-def instance_property_at(property_at, symbol_at):
+def instance_property_at(property_at: SExpr, symbol_at: SExpr) -> SExpr:
     """Convert KiCad's instance-relative field angle into its visible text frame.
 
     Instance property positions are absolute, but the stored field angle includes
     symbol rotation. KiCad renders equal field/symbol angles horizontally.
     """
-    return [property_at[0], property_at[1], property_at[2],
-            (property_at[3] - symbol_at[3]) % 180]
+    return [property_at[0], property_at[1], property_at[2], (property_at[3] - symbol_at[3]) % 180]
 
 
-def pin_number_items(definition, sx, sy, rotation, owner=""):
+def pin_number_items(definition: SExpr, sx: float, sy: float, rotation: float, owner: str = "") -> list[PinTextItem]:
     """Reserve visible pin-number glyphs above the native readable pin line."""
     from .KiCadSchematicExporter import children
+
     options = children(definition, "pin_numbers")
     if options and any(str(v) == "hide" for v in options[0][1:]):
         return []
-    result = []
+    result: list[PinTextItem] = []
     r = math.radians(rotation)
     for body in children(definition, "symbol"):
         for pin in children(body, "pin"):
@@ -225,13 +250,21 @@ def pin_number_items(definition, sx, sy, rotation, owner=""):
                 y -= 0.508 + size * 0.7
             else:
                 x -= 0.508 + size * 0.7
-            result.append(dict(identity=owner + ":number:" + str(number[1]),
-                               owner=owner, kind="pin_number", text=str(number[1]),
-                               bounds=text_bounds(number[1], x, y, 0 if horizontal else 90, size)))
+            result.append(
+                dict(
+                    identity=owner + ":number:" + str(number[1]),
+                    owner=owner,
+                    kind="pin_number",
+                    text=str(number[1]),
+                    bounds=text_bounds(number[1], x, y, 0 if horizontal else 90, size),
+                )
+            )
     return result
 
 
-def label_islands(placed, views, pin_nets, wires, external_nets):
+def label_islands(
+    placed: Placements, views: Views, pin_nets: PinNets, wires: Sequence[Wire], external_nets: Iterable[str]
+) -> set[PinKey]:
     """Choose one label for each connected graphical island needing a name.
 
     This operates only on generated same-net segments, never re-extracts PB
@@ -240,21 +273,21 @@ def label_islands(placed, views, pin_nets, wires, external_nets):
     """
     from .KiCadSchematicLayout import pins
 
-    by_net = {}
-    for c, x, y, angle in placed:
-        for number, px, py, direction in pins(views[c.path], x, y, angle):
-            net = pin_nets.get((c.path, number))
+    by_net: dict[str, list[tuple[PinKey, Point, Point, float]]] = {}
+    for component, x, y, angle in placed:
+        for number, px, py, direction in pins(views[component.path], x, y, angle):
+            net = pin_nets.get((component.path, number))
             if net is None:
                 continue
             r = math.radians(direction)
             escape = (round(px - 5.08 * math.cos(r), 4), round(py + 5.08 * math.sin(r), 4))
-            by_net.setdefault(net, []).append(((c.path, number), (px, py), escape, direction))
+            by_net.setdefault(net, []).append(((component.path, number), (px, py), escape, direction))
     selected = set()
     for net, entries in by_net.items():
         segments = [(a, b) for n, a, b in wires if n == net] + [(a, b) for _, a, b, _ in entries]
         parent = list(range(len(segments)))
 
-        def root(i):
+        def root(i: int) -> int:
             while parent[i] != i:
                 parent[i] = parent[parent[i]]
                 i = parent[i]
@@ -268,7 +301,7 @@ def label_islands(placed, views, pin_nets, wires, external_nets):
                 ):
                     left, right = root(i), root(j)
                     parent[max(left, right)] = min(left, right)
-        islands = {}
+        islands: dict[int, list[tuple[PinKey, Point, Point, float]]] = {}
         offset = len(segments) - len(entries)
         for i, entry in enumerate(entries):
             islands.setdefault(root(offset + i), []).append(entry)
@@ -280,7 +313,7 @@ def label_islands(placed, views, pin_nets, wires, external_nets):
     return selected
 
 
-def wire_island_anchors(anchor, net, segments, limit=8):
+def wire_island_anchors(anchor: Point, net: str, segments: Sequence[Wire], limit: int = 8) -> list[Point]:
     """Nearby vertices of the same *drawn* island, never another net island."""
     same = [(a, b) for name, a, b in segments if name == net]
     connected = {i for i, (a, b) in enumerate(same) if segments_touch(anchor, anchor, a, b)}
@@ -295,7 +328,10 @@ def wire_island_anchors(anchor, net, segments, limit=8):
                 connected.add(j)
                 pending.append(j)
     points = {p for i in connected for p in same[i] if p != anchor}
-    distance = lambda p: abs(p[0] - anchor[0]) + abs(p[1] - anchor[1])
+
+    def distance(p: Point) -> float:
+        return abs(p[0] - anchor[0]) + abs(p[1] - anchor[1])
+
     ordered = sorted(points, key=lambda p: (distance(p), p))
     # A local pin cluster can occupy all nearby vertices. Include distant
     # vertices of the same existing tree as well; this moves only a label,
@@ -311,15 +347,14 @@ def wire_island_anchors(anchor, net, segments, limit=8):
     return result
 
 
-def place_document_labels(doc, electrical_segments, identity):
+def place_document_labels(doc: SExpr, electrical_segments: Sequence[Wire], identity: str) -> dict[str, Any]:
     """Repair serialized labels against the actual sheet scene, in UUID order.
 
     The finite search retains the original label on failure, with an explicit
     diagnostic. At most six settling passes let constrained labels benefit from
     later repairs; stable or repeated states stop the search early.
     """
-    from types import SimpleNamespace
-    from .KiCadSchematicExporter import children, node, S
+    from .KiCadSchematicExporter import children, node, S, SymbolView
     from .KiCadSchematicLayout import graphic_bounds
     from .KiCadSchematicReadability import text_item
 
@@ -331,15 +366,19 @@ def place_document_labels(doc, electrical_segments, identity):
         at = children(symbol, "at")[0]
         lib = children(symbol, "lib_id")[0][1]
         if lib in definitions:
-            x1, y1, x2, y2 = graphic_bounds(SimpleNamespace(definition=definitions[lib], pins=[]), int(at[3]), False)
+            x1, y1, x2, y2 = graphic_bounds(SymbolView(definitions[lib], [], lib), int(at[3]), False)
             obstacles.append((at[1] + x1, at[2] + y1, at[1] + x2, at[2] + y2))
-            obstacles.extend(item["bounds"] for item in pin_name_items(definitions[lib], *at[1:4]) + pin_number_items(definitions[lib], *at[1:4]))
+            obstacles.extend(
+                item["bounds"]
+                for item in pin_name_items(definitions[lib], at[1], at[2], at[3])
+                + pin_number_items(definitions[lib], at[1], at[2], at[3])
+            )
         for prop in children(symbol, "property"):
             positions, effects = children(prop, "at"), children(prop, "effects")
             if positions and effects:
-                item = text_item("", prop[2], instance_property_at(positions[0], at), effects[0], "", "field")
-                if item:
-                    obstacles.append(item.bounds)
+                field_text = text_item("", prop[2], instance_property_at(positions[0], at), effects[0], "", "field")
+                if field_text:
+                    obstacles.append(field_text.bounds)
     for item in children(doc, "text"):
         positions, effects = children(item, "at"), children(item, "effects")
         if positions and effects:
@@ -348,19 +387,20 @@ def place_document_labels(doc, electrical_segments, identity):
                 obstacles.append(text.bounds)
     labels = children(doc, "label") + children(doc, "global_label")
     labels.sort(key=lambda label: children(label, "uuid")[0][1])
-    unique = {}
+    unique: dict[tuple[str, str, Point], SExpr] = {}
     duplicates = []
     for label in labels:
-        key = (str(label[0]), label[1], tuple(children(label, "at")[0][1:3]))
-        if key in unique:
+        label_at = children(label, "at")[0]
+        label_key = (str(label[0]), label[1], (label_at[1], label_at[2]))
+        if label_key in unique:
             duplicates.append(label)
         else:
-            unique[key] = label
+            unique[label_key] = label
     for label in duplicates:
         doc.remove(label)
     labels = list(unique.values())
 
-    def box(label):
+    def box(label: SExpr) -> Bounds:
         at = children(label, "at")[0]
         effect = children(label, "effects")[0]
         font = children(effect, "font")
@@ -369,7 +409,9 @@ def place_document_labels(doc, electrical_segments, identity):
         terms = {str(x) for x in just[0][1:]} if just else set()
         return label_bounds(
             label[1],
-            *at[1:4],
+            at[1],
+            at[2],
+            at[3],
             size,
             "left" if "left" in terms else "right" if "right" in terms else "center",
             str(label[0]) == "global_label",
@@ -377,7 +419,9 @@ def place_document_labels(doc, electrical_segments, identity):
         )
 
     boxes = {id(label): box(label) for label in labels}
-    anchors = {id(label): tuple(children(label, "at")[0][1:3]) for label in labels}
+    anchors: dict[int, Point] = {
+        id(label): (children(label, "at")[0][1], children(label, "at")[0][2]) for label in labels
+    }
     # The electrical net is recovered from the unchanged anchor, never guessed
     # from the shortened display name.
     nets = {}
@@ -385,8 +429,8 @@ def place_document_labels(doc, electrical_segments, identity):
         matches = {n for n, a, b in electrical_segments if segments_touch(anchors[id(label)], anchors[id(label)], a, b)}
         nets[id(label)] = next(iter(matches)) if len(matches) == 1 else None
     regions = []
-    for rect in children(doc, "rectangle"):
-        start, end = children(rect, "start"), children(rect, "end")
+    for rectangle in children(doc, "rectangle"):
+        start, end = children(rectangle, "start"), children(rectangle, "end")
         if start and end:
             x1, y1 = start[0][1:3]
             x2, y2 = end[0][1:3]
@@ -395,18 +439,30 @@ def place_document_labels(doc, electrical_segments, identity):
     for key, (x, y) in anchors.items():
         containing = [b for b in regions if b[0] <= x <= b[2] and b[1] <= y <= b[3]]
         if containing:
-            owners[key] = min(containing, key=lambda b: (b[2]-b[0])*(b[3]-b[1]))
-    def inside_region(key, rect):
+            owners[key] = min(containing, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+
+    def inside_region(key: int, rect: Bounds) -> bool:
         region = owners.get(key)
-        return region is None or (region[0] + 0.5 <= rect[0] and region[1] + 0.5 <= rect[1]
-                                  and rect[2] <= region[2] - 0.5 and rect[3] <= region[3] - 0.5)
-    added = {}
-    records = {}
-    def placement_state():
-        return tuple((children(label, "uuid")[0][1],
-                      tuple(children(label, "at")[0][1:]),
-                      tuple(str(v) for j in children(children(label, "effects")[0], "justify") for v in j[1:]),
-                      tuple(added.get(id(label), ()))) for label in labels)
+        return region is None or (
+            region[0] + 0.5 <= rect[0]
+            and region[1] + 0.5 <= rect[1]
+            and rect[2] <= region[2] - 0.5
+            and rect[3] <= region[3] - 0.5
+        )
+
+    added: dict[int, list[Wire]] = {}
+    records: dict[int, dict[str, Any]] = {}
+
+    def placement_state() -> tuple[tuple[str, tuple[float, ...], tuple[str, ...], tuple[Wire, ...]], ...]:
+        return tuple(
+            (
+                children(label, "uuid")[0][1],
+                tuple(children(label, "at")[0][1:]),
+                tuple(str(v) for j in children(children(label, "effects")[0], "justify") for v in j[1:]),
+                tuple(added.get(id(label), ())),
+            )
+            for label in labels
+        )
 
     previous_state = placement_state()
     seen_states = {previous_state}
@@ -422,24 +478,30 @@ def place_document_labels(doc, electrical_segments, identity):
                 continue
             bounds = boxes[key]
             others = [b for k, b in boxes.items() if k != key]
-            conflicts = sum(overlap(bounds, b) for b in obstacles + others) + int(not inside_region(key, bounds))
+            conflict_count = sum(overlap(bounds, b) for b in obstacles + others) + int(not inside_region(key, bounds))
             # Keep clear horizontal labels; repair vertical labels first where
             # possible, so dense bottom-edge pins do not form vertical walls.
             text_rect = label_bounds(
                 label[1],
-                *at[1:4],
+                at[1],
+                at[2],
+                at[3],
                 1.27,
-                "left"
-                if any(str(v) == "left" for j in children(children(label, "effects")[0], "justify") for v in j[1:])
-                else "right",
+                (
+                    "left"
+                    if any(str(v) == "left" for j in children(children(label, "effects")[0], "justify") for v in j[1:])
+                    else "right"
+                ),
                 bottom=str(label[0]) == "label",
             )
-            current_segments = list(electrical_segments) + [segment for entries in added.values() for segment in entries]
+            current_segments = list(electrical_segments) + [
+                segment for entries in added.values() for segment in entries
+            ]
             wire_conflict = any(wire_through_text(a, b, text_rect) for _, a, b in current_segments)
             outline_conflict = str(label[0]) == "global_label" and any(
                 n != net and segment_box(a, b, bounds) for n, a, b in current_segments
             )
-            if conflicts == 0 and not wire_conflict and not outline_conflict and int(at[3]) % 180 == 0:
+            if conflict_count == 0 and not wire_conflict and not outline_conflict and int(at[3]) % 180 == 0:
                 continue
             candidates = []
             for route_anchor in wire_island_anchors(anchor, net, electrical_segments):
@@ -450,7 +512,31 @@ def place_document_labels(doc, electrical_segments, identity):
                 ):
                     # Outer lanes clear long pin-label banks and enclosing
                     # supply rails; all normal scene and electrical gates apply.
-                    for offset in (0, 1.27, -1.27, 2.54, -2.54, 3.81, -3.81, 5.08, -5.08, 7.62, -7.62, 10.16, -10.16, 15.24, -15.24, 20.32, -20.32, 30.48, -30.48, 40.64, -40.64, 50.8, -50.8):
+                    for offset in (
+                        0,
+                        1.27,
+                        -1.27,
+                        2.54,
+                        -2.54,
+                        3.81,
+                        -3.81,
+                        5.08,
+                        -5.08,
+                        7.62,
+                        -7.62,
+                        10.16,
+                        -10.16,
+                        15.24,
+                        -15.24,
+                        20.32,
+                        -20.32,
+                        30.48,
+                        -30.48,
+                        40.64,
+                        -40.64,
+                        50.8,
+                        -50.8,
+                    ):
                         # One measured outer lane resolves dense connector
                         # label stacks without unbounded or time-based search.
                         outer_lane = math.ceil((text_width(label[1], 1.27) + 5.08) / 2.54) * 2.54
@@ -466,7 +552,13 @@ def place_document_labels(doc, electrical_segments, identity):
                                 str(label[0]) == "global_label",
                                 bottom=str(label[0]) == "label",
                             )
-                            if not inside_region(key, rect) or rect[0] < 12 or rect[1] < 30 or rect[2] > 408 or rect[3] > 278:
+                            if (
+                                not inside_region(key, rect)
+                                or rect[0] < 12
+                                or rect[1] < 30
+                                or rect[2] > 408
+                                or rect[3] > 278
+                            ):
                                 continue
                             if any(overlap(rect, b) for b in obstacles + others):
                                 continue
@@ -501,10 +593,10 @@ def place_document_labels(doc, electrical_segments, identity):
                                     for n, c, d in existing:
                                         if n == net:
                                             continue
-                                        if wire_visual_conflict(a,b,c,d,protected):
+                                        if wire_visual_conflict(a, b, c, d, protected):
                                             unsafe = True
                                             break
-                                        crossing = safe_wire_crossing(a,b,c,d,protected)
+                                        crossing = safe_wire_crossing(a, b, c, d, protected)
                                         if crossing is not None:
                                             crossings.add(crossing)
                                     if unsafe:
@@ -562,17 +654,22 @@ def place_document_labels(doc, electrical_segments, identity):
         terms = {str(v) for j in children(children(label, "effects")[0], "justify") for v in j[1:]}
         text_rect = label_bounds(
             label[1],
-            *at[1:4],
+            at[1],
+            at[2],
+            at[3],
             1.27,
             "left" if "left" in terms else "right" if "right" in terms else "center",
             bottom="bottom" in terms,
         )
         all_wires = list(electrical_segments) + [seg for entries in added.values() for seg in entries]
-        if any(overlap(bounds, b) for b in obstacles + [b for k, b in boxes.items() if k != key]) or any(
-            wire_through_text(a, b, text_rect) for _, a, b in all_wires
-        ) or (str(label[0]) == "global_label" and any(
-            n != nets[key] and segment_box(a, b, bounds) for n, a, b in all_wires
-        )):
+        if (
+            any(overlap(bounds, b) for b in obstacles + [b for k, b in boxes.items() if k != key])
+            or any(wire_through_text(a, b, text_rect) for _, a, b in all_wires)
+            or (
+                str(label[0]) == "global_label"
+                and any(n != nets[key] and segment_box(a, b, bounds) for n, a, b in all_wires)
+            )
+        ):
             conflicts.append(dict(identity=children(label, "uuid")[0][1], name=label[1], bounds=bounds))
     # Label extensions can introduce T junctions or overlap a portion of an
     # existing route. Rebuild the wire graph with the same writer that splits

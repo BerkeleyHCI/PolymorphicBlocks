@@ -1,12 +1,19 @@
 """Exporter tests use real compiled connectivity, independent of KiCad installation."""
 
+from __future__ import annotations
+from typing import Any
+from pathlib import Path
+from ..core import CompiledDesign
+from .KiCadSchematicTypes import PinNets, Placements, Views, RouteResult
+from .KiCadSchematicExporter import PhysicalComponent, SchematicExport
+
+from typing_extensions import override
 import json
 import tempfile
 import unittest
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 import sexpdata
 
@@ -20,9 +27,7 @@ from .RefdesRefinementPass import RefdesRefinementPass
 from .KiCadSchematicExporter import (
     KiCadSchematicExporter,
     SchematicExportOptions,
-    SchematicExport,
     SchematicPlacement,
-    PhysicalComponent,
     SymbolResolver,
     children,
     NOTICE,
@@ -31,12 +36,13 @@ from .KiCadSchematicExporter import (
 
 
 class GeneratedMappedPart(GeneratorBlock, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.a = self.Port(Passive(), optional=True)
         self.b = self.Port(Passive(), optional=True)
 
-    def generate(self):
+    @override
+    def generate(self) -> None:
         super().generate()
         self.footprint(
             "R", "Resistor_SMD:R_0603_1608Metric", {"1": self.a, "2": self.b}, value="Long supplier description " * 8
@@ -45,25 +51,39 @@ class GeneratedMappedPart(GeneratorBlock, FootprintBlock):
 
 
 class GeneratedMappedBoard(Block):
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.part = self.Block(GeneratedMappedPart())
 
 
 class ManyGroupsBoard(Block):
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         for index in range(41):
             setattr(self, "group" + str(index), self.Block(GeneratedMappedBoard()))
 
 
 class SchematicExportTest(unittest.TestCase):
+    compiled: CompiledDesign
+
     @classmethod
-    def setUpClass(cls):
+    @override
+    def setUpClass(cls) -> None:
         cls.compiled = ScalaCompiler.compile(TestBasicCircuit)
         cls.compiled.append_values(RefdesRefinementPass().run(cls.compiled))
 
-    def test_manifest_symbol_coverage_has_compiled_identity_and_fallback_reason(self):
+    def pin_numbers(self, path: tuple[str, ...]) -> set[str]:
+        inventory = self.compiled.get_value(path + ("fp_pinning",))
+        assert isinstance(inventory, list)
+        result = set()
+        for pin in inventory:
+            assert isinstance(pin, str)
+            result.add(pin.split("=", 1)[0])
+        return result
+
+    def test_manifest_symbol_coverage_has_compiled_identity_and_fallback_reason(self) -> None:
         result = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("Coverage"))
         coverage = json.loads(result.files["manifest.json"])["symbol_coverage"]
         expected = {str(b.full_path) for n in NetlistTransform(self.compiled).run().values() for b in n.blocks}
@@ -74,19 +94,27 @@ class SchematicExportTest(unittest.TestCase):
             self.assertEqual(entry["category"], "missing_mapping")
             self.assertEqual(entry["reason"], "no schematic symbol mapping")
 
-    def test_explicit_mapping_precedence_and_failure_evidence(self):
+    def test_explicit_mapping_precedence_and_failure_evidence(self) -> None:
         from unittest.mock import patch
+
         compiled = ScalaCompiler.compile(GeneratedMappedBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
-        for error, category in ((FileNotFoundError("Device:R"), "missing_library"),
-                                (KeyError("R"), "missing_symbol"),
-                                (LookupError("multi-unit symbol unsupported"), "unsupported_multi_unit"),
-                                (LookupError("stacked or repeated symbol pins unsupported"), "unsupported_symbol")):
-            with self.subTest(category=category), patch(
-                    "edg.electronics_model.KiCadSymbolRegistry.infer_symbol", side_effect=AssertionError("explicit mapping replaced")), patch.object(
-                    SymbolResolver, "resolve", side_effect=error):
+        for error, category in (
+            (FileNotFoundError("Device:R"), "missing_library"),
+            (KeyError("R"), "missing_symbol"),
+            (LookupError("multi-unit symbol unsupported"), "unsupported_multi_unit"),
+            (LookupError("stacked or repeated symbol pins unsupported"), "unsupported_symbol"),
+        ):
+            with (
+                self.subTest(category=category),
+                patch(
+                    "edg.electronics_model.KiCadSymbolRegistry.infer_symbol",
+                    side_effect=AssertionError("explicit mapping replaced"),
+                ),
+                patch.object(SymbolResolver, "resolve", side_effect=error),
+            ):
                 result = KiCadSchematicExporter().export(compiled, SchematicExportOptions("Coverage"))
-                entry, = json.loads(result.files["manifest.json"])["symbol_coverage"]
+                (entry,) = json.loads(result.files["manifest.json"])["symbol_coverage"]
                 self.assertEqual(entry["mapping_source"], "explicit")
                 self.assertEqual(entry["lib_id"], "Device:R")
                 self.assertEqual(entry["category"], category)
@@ -95,7 +123,7 @@ class SchematicExportTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "unmapped library pin"):
                 KiCadSchematicExporter().export(compiled, SchematicExportOptions("Invalid"))
 
-    def test_generated_symbol_metadata_and_long_description(self):
+    def test_generated_symbol_metadata_and_long_description(self) -> None:
         compiled = ScalaCompiler.compile(GeneratedMappedBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
         result = KiCadSchematicExporter().export(compiled, SchematicExportOptions("GeneratedMappedPart"))
@@ -110,19 +138,23 @@ class SchematicExportTest(unittest.TestCase):
         self.assertEqual(properties["Value"], "Long supplier description " * 8)
         self.assertIn("\n", properties["PBDisplayValue"])
 
-    def test_oversized_optimized_route_retains_fitting_baseline(self):
+    def test_oversized_optimized_route_retains_fitting_baseline(self) -> None:
         from unittest import mock
         from .KiCadSchematicRouting import route_metrics
-        def oversized(placed, views, nets, baseline, router):
+
+        def oversized(
+            placed: Placements, views: Views, nets: PinNets, baseline: RouteResult, router: object
+        ) -> tuple[RouteResult, dict[str, Any]]:
             metric = route_metrics(baseline[0], baseline[2])
             candidate = (baseline[0] + [("oversized-trial", (15, 40), (400, 40))], baseline[1], baseline[2])
             return candidate, dict(before=metric, after=metric, selected="trial", candidates=2)
+
         with mock.patch("edg.electronics_model.KiCadSchematicRouting.optimize_fixed_routes", oversized):
             result = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("PageFit"))
-        self.assertIn('rejected_for_page_fit', result.files['routing.json'])
-        self.assertNotIn('oversized-trial', ''.join(v for k, v in result.files.items() if k.endswith('.kicad_sch')))
+        self.assertIn("rejected_for_page_fit", result.files["routing.json"])
+        self.assertNotIn("oversized-trial", "".join(v for k, v in result.files.items() if k.endswith(".kicad_sch")))
 
-    def test_paginated_index_hierarchy(self):
+    def test_paginated_index_hierarchy(self) -> None:
         compiled = ScalaCompiler.compile(ManyGroupsBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
         consolidated = KiCadSchematicExporter().export(compiled, SchematicExportOptions("ManyGroupsBoard"))
@@ -169,7 +201,7 @@ class SchematicExportTest(unittest.TestCase):
                 )
                 verify_schematic_netlist(next(iter(NetlistTransform(compiled).run().values())), output)
 
-    def test_large_generic_symbol_has_centered_two_sided_pins(self):
+    def test_large_generic_symbol_has_centered_two_sided_pins(self) -> None:
         component = PhysicalComponent(
             "mcu", "U1", "Package:QFP", "mcu", {str(i): "gpio" + str(i) for i in range(1, 97)}, None, "mcu"
         )
@@ -179,7 +211,7 @@ class SchematicExportTest(unittest.TestCase):
         self.assertTrue(any(p[1] > 0 for p in view.pins))
         self.assertLess(max(p[2] for p in view.pins) - min(p[2] for p in view.pins), 180)
 
-    def test_compiled_export_deterministic(self):
+    def test_compiled_export_deterministic(self) -> None:
         exporter = KiCadSchematicExporter()
         options = SchematicExportOptions("TestBasicCircuit", source="test.TestBasicCircuit")
         first = exporter.export(self.compiled, options)
@@ -194,7 +226,7 @@ class SchematicExportTest(unittest.TestCase):
         self.assertGreater(len(symbols), 0)
         self.assertEqual(len(symbols), len({children(s, "uuid")[0][1] for s in symbols}))
 
-    def test_scope_and_wrapper_preservation(self):
+    def test_scope_and_wrapper_preservation(self) -> None:
         from ..electronics_interfaces.test_netlist_subboard import TestSubboardCircuit
         from ..electronics_interfaces.test_netlist_subboard_wrapper import TestWrapperCircuit
         from ..electronics_interfaces.test_netlist_subboard_array import TestArrayWrapperCircuit
@@ -214,14 +246,14 @@ class SchematicExportTest(unittest.TestCase):
                 )
                 self.assertEqual(actual_count, sum(len(n.blocks) for n in expected.values()))
 
-    def test_missing_python_placement_rejected(self):
+    def test_missing_python_placement_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "missing components"):
             KiCadSchematicExporter().export(
                 self.compiled,
                 SchematicExportOptions("Test", placements={"nonexistent": SchematicPlacement("Circuit", 60, 80)}),
             )
 
-    def test_python_placement_rotation_and_reflection(self):
+    def test_python_placement_rotation_and_reflection(self) -> None:
         options = SchematicExportOptions(
             "Hinted",
             placements={
@@ -264,13 +296,10 @@ class SchematicExportTest(unittest.TestCase):
                 )
                 verify_schematic_netlist(next(iter(NetlistTransform(self.compiled).run().values())), output)
 
-    def test_physical_inventory_and_wires(self):
+    def test_physical_inventory_and_wires(self) -> None:
         bundle = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("Test"))
         expected = next(iter(NetlistTransform(self.compiled).run().values()))
-        expected_pins = {
-            b.refdes: set(v.split("=", 1)[0] for v in self.compiled.get_value(b.full_path.to_tuple() + ("fp_pinning",)))
-            for b in expected.blocks
-        }
+        expected_pins = {b.refdes: self.pin_numbers(b.full_path.to_tuple()) for b in expected.blocks}
         actual = {}
         wire_count = 0
         for name, content in bundle.files.items():
@@ -285,7 +314,7 @@ class SchematicExportTest(unittest.TestCase):
         self.assertGreaterEqual(wire_count, sum(len(n.pins) for n in expected.nets))
 
     @unittest.skipUnless(shutil.which("kicad-cli"), "KiCad CLI not installed")
-    def test_native_round_trip(self):
+    def test_native_round_trip(self) -> None:
         bundle = KiCadSchematicExporter().export(self.compiled, SchematicExportOptions("Test"))
         with tempfile.TemporaryDirectory() as directory:
             bundle.write(Path(directory))
@@ -310,7 +339,7 @@ class SchematicExportTest(unittest.TestCase):
             )
             verify_schematic_netlist(next(iter(NetlistTransform(self.compiled).run().values())), output)
 
-    def test_checker_rejects_merged_nets(self):
+    def test_checker_rejects_merged_nets(self) -> None:
         expected = next(iter(NetlistTransform(self.compiled).run().values()))
         root = ET.Element("export")
         comps = ET.SubElement(root, "components")
@@ -321,8 +350,8 @@ class SchematicExportTest(unittest.TestCase):
             ET.SubElement(c, "libsource", lib="Test", part=block.refdes)
             part = ET.SubElement(parts, "libpart", lib="Test", part=block.refdes)
             pins = ET.SubElement(part, "pins")
-            for pin in self.compiled.get_value(block.full_path.to_tuple() + ("fp_pinning",)):
-                ET.SubElement(pins, "pin", num=pin.split("=", 1)[0])
+            for pin_number in self.pin_numbers(block.full_path.to_tuple()):
+                ET.SubElement(pins, "pin", num=pin_number)
         nets = ET.SubElement(root, "nets")
         refs = {str(b.full_path): b.refdes for b in expected.blocks}
         for net in expected.nets:
@@ -341,7 +370,7 @@ class SchematicExportTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 verify_schematic_netlist(expected, output)
 
-    def test_compile_opt_in_and_generate_false(self):
+    def test_compile_opt_in_and_generate_false(self) -> None:
         from ..BoardCompiler import compile_board
 
         with tempfile.TemporaryDirectory() as directory:
@@ -355,7 +384,7 @@ class SchematicExportTest(unittest.TestCase):
         result = compile_board(TestBasicCircuit, None, schematic=SchematicExportOptions("Test"))
         self.assertFalse(result.errors)
 
-    def test_write_preserves_unowned_files(self):
+    def test_write_preserves_unowned_files(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "keep.txt").write_text("user")
@@ -365,7 +394,7 @@ class SchematicExportTest(unittest.TestCase):
             self.assertTrue((root / "keep.txt").exists())
             self.assertFalse((root / "old.kicad_sch").exists())
 
-    def test_write_rolls_back_replacement_and_cleanup_failures(self):
+    def test_write_rolls_back_replacement_and_cleanup_failures(self) -> None:
         import os
         from unittest.mock import patch
 
@@ -380,18 +409,22 @@ class SchematicExportTest(unittest.TestCase):
                 }
                 for name, content in original.items():
                     (root / name).write_bytes(content)
-                bundle = SchematicExport({
-                    "a.kicad_sch": "new A", "b.kicad_sch": "new B",
-                    "manifest.json": json.dumps({"files": ["a.kicad_sch", "b.kicad_sch"]}),
-                }, [])
+                bundle = SchematicExport(
+                    {
+                        "a.kicad_sch": "new A",
+                        "b.kicad_sch": "new B",
+                        "manifest.json": json.dumps({"files": ["a.kicad_sch", "b.kicad_sch"]}),
+                    },
+                    [],
+                )
                 real_replace, real_unlink = os.replace, Path.unlink
 
-                def replace(source, destination):
+                def replace(source: Path, destination: Path) -> None:
                     if Path(source).parent.name == "incoming" and Path(destination).name == failure:
                         raise OSError("injected replacement failure")
                     return real_replace(source, destination)
 
-                def unlink(path, *args, **kwargs):
+                def unlink(path: Path, *args: Any, **kwargs: Any) -> None:
                     if path == root / failure and failure == "old.kicad_sch":
                         raise OSError("injected cleanup failure")
                     return real_unlink(path, *args, **kwargs)
@@ -404,10 +437,10 @@ class SchematicExportTest(unittest.TestCase):
                 bundle.write(root)
                 self.assertEqual((root / "keep.txt").read_bytes(), original["keep.txt"])
                 self.assertFalse((root / "old.kicad_sch").exists())
-                for name, content in bundle.files.items():
-                    self.assertEqual((root / name).read_text(), content)
+                for name, new_content in bundle.files.items():
+                    self.assertEqual((root / name).read_text(), new_content)
 
-    def test_write_staging_failure_does_not_touch_existing_bundle(self):
+    def test_write_staging_failure_does_not_touch_existing_bundle(self) -> None:
         from unittest.mock import patch
 
         with tempfile.TemporaryDirectory() as directory:
@@ -417,7 +450,7 @@ class SchematicExportTest(unittest.TestCase):
                 (root / name).write_bytes(content)
             real_write = Path.write_text
 
-            def write(path, *args, **kwargs):
+            def write(path: Path, *args: Any, **kwargs: Any) -> int:
                 if path.parent.name == "incoming" and path.name == "b.kicad_sch":
                     raise OSError("injected staging failure")
                 return real_write(path, *args, **kwargs)
@@ -427,7 +460,7 @@ class SchematicExportTest(unittest.TestCase):
                     SchematicExport({"a.kicad_sch": "new A", "b.kicad_sch": "new B"}, []).write(root)
             self.assertEqual({p.name: p.read_bytes() for p in root.iterdir()}, original)
 
-    def test_write_retains_backups_if_rollback_fails(self):
+    def test_write_retains_backups_if_rollback_fails(self) -> None:
         import os
         from unittest.mock import patch
 
@@ -437,7 +470,7 @@ class SchematicExportTest(unittest.TestCase):
             (root / "manifest.json").write_text('{"files": ["a.kicad_sch"]}')
             real_replace = os.replace
 
-            def replace(source, destination):
+            def replace(source: Path, destination: Path) -> None:
                 if Path(destination).name == "manifest.json" or Path(source).parent.name == "backup":
                     raise OSError("injected persistent failure")
                 return real_replace(source, destination)
@@ -445,11 +478,11 @@ class SchematicExportTest(unittest.TestCase):
             with patch("os.replace", replace):
                 with self.assertRaisesRegex(RuntimeError, "recovery files retained"):
                     SchematicExport({"a.kicad_sch": "new A", "manifest.json": "{}"}, []).write(root)
-            recovery, = root.glob(".schematic-recovery-*")
+            (recovery,) = root.glob(".schematic-recovery-*")
             self.assertEqual((recovery / "backup" / "a.kicad_sch").read_text(), "old A")
             self.assertEqual((root / "manifest.json").read_text(), '{"files": ["a.kicad_sch"]}')
 
-    def test_library_inheritance_and_mapping_validation(self):
+    def test_library_inheritance_and_mapping_validation(self) -> None:
         library = """(kicad_symbol_lib (version 20241209) (generator test)
           (symbol "Base" (symbol "Base_1_1"
             (pin passive line (at 0 0 0) (length 2.54) (name "A") (number "1"))))
@@ -462,6 +495,7 @@ class SchematicExportTest(unittest.TestCase):
             resolver = SymbolResolver([directory])
             view = resolver.resolve(component)
             self.assertEqual(view.pins[0][0], "7")
+            assert component.mapping is not None
             component.mapping["pinning"]["1"] = "8"
             with self.assertRaises(ValueError):
                 resolver.resolve(component)

@@ -12,7 +12,7 @@ import math
 import re
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, TYPE_CHECKING, Union
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, TYPE_CHECKING, Union, cast
 
 if TYPE_CHECKING:
     from ..core import CompiledDesign
@@ -25,20 +25,22 @@ GUTTER = 8.0
 TITLE_BLOCK_BOUNDS: Bounds = (230, 245, 410, 287)
 
 
-
-def natural_order(value: str) -> tuple:
+def natural_order(value: str) -> tuple[tuple[int, Union[int, str]], ...]:
     """Stable human ordering for continuation and array indices."""
-    return tuple((1, int(part)) if part.isdecimal() else (0, part)
-                 for part in re.split(r"(\d+)", value))
+    return tuple((1, int(part)) if part.isdecimal() else (0, part) for part in re.split(r"(\d+)", value))
 
 
-def _continuation_order(sheets, regions, diagnostics):
+def _continuation_order(
+    sheets: Sequence[SchematicSheet], regions: Mapping[str, SchematicRegion], diagnostics: list[str]
+) -> list[SchematicSheet]:
     """Keep source-region continuations ordered even on mixed-title pages."""
-    def key(sheet):
+
+    def key(sheet: SchematicSheet) -> tuple[str, bool, tuple[tuple[int, Union[int, str]], ...], int, str]:
         title = sheet.title.rsplit(" /", 1)
         continuation = int(title[1]) if len(title) == 2 and title[1].isdigit() else 0
         return sheet.scope, sheet.id != "overview", natural_order(title[0]), continuation, sheet.id
-    families = {}
+
+    families: dict[tuple[str, ...], list[tuple[int, int]]] = {}
     for index, sheet in enumerate(sheets):
         for placement in sheet.regions:
             region = regions[placement.region_id]
@@ -51,7 +53,7 @@ def _continuation_order(sheets, regions, diagnostics):
                 indices = [int(item.strip()) for item in array[2].split(",")]
                 array_family = (sheet.scope, "array", array[1], array[3])
                 families.setdefault(array_family, []).append((min(indices), index))
-    before = {i: set() for i in range(len(sheets))}
+    before: dict[int, set[int]] = {i: set() for i in range(len(sheets))}
     for entries in families.values():
         for first_number, first in entries:
             for second_number, second in entries:
@@ -61,11 +63,15 @@ def _continuation_order(sheets, regions, diagnostics):
     while remaining:
         eligible = [i for i in remaining if not before[i] & remaining]
         if not eligible:
-            diagnostics.append("continuation_order_conflict: mixed sheet assignments impose a cycle; retaining stable title order")
+            diagnostics.append(
+                "continuation_order_conflict: mixed sheet assignments impose a cycle; retaining stable title order"
+            )
             eligible = list(remaining)
         chosen = min(eligible, key=lambda i: key(sheets[i]))
-        ordered.append(sheets[chosen]); remaining.remove(chosen)
+        ordered.append(sheets[chosen])
+        remaining.remove(chosen)
     return ordered
+
 
 def _string(value: Any, name: str, allow_empty: bool = False) -> None:
     if not isinstance(value, str) or (not allow_empty and not value):
@@ -90,7 +96,7 @@ def _bounds(value: Any, name: str) -> None:
         raise ValueError(f"{name} must have positive width and height")
 
 
-def _object(value: Any, fields: set, required: set, name: str) -> Mapping[str, Any]:
+def _object(value: Any, fields: set[str], required: set[str], name: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{name} must be an object")
     if set(value) - fields or required - set(value):
@@ -150,9 +156,9 @@ class SchematicRegion:
             data["title"],
             data["scope"],
             tuple(_array(data["components"], "components")),
-            tuple(_array(data["bounds"], "bounds")),
+            cast(Bounds, tuple(_array(data["bounds"], "bounds"))),
             data.get("kind", "circuit"),
-        )  # type: ignore[arg-type]
+        )
 
 
 @dataclass(frozen=True)
@@ -284,7 +290,7 @@ class SchematicSheetPlan:
         regions = _region_map(self.regions)
         sheet_ids = set()
         covered = set()
-        scope_sheets: Dict[str, list] = {}
+        scope_sheets: Dict[str, list[SchematicSheet]] = {}
         for sheet in self.sheets:
             if not isinstance(sheet, SchematicSheet):
                 raise ValueError("sheets must contain SchematicSheet objects")
@@ -295,7 +301,7 @@ class SchematicSheetPlan:
             scope_sheets.setdefault(sheet.scope, []).append(sheet)
             if sheet.id == "overview" and not self.overview:
                 raise ValueError("overview sheet conflicts with overview=False")
-            occupied = []
+            occupied: list[Bounds] = []
             for placement in sheet.regions:
                 if placement.region_id not in regions:
                     raise ValueError(f"unknown placement region: {placement.region_id}")
@@ -364,7 +370,7 @@ class SchematicSheetPlanner:
     ) -> Dict[str, str]:
         if assignments is not None and not isinstance(assignments, Mapping):
             raise ValueError("sheet assignments must be an object")
-        titles: Dict[str, list] = {}
+        titles: Dict[str, list[str]] = {}
         for region in regions.values():
             titles.setdefault(region.title, []).append(region.id)
         result: Dict[str, str] = {}
@@ -402,7 +408,7 @@ class SchematicSheetPlanner:
                 raise ValueError("adjacency weight cannot be negative")
             if pair[0] == pair[1] or weight == 0:
                 continue
-            key = tuple(sorted(pair))
+            key = cast(Tuple[str, str], tuple(sorted(pair)))
             if key in result and result[key] != weight:
                 raise ValueError(f"conflicting adjacency weights: {pair}")
             result[key] = float(weight)
@@ -481,7 +487,7 @@ class SchematicSheetPlanner:
                 adopted.overview,
             )
 
-        groups: Dict[Tuple[str, Optional[str]], list] = {}
+        groups: Dict[Tuple[str, Optional[str]], list[SchematicRegion]] = {}
         for region in prepared:
             groups.setdefault((region.scope, assigned.get(region.id)), []).append(region)
         sheets = []
@@ -490,7 +496,7 @@ class SchematicSheetPlanner:
             if title == "Overview" and not overview:
                 raise ValueError("Overview assignment requires overview=True")
             usable = OVERVIEW_BOUNDS if title == "Overview" else USABLE_BOUNDS
-            pages: list = []
+            pages: list[list[SchematicRegionPlacement]] = []
             ordered = sorted(
                 members,
                 key=lambda r: (
@@ -512,7 +518,7 @@ class SchematicSheetPlanner:
                     chosen = min(
                         remaining,
                         key=lambda r: (
-                            -edges.get(tuple(sorted((previous.id, r.id))), 0),
+                            -edges.get(cast(Tuple[str, str], tuple(sorted((previous.id, r.id)))), 0),
                             -(previous.title.split(" /")[0] == r.title.split(" /")[0]),
                             remaining.index(r),
                         ),
@@ -531,8 +537,8 @@ class SchematicSheetPlanner:
                 candidates = []
                 for index, placements in enumerate(pages):
                     occupied = [_rect(by_id[p.region_id], p) for p in placements]
-                    placement = self._position(region, occupied, usable)
-                    if placement is not None:
+                    candidate_placement = self._position(region, occupied, usable)
+                    if candidate_placement is not None:
                         colocated = {p.region_id for p in placements}
                         inside = sum(
                             weight
@@ -547,7 +553,13 @@ class SchematicSheetPlanner:
                         )
                         family = region.title.split(" /")[0]
                         siblings = sum(by_id[p.region_id].title.split(" /")[0] == family for p in placements)
-                        candidates.append(((-inside, -siblings, crossing, placement.y, placement.x, index), index, placement))
+                        candidates.append(
+                            (
+                                (-inside, -siblings, crossing, candidate_placement.y, candidate_placement.x, index),
+                                index,
+                                candidate_placement,
+                            )
+                        )
                 if candidates:
                     _, index, placement = min(candidates, key=lambda candidate: candidate[0])
                     pages[index].append(placement)
@@ -556,11 +568,16 @@ class SchematicSheetPlanner:
                         raise ValueError(
                             "explicit Overview regions do not fit the reserved lower inset; revise their grouping or geometry"
                         )
-                    pages.append([self._position(region, (), usable)])
+                    first_placement = self._position(region, (), usable)
+                    assert first_placement is not None  # checked above for this region
+                    pages.append([first_placement])
             # Continuation numbers are local to a functional title. A single
             # Control page must not become /17 because sixteen other pages exist.
-            pages.sort(key=lambda placements: min(
-                (natural_order(by_id[p.region_id].title), by_id[p.region_id].id) for p in placements))
+            pages.sort(
+                key=lambda placements: min(
+                    (natural_order(by_id[p.region_id].title), by_id[p.region_id].id) for p in placements
+                )
+            )
             bases = []
             for placements in pages:
                 if title is not None:
@@ -569,7 +586,8 @@ class SchematicSheetPlanner:
                     labels = sorted(set(by_id[p.region_id].title.split(" /")[0] for p in placements))
                     base = " + ".join(labels[:2]) + (" + others" if len(labels) > 2 else "")
                     bases.append(base[:60])
-            totals, counts = Counter(bases), Counter()
+            totals = Counter(bases)
+            counts: Counter[str] = Counter()
             for index, placements in enumerate(pages):
                 if title == "Overview":
                     sheet_id, sheet_title = "overview", "Overview"
@@ -577,7 +595,9 @@ class SchematicSheetPlanner:
                     base = bases[index]
                     counts[base] += 1
                     sheet_title = base if totals[base] == 1 else f"{base} /{counts[base]}"
-                    token = json.dumps([scope, title, sorted(p.region_id for p in placements)], ensure_ascii=False).encode("utf-8")
+                    token = json.dumps(
+                        [scope, title, sorted(p.region_id for p in placements)], ensure_ascii=False
+                    ).encode("utf-8")
                     sheet_id = "sheet_" + hashlib.sha256(token).hexdigest()[:16]
                     if title is not None and counts[base] > 1:
                         diagnostics.append(

@@ -7,15 +7,21 @@ Merge returned names BELOW explicit compiled/board presentation pin names.
 """
 
 from __future__ import annotations
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Sequence, TYPE_CHECKING, Optional, cast
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent
+
+RoleEntry = tuple[set[str], dict[str, str], str]
 
 # Each table follows device.__init__'s .connected(...) maps in these modules.
 # Exact direct-child connector classes ensure no intervening pin-flip adapter.
 FPC050 = {"edg.parts.connector.Fpc.Afc01", "edg.parts.connector.Fpc.HiroseFh12sh"}
 FPC030 = {"edg.parts.connector.Fpc.HiroseFh35cshw"}
 OLED = "edg.parts.display.oled."
-MAPS = {
-    OLED + "Er_Oled_096_1_1.Er_Oled_096_1_1_Device": (
+MAPS: dict[str, RoleEntry] = {
+    OLED
+    + "Er_Oled_096_1_1.Er_Oled_096_1_1_Device": (
         FPC050,
         {
             "1": "VSS",
@@ -50,7 +56,8 @@ MAPS = {
         },
         "ER-OLED-0.96-1.1 display interface: logic supply, charge pump, IREF and serial control",
     ),
-    OLED + "Er_Oled_022.Er_Oled022_1_Device": (
+    OLED
+    + "Er_Oled_022.Er_Oled022_1_Device": (
         FPC050,
         {
             "1": "VSS",
@@ -79,7 +86,8 @@ MAPS = {
         },
         "ER-OLED022-1 display interface: logic VDD, external VCC, IREF and serial control",
     ),
-    OLED + "Er_Oled_096_1c.Er_Oled_096_1c_Device": (
+    OLED
+    + "Er_Oled_096_1c.Er_Oled_096_1c_Device": (
         FPC030,
         {
             "1": "VSS",
@@ -170,7 +178,9 @@ MAPS = {
 }
 
 
-def _entry(component: Any, class_names: Sequence[str], connector_length=None):
+def _entry(
+    component: PhysicalComponent, class_names: Sequence[str], connector_length: object = None
+) -> Optional[RoleEntry]:
     classes = [c.removeprefix("PolymorphicBlocks.") for c in class_names]
     if len(classes) < 2:
         return None
@@ -203,12 +213,14 @@ def _entry(component: Any, class_names: Sequence[str], connector_length=None):
     return entry
 
 
-def infer_pin_names(component: Any, class_names: Sequence[str], connector_length=None) -> Mapping[str, str]:
+def infer_pin_names(
+    component: PhysicalComponent, class_names: Sequence[str], connector_length: object = None
+) -> Mapping[str, str]:
     entry = _entry(component, class_names, connector_length)
     return {number: entry[1][number] for number in component.pins} if entry else {}
 
 
-def infer_description(component: Any, class_names: Sequence[str], connector_length=None) -> str:
+def infer_description(component: PhysicalComponent, class_names: Sequence[str], connector_length: object = None) -> str:
     entry = _entry(component, class_names, connector_length)
     if entry:
         return entry[2]

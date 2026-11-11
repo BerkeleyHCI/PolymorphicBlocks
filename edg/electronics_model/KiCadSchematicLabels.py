@@ -2,15 +2,16 @@
 
 import re
 import hashlib
+from typing import Iterable
 
 
-def readable_labels(net_names):
+def readable_labels(net_names: Iterable[str]) -> dict[str, str]:
     names = sorted(set(net_names))
     parts = {name: name.split(".") for name in names}
     depth = {name: min(3, len(parts[name])) for name in names}
     while True:
         candidate = {name: ".".join(parts[name][-depth[name] :]) for name in names}
-        duplicates = {}
+        duplicates: dict[str, list[str]] = {}
         for name, label in candidate.items():
             duplicates.setdefault(label, []).append(name)
         expand = [
@@ -28,7 +29,7 @@ def readable_labels(net_names):
         result[name] = label
     # Encoded names can collide with a legal PB name. Escape both with a stable
     # digest, never rely on iteration order or a UUID derived from coordinates.
-    groups = {}
+    groups: dict[str, list[str]] = {}
     for name, label in result.items():
         groups.setdefault(label, []).append(name)
     for group in groups.values():

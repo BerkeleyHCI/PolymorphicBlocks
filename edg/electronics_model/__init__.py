@@ -72,8 +72,11 @@ from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
 
 from .KiCadSchematicExporter import KiCadSchematicExporter, SchematicExportOptions, SchematicExport, SchematicPlacement
 from .KiCadSchematicPlanner import (
-    SchematicSheetPlanner, SchematicSheetPlan, SchematicSheet,
-    SchematicRegion, SchematicRegionPlacement,
+    SchematicSheetPlanner,
+    SchematicSheetPlan,
+    SchematicSheet,
+    SchematicRegion,
+    SchematicRegionPlacement,
 )
 
 from .KiCadSchematicOverview import SchematicOverview, SchematicOverviewBlock, SchematicOverviewLink

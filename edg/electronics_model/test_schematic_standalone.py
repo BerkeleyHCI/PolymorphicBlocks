@@ -9,10 +9,10 @@ import unittest
 
 
 class StandaloneSchematicTest(unittest.TestCase):
-    def test_pb_cli_exports_without_agentic_pcb(self):
+    def test_pb_cli_exports_without_agentic_pcb(self) -> None:
         # Use a fresh interpreter so an adapter already imported by another test
         # cannot conceal a reverse dependency. Block even optional imports.
-        script = '''
+        script = """
 import importlib.abc
 import runpy
 import sys
@@ -31,13 +31,15 @@ sys.argv = ["examples.export_schematic", "--output", sys.argv[1]]
 runpy.run_module("examples.export_schematic", run_name="__main__")
 assert not attempts, "PB must not delegate export to its agent adapter: " + repr(attempts)
 assert not any(n == "agentic_pcb" or n.startswith("agentic_pcb.") for n in sys.modules)
-'''
+"""
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory, "export")
             result = subprocess.run(
                 [sys.executable, "-c", script, str(output)],
                 cwd=Path(__file__).resolve().parents[2],
-                text=True, capture_output=True, timeout=120,
+                text=True,
+                capture_output=True,
+                timeout=120,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertTrue((output / "TestLed.net").is_file())

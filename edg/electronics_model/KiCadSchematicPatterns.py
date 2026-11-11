@@ -6,9 +6,16 @@ connections; ambiguous fan-outs and rings are deliberately left unclassified.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Optional, Sequence, cast
+from .KiCadSchematicTypes import PinKey, PinNets, Views
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent
+
+
 from dataclasses import dataclass
 import re
-from typing import Any, Mapping, Optional, Sequence, Tuple
+from typing import Tuple
 
 
 @dataclass(frozen=True)
@@ -17,34 +24,35 @@ class SchematicPattern:
     components: Tuple[str, ...]
     nets: Tuple[str, ...]
 
-    def to_dict(self) -> dict:
-        return dict(
-            kind=self.kind, components=list(self.components), nets=list(self.nets)
-        )
+    def to_dict(self) -> dict[str, Any]:
+        return dict(kind=self.kind, components=list(self.components), nets=list(self.nets))
 
 
-def terminal_roles(component: Any, pin_nets: Optional[Mapping] = None) -> dict:
+def terminal_roles(component: PhysicalComponent, pin_nets: Optional[PinNets] = None) -> dict[str, str]:
     """Use declared PB terminal names; accept parallel pads only with net proof."""
-    roles = {}
+    roles: dict[str, str] = {}
     for number, name in component.pins.items():
         role = name.removesuffix(".net").split(".")[-1].lower()
         if role in roles:
-            if (pin_nets is not None and pin_nets.get((component.path, number)) is not None
-                    and pin_nets.get((component.path, number)) == pin_nets.get((component.path, roles[role]))):
+            if (
+                pin_nets is not None
+                and pin_nets.get((component.path, number)) is not None
+                and pin_nets.get((component.path, number)) == pin_nets.get((component.path, roles[role]))
+            ):
                 continue
             return {}  # Ambiguous parallel/packed terminals remain unsupported.
         roles[role] = number
     return roles
 
 
-def amplifier_channels(component: Any) -> dict:
+def amplifier_channels(component: PhysicalComponent) -> dict[str, dict[str, str]]:
     """Read explicit amplifier terminal roles, including packed/vector channels.
 
     Physical packed blocks use inpa/inna/outa; other compiled models retain
     inp.0/inn.0/out.0. These are declared terminal names, not net-name guesses.
     Ambiguous duplicate roles invalidate only that channel.
     """
-    channels = {}
+    channels: dict[str, dict[str, str]] = {}
     ambiguous = set()
     for number, name in sorted(component.pins.items()):
         parts = name.removesuffix(".net").lower().split(".")
@@ -62,12 +70,15 @@ def amplifier_channels(component: Any) -> dict:
         if role in roles:
             ambiguous.add(channel)
         roles[role] = number
-    return {channel: roles for channel, roles in sorted(channels.items())
-            if channel not in ambiguous and {"inp", "inn", "out"} <= set(roles)}
+    return {
+        channel: roles
+        for channel, roles in sorted(channels.items())
+        if channel not in ambiguous and {"inp", "inn", "out"} <= set(roles)
+    }
 
 
 def decoupling_associations(
-    components: Sequence[Any], pin_nets: Mapping, views: Optional[Mapping] = None
+    components: Sequence[PhysicalComponent], pin_nets: PinNets, views: Optional[Views] = None
 ) -> Tuple[SchematicPattern, ...]:
     """Associate typed local bypass wrappers with their unique powered device.
 
@@ -77,20 +88,21 @@ def decoupling_associations(
     """
     by_path = {c.path: c for c in components}
     roles = {c.path: terminal_roles(c, pin_nets) for c in components}
-    associations = {}
+    associations: dict[tuple[str, tuple[str, str]], list[str]] = {}
     for cap in sorted(components, key=lambda c: c.path):
         if len(cap.pins) != 2:
             continue
         symbol = (
-            views[cap.path].lib_id if views is not None and cap.path in views
+            views[cap.path].lib_id
+            if views is not None and cap.path in views
             else (getattr(cap, "mapping", None) or {}).get("lib_id", "")
         ).split("_PB_", 1)[0]
         if symbol not in ("Device:C", "Device:C_Polarized"):
             continue
         wrappers = [
-            path for path, cls in getattr(cap, "hierarchy", ())
-            if cls.removeprefix("PolymorphicBlocks.")
-            == "edg.abstract_parts.Capacitor.DecouplingCapacitor"
+            path
+            for path, cls in getattr(cap, "hierarchy", ())
+            if cls.removeprefix("PolymorphicBlocks.") == "edg.abstract_parts.Capacitor.DecouplingCapacitor"
         ]
         if not wrappers:
             continue
@@ -105,9 +117,13 @@ def decoupling_associations(
         # eligibility. An FPGA with repeated/ambiguous supply roles still owns
         # this boundary; a nested memory must not capture the FPGA's outer
         # bypasses merely because it is the only device with simple role names.
-        physical = [path for path, device in by_path.items()
-                    if (path == owner or path.startswith(owner + ".")) and not path.startswith(wrapper + ".")
-                    and len(device.pins) >= 3]
+        physical = [
+            path
+            for path, device in by_path.items()
+            if (path == owner or path.startswith(owner + "."))
+            and not path.startswith(wrapper + ".")
+            and len(device.pins) >= 3
+        ]
         if not physical:
             continue
         nearest = min(len(path.split(".")) for path in physical)
@@ -115,12 +131,14 @@ def decoupling_associations(
         candidates = []
         for path in boundary:
             role = roles[path]
-            supplies = {pin_nets.get((path, n)) for r, n in role.items()
-                        if r in ("vdd", "vcc", "pwr", "vin", "vp")}
-            grounds = {pin_nets.get((path, n)) for r, n in role.items()
-                       if r in ("gnd", "vss", "vn")}
-            matches = {(supply, ground) for supply in supplies for ground in grounds
-                       if supply != ground and {supply, ground} == cap_nets}
+            supplies = {pin_nets.get((path, n)) for r, n in role.items() if r in ("vdd", "vcc", "pwr", "vin", "vp")}
+            grounds = {pin_nets.get((path, n)) for r, n in role.items() if r in ("gnd", "vss", "vn")}
+            matches = {
+                (supply, ground)
+                for supply in supplies
+                for ground in grounds
+                if supply is not None and ground is not None and supply != ground and {supply, ground} == cap_nets
+            }
             if len(matches) == 1:
                 candidates.append((path, next(iter(matches))))
         if len(candidates) != 1:
@@ -128,13 +146,12 @@ def decoupling_associations(
         path, nets = candidates[0]
         associations.setdefault((path, nets), []).append(cap.path)
     return tuple(
-        SchematicPattern("local_decoupling", (path, *caps), nets)
-        for (path, nets), caps in sorted(associations.items())
+        SchematicPattern("local_decoupling", (path, *caps), nets) for (path, nets), caps in sorted(associations.items())
     )
 
 
 def discover_patterns(
-    components: Sequence[Any], pin_nets: Mapping, views: Optional[Mapping] = None
+    components: Sequence[PhysicalComponent], pin_nets: PinNets, views: Optional[Views] = None
 ) -> Tuple[SchematicPattern, ...]:
     """Find unambiguous data chains using explicit DIN/DOUT terminal roles.
 
@@ -144,17 +161,17 @@ def discover_patterns(
     by_path = {c.path: c for c in components}
     roles = {c.path: terminal_roles(c, pin_nets) for c in components}
     serial = {p for p, r in roles.items() if "din" in r and "dout" in r}
-    endpoints = {}
-    for key, net in pin_nets.items():
+    endpoints: dict[str, set[PinKey]] = {}
+    for key, endpoint_net in pin_nets.items():
         if key[0] in by_path:
-            endpoints.setdefault(net, set()).add(key)
+            endpoints.setdefault(endpoint_net, set()).add(key)
     following = {}
     preceding = {}
     edge_net = {}
     for source in sorted(serial):
         out_key = (source, roles[source]["dout"])
         net = pin_nets.get(out_key)
-        peers = endpoints.get(net, set()) - {out_key}
+        peers = endpoints.get(net, set()) - {out_key} if net is not None else set()
         if len(peers) != 1:
             continue
         target, number = next(iter(peers))
@@ -162,6 +179,7 @@ def discover_patterns(
             continue
         following[source] = target
         preceding[target] = source
+        assert net is not None
         edge_net[source] = net
     patterns = []
     visited = set()
@@ -184,19 +202,13 @@ def discover_patterns(
 
     # Conventional two-terminal symbols establish passive roles. Names such as
     # R1, part strings, and footprint identifiers are never used as evidence.
-    def symbol(path):
+    def symbol(path: str) -> str:
         if views is not None and path in views:
             return views[path].lib_id.split("_PB_", 1)[0]
-        return (getattr(by_path[path], "mapping", None) or {}).get("lib_id", "")
+        return cast(str, (getattr(by_path[path], "mapping", None) or {}).get("lib_id", ""))
 
-    resistors = {
-        p
-        for p, c in by_path.items()
-        if len(c.pins) == 2 and symbol(p) in ("Device:R", "Device:R_US")
-    }
-    indicators = {
-        p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) == "Device:LED"
-    }
+    resistors = {p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) in ("Device:R", "Device:R_US")}
+    indicators = {p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) == "Device:LED"}
     claimed = set(visited)
     for anchor in sorted(by_path):
         role = roles[anchor]
@@ -215,18 +227,14 @@ def discover_patterns(
             connections = {pin_nets.get((p, number)) for number in by_path[p].pins}
             other[p] = connections - {feedback}
         lower = [p for p in branches if other[p] == {ground}]
-        upper = [
-            p
-            for p in branches
-            if len(other[p]) == 1 and None not in other[p] and ground not in other[p]
-        ]
+        upper = [p for p in branches if len(other[p]) == 1 and None not in other[p] and ground not in other[p]]
         if len(lower) == len(upper) == 1:
-            members = (anchor, upper[0], lower[0])
+            members: tuple[str, ...] = (anchor, upper[0], lower[0])
             patterns.append(
                 SchematicPattern(
                     "feedback_divider",
                     members,
-                    (next(iter(other[upper[0]])), feedback, ground),
+                    (cast(str, next(iter(other[upper[0]]))), feedback, ground),
                 )
             )
             claimed.update(members)
@@ -241,21 +249,15 @@ def discover_patterns(
             members = (next(iter(led)), next(iter(resistor)))
             patterns.append(SchematicPattern("indicator_branch", members, (net,)))
             claimed.update(members)
-    inductors = {
-        p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) == "Device:L"
-    }
-    capacitors = {
-        p
-        for p, c in by_path.items()
-        if len(c.pins) == 2 and symbol(p) in ("Device:C", "Device:C_Polarized")
-    }
+    inductors = {p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) == "Device:L"}
+    capacitors = {p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) in ("Device:C", "Device:C_Polarized")}
     for anchor in sorted(by_path):
         role = roles[anchor]
         if "sw" not in role or "gnd" not in role:
             continue
         switch_net = pin_nets.get((anchor, role["sw"]))
         ground = pin_nets.get((anchor, role["gnd"]))
-        entries = endpoints.get(switch_net, set())
+        entries = endpoints.get(switch_net, set()) if switch_net is not None else set()
         coils = sorted({p for p, _ in entries if p in inductors})
         if len(entries) != 2 or len(coils) != 1 or ground is None:
             continue
@@ -264,11 +266,7 @@ def discover_patterns(
         if len(output) != 1 or None in output or ground in output:
             continue
         output_net = next(iter(output))
-        caps = sorted(
-            p
-            for p in capacitors
-            if {pin_nets.get((p, n)) for n in by_path[p].pins} == {output_net, ground}
-        )
+        caps = sorted(p for p in capacitors if {pin_nets.get((p, n)) for n in by_path[p].pins} == {output_net, ground})
         # Shared rails alone do not justify merging all output capacitors: source
         # siblings identify local support of this converter implementation.
         parent = anchor.rpartition(".")[0]
@@ -277,29 +275,42 @@ def discover_patterns(
             SchematicPattern(
                 "converter_output",
                 (anchor, coil, *caps),
-                (switch_net, output_net, ground),
+                (cast(str, switch_net), cast(str, output_net), ground),
             )
         )
     # Diode feedback is common in clamp/error amplifiers. The verified symbol
     # identity establishes a two-terminal branch; its polarity remains untouched.
-    diodes = {p for p, c in by_path.items() if len(c.pins) == 2 and symbol(p) in (
-        "Device:D", "Device:D_Schottky", "Device:D_Zener", "Device:D_Small",
-        "Device:D_Schottky_Small", "Device:D_Zener_Small")}
+    diodes = {
+        p
+        for p, c in by_path.items()
+        if len(c.pins) == 2
+        and symbol(p)
+        in (
+            "Device:D",
+            "Device:D_Schottky",
+            "Device:D_Zener",
+            "Device:D_Small",
+            "Device:D_Schottky_Small",
+            "Device:D_Zener_Small",
+        )
+    }
     for anchor in sorted(by_path):
         for channel, role in amplifier_channels(by_path[anchor]).items():
             negative = pin_nets.get((anchor, role["inn"]))
-            output = pin_nets.get((anchor, role["out"]))
-            if negative is None or output is None or negative == output:
+            amplifier_output = pin_nets.get((anchor, role["out"]))
+            if negative is None or amplifier_output is None or negative == amplifier_output:
                 continue
-            feedback = sorted(
-                p for p in resistors | capacitors | diodes
-                if {pin_nets.get((p, n)) for n in by_path[p].pins} == {negative, output}
+            feedback_branches = sorted(
+                p
+                for p in resistors | capacitors | diodes
+                if {pin_nets.get((p, n)) for n in by_path[p].pins} == {negative, amplifier_output}
             )
             # Require a direct branch for this exact channel. A common negative
             # input or supply does not associate arbitrary incident components.
-            if feedback:
-                patterns.append(SchematicPattern(
-                    "amplifier_feedback", (anchor, *feedback), (negative, output)))
+            if feedback_branches:
+                patterns.append(
+                    SchematicPattern("amplifier_feedback", (anchor, *feedback_branches), (negative, amplifier_output))
+                )
     # Differential sense networks belong together even when their controller
     # is in an independently bounded power-stage region.
     for anchor, role in sorted(roles.items()):
@@ -311,19 +322,34 @@ def discover_patterns(
                 continue
             caps = [p for p in capacitors if {pin_nets.get((p, n)) for n in by_path[p].pins} == sense_nets]
             branches = []
-            for net in sorted(sense_nets):
+            for net in sorted(cast(set[str], sense_nets)):
                 candidates = [p for p in resistors if net in {pin_nets.get((p, n)) for n in by_path[p].pins}]
                 if len(candidates) == 1:
                     branches.append(candidates[0])
             if len(caps) == 1 and len(set(branches)) == 2:
-                patterns.append(SchematicPattern("differential_sense_filter", tuple(sorted([*branches, caps[0]])), tuple(sorted(sense_nets))))
+                patterns.append(
+                    SchematicPattern(
+                        "differential_sense_filter",
+                        tuple(sorted([*branches, caps[0]])),
+                        tuple(sorted(cast(set[str], sense_nets))),
+                    )
+                )
     from .KiCadSchematicPower import gate_driver_circuits
-    patterns.extend(SchematicPattern("gate_driver_stage", (anchor, *members), nets)
-                    for anchor, members, nets in gate_driver_circuits(components, pin_nets, views))
-    return tuple(patterns) + decoupling_associations(components, pin_nets, views) + hierarchy_circuits(components, pin_nets, views)
+
+    patterns.extend(
+        SchematicPattern("gate_driver_stage", (anchor, *members), nets)
+        for anchor, members, nets in gate_driver_circuits(components, pin_nets, views)
+    )
+    return (
+        tuple(patterns)
+        + decoupling_associations(components, pin_nets, views)
+        + hierarchy_circuits(components, pin_nets, views)
+    )
 
 
-def hierarchy_circuits(components, pin_nets, views=None):
+def hierarchy_circuits(
+    components: Sequence[PhysicalComponent], pin_nets: PinNets, views: Optional[Views] = None
+) -> tuple[SchematicPattern, ...]:
     """Keep compiled repeated subcircuits and verified power stages together.
 
     Hierarchy establishes ownership; actual terminal incidence establishes the
@@ -331,6 +357,7 @@ def hierarchy_circuits(components, pin_nets, views=None):
     Repeated siblings require the same compiled class, not just similar names.
     """
     from collections import defaultdict
+
     by_path = {c.path: c for c in components}
     owners, classes = defaultdict(set), {}
     endpoints = defaultdict(set)
@@ -347,14 +374,14 @@ def hierarchy_circuits(components, pin_nets, views=None):
         match = re.fullmatch(r"(.*)\[([^]]+)\]", path)
         if match:
             siblings[match[1], classes[path]].append(path)
-    patterns, claimed = [], set()
+    patterns: list[SchematicPattern] = []
+    claimed: set[str] = set()
     for _, paths in sorted(siblings.items()):
         if len(paths) < 2:
             continue
         for owner in sorted(paths):
             members = owners[owner]
-            internal = tuple(sorted(n for n, ends in endpoints.items()
-                                    if len(ends) > 1 and ends <= members))
+            internal = tuple(sorted(n for n, ends in endpoints.items() if len(ends) > 1 and ends <= members))
             if 3 <= len(members) <= 24 and internal and not claimed.intersection(members):
                 patterns.append(SchematicPattern("repeated_subcircuit", tuple(sorted(members)), internal))
                 claimed.update(members)
@@ -364,12 +391,16 @@ def hierarchy_circuits(components, pin_nets, views=None):
         members = owners[owner]
         if not 4 <= len(members) <= 64 or claimed.intersection(members):
             continue
-        role_sets = {p: {name.removesuffix(".net").split(".")[-1].lower()
-                         for name in by_path[p].pins.values()} for p in members}
+        role_sets = {
+            p: {name.removesuffix(".net").split(".")[-1].lower() for name in by_path[p].pins.values()} for p in members
+        }
         fets = {p for p in members if {"gate", "source", "drain"} <= role_sets[p]}
         coils = {p for p in members if views and views[p].lib_id.split("_PB_", 1)[0] == "Device:L"}
-        controllers = {p for p in members if len(by_path[p].pins) >= 6 and
-                       (role_sets[p] & {"sw", "sw1", "sw2", "gate1", "gate2", "drvhi", "ho"})}
+        controllers = {
+            p
+            for p in members
+            if len(by_path[p].pins) >= 6 and (role_sets[p] & {"sw", "sw1", "sw2", "gate1", "gate2", "drvhi", "ho"})
+        }
         if not controllers or not (coils or len(fets) >= 2):
             continue
         if len(members) <= 32:
@@ -377,17 +408,29 @@ def hierarchy_circuits(components, pin_nets, views=None):
             kind = "power_subcircuit"
         else:
             from .KiCadSchematicPower import power_topology, bridge_kernel
+
             topology = power_topology(members, by_path, views, pin_nets) if views else None
             selected = fets | coils
-            power_nets = {pin_nets.get((p, n)) for p in selected for n, role in by_path[p].pins.items()
-                          if role.removesuffix(".net").split(".")[-1].lower() != "gate"}
-            grounds = {pin_nets.get((p, n)) for p in controllers for n, role in by_path[p].pins.items()
-                       if role.removesuffix(".net").split(".")[-1].lower() in ("gnd", "vss")}
+            power_nets = {
+                pin_nets.get((p, n))
+                for p in selected
+                for n, role in by_path[p].pins.items()
+                if role.removesuffix(".net").split(".")[-1].lower() != "gate"
+            }
+            grounds = {
+                pin_nets.get((p, n))
+                for p in controllers
+                for n, role in by_path[p].pins.items()
+                if role.removesuffix(".net").split(".")[-1].lower() in ("gnd", "vss")
+            }
             power_nets -= grounds | {None}
-            selected |= {p for p in members if len(by_path[p].pins) == 2 and
-                         any(pin_nets.get((p, n)) in power_nets for n in by_path[p].pins)}
+            selected |= {
+                p
+                for p in members
+                if len(by_path[p].pins) == 2 and any(pin_nets.get((p, n)) in power_nets for n in by_path[p].pins)
+            }
             if topology is not None and topology["kind"] == "bridge":
-                selected = bridge_kernel(topology, members, by_path, views, pin_nets)
+                selected = bridge_kernel(topology, members, by_path, cast(Views, views), pin_nets)
             kind = "power_stage"
         if not 3 <= len(selected) <= 32:
             continue

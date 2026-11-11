@@ -20,8 +20,12 @@ def main() -> None:
     parser.add_argument(
         "--symbol-dir", action="append", default=[], help="Ordered symbol library directory (repeatable)"
     )
-    parser.add_argument("--orientation-mode", choices=("half_turn", "passive_quarter_turn"),
-                        default="half_turn", help="Opt in to four-orientation passive refinement")
+    parser.add_argument(
+        "--orientation-mode",
+        choices=("half_turn", "passive_quarter_turn"),
+        default="half_turn",
+        help="Opt in to four-orientation passive refinement",
+    )
     args = parser.parse_args()
     compile_board(
         TestLed,
@@ -31,15 +35,19 @@ def main() -> None:
             symbol_library_dirs=tuple(args.symbol_dir),
             optimize_orientations=True,  # deterministic fixed-center trials
             orientation_mode=args.orientation_mode,
-            presentation=SchematicPresentation.from_dict({
-                "schema": 2,
-                "circuits": [{
-                    "id": "status_indicator",
-                    "title": "Status LED",
-                    "summary": "Current-limited LED indicator; the series resistor sets LED current.",
-                    "components": ["led.res", "led.package"],
-                }],
-            }),
+            presentation=SchematicPresentation.from_dict(
+                {
+                    "schema": 2,
+                    "circuits": [
+                        {
+                            "id": "status_indicator",
+                            "title": "Status LED",
+                            "summary": "Current-limited LED indicator; the series resistor sets LED current.",
+                            "components": ["led.res", "led.package"],
+                        }
+                    ],
+                }
+            ),
             placements={
                 "led.res": SchematicPlacement("Status LED", 80, 100, lock_rotation=False),
                 "led.package": SchematicPlacement("Status LED", 80, 70, rotation=90),

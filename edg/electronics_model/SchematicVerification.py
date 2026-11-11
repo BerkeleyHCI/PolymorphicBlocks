@@ -20,7 +20,7 @@ def verify_schematic_netlist(expected: Netlist, exported_xml: Path) -> None:
         raise ValueError("schematic component identities differ from PB")
     library_parts = {(p.attrib["lib"], p.attrib["part"]): p for p in root.findall("./libparts/libpart")}
     path_refs = {str(b.full_path): ref for ref, b in blocks.items()}
-    expected_pins = {ref: set() for ref in blocks}
+    expected_pins: dict[str, set[str]] = {ref: set() for ref in blocks}
     expected_nets = set()
     for net in expected.nets:
         pins = frozenset((path_refs[str(p.block_path)], p.pin_name) for p in net.pins)
@@ -41,9 +41,9 @@ def verify_schematic_netlist(expected: Netlist, exported_xml: Path) -> None:
         if actual != expected_pins[ref]:
             raise ValueError("physical pin inventory mismatch: " + ref)
     actual_nets = set()
-    seen = set()
-    for net in root.findall("./nets/net"):
-        pins = frozenset((p.attrib["ref"], p.attrib["pin"]) for p in net.findall("node"))
+    seen: set[tuple[str, str]] = set()
+    for xml_net in root.findall("./nets/net"):
+        pins = frozenset((p.attrib["ref"], p.attrib["pin"]) for p in xml_net.findall("node"))
         if seen.intersection(pins):
             raise ValueError("physical pin occurs on multiple nets")
         seen.update(pins)

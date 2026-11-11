@@ -6,7 +6,7 @@ from typing import Mapping, Any
 import copy
 
 
-def _text(value, name):
+def _text(value: object, name: str) -> str:
     if not isinstance(value, str) or not value.strip() or len(value) > 240:
         raise ValueError(name + " must be nonempty text of at most 240 characters")
     return value.strip()
@@ -15,13 +15,13 @@ def _text(value, name):
 @dataclass(frozen=True)
 class SchematicPresentation:
     components: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
-    interfaces: tuple = ()
+    interfaces: tuple[Mapping[str, str], ...] = ()
     groups: Mapping[str, str] = field(default_factory=dict)
-    circuits: tuple = ()
+    circuits: tuple[dict[str, Any], ...] = ()
     schema: int = 1
 
     @classmethod
-    def from_dict(cls, value):
+    def from_dict(cls, value: object) -> SchematicPresentation:
         if not isinstance(value, dict) or set(value) - {
             "schema",
             "components",
@@ -38,6 +38,7 @@ class SchematicPresentation:
         if circuits and value.get("schema", 1) != 2:
             raise ValueError("circuits require presentation schema 2")
         from .KiCadSchematicCircuits import validate_circuit_entries
+
         validate_circuit_entries(circuits)
         components = value.get("components", {})
         groups = value.get("groups", {})
@@ -85,8 +86,8 @@ class SchematicPresentation:
             value.get("schema", 1),
         )
 
-    def to_dict(self):
-        result = dict(
+    def to_dict(self) -> dict[str, Any]:
+        result: dict[str, Any] = dict(
             schema=2 if self.circuits else self.schema,
             components=copy.deepcopy(dict(self.components)),
             interfaces=copy.deepcopy(list(self.interfaces)),
@@ -96,8 +97,9 @@ class SchematicPresentation:
             result["circuits"] = copy.deepcopy(list(self.circuits))
         return result
 
-    def validate(self, inventories):
+    def validate(self, inventories: Mapping[str, Mapping[str, str]]) -> None:
         from .KiCadSchematicCircuits import validate_circuit_entries
+
         validate_circuit_entries(self.circuits, inventories)
         known = set(inventories)
         requested = set(self.components) | {i["component"] for i in self.interfaces}
@@ -110,8 +112,8 @@ class SchematicPresentation:
             if "pin" in entry and entry["pin"] not in inventories[entry["component"]]:
                 raise ValueError("interface references unknown physical pin: " + entry["component"])
 
-    def descriptions(self, path):
-        result = []
+    def descriptions(self, path: str) -> tuple[str, ...]:
+        result: list[str] = []
         entry = self.components.get(path, {})
         if entry.get("description"):
             result.append(entry["description"])

@@ -3,25 +3,36 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 import hashlib
-from .KiCadSchematicScene import text_width as text_width, text_bounds, label_bounds, pin_name_items, pin_number_items, instance_property_at
+from typing import Any, Mapping, Sequence, TYPE_CHECKING
+from .KiCadSchematicTypes import SExpr, Bounds
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import SchematicDiagnostic
+from .KiCadSchematicScene import (
+    text_width as text_width,
+    text_bounds,
+    label_bounds,
+    pin_name_items,
+    pin_number_items,
+    instance_property_at,
+)
 import sexpdata
 
 
-def children(tree, name):
+def children(tree: SExpr, name: str) -> list[SExpr]:
     return [v for v in tree if isinstance(v, list) and v and str(v[0]) == name]
-
 
 
 @dataclass(frozen=True)
 class SceneText:
     identity: str
     text: str
-    bounds: tuple
+    bounds: Bounds
     owner: str
     kind: str
 
 
-def text_item(identity, text, at, effect, owner, kind):
+def text_item(identity: str, text: object, at: SExpr, effect: SExpr, owner: str, kind: str) -> SceneText | None:
     if any(str(v) == "hide" for v in effect[1:]):
         return None
     font = children(effect, "font")
@@ -29,20 +40,31 @@ def text_item(identity, text, at, effect, owner, kind):
     justify = children(effect, "justify")
     terms = {str(v) for v in justify[0][1:]} if justify else set()
     angle = float(at[3]) if len(at) > 3 else 0
-    arguments = (text, float(at[1]), float(at[2]), angle, size,
-                 "left" if "left" in terms else "right" if "right" in terms else "center",
-                 kind == "global_label")
-    bounds = (label_bounds(*arguments, bottom="bottom" in terms)
-              if kind in ("label", "global_label") else text_bounds(*arguments))
+    arguments: tuple[object, float, float, float, float, str, bool] = (
+        text,
+        float(at[1]),
+        float(at[2]),
+        angle,
+        size,
+        "left" if "left" in terms else "right" if "right" in terms else "center",
+        kind == "global_label",
+    )
+    bounds = (
+        label_bounds(*arguments, bottom="bottom" in terms)
+        if kind in ("label", "global_label")
+        else text_bounds(*arguments)
+    )
     return SceneText(identity, str(text), bounds, owner, kind)
 
 
-def inspect_documents(files, diagnostics, patterns=()):
-    findings = []
+def inspect_documents(
+    files: Mapping[str, str], diagnostics: Sequence[SchematicDiagnostic], patterns: Sequence[Mapping[str, Any]] = ()
+) -> dict[str, Any]:
+    findings: list[dict[str, Any]] = []
     scenes = []
-    component_sheets = {}
+    component_sheets: dict[str, str] = {}
 
-    def finding(code, sheet, objects, detail):
+    def finding(code: str, sheet: str, objects: Sequence[str], detail: str) -> None:
         identity = hashlib.sha256((code + "|" + sheet + "|" + "|".join(sorted(objects))).encode()).hexdigest()[:20]
         findings.append(
             dict(
@@ -76,11 +98,10 @@ def inspect_documents(files, diagnostics, patterns=()):
                     texts.append(t)
         definitions = {d[1]: d for container in children(doc, "lib_symbols") for d in children(container, "symbol")}
         wires = [
-            (tuple(p[1:3]) for p in children(pts, "xy"))
+            tuple((p[1], p[2]) for p in children(pts, "xy"))
             for wire in children(doc, "wire")
             for pts in children(wire, "pts")
         ]
-        wires = [tuple(wire) for wire in wires]
         for symbol in children(doc, "symbol"):
             props = children(symbol, "property")
             owner = next((p[2] for p in props if p[1] == "PBPath"), "")
@@ -99,7 +120,11 @@ def inspect_documents(files, diagnostics, patterns=()):
             ats = children(symbol, "at")
             if lib and ats and lib[0][1] in definitions:
                 definition = definitions[lib[0][1]]
-                texts.extend(SceneText(**item) for item in pin_name_items(definition, *ats[0][1:4], owner) + pin_number_items(definition, *ats[0][1:4], owner))
+                texts.extend(
+                    SceneText(**item)
+                    for item in pin_name_items(definition, ats[0][1], ats[0][2], ats[0][3], owner)
+                    + pin_number_items(definition, ats[0][1], ats[0][2], ats[0][3], owner)
+                )
         for i, a in enumerate(texts):
             x1, y1, x2, y2 = a.bounds
             if x1 < 10 or y1 < 8 or x2 > 410 or y2 > 287:
@@ -143,8 +168,12 @@ def inspect_documents(files, diagnostics, patterns=()):
             members = pattern["components"]
             sheets = {component_sheets.get(path) for path in members}
             if None in sheets or len(sheets) != 1:
-                finding("decoupling_split", "", members,
-                        "A verified device and its local bypass capacitors are not on one sheet")
+                finding(
+                    "decoupling_split",
+                    "",
+                    members,
+                    "A verified device and its local bypass capacitors are not on one sheet",
+                )
     for d in diagnostics:
         reason = d.reason
         if reason == "no schematic symbol mapping" or reason.startswith("local wire"):

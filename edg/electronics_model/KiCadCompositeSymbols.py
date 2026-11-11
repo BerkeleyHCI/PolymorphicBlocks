@@ -7,17 +7,22 @@ ResistorArray model's a[index]/b[index] exports, never physical pad ordering.
 from __future__ import annotations
 
 import re
-from typing import Any, Optional, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple, TYPE_CHECKING
+from .KiCadSchematicTypes import SExpr
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent
 
 from sexpdata import Symbol as S
-
 
 RESISTOR_ARRAY_CLASSES = {
     "edg.vendor_parts.jlc.JlcResistorArray.JlcResistorArray",
 }
 
 
-def resistor_array_symbol(component: Any, class_names: Sequence[str]) -> Optional[Tuple[list, list, str]]:
+def resistor_array_symbol(
+    component: PhysicalComponent, class_names: Sequence[str]
+) -> Optional[Tuple[SExpr, list[tuple[str, float, float, float]], str]]:
     if not class_names or class_names[-1].removeprefix("PolymorphicBlocks.") not in RESISTOR_ARRAY_CLASSES:
         return None
     pairs: dict[str, dict[str, str]] = {}
@@ -40,8 +45,8 @@ def resistor_array_symbol(component: Any, class_names: Sequence[str]) -> Optiona
     identity = {"pairs": pairs, "pin_names": pin_names} if pin_names else pairs
     digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16]
     lib_id = "PB:ResistorArray_" + digest
-    body = [S("symbol"), lib_id.split(":", 1)[1] + "_1_1"]
-    positions = []
+    body: SExpr = [S("symbol"), lib_id.split(":", 1)[1] + "_1_1"]
+    positions: list[tuple[str, float, float, float]] = []
     for row, index in enumerate(sorted(pairs, key=int)):
         y = round((row - (len(pairs) - 1) / 2) * 7.62, 4)
         body.append(
@@ -75,7 +80,7 @@ def resistor_array_symbol(component: Any, class_names: Sequence[str]) -> Optiona
                 ]
             )
             positions.append((number, x, y, angle))
-    definition = [
+    definition: SExpr = [
         S("symbol"),
         lib_id,
         [S("pin_names"), [S("offset"), 0]],

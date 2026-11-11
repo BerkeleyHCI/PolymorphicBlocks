@@ -1,5 +1,6 @@
 """Verify schematic metadata against the physical pad mappings, including sparse connectors."""
 
+from typing_extensions import override
 import json
 import unittest
 from typing import Any, Dict, Optional, Tuple
@@ -14,6 +15,7 @@ from .TvsDiode import TvsDiode
 
 
 class AnnotationLed(Led, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         footprint = "LED_SMD:LED_0603_1608Metric"
@@ -21,6 +23,7 @@ class AnnotationLed(Led, FootprintBlock):
 
 
 class AnnotationDiode(BaseDiode, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         footprint = "Diode_SMD:D_SOD-123"
@@ -28,6 +31,7 @@ class AnnotationDiode(BaseDiode, FootprintBlock):
 
 
 class AnnotationZener(ZenerDiode, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         footprint = "Diode_SMD:D_SOD-123"
@@ -35,6 +39,7 @@ class AnnotationZener(ZenerDiode, FootprintBlock):
 
 
 class AnnotationTvs(TvsDiode, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         footprint = "Diode_SMD:D_SOD-123"
@@ -42,6 +47,7 @@ class AnnotationTvs(TvsDiode, FootprintBlock):
 
 
 class AnnotationSwitch(TactileSwitch, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -52,11 +58,13 @@ class AnnotationSwitch(TactileSwitch, FootprintBlock):
 class AnnotationConnector(FootprintPassiveConnector):
     allowed_pins = range(1, 5)
 
+    @override
     def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
         return f"Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Vertical", "", ""
 
 
 class AnnotationBoard(Block):
+    @override
     def contents(self) -> None:
         super().contents()
         self.led = self.Block(AnnotationLed())
@@ -93,7 +101,11 @@ class SchematicSymbolAnnotationTest(unittest.TestCase):
 
         def mapping(path: str) -> Optional[Dict[str, Any]]:
             raw = compiled.get_value((path, "sch_symbol"))
-            return json.loads(raw) if raw else None
+            if not raw:
+                return None
+            assert isinstance(raw, str)
+            result: Dict[str, Any] = json.loads(raw)
+            return result
 
         self.assertEqual(mapping("led"), {"lib_id": "Device:LED", "pinning": {"1": "1", "2": "2"}})
         self.assertEqual(mapping("diode"), {"lib_id": "Device:D", "pinning": {"1": "1", "2": "2"}})

@@ -41,6 +41,7 @@ include = ["edg*"]
 "edg" = ["core/resources/edg-compiler-precompiled.jar", "**/*.kicad_sch", "**/*.json", "**/*.csv", "**/py.typed"]
 
 [tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 enable_error_code = ["explicit-override"]
 strict = true
 

@@ -15,8 +15,10 @@ from dataclasses import replace
 
 
 def compile_board(
-    design: Type[Block], target_dir_name: Optional[Tuple[str, str]],
-    *, schematic: Optional[SchematicExportOptions] = None,
+    design: Type[Block],
+    target_dir_name: Optional[Tuple[str, str]],
+    *,
+    schematic: Optional[SchematicExportOptions] = None,
 ) -> CompiledDesign:
     if target_dir_name is not None:
         target_dir, target_name = target_dir_name
@@ -96,7 +98,10 @@ def compile_board(
 
 
 def compile_board_inplace(
-    design: Type[Block], generate: bool = True, *, schematic: Optional[SchematicExportOptions] = None,
+    design: Type[Block],
+    generate: bool = True,
+    *,
+    schematic: Optional[SchematicExportOptions] = None,
 ) -> CompiledDesign:
     """Compiles a board and writes the results in a sub-directory
     where the module containing the top-level is located"""

@@ -4,6 +4,7 @@ These describe intent already present in the example/model sources. They do not
 supply layout coordinates, change parts, or add electrical connections. The
 ordinary automatic export remains available without this companion data.
 """
+
 from edg.electronics_model.KiCadSchematicPresentation import SchematicPresentation
 
 # Evidence: test_battery_protector.py contents connects the holder to protector
@@ -23,8 +24,10 @@ PRESENTATIONS = {
     "BldcController": {
         "schema": 1,
         "components": {
-            "mcu.device": {"description": "Feather module supplies USB-derived vusb and regulated 3.3 V",
-                           "pin_names": {"2": "3V3 OUT", "26": "USB OUT", "4": "GND"}},
+            "mcu.device": {
+                "description": "Feather module supplies USB-derived vusb and regulated 3.3 V",
+                "pin_names": {"2": "3V3 OUT", "26": "USB OUT", "4": "GND"},
+            },
         },
     },
     # EspProgrammerTc2030Inline.contents explicitly assigns all six contacts;
@@ -32,8 +35,17 @@ PRESENTATIONS = {
     "EspProgrammer": {
         "schema": 1,
         "components": {
-            "out.conn": {"description": "ESP target programming; UART names are target-side",
-                         "pin_names": {"1": "3V3", "2": "BOOT", "3": "TARGET TX", "4": "TARGET RX", "5": "GND", "6": "EN / RESET"}},
+            "out.conn": {
+                "description": "ESP target programming; UART names are target-side",
+                "pin_names": {
+                    "1": "3V3",
+                    "2": "BOOT",
+                    "3": "TARGET TX",
+                    "4": "TARGET RX",
+                    "5": "GND",
+                    "6": "EN / RESET",
+                },
+            },
         },
     },
     # test_protected_charger.py connects battery -> pmos -> pmos_load -> pin2.
@@ -42,8 +54,7 @@ PRESENTATIONS = {
         "components": {
             "pmos.mp1": {"description": "Battery reverse protection with bidirectional charge path"},
             "pmos_load.fet": {"description": "Protected battery/charger node feeds load reverse protection"},
-            "pwr_pins": {"description": "Protected load output",
-                         "pin_names": {"1": "GND", "2": "LOAD+", "3": "GND"}},
+            "pwr_pins": {"description": "Protected load output", "pin_names": {"1": "GND", "2": "LOAD+", "3": "GND"}},
         },
     },
     # StTscSenseChannel.contents terminates res.b in DummyPassive. It models the
@@ -64,8 +75,20 @@ PRESENTATIONS = {
     "UsbFpgaProgrammer": {
         "schema": 1,
         "components": {
-            "out.conn": {"description": "FPGA MPSSE target; pin 1 is unconnected in this PB design",
-                         "pin_names": {"1": "PWR (unconnected)", "2": "CS", "3": "GND", "4": "SCK", "5": "GND", "6": "MOSI", "8": "MISO", "9": "GND", "10": "RESET"}},
+            "out.conn": {
+                "description": "FPGA MPSSE target; pin 1 is unconnected in this PB design",
+                "pin_names": {
+                    "1": "PWR (unconnected)",
+                    "2": "CS",
+                    "3": "GND",
+                    "4": "SCK",
+                    "5": "GND",
+                    "6": "MOSI",
+                    "8": "MISO",
+                    "9": "GND",
+                    "10": "RESET",
+                },
+            },
             "ft232.ic": {"description": "USB MPSSE bridge; VCCIO supplied by internal VCCD regulator"},
         },
     },
@@ -74,17 +97,28 @@ PRESENTATIONS = {
     "IotLedDriver": {
         "schema": 1,
         "components": {
-            **{f"led_drv[{i}].power_path.out_cap.cap": {
-                "description": f"LED channel {i + 1} output; solder external LED anode to this positive node"}
-               for i in range(4)},
-            **{f"led_drv[{i}].rsense.res.res": {
-                "description": f"LED channel {i + 1} return; external LED cathode connects at pin 2"}
-               for i in range(4)},
+            **{
+                f"led_drv[{i}].power_path.out_cap.cap": {
+                    "description": f"LED channel {i + 1} output; solder external LED anode to this positive node"
+                }
+                for i in range(4)
+            },
+            **{
+                f"led_drv[{i}].rsense.res.res": {
+                    "description": f"LED channel {i + 1} return; external LED cathode connects at pin 2"
+                }
+                for i in range(4)
+            },
         },
         "interfaces": [
-            {"component": f"led_drv[{i}].power_path.out_cap.cap", "pin": "1", "name": f"LED{i + 1}+ (solder connection)"}
+            {
+                "component": f"led_drv[{i}].power_path.out_cap.cap",
+                "pin": "1",
+                "name": f"LED{i + 1}+ (solder connection)",
+            }
             for i in range(4)
-        ] + [
+        ]
+        + [
             {"component": f"led_drv[{i}].rsense.res.res", "pin": "2", "name": f"LED{i + 1}- (solder connection)"}
             for i in range(4)
         ],

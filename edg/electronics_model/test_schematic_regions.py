@@ -1,5 +1,11 @@
 """Measured-region regressions independent of human visual acceptance."""
 
+from __future__ import annotations
+from typing import Any, Sequence
+from .KiCadSchematicTypes import SExpr, PinNets, Placement, Views
+from .KiCadSchematicExporter import PhysicalComponent, SymbolView
+
+from typing_extensions import override
 import unittest
 import importlib
 from types import SimpleNamespace
@@ -9,11 +15,8 @@ from ..core import Block, ScalaCompiler
 from .KiCadSchematicExporter import (
     KiCadSchematicExporter,
     SchematicExportOptions,
-    SchematicPlacement,
-    PhysicalComponent,
     children,
     generic,
-    SymbolView,
     node,
     _RegionDrawing,
 )
@@ -24,21 +27,23 @@ from .test_schematic_export import GeneratedMappedBoard
 
 
 class TwoCircuitParts(Block):
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.a = self.Block(GeneratedMappedBoard())
         self.b = self.Block(GeneratedMappedBoard())
 
 
 class ContinuationCollisionBoard(Block):
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.foo = self.Block(TwoCircuitParts())
         setattr(self, "foo /2", self.Block(GeneratedMappedBoard()))
 
 
 class SchematicRegionTest(unittest.TestCase):
-    def test_ground_graphic_points_away_from_adjacent_pin_rows(self):
+    def test_ground_graphic_points_away_from_adjacent_pin_rows(self) -> None:
         # The contact remains at the stub endpoint; the complete graphic must
         # extend outwards, never down into the next connector/IC pin row.
         for direction, rotation in ((0, 270), (90, 0), (180, 90), (270, 180)):
@@ -57,14 +62,14 @@ class SchematicRegionTest(unittest.TestCase):
                 self.assertLess(ymin, 100)
                 self.assertEqual(ymax, 100)
 
-    def test_default_ic_fields_clear_ground_stub_and_graphic(self):
+    def test_default_ic_fields_clear_ground_stub_and_graphic(self) -> None:
         component = PhysicalComponent("ic", "U1", "Test:FP", "device", {"1": "gnd"}, None, "IC")
         view = generic(component)
         _, _, _, bottom = graphic_bounds(view)
         _, field_y, _ = annotation_position(component, view, 100, 100, 0)
         self.assertGreater(field_y - 1.27, 100 + bottom + 3.81 + 4.445)
 
-    def test_short_inter_region_wire_requires_a_clear_corridor(self):
+    def test_short_inter_region_wire_requires_a_clear_corridor(self) -> None:
         definition = node(
             "symbol",
             "Test:C",
@@ -81,7 +86,12 @@ class SchematicRegionTest(unittest.TestCase):
             components.append(component)
             spec = SchematicRegion(name, name, "root", (name,), (50, 50, 80, 100))
             regions[name] = _RegionDrawing(spec, [(component, 65, 75, 0)], [], [])
-        board = SimpleNamespace(
+        from .KiCadSchematicExporter import _PreparedBoard
+
+        board = _PreparedBoard(
+            scope="root",
+            prefix="root",
+            root_id="root",
             regions=regions,
             views={c.path: view for c in components},
             pin_nets={(c.path, pin): net for c in components for pin, net in (("1", "v3v3"), ("2", "gnd"))},
@@ -93,14 +103,14 @@ class SchematicRegionTest(unittest.TestCase):
             "root",
             (SchematicRegionPlacement("cap0", 20, 40), SchematicRegionPlacement("cap1", 58, 40)),
         )
-        clear = []
+        clear: SExpr = []
         KiCadSchematicExporter._inter_region_wires(clear, board, sheet, "id", [])
         self.assertEqual(len(children(clear, "wire")), 1)
-        blocked = []
+        blocked: SExpr = []
         KiCadSchematicExporter._inter_region_wires(blocked, board, sheet, "id", [("other_net", (54, 50), (54, 60))])
         self.assertFalse(children(blocked, "wire"))
 
-    def test_unwrapped_value_reserves_full_rendered_width(self):
+    def test_unwrapped_value_reserves_full_rendered_width(self) -> None:
         component = PhysicalComponent("x", "U1", "Test:FP", "W" * 40, {}, None, "Tiny")
         view = generic(component)
         bounds = KiCadSchematicExporter._region_bounds([(component, 70, 80, 0)], {"x": view}, {}, {}, [], "Tiny")
@@ -108,7 +118,7 @@ class SchematicRegionTest(unittest.TestCase):
         # each side and the region's 3 mm left/right packing margin.
         self.assertGreaterEqual(bounds[2] - bounds[0], 40 * 1.27 + 6.6 - 1e-6)
 
-    def test_heading_wrap_and_measured_width(self):
+    def test_heading_wrap_and_measured_width(self) -> None:
         component = PhysicalComponent("x", "U1", "Test:FP", "part", {}, None, "Tiny")
         view = generic(component)
         short = KiCadSchematicExporter._region_bounds([(component, 70, 80, 0)], {"x": view}, {}, {}, [], "X")
@@ -118,11 +128,13 @@ class SchematicRegionTest(unittest.TestCase):
         self.assertLess(long[1], short[1])
         self.assertGreaterEqual(long[2] - long[0], 42)
 
-    def test_literal_name_cannot_overwrite_another_groups_continuation(self):
+    def test_literal_name_cannot_overwrite_another_groups_continuation(self) -> None:
         compiled = ScalaCompiler.compile(ContinuationCollisionBoard)
         compiled.append_values(RefdesRefinementPass().run(compiled))
 
-        def split_every_member(members, views, pin_nets, **options):
+        def split_every_member(
+            members: Sequence[PhysicalComponent], views: Views, pin_nets: PinNets, **options: Any
+        ) -> list[list[Placement]]:
             return [[(c, 70, 80, 0)] for c in members]
 
         with patch.object(

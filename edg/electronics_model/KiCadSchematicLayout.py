@@ -11,7 +11,26 @@ import heapq
 import math
 import textwrap
 from collections import defaultdict
-from typing import Any, Optional, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple, TYPE_CHECKING, Callable, Iterable, Mapping, cast, Union
+from .KiCadSchematicTypes import (
+    Bounds,
+    Point,
+    GridPoint,
+    PinKey,
+    PinNets,
+    Placement,
+    Placements,
+    Views,
+    Wire,
+    RouteResult,
+    Escape,
+    SExpr,
+)
+
+if TYPE_CHECKING:
+    from .KiCadSchematicExporter import PhysicalComponent, SymbolView
+
+RouteState = Union[GridPoint, tuple[GridPoint, Optional[int]]]
 
 from .KiCadSchematicScene import pin_label_bounds, pin_name_items, pin_number_items
 from .KiCadSchematicPatterns import decoupling_associations, discover_patterns, terminal_roles
@@ -19,16 +38,16 @@ from .KiCadSchematicPatterns import decoupling_associations, discover_patterns, 
 GRID = 1.27
 
 
-def tree_distance(targets):
+def tree_distance(targets: Iterable[GridPoint]) -> Callable[[GridPoint], float]:
     """Cached exact Manhattan distance to a route tree, an admissible A* bound."""
-    columns = defaultdict(list)
+    raw_columns: defaultdict[int, list[int]] = defaultdict(list)
     for x, y in targets:
-        columns[x].append(y)
-    columns = {x: sorted(set(ys)) for x, ys in columns.items()}
+        raw_columns[x].append(y)
+    columns = {x: sorted(set(ys)) for x, ys in raw_columns.items()}
     xs = sorted(columns)
-    cache = {}
+    cache: dict[GridPoint, float] = {}
 
-    def distance(point):
+    def distance(point: GridPoint) -> float:
         if point in cache:
             return cache[point]
         x, y = point
@@ -63,36 +82,28 @@ def snap(value: float) -> float:
 
 def transform(x: float, y: float, angle: int) -> Tuple[float, float]:
     r = math.radians(angle)
-    return round(x * math.cos(r) + y * math.sin(r), 4), round(
-        -x * math.sin(r) + y * math.cos(r), 4
-    )
+    return round(x * math.cos(r) + y * math.sin(r), 4), round(-x * math.sin(r) + y * math.cos(r), 4)
 
 
-def pins(view: Any, x: float, y: float, angle: int) -> list:
+def pins(view: SymbolView, x: float, y: float, angle: int) -> list[tuple[str, float, float, float]]:
     result = []
     for number, dx, dy, direction in view.pins:
         tx, ty = transform(dx, dy, angle)
-        result.append(
-            (number, round(x + tx, 4), round(y + ty, 4), (direction + angle) % 360)
-        )
+        result.append((number, round(x + tx, 4), round(y + ty, 4), (direction + angle) % 360))
     return result
 
 
-def graphic_bounds(
-    view: Any, angle: int = 0, include_pins: bool = True
-) -> Tuple[float, float, float, float]:
-    points = []
+def graphic_bounds(view: SymbolView, angle: int = 0, include_pins: bool = True) -> Tuple[float, float, float, float]:
+    points: list[Point] = []
 
-    def collect(tree):
+    def collect(tree: object) -> None:
         if not isinstance(tree, list) or not tree:
             return
         name = str(tree[0])
         if name in ("property", "pin"):
             return
         if name == "circle":
-            center = next(
-                (v for v in tree if isinstance(v, list) and str(v[0]) == "center"), None
-            )
+            center = next((v for v in tree if isinstance(v, list) and str(v[0]) == "center"), None)
             radius = next(
                 (v[1] for v in tree if isinstance(v, list) and str(v[0]) == "radius"),
                 None,
@@ -124,7 +135,7 @@ def ground_rotation(direction: float) -> int:
     return int(direction + 270) % 360
 
 
-def ground_bounds(x: float, y: float, direction: float, label: str = ""):
+def ground_bounds(x: float, y: float, direction: float, label: str = "") -> Bounds:
     angle = ground_rotation(direction)
     corners = [transform(dx, dy, angle) for dx in (-2.54, 2.54) for dy in (0, 4.445)]
     bounds = (
@@ -135,41 +146,47 @@ def ground_bounds(x: float, y: float, direction: float, label: str = ""):
     )
     if label:
         from .KiCadSchematicScene import text_bounds
+
         lx, ly = ground_label_position(x, y, direction)
         text = text_bounds(label, lx, ly, size=1.27)
-        bounds = (min(bounds[0], text[0]), min(bounds[1], text[1]),
-                  max(bounds[2], text[2]), max(bounds[3], text[3]))
+        bounds = (min(bounds[0], text[0]), min(bounds[1], text[1]), max(bounds[2], text[2]), max(bounds[3], text[3]))
     return bounds
 
 
-def ground_label_position(x: float, y: float, direction: float):
+def ground_label_position(x: float, y: float, direction: float) -> Point:
     """Keep distinct return identities horizontal below the ground glyph."""
     bounds = ground_bounds(x, y, direction)
     return round((bounds[0] + bounds[2]) / 2, 4), round(bounds[3] + 2.54, 4)
 
 
-def annotation_bounds(component, x, y, rotation):
+def annotation_bounds(component: PhysicalComponent, x: float, y: float, rotation: int) -> Bounds:
     """Visible field bounds matching serialized instance-relative text angles.
 
     Exported Reference/Value angles equal the symbol rotation modulo 180, so
     native KiCad renders these fields horizontally for every symbol orientation.
     """
     from .KiCadSchematicScene import text_bounds
+
     visible = getattr(component, "display_value", "") or component.value
     value = "\n".join(textwrap.wrap(visible, 30)) if visible != component.value else visible
-    boxes = [text_bounds(component.refdes, x, y, size=1.27),
-             text_bounds(value, x, y + 2.54, size=1.27)]
+    boxes = [text_bounds(component.refdes, x, y, size=1.27), text_bounds(value, x, y + 2.54, size=1.27)]
     count = 0
     for description in getattr(component, "descriptions", ()):
         for line in textwrap.wrap(description, 42):
             boxes.append(text_bounds(line, x, y + 10 + count * 2.54, size=1.1))
             count += 1
     # Reserve stroke clearance beyond the font envelope.
-    return (min(b[0] for b in boxes) - 0.3, min(b[1] for b in boxes) - 0.3,
-            max(b[2] for b in boxes) + 0.3, max(b[3] for b in boxes) + 0.3)
+    return (
+        min(b[0] for b in boxes) - 0.3,
+        min(b[1] for b in boxes) - 0.3,
+        max(b[2] for b in boxes) + 0.3,
+        max(b[3] for b in boxes) + 0.3,
+    )
 
 
-def annotation_obstacles(component, view, x, y, rotation):
+def annotation_obstacles(
+    component: PhysicalComponent, view: SymbolView, x: float, y: float, rotation: int
+) -> list[Bounds]:
     """Own symbol and pin outward corridors, including long external labels."""
     xmin, ymin, xmax, ymax = graphic_bounds(view, rotation)
     result = [(x + xmin, y + ymin, x + xmax, y + ymax)]
@@ -177,9 +194,7 @@ def annotation_obstacles(component, view, x, y, rotation):
     for number, px, py, direction in pins(view, x, y, rotation):
         r = math.radians(direction)
         ex, ey = px - 5.08 * math.cos(r), py + 5.08 * math.sin(r)
-        result.append(
-            (min(px, ex) - 0.8, min(py, ey) - 0.8, max(px, ex) + 0.8, max(py, ey) + 0.8)
-        )
+        result.append((min(px, ex) - 0.8, min(py, ey) - 0.8, max(px, ex) + 0.8, max(py, ey) + 0.8))
         ground_label = getattr(component, "ground_net_labels", {}).get(number, "")
         name = labels.get(number, "") or ground_label
         if not name:
@@ -192,8 +207,10 @@ def annotation_obstacles(component, view, x, y, rotation):
     return result
 
 
-def annotation_position(component, view, x, y, rotation):
-    if getattr(component, "annotation", None) is not None:
+def annotation_position(
+    component: PhysicalComponent, view: SymbolView, x: float, y: float, rotation: int
+) -> tuple[float, float, str]:
+    if component.annotation is not None:
         return component.annotation[0], component.annotation[1], ""
     # Score locally so translation cannot change a floating-point tie.
     origin_x, origin_y = x, y
@@ -206,9 +223,7 @@ def annotation_position(component, view, x, y, rotation):
     # of side/corner positions, never a time-dependent unconstrained search.
     preferred = (x, y + ymax + 12.7)
     terminals = pins(view, x, y, rotation)
-    if (
-        "FET" in view.lib_id or "Q_NMOS" in view.lib_id or "Q_PMOS" in view.lib_id
-    ) and rotation in (0, 180):
+    if ("FET" in view.lib_id or "Q_NMOS" in view.lib_id or "Q_PMOS" in view.lib_id) and rotation in (0, 180):
         preferred = (x + xmax + 3.81 + half_width, y - 1.27)
     elif len(terminals) == 2 and abs(terminals[0][1] - terminals[1][1]) < 0.01:
         preferred = (x + xmax + 3.81 + half_width, y - 1.27)
@@ -230,22 +245,19 @@ def annotation_position(component, view, x, y, rotation):
         )
     obstacles = annotation_obstacles(component, view, x, y, rotation)
 
-    def score(candidate):
+    def score(candidate: Point) -> tuple[float, float]:
         box = annotation_bounds(component, *candidate, rotation)
         overlap = sum(
-            max(0, min(box[2], b[2]) - max(box[0], b[0]))
-            * max(0, min(box[3], b[3]) - max(box[1], b[1]))
+            max(0, min(box[2], b[2]) - max(box[0], b[0])) * max(0, min(box[3], b[3]) - max(box[1], b[1]))
             for b in obstacles
         )
-        return overlap, abs(candidate[0] - preferred[0]) + abs(
-            candidate[1] - preferred[1]
-        )
+        return overlap, abs(candidate[0] - preferred[0]) + abs(candidate[1] - preferred[1])
 
     chosen = min(enumerate(candidates), key=lambda pair: (*score(pair[1]), pair[0]))[1]
     return chosen[0] + origin_x, chosen[1] + origin_y, ""
 
 
-def freeze_annotations(placed, views):
+def freeze_annotations(placed: Placements, views: Views) -> list[Placement]:
     """Resolve fields once for routing, measurement, and final serialization.
 
     Copies retain placement evidence without leaking generated coordinates into
@@ -262,9 +274,7 @@ def freeze_annotations(placed, views):
     return result
 
 
-def regroup(
-    components: Sequence[Any], pin_nets: dict, views: Optional[dict] = None
-) -> None:
+def regroup(components: Sequence[PhysicalComponent], pin_nets: PinNets, views: Optional[Views] = None) -> None:
     """Co-locate small sibling circuits; IC/control groups stay boundaries."""
     original_groups = {c.path: c.group for c in components}
     groups = defaultdict(list)
@@ -272,7 +282,7 @@ def regroup(
         groups[c.group].append(c)
     parent = {g: g for g in groups}
 
-    def root(g):
+    def root(g: str) -> str:
         while parent[g] != g:
             g = parent[g]
         return g
@@ -283,8 +293,7 @@ def regroup(
         by_net[net].add(path)
     for net, paths in sorted(by_net.items()):
         if len(paths) > 8 or any(
-            word.startswith("pwr")
-            or word in ("gnd", "v3v3", "vbus", "vusb", "vbat", "power")
+            word.startswith("pwr") or word in ("gnd", "v3v3", "vbus", "vusb", "vbat", "power")
             for word in net.lower().split(".")
         ):
             continue
@@ -292,8 +301,7 @@ def regroup(
             {
                 root(by_path[p].group)
                 for p in paths
-                if p in by_path
-                and max([len(c.pins) for c in groups[by_path[p].group]] + [0]) <= 6
+                if p in by_path and max([len(c.pins) for c in groups[by_path[p].group]] + [0]) <= 6
             }
         )
         if len(candidates) < 2:
@@ -320,7 +328,9 @@ def regroup(
                 by_path[path].group = owner
 
 
-def place_group(components: Sequence[Any], views: dict, pin_nets: dict, *, optimize_orientations=True) -> list:
+def place_group(
+    components: Sequence[PhysicalComponent], views: Views, pin_nets: PinNets, *, optimize_orientations: bool = True
+) -> list[list[Placement]]:
     """Place whole functional atoms; retain established inline serial chains."""
     from .KiCadSchematicPlacement import functional_atoms, place_functional
 
@@ -328,28 +338,36 @@ def place_group(components: Sequence[Any], views: dict, pin_nets: dict, *, optim
     nonserial = [p for p in patterns if p.kind != "serial_data_chain"]
     authored = any(p.kind == "authored_circuit" for p in patterns)
     chains = [p for p in patterns if p.kind == "serial_data_chain"]
-    circuits = {c.functional_circuit.id: c.functional_circuit for c in components
-                if getattr(c, "functional_circuit", None) is not None
-                and c.functional_circuit.provenance == "explicit"}
+    circuits = {
+        circuit.id: circuit
+        for c in components
+        if (circuit := getattr(c, "functional_circuit", None)) is not None and circuit.provenance == "explicit"
+    }
     # A declared repeated channel without ordered stages selects the proven
     # inline chain template, including its locally owned bypass capacitors.
     # Ordered stages remain authoritative and use functional placement.
-    inline_authored = authored and bool(circuits) and all(
-        circuit.template == "repeated_channel" and not circuit.stages and any(
-            set(chain.components) <= set(circuit.components) for chain in chains)
-        for circuit in circuits.values())
-    if inline_authored or (not authored and (chains or (
-        all(len(c.pins) == 2 for c in components) and not nonserial
-    ))):
+    inline_authored = (
+        authored
+        and bool(circuits)
+        and all(
+            circuit.template == "repeated_channel"
+            and not circuit.stages
+            and any(set(chain.components) <= set(circuit.components) for chain in chains)
+            for circuit in circuits.values()
+        )
+    )
+    if inline_authored or (not authored and (chains or (all(len(c.pins) == 2 for c in components) and not nonserial))):
         return _place_group_legacy(components, views, pin_nets)
     return place_functional(components, views, pin_nets, optimize_orientations=optimize_orientations)
 
 
-def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) -> list:
+def _place_group_legacy(
+    components: Sequence[PhysicalComponent], views: Views, pin_nets: PinNets
+) -> list[list[Placement]]:
     """Compact graph ordering; simple two-terminal chains get inline orientation."""
     components = sorted(components, key=lambda c: c.path)
-    adjacency = {c.path: set() for c in components}
-    nets = defaultdict(list)
+    adjacency: dict[str, set[str]] = {c.path: set() for c in components}
+    nets: defaultdict[str, list[PinKey]] = defaultdict(list)
     for c in components:
         for pin in c.pins:
             net = pin_nets.get((c.path, pin))
@@ -366,9 +384,7 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
             edge_pins[(b, a)] = next(pin for p, pin in endpoints if p == b)
     by_path = {c.path: c for c in components}
     chain = (
-        bool(components)
-        and all(len(c.pins) == 2 for c in components)
-        and all(len(v) <= 2 for v in adjacency.values())
+        bool(components) and all(len(c.pins) == 2 for c in components) and all(len(v) <= 2 for v in adjacency.values())
     )
     order = []
     if chain:
@@ -392,9 +408,7 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
         order = []
         remaining = set(by_path)
         while remaining:
-            start = max(
-                remaining, key=lambda p: (len(by_path[p].pins), len(adjacency[p]), p)
-            )
+            start = max(remaining, key=lambda p: (len(by_path[p].pins), len(adjacency[p]), p))
             queue = [start]
             while queue:
                 current = queue.pop(0)
@@ -405,27 +419,19 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
                 queue.extend(sorted(adjacency[current] & remaining))
     # Serial order follows verified DIN/DOUT connections, not lexical paths.
     patterns = discover_patterns(components, pin_nets, views)
-    serial_order = [
-        p
-        for pattern in patterns
-        if pattern.kind == "serial_data_chain"
-        for p in pattern.components
-    ]
+    serial_order = [p for pattern in patterns if pattern.kind == "serial_data_chain" for p in pattern.components]
     serial_members = set(serial_order)
-    supports = defaultdict(list)
+    supports: defaultdict[str, list[str]] = defaultdict(list)
     for pattern in patterns:
         if pattern.kind == "local_decoupling":
             supports[pattern.components[0]].extend(pattern.components[1:])
     support_members = {p for values in supports.values() for p in values}
-    order = serial_order + [
-        p for p in order if p not in serial_members | support_members
-    ]
-    placed = []
+    order = serial_order + [p for p in order if p not in serial_members | support_members]
     x = 65.0
     y = 80.0
     row_height = 0.0
-    page = []
-    pages = []
+    page: list[Placement] = []
+    pages: list[list[Placement]] = []
     for i, path in enumerate(order):
         component = by_path[path]
         view = views[path]
@@ -437,12 +443,7 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
             rotation = max(
                 (0, 90, 180, 270),
                 key=lambda a: (
-                    desired
-                    * next(
-                        transform(dx, dy, a)[0]
-                        for n, dx, dy, _ in view.pins
-                        if n == target_pin
-                    )
+                    desired * next(transform(dx, dy, a)[0] for n, dx, dy, _ in view.pins if n == target_pin)
                 ),
             )
         if path in serial_members:
@@ -451,16 +452,8 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
             rotation = max(
                 (0, 90, 180, 270),
                 key=lambda a: (
-                    next(
-                        transform(dx, dy, a)[0]
-                        for n, dx, dy, _ in view.pins
-                        if n == roles["dout"]
-                    )
-                    - next(
-                        transform(dx, dy, a)[0]
-                        for n, dx, dy, _ in view.pins
-                        if n == roles["din"]
-                    ),
+                    next(transform(dx, dy, a)[0] for n, dx, dy, _ in view.pins if n == roles["dout"])
+                    - next(transform(dx, dy, a)[0] for n, dx, dy, _ in view.pins if n == roles["din"]),
                     -a,
                 ),
             )
@@ -489,9 +482,7 @@ def _place_group_legacy(components: Sequence[Any], views: dict, pin_nets: dict) 
             row_height = 0
         page.append((component, snap(x), snap(y), rotation))
         for index, support in enumerate(sorted(supports[path])):
-            page.append(
-                (by_path[support], snap(x), snap(y + ymax + 30 + index * 30), 90)
-            )
+            page.append((by_path[support], snap(x), snap(y + ymax + 30 + index * 30), 90))
         x += width
         row_height = max(row_height, height)
     if page:
@@ -506,15 +497,19 @@ class _NearForeignCache:
     points forbid both axes. The source cell itself is intentionally excluded:
     exact perpendicular interior crossings use the existing track rule.
     """
-    def __init__(self, tracks, protected):
+
+    def __init__(self, tracks: defaultdict[GridPoint, dict[str, set[int]]], protected: set[GridPoint]) -> None:
         self.tracks = tracks
         self.protected = protected
-        self.owners = (defaultdict(set), defaultdict(set))
+        self.owners: tuple[defaultdict[GridPoint, set[str]], defaultdict[GridPoint, set[str]]] = (
+            defaultdict(set),
+            defaultdict(set),
+        )
         for point, nets in tracks.items():
             for net, axes in nets.items():
                 self._reserve(point, net, axes)
 
-    def _reserve(self, point, net, axes):
+    def _reserve(self, point: GridPoint, net: str, axes: Iterable[int]) -> None:
         axes = (0, 1) if point in self.protected else axes
         x, y = point
         for nx in (x - 1, x, x + 1):
@@ -523,12 +518,12 @@ class _NearForeignCache:
                     for axis in axes:
                         self.owners[axis][nx, ny].add(net)
 
-    def add_track(self, point, net, axes):
+    def add_track(self, point: GridPoint, net: str, axes: Iterable[int]) -> None:
         existing = self.tracks[point].setdefault(net, set())
         existing.update(axes)
         self._reserve(point, net, existing)
 
-    def protect(self, points):
+    def protect(self, points: Iterable[GridPoint]) -> None:
         for point in points:
             if point in self.protected:
                 continue
@@ -536,29 +531,31 @@ class _NearForeignCache:
             for net, axes in self.tracks.get(point, {}).items():
                 self._reserve(point, net, axes)
 
-    def blocked(self, point, axis, net):
+    def blocked(self, point: GridPoint, axis: int, net: str) -> bool:
         owners = self.owners[axis].get(point)
-        return bool(owners) and (len(owners) > 1 or net not in owners)
+        return owners is not None and bool(owners) and (len(owners) > 1 or net not in owners)
 
 
-def _pin_lengths(definition):
+def _pin_lengths(definition: SExpr) -> dict[str, float]:
     """Read the resolved embedded symbol's actual library pin-leg lengths."""
-    result = {}
-    def visit(tree):
+    result: dict[str, float] = {}
+
+    def visit(tree: object) -> None:
         if not isinstance(tree, list) or not tree:
             return
         if str(tree[0]) == "pin":
-            number = next((v[1] for v in tree if isinstance(v,list) and v and str(v[0]) == "number"),None)
-            length = next((v[1] for v in tree if isinstance(v,list) and v and str(v[0]) == "length"),None)
+            number = next((v[1] for v in tree if isinstance(v, list) and v and str(v[0]) == "number"), None)
+            length = next((v[1] for v in tree if isinstance(v, list) and v and str(v[0]) == "length"), None)
             if number is not None and length is not None:
                 result[str(number)] = float(length)
         for child in tree:
             visit(child)
+
     visit(definition)
     return result
 
 
-def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline") -> Tuple[list, dict, list]:
+def route_local(placed: Placements, views: Views, pin_nets: PinNets, *, strategy: str = "baseline") -> RouteResult:
     """Route a same-net tree between pin escapes on a grid, avoiding other copper.
 
     Crossings remain straight and junction-free; crossing-averse trials penalize
@@ -567,48 +564,45 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
     """
     step = 0.635
 
-    def grid(x, y):
+    def grid(x: float, y: float) -> GridPoint:
         return round(x / step), round(y / step)
 
-    def point(p):
+    def point(p: GridPoint) -> Point:
         return round(p[0] * step, 4), round(p[1] * step, 4)
 
-    obstacles = set()
-    label_obstacles = defaultdict(set)
+    obstacles: set[GridPoint] = set()
+    label_obstacles: defaultdict[GridPoint, set[str]] = defaultdict(set)
     occupied = {}
-    tracks = defaultdict(dict)
-    protected = set()
-    fixed_clearance = defaultdict(set)
+    tracks: defaultdict[GridPoint, dict[str, set[int]]] = defaultdict(dict)
+    protected: set[GridPoint] = set()
+    fixed_clearance: defaultdict[GridPoint, set[str]] = defaultdict(set)
     pin_necks = set()
-    endpoints = defaultdict(list)
+    endpoints: defaultdict[str, list[tuple[PinKey, GridPoint]]] = defaultdict(list)
     escapes = {}
     wires = []
     failures = []
     for c, x, y, rotation in placed:
-        xmin, ymin, xmax, ymax = graphic_bounds(
-            views[c.path], rotation, include_pins=False
-        )
+        xmin, ymin, xmax, ymax = graphic_bounds(views[c.path], rotation, include_pins=False)
         # Pin contacts remain outside the actual symbol graphics.
         a, b = grid(x + xmin, y + ymin)
         d, e = grid(x + xmax, y + ymax)
         if a <= d and b <= e:
-            obstacles.update(
-                (ix, iy) for ix in range(a, d + 1) for iy in range(b, e + 1)
-            )
+            obstacles.update((ix, iy) for ix in range(a, d + 1) for iy in range(b, e + 1))
         tx, ty, align = annotation_position(c, views[c.path], x, y, rotation)
         field_box = annotation_bounds(c, tx, ty, rotation)
         ax, ay = grid(field_box[0], field_box[1])
         bx, by = grid(field_box[2], field_box[3])
-        obstacles.update(
-            (ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1)
-        )
-        for item in (pin_name_items(views[c.path].definition, x, y, rotation, c.path)
-                     + pin_number_items(views[c.path].definition, x, y, rotation, c.path)):
+        obstacles.update((ix, iy) for ix in range(ax, bx + 1) for iy in range(ay, by + 1))
+        for item in pin_name_items(views[c.path].definition, x, y, rotation, c.path) + pin_number_items(
+            views[c.path].definition, x, y, rotation, c.path
+        ):
             lo_x, lo_y, hi_x, hi_y = item["bounds"]
             # Only grid points actually inside the text box are obstacles.
-            obstacles.update((ix, iy)
-                             for ix in range(math.ceil(lo_x / step), math.floor(hi_x / step) + 1)
-                             for iy in range(math.ceil(lo_y / step), math.floor(hi_y / step) + 1))
+            obstacles.update(
+                (ix, iy)
+                for ix in range(math.ceil(lo_x / step), math.floor(hi_x / step) + 1)
+                for iy in range(math.ceil(lo_y / step), math.floor(hi_y / step) + 1)
+            )
         pin_lengths = _pin_lengths(views[c.path].definition)
         for number, px, py, direction in pins(views[c.path], x, y, rotation):
             key = c.path, number
@@ -625,32 +619,35 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
             # transition, by a full 1.27 mm. Rounded grid occupancy alone lets
             # distinct buses approach within 0.635 mm and look joined.
             from .KiCadSchematicScene import WIRE_VISUAL_CLEARANCE
-            gx,gy = point(escape)
+
+            gx, gy = point(escape)
             # Routes join fixed stubs only at outward escape anchors. Reserve
             # the entire inward neck, including the red library pin leg, even
             # from the SAME net. Otherwise a path may backtrack through its pin
             # and hide against the symbol body while the visible stub hangs bare.
             inward = (round(math.cos(r)), -round(math.sin(r)))
             length = pin_lengths.get(number, 0.0)
-            body = (px + length*inward[0], py + length*inward[1])
-            lo_x,hi_x = sorted((gx,body[0]));lo_y,hi_y = sorted((gy,body[1]))
-            for ix in range(math.floor((lo_x-1.27)/step),math.ceil((hi_x+1.27)/step)+1):
-                for iy in range(math.floor((lo_y-1.27)/step),math.ceil((hi_y+1.27)/step)+1):
-                    qx,qy = point((ix,iy))
-                    along = (qx-gx)*inward[0] + (qy-gy)*inward[1]
-                    across = abs((qx-gx)*inward[1] - (qy-gy)*inward[0])
-                    extent = (body[0]-gx)*inward[0] + (body[1]-gy)*inward[1]
-                    if 0.0001 < along <= extent+0.0001 and across < 1.27-0.0001:
-                        pin_necks.add((ix,iy))
-            for first,last in (((px,py),(ex,ey)),((ex,ey),(gx,ey)),((gx,ey),(gx,gy))):
-                lo_x,hi_x = sorted((first[0],last[0]));lo_y,hi_y = sorted((first[1],last[1]))
+            body = (px + length * inward[0], py + length * inward[1])
+            lo_x, hi_x = sorted((gx, body[0]))
+            lo_y, hi_y = sorted((gy, body[1]))
+            for ix in range(math.floor((lo_x - 1.27) / step), math.ceil((hi_x + 1.27) / step) + 1):
+                for iy in range(math.floor((lo_y - 1.27) / step), math.ceil((hi_y + 1.27) / step) + 1):
+                    qx, qy = point((ix, iy))
+                    along = (qx - gx) * inward[0] + (qy - gy) * inward[1]
+                    across = abs((qx - gx) * inward[1] - (qy - gy) * inward[0])
+                    extent = (body[0] - gx) * inward[0] + (body[1] - gy) * inward[1]
+                    if 0.0001 < along <= extent + 0.0001 and across < 1.27 - 0.0001:
+                        pin_necks.add((ix, iy))
+            for first, last in (((px, py), (ex, ey)), ((ex, ey), (gx, ey)), ((gx, ey), (gx, gy))):
+                lo_x, hi_x = sorted((first[0], last[0]))
+                lo_y, hi_y = sorted((first[1], last[1]))
                 margin = WIRE_VISUAL_CLEARANCE
-                for ix in range(math.floor((lo_x-margin)/step),math.ceil((hi_x+margin)/step)+1):
-                    for iy in range(math.floor((lo_y-margin)/step),math.ceil((hi_y+margin)/step)+1):
-                        qx,qy = point((ix,iy))
-                        distance = math.hypot(max(lo_x-qx,qx-hi_x,0),max(lo_y-qy,qy-hi_y,0))
-                        if distance < margin-0.0001:
-                            fixed_clearance[ix,iy].add(net)
+                for ix in range(math.floor((lo_x - margin) / step), math.ceil((hi_x + margin) / step) + 1):
+                    for iy in range(math.floor((lo_y - margin) / step), math.ceil((hi_y + margin) / step) + 1):
+                        qx, qy = point((ix, iy))
+                        distance = math.hypot(max(lo_x - qx, qx - hi_x, 0), max(lo_y - qy, qy - hi_y, 0))
+                        if distance < margin - 0.0001:
+                            fixed_clearance[ix, iy].add(net)
             # Reserve the entire escape stub from unrelated nets.
             start = grid(px, py)
             protected.update((start, escape))
@@ -693,7 +690,7 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
     # Preserve verified functional ownership even for explicitly positioned
     # circuits: bypass branches terminate at their own device's supply escape,
     # never at a neighbouring capacitor simply because it is geometrically near.
-    local_targets = {}
+    local_targets: dict[PinKey, tuple[PinKey, GridPoint]] = {}
     components = [c for c, _, _, _ in placed]
     for association in decoupling_associations(components, pin_nets, views):
         device, *capacitors = association.components
@@ -704,7 +701,8 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
         for key, pos in endpoints[supply]:
             if key[0] in capacitors:
                 local_targets[key] = device_entries[0]
-    def net_order(pair):
+
+    def net_order(pair: tuple[str, list[tuple[PinKey, GridPoint]]]) -> tuple[float, int, str] | tuple[int, str]:
         net, entries = pair
         if strategy == "short_first":
             xs, ys = zip(*(p for _, p in entries))
@@ -712,7 +710,7 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
         return (len(entries), net)
 
     near_cache = _NearForeignCache(tracks, protected)
-    escape_anchors = {anchor for entries in endpoints.values() for _,anchor in entries}
+    escape_anchors = {anchor for entries in endpoints.values() for _, anchor in entries}
     connected = set()
     for net, entries in sorted(endpoints.items(), key=net_order):
         if len(entries) < 2 or net.lower().split(".")[-1] == "gnd":
@@ -727,48 +725,48 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                 anchors.reverse()
             else:
                 axis = 0 if strategy == "x" else 1
-                anchors.sort(key=lambda entry: (entry[1][axis], entry[1][1-axis], entry[0]))
+                anchors.sort(key=lambda entry: (entry[1][axis], entry[1][1 - axis], entry[0]))
             entries = anchors + supports
         tree = {entries[0][1]}
         connected.add(entries[0][0])
         for key, start in entries[1:]:
             targets = {local_targets[key][1]} if key in local_targets else tree
-            target = min(
-                targets, key=lambda p: (abs(p[0] - start[0]) + abs(p[1] - start[1]), p)
-            )
+            target = min(targets, key=lambda p: (abs(p[0] - start[0]) + abs(p[1] - start[1]), p))
             own_stub = set()
             if key in local_targets:
                 px, py, _, _, _ = escapes[key]
                 pin = grid(px, py)
-                own_stub = {(ix, iy)
-                            for ix in range(min(pin[0], start[0]), max(pin[0], start[0]) + 1)
-                            for iy in range(min(pin[1], start[1]), max(pin[1], start[1]) + 1)} - {start}
+                own_stub = {
+                    (ix, iy)
+                    for ix in range(min(pin[0], start[0]), max(pin[0], start[0]) + 1)
+                    for iy in range(min(pin[1], start[1]), max(pin[1], start[1]) + 1)
+                } - {start}
             direction_search = strategy in ("tree_search", "tree_reverse", "crossing_averse")
             # Distance to the actual tree stays informative inside its bounding
             # box, avoiding budget exhaustion on sparse U-shaped route trees.
             distance_to_tree = tree_distance(targets) if direction_search else None
-            start_state = (start, None) if direction_search else start
-            queue = [(0, 0, start, None)]
-            cost = {start_state: 0}
-            previous = {}
-            found = None
+            start_state: RouteState = (start, None) if direction_search else start
+            queue: list[tuple[float, int, GridPoint, Optional[int]]] = [(0, 0, start, None)]
+            cost: dict[RouteState, int] = {start_state: 0}
+            previous: dict[RouteState, RouteState] = {}
+            found: Optional[RouteState] = None
             expanded = 0
             while queue and expanded < 20000:
                 _, distance, current, prior_direction = heapq.heappop(queue)
-                state = (current, prior_direction) if direction_search else current
+                state: RouteState = (current, prior_direction) if direction_search else current
                 if distance != cost.get(state):
                     continue
                 if current in targets:
                     found = state
                     break
                 expanded += 1
-                for direction, (dx, dy) in enumerate(
-                    ((1, 0), (-1, 0), (0, 1), (0, -1))
-                ):
+                for direction, (dx, dy) in enumerate(((1, 0), (-1, 0), (0, 1), (0, -1))):
                     q = current[0] + dx, current[1] + dy
                     if not (25 <= q[0] <= 625 and 65 <= q[1] <= 425):
                         continue
-                    if (q in obstacles or any(owner != net for owner in label_obstacles.get(q, ()))) and q not in targets:
+                    if (
+                        q in obstacles or any(owner != net for owner in label_obstacles.get(q, ()))
+                    ) and q not in targets:
                         continue
                     if q in own_stub or (q in pin_necks and q not in escape_anchors):
                         continue
@@ -781,13 +779,9 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                     # strict perpendicular interior crossing remains legal.
                     if near_cache.blocked(q, axis, net):
                         continue
-                    others = {
-                        n: axes for n, axes in tracks.get(q, {}).items() if n != net
-                    }
+                    others = {n: axes for n, axes in tracks.get(q, {}).items() if n != net}
                     if others:
-                        if q in protected or any(
-                            axis in axes for axes in others.values()
-                        ):
+                        if q in protected or any(axis in axes for axes in others.values()):
                             continue
                     # Crossings must pass straight through, never terminate or
                     # turn on another net. No junction is emitted at crossings.
@@ -798,34 +792,29 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                         distance
                         + 1
                         + (24 if others and strategy == "crossing_averse" else 0)
-                        + (
-                            3
-                            if prior_direction is not None
-                            and prior_direction != direction
-                            else 0
-                        )
+                        + (3 if prior_direction is not None and prior_direction != direction else 0)
                     )
-                    next_state = (q, direction) if direction_search else q
+                    next_state: RouteState = (q, direction) if direction_search else q
                     if new_cost >= cost.get(next_state, float("inf")):
                         continue
                     cost[next_state] = new_cost
                     previous[next_state] = state
-                    if direction_search:
+                    if distance_to_tree is not None:
                         heuristic = distance_to_tree(q)
                     else:
                         heuristic = abs(q[0] - target[0]) + abs(q[1] - target[1])
-                    heapq.heappush(
-                        queue, (new_cost + heuristic, new_cost, q, direction)
-                    )
+                    heapq.heappush(queue, (new_cost + heuristic, new_cost, q, direction))
             if found is None:
                 failures.append((key, net))
                 continue
-            path = [found]
-            while path[-1] != start_state:
-                path.append(previous[path[-1]])
-            path.reverse()
+            state_path = [found]
+            while state_path[-1] != start_state:
+                state_path.append(previous[state_path[-1]])
+            state_path.reverse()
             if direction_search:
-                path = [point for point, _ in path]
+                path = [cast(tuple[GridPoint, Optional[int]], item)[0] for item in state_path]
+            else:
+                path = [cast(GridPoint, item) for item in state_path]
             if key in local_targets:
                 direct = abs(start[0] - target[0]) + abs(start[1] - target[1])
                 other_caps = {pos for other, pos in entries if other != key and other in local_targets}
@@ -852,9 +841,9 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
                 if before != after:
                     compact.append(path[i])
             compact.append(path[-1])
-            for a, b in zip(compact, compact[1:]):
-                if a != b:
-                    wires.append((net, point(a), point(b)))
+            for first_point, last_point in zip(compact, compact[1:]):
+                if first_point != last_point:
+                    wires.append((net, point(first_point), point(last_point)))
     routed_nets = {net for net, _, _ in wires}
     for key, (_, _, ex, ey, _) in sorted(escapes.items()):
         net = pin_nets[key]
@@ -870,7 +859,7 @@ def route_local(placed: list, views: dict, pin_nets: dict, *, strategy="baseline
     return wires, escapes, failures
 
 
-def split_group(placed: list, views: dict, pin_nets: dict):
+def split_group(placed: Placements, views: Views, pin_nets: PinNets) -> Optional[tuple[Placements, Placements]]:
     """Cut complete functional atoms, minimizing signal-net page boundaries."""
     from .KiCadSchematicPlacement import functional_atoms, signal_nets, atom_bounds
 

@@ -1,5 +1,10 @@
 """Whole-region planning is deterministic and rejects unsafe edited plans."""
 
+from __future__ import annotations
+from ..core import CompiledDesign
+from .KiCadSchematicPlanner import SchematicSheetPlan
+
+from typing_extensions import override
 import copy
 import json
 import math
@@ -11,14 +16,20 @@ from .KiCadSchematicPlanner import (
     SchematicRegion,
     SchematicRegionPlacement,
     SchematicSheet,
-    SchematicSheetPlan,
     SchematicSheetPlanner,
-    USABLE_BOUNDS,
     OVERVIEW_BOUNDS,
 )
 
 
-def region(identity, width=80, height=50, scope="(root)", title=None, components=None, kind="circuit"):
+def region(
+    identity: str,
+    width: float = 80,
+    height: float = 50,
+    scope: str = "(root)",
+    title: str | None = None,
+    components: tuple[str, ...] | None = None,
+    kind: str = "circuit",
+) -> SchematicRegion:
     return SchematicRegion(
         identity,
         title or identity,
@@ -30,10 +41,11 @@ def region(identity, width=80, height=50, scope="(root)", title=None, components
 
 
 class SchematicPlannerTest(unittest.TestCase):
-    def setUp(self):
+    @override
+    def setUp(self) -> None:
         self.planner = SchematicSheetPlanner()
 
-    def test_packs_whole_regions_together_and_is_order_independent(self):
+    def test_packs_whole_regions_together_and_is_order_independent(self) -> None:
         regions = [region("controller"), region("power", 120, 70), region("usb", 70, 40)]
         first = self.planner.plan_regions(regions, "fingerprint")
         second = self.planner.plan_regions(list(reversed(regions)), "fingerprint")
@@ -43,7 +55,7 @@ class SchematicPlannerTest(unittest.TestCase):
         self.assertEqual(first.sheets[0].regions[0].region_id, "power")
         self.assertEqual(first.regions[0].components, ("controller.part",))
 
-    def test_reserves_native_title_block(self):
+    def test_reserves_native_title_block(self) -> None:
         plan = self.planner.plan_regions([region("a", 200, 200), region("b", 140, 80), region("c", 140, 80)], "f")
         regions = {r.id: r for r in plan.regions}
         for sheet in plan.sheets:
@@ -51,7 +63,7 @@ class SchematicPlannerTest(unittest.TestCase):
                 r = regions[p.region_id]
                 self.assertTrue(p.x + r.bounds[2] - r.bounds[0] <= 230 or p.y + r.bounds[3] - r.bounds[1] <= 245)
 
-    def test_json_round_trip_is_strict_and_does_not_alias_input(self):
+    def test_json_round_trip_is_strict_and_does_not_alias_input(self) -> None:
         plan = self.planner.plan_regions([region("power")], "fingerprint")
         data = json.loads(json.dumps(plan.to_dict()))
         self.assertEqual(SchematicSheetPlan.from_dict(data), plan)
@@ -72,7 +84,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "boolean"):
             SchematicSheetPlan.from_dict(bad)
 
-    def test_assignment_aliases_unknown_ambiguous_and_conflicting(self):
+    def test_assignment_aliases_unknown_ambiguous_and_conflicting(self) -> None:
         regions = [region("root::Power", title="Power"), region("root::USB", title="USB")]
         plan = self.planner.plan_regions(regions, "f", assignments={"Power": "Supply", "root::Power": "Supply"})
         self.assertEqual(
@@ -89,7 +101,7 @@ class SchematicPlannerTest(unittest.TestCase):
                 assignments={"Power": "Supply"},
             )
 
-    def test_requested_plan_rejects_stale_fingerprint_geometry_and_membership(self):
+    def test_requested_plan_rejects_stale_fingerprint_geometry_and_membership(self) -> None:
         regions = [region("a"), region("b")]
         plan = self.planner.plan_regions(regions, "f")
         with self.assertRaisesRegex(ValueError, "stale"):
@@ -111,7 +123,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "more than once"):
             SchematicSheetPlan.from_dict(bad)
 
-    def test_requested_plan_rejects_overlap_small_gutter_outside_and_nonfinite(self):
+    def test_requested_plan_rejects_overlap_small_gutter_outside_and_nonfinite(self) -> None:
         regions = [region("a", 50, 30), region("b", 50, 30)]
         plan = self.planner.plan_regions(regions, "f")
         for x, y, message in [(20, 40, "overlap"), (77, 40, "gutter"), (394, 40, "outside")]:
@@ -123,7 +135,7 @@ class SchematicPlannerTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "finite number"):
                 SchematicRegionPlacement("a", value, 40)
 
-    def test_board_scopes_do_not_merge_even_with_heavy_adjacency(self):
+    def test_board_scopes_do_not_merge_even_with_heavy_adjacency(self) -> None:
         regions = [region("left", scope="one"), region("right", scope="two")]
         plan = self.planner.plan_regions(regions, "f", adjacency={("left", "right"): 1000})
         self.assertEqual(len(plan.sheets), 2)
@@ -133,7 +145,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "between board scopes"):
             SchematicSheetPlan.from_dict(bad)
 
-    def test_explicit_fixed_set_can_continue_without_cropping(self):
+    def test_explicit_fixed_set_can_continue_without_cropping(self) -> None:
         regions = [region("a", 300, 150), region("b", 300, 150)]
         plan = self.planner.plan_regions(regions, "f", assignments={"a": "Power", "b": "Power"})
         self.assertEqual({s.title for s in plan.sheets}, {"Overview", "Power /1", "Power /2"})
@@ -143,7 +155,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "overview inset"):
             self.planner.plan_regions([region("mechanical", 200, 70)], "f", assignments={"mechanical": "Overview"})
 
-    def test_root_overview_contains_only_explicit_inset_regions(self):
+    def test_root_overview_contains_only_explicit_inset_regions(self) -> None:
         regions = [region("mechanical", 230, 20), region("power", 100, 100), region("mcu", 100, 100)]
         plan = self.planner.plan_regions(
             regions, "f", assignments={"mechanical": "Overview", "power": "Power", "mcu": "MCU"}
@@ -157,7 +169,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "outside usable"):
             SchematicSheetPlan.from_dict(bad)
 
-    def test_overview_rules_and_empty_design(self):
+    def test_overview_rules_and_empty_design(self) -> None:
         one = self.planner.plan_regions([region("a")], "f")
         self.assertEqual(len(one.sheets), 1)
         multiple = self.planner.plan_regions([region("a", 300, 150), region("b", 300, 150)], "f")
@@ -173,7 +185,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only an overview"):
             SchematicSheet("empty", "Empty", "scope", ())
 
-    def test_adjacency_prefers_a_connected_sheet_when_both_fit(self):
+    def test_adjacency_prefers_a_connected_sheet_when_both_fit(self) -> None:
         # First two regions cannot share a sheet; the small third can fit either.
         regions = [region("a", 250, 150), region("b", 250, 150), region("c", 40, 40)]
         plan = self.planner.plan_regions(regions, "f", adjacency={("b", "c"): 5})
@@ -182,58 +194,83 @@ class SchematicPlannerTest(unittest.TestCase):
         self.assertNotEqual(locations["a"], locations["c"])
         self.assertTrue(any(d.startswith("cross_sheet_connections:") for d in plan.diagnostics))
 
-    def test_continuations_are_numbered_within_functional_title(self):
-        regions = [region("a", 300, 150, title="Control"),
-                   region("b", 300, 150, title="Control /2"),
-                   region("c", 300, 150, title="USB")]
+    def test_continuations_are_numbered_within_functional_title(self) -> None:
+        regions = [
+            region("a", 300, 150, title="Control"),
+            region("b", 300, 150, title="Control /2"),
+            region("c", 300, 150, title="USB"),
+        ]
         plan = self.planner.plan_regions(regions, "f")
         self.assertEqual({s.title for s in plan.sheets}, {"Overview", "Control /1", "Control /2", "USB"})
 
-    def test_continuation_page_order_is_numeric(self):
+    def test_continuation_page_order_is_numeric(self) -> None:
         regions = [region(f"r{i:02}", 300, 150, title="Control") for i in range(12)]
         plan = self.planner.plan_regions(regions, "f")
-        self.assertEqual([s.title for s in plan.sheets if s.id != "overview"],
-                         [f"Control /{i}" for i in range(1, 13)])
+        self.assertEqual([s.title for s in plan.sheets if s.id != "overview"], [f"Control /{i}" for i in range(1, 13)])
 
-    def test_mixed_titles_follow_underlying_region_continuations(self):
+    def test_mixed_titles_follow_underlying_region_continuations(self) -> None:
         from .KiCadSchematicPlanner import _continuation_order
-        regions = {r.id: r for r in [region('a', title='bms'), region('b', title='bms /2'),
-                                    region('c', title='bms /3'), region('d', title='epd'),
-                                    region('e', title='epd /2')]}
-        sheets = [SchematicSheet('a', 'bms + alert', '(root)', (SchematicRegionPlacement('a', 20, 40),)),
-                  SchematicSheet('b', 'bms + vbus', '(root)', (SchematicRegionPlacement('b', 20, 40),)),
-                  SchematicSheet('c', 'bms + logic', '(root)', (SchematicRegionPlacement('c', 20, 40),)),
-                  SchematicSheet('d', 'epd', '(root)', (SchematicRegionPlacement('d', 20, 40),)),
-                  SchematicSheet('e', 'balance + epd', '(root)', (SchematicRegionPlacement('e', 20, 40),))]
+
+        regions = {
+            r.id: r
+            for r in [
+                region("a", title="bms"),
+                region("b", title="bms /2"),
+                region("c", title="bms /3"),
+                region("d", title="epd"),
+                region("e", title="epd /2"),
+            ]
+        }
+        sheets = [
+            SchematicSheet("a", "bms + alert", "(root)", (SchematicRegionPlacement("a", 20, 40),)),
+            SchematicSheet("b", "bms + vbus", "(root)", (SchematicRegionPlacement("b", 20, 40),)),
+            SchematicSheet("c", "bms + logic", "(root)", (SchematicRegionPlacement("c", 20, 40),)),
+            SchematicSheet("d", "epd", "(root)", (SchematicRegionPlacement("d", 20, 40),)),
+            SchematicSheet("e", "balance + epd", "(root)", (SchematicRegionPlacement("e", 20, 40),)),
+        ]
         ordered = _continuation_order(list(reversed(sheets)), regions, [])
         indices = {s.id: i for i, s in enumerate(ordered)}
-        self.assertLess(indices['a'], indices['b'])
-        self.assertLess(indices['b'], indices['c'])
-        self.assertLess(indices['d'], indices['e'])
+        self.assertLess(indices["a"], indices["b"])
+        self.assertLess(indices["b"], indices["c"])
+        self.assertLess(indices["d"], indices["e"])
         self.assertEqual(ordered, _continuation_order(sheets, regions, []))
 
-    def test_array_ranges_remain_ordered_when_first_page_waits_for_epd(self):
+    def test_array_ranges_remain_ordered_when_first_page_waits_for_epd(self) -> None:
         from .KiCadSchematicPlanner import _continuation_order
-        regions = {r.id: r for r in [region('a', title='balance[0,1]'),
-                    region('b', title='balance[2,3]'), region('c', title='balance[4,5]'),
-                    region('d', title='epd'), region('e', title='epd /2')]}
-        sheets = [SchematicSheet('a', 'balance + epd', '(root)',
-                       (SchematicRegionPlacement('a', 20, 40), SchematicRegionPlacement('e', 20, 100))),
-                  SchematicSheet('b', 'balance', '(root)', (SchematicRegionPlacement('b', 20, 40),)),
-                  SchematicSheet('c', 'balance', '(root)', (SchematicRegionPlacement('c', 20, 40),)),
-                  SchematicSheet('d', 'epd', '(root)', (SchematicRegionPlacement('d', 20, 40),))]
-        diagnostics = []
+
+        regions = {
+            r.id: r
+            for r in [
+                region("a", title="balance[0,1]"),
+                region("b", title="balance[2,3]"),
+                region("c", title="balance[4,5]"),
+                region("d", title="epd"),
+                region("e", title="epd /2"),
+            ]
+        }
+        sheets = [
+            SchematicSheet(
+                "a",
+                "balance + epd",
+                "(root)",
+                (SchematicRegionPlacement("a", 20, 40), SchematicRegionPlacement("e", 20, 100)),
+            ),
+            SchematicSheet("b", "balance", "(root)", (SchematicRegionPlacement("b", 20, 40),)),
+            SchematicSheet("c", "balance", "(root)", (SchematicRegionPlacement("c", 20, 40),)),
+            SchematicSheet("d", "epd", "(root)", (SchematicRegionPlacement("d", 20, 40),)),
+        ]
+        diagnostics: list[str] = []
         ordered = _continuation_order(sheets, regions, diagnostics)
-        self.assertEqual([sheet.id for sheet in ordered], ['d', 'a', 'b', 'c'])
+        self.assertEqual([sheet.id for sheet in ordered], ["d", "a", "b", "c"])
         self.assertFalse(diagnostics)
 
-    def test_signal_neighbour_is_packed_before_unrelated_larger_region(self):
+    def test_signal_neighbour_is_packed_before_unrelated_larger_region(self) -> None:
         regions = [region("a", 250, 150), region("b", 200, 60), region("c", 100, 60)]
         plan = self.planner.plan_regions(regions, "f", adjacency={("a", "c"): 5})
         sheet = next(s for s in plan.sheets if any(p.region_id == "a" for p in s.regions))
         self.assertEqual([p.region_id for p in sheet.regions][:2], ["a", "c"])
 
-    def test_duplicate_component_ownership_and_unsafe_requested_assignment(self):
+    def test_duplicate_component_ownership_and_unsafe_requested_assignment(self) -> None:
         with self.assertRaisesRegex(ValueError, "more than one region"):
             self.planner.plan_regions([region("a", components=("same",)), region("b", components=("same",))], "f")
         regions = [region("a")]
@@ -241,7 +278,7 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "conflicts with sheet assignment"):
             self.planner.plan_regions(regions, "f", requested=plan, assignments={"a": "Other"})
 
-    def test_mechanical_kind_defaults_to_overview_and_explicit_override_wins(self):
+    def test_mechanical_kind_defaults_to_overview_and_explicit_override_wins(self) -> None:
         regions = [region("root::holes", 230, 20, title="Any title", kind="mechanical"), region("power")]
         plan = self.planner.plan_regions(regions, "f")
         overview = next(sheet for sheet in plan.sheets if sheet.id == "overview")
@@ -255,7 +292,7 @@ class SchematicPlannerTest(unittest.TestCase):
         ordinary = self.planner.plan_regions([region("ordinary", title="Mechanical notes")], "f")
         self.assertNotEqual(ordinary.sheets[0].id, "overview")
 
-    def test_kind_json_compatibility_and_validation(self):
+    def test_kind_json_compatibility_and_validation(self) -> None:
         ordinary = region("circuit")
         self.assertNotIn("kind", ordinary.to_dict())
         self.assertEqual(SchematicRegion.from_dict(ordinary.to_dict()).kind, "circuit")
@@ -270,13 +307,16 @@ class SchematicPlannerTest(unittest.TestCase):
         empty = region("empty", components=(), kind="empty")
         self.assertEqual(SchematicRegion.from_dict(empty.to_dict()), empty)
 
-    def test_plan_convenience_delegates_to_prepared_regions(self):
+    def test_plan_convenience_delegates_to_prepared_regions(self) -> None:
         regions = (region("a"),)
-        options = SimpleNamespace(sheet_assignments={}, sheet_plan=None)
+        from .KiCadSchematicExporter import SchematicExportOptions
+        from unittest.mock import Mock
+
+        options = SchematicExportOptions("fixture")
         from .KiCadSchematicExporter import KiCadSchematicExporter
 
         expected = self.planner.plan_regions(regions, "f")
-        compiled = object()
+        compiled = Mock(spec=CompiledDesign)
         with patch.object(KiCadSchematicExporter, "_plan_compiled", return_value=expected, create=True) as prepare:
             plan = self.planner.plan(compiled, options)
         prepare.assert_called_once_with(compiled, options)

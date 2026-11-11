@@ -26,9 +26,7 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
             return symbol, {"1": sw_pads[0], "2": com_pads[0]}
         if len(sw_pads) == len(com_pads) == 2 and isinstance(self, TactileSwitch):
             # SW_Push_Dual's two left contact pins are 1/3; right contact pins 2/4.
-            return "Switch:SW_Push_Dual", {
-                "1": sw_pads[0], "3": sw_pads[1], "2": com_pads[0], "4": com_pads[1]
-            }
+            return "Switch:SW_Push_Dual", {"1": sw_pads[0], "3": sw_pads[1], "2": com_pads[0], "4": com_pads[1]}
         return None
 
     def __init__(self, voltage: RangeLike, current: RangeLike = 0 * Amp(tol=0)) -> None:
