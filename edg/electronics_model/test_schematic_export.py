@@ -302,38 +302,40 @@ class SchematicExportTest(unittest.TestCase):
                 )
 
     def test_separated_pin_escapes_preserve_both_nets(self) -> None:
-        result = KiCadSchematicExporter().export(
-            self.compiled,
-            SchematicExportOptions(
-                "Control",
-                placements={
-                    "source": SchematicPlacement("Power", 50, 50),
-                    "sink": SchematicPlacement("Power", 100.8, 50),
-                },
-            ),
-        )
-        if shutil.which("kicad-cli"):
-            with tempfile.TemporaryDirectory() as directory:
-                result.write(Path(directory))
-                root = json.loads(result.files["manifest.json"])["boards"][0]["root"]
-                xml = Path(directory, "control.xml")
-                subprocess.run(
-                    [
-                        "kicad-cli",
-                        "sch",
-                        "export",
-                        "netlist",
-                        "--format",
-                        "kicadxml",
-                        "-o",
-                        str(xml),
-                        str(xml.parent / root),
-                    ],
-                    check=True,
-                    capture_output=True,
-                    timeout=45,
+        for y in (50.0, 50.00015):
+            with self.subTest(y=y):
+                result = KiCadSchematicExporter().export(
+                    self.compiled,
+                    SchematicExportOptions(
+                        "Control",
+                        placements={
+                            "source": SchematicPlacement("Power", 50, y),
+                            "sink": SchematicPlacement("Power", 100.8, y),
+                        },
+                    ),
                 )
-                verify_schematic_netlist(next(iter(NetlistTransform(self.compiled).run().values())), xml)
+                if shutil.which("kicad-cli"):
+                    with tempfile.TemporaryDirectory() as directory:
+                        result.write(Path(directory))
+                        root = json.loads(result.files["manifest.json"])["boards"][0]["root"]
+                        xml = Path(directory, "control.xml")
+                        subprocess.run(
+                            [
+                                "kicad-cli",
+                                "sch",
+                                "export",
+                                "netlist",
+                                "--format",
+                                "kicadxml",
+                                "-o",
+                                str(xml),
+                                str(xml.parent / root),
+                            ],
+                            check=True,
+                            capture_output=True,
+                            timeout=45,
+                        )
+                        verify_schematic_netlist(next(iter(NetlistTransform(self.compiled).run().values())), xml)
 
     def test_foreign_route_endpoint_on_wire_is_a_short(self) -> None:
         from .KiCadSchematicWriter import validate_wire_contacts

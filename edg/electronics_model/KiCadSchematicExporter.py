@@ -447,6 +447,10 @@ class _RegionDrawing:
     route_snapshot: Optional[RouteResult] = None
     source_annotations: dict[str, Optional[Point]] = field(default_factory=dict)
 
+    def sheet_offset(self, location: SchematicRegionPlacement) -> Point:
+        # Translate every route, symbol and pin on the same 0.0001 mm coordinate lattice.
+        return round(location.x - self.spec.bounds[0], 4), round(location.y - self.spec.bounds[1], 4)
+
     def sheet_escape(self, key: PinKey, dx: float, dy: float, px: float, py: float, direction: float) -> Point:
         if self.route_snapshot is None:
             return pin_escape(px, py, direction)
@@ -1164,7 +1168,8 @@ class KiCadSchematicExporter:
                 pending = list(batches)
                 part = 0
                 while pending:
-                    source_placed = pending.pop(0)
+                    # Quantize origins before combining them with pin offsets or page translations.
+                    source_placed = [(c, round(x, 4), round(y, 4), angle) for c, x, y, angle in pending.pop(0)]
                     placed = freeze_annotations(source_placed, views)
                     baseline = route_local(placed, views, pin_nets)
                     orientation = None
@@ -1888,7 +1893,7 @@ class KiCadSchematicExporter:
         pin_stubs: Optional[dict[Wire, str]] = None,
     ) -> list[Wire]:
         bounds = drawing.spec.bounds
-        dx, dy = location.x - bounds[0], location.y - bounds[1]
+        dx, dy = drawing.sheet_offset(location)
 
         def move(p: Point) -> Point:
             return (round(p[0] + dx, 4), round(p[1] + dy, 4))
@@ -2156,7 +2161,7 @@ class KiCadSchematicExporter:
         for location in sheet.regions:
             drawing = board.regions[location.region_id]
             bounds = drawing.spec.bounds
-            dx, dy = location.x - bounds[0], location.y - bounds[1]
+            dx, dy = drawing.sheet_offset(location)
             heading_boxes = drawing.heading_boxes or (
                 (
                     bounds[0],
