@@ -1060,7 +1060,7 @@ class KiCadSchematicExporter:
                         def reflect(tree: object) -> None:
                             if isinstance(tree, list) and tree:
                                 if (
-                                    str(tree[0]) in ("at", "start", "end", "xy", "center")
+                                    str(tree[0]) in ("at", "start", "mid", "end", "xy", "center")
                                     and len(tree) >= 3
                                     and isinstance(tree[1], (float, int))
                                 ):

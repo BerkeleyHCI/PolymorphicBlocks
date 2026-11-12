@@ -138,6 +138,37 @@ class SchematicExportTest(unittest.TestCase):
         self.assertEqual(properties["Value"], "Long supplier description " * 8)
         self.assertIn("\n", properties["PBDisplayValue"])
 
+    def test_flipped_symbol_reflects_all_three_arc_points(self) -> None:
+        compiled = ScalaCompiler.compile(GeneratedMappedBoard)
+        compiled.append_values(RefdesRefinementPass().run(compiled))
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "Device.kicad_sym").write_text(
+                """(kicad_symbol_lib (symbol "R" (symbol "R_1_1"
+                (arc (start 4 3) (mid 3 4) (end -4 3))
+                (pin passive line (at -7.62 0 0) (length 2.54) (name "A") (number "1"))
+                (pin passive line (at 7.62 0 180) (length 2.54) (name "B") (number "2")))))""",
+                encoding="utf-8",
+            )
+            result = KiCadSchematicExporter().export(
+                compiled,
+                SchematicExportOptions(
+                    "Reflected",
+                    symbol_library_dirs=(directory,),
+                    placements={"part": SchematicPlacement("Test", 50, 50, flip_horizontal=True)},
+                ),
+            )
+        (arc,) = [
+            arc
+            for name, content in result.files.items()
+            if name.endswith(".kicad_sch")
+            for library in children(sexpdata.loads(content), "lib_symbols")
+            for definition in children(library, "symbol")
+            if definition[1].endswith("_reflected")
+            for body in children(definition, "symbol")
+            for arc in children(body, "arc")
+        ]
+        self.assertEqual([children(arc, key)[0][1:] for key in ("start", "mid", "end")], [[-4, 3], [-3, 4], [4, 3]])
+
     def test_oversized_optimized_route_retains_fitting_baseline(self) -> None:
         from unittest import mock
         from .KiCadSchematicRouting import route_metrics

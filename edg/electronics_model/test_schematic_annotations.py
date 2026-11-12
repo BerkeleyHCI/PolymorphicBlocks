@@ -6,11 +6,23 @@ from .KiCadSchematicExporter import PhysicalComponent, SymbolView
 import unittest
 from dataclasses import replace
 from .KiCadSchematicExporter import node, S
-from .KiCadSchematicLayout import annotation_position, annotation_bounds, freeze_annotations
+from .KiCadSchematicLayout import annotation_position, annotation_bounds, freeze_annotations, graphic_bounds
 from .KiCadSchematicScene import segment_box
 
 
 class SchematicAnnotationsTest(unittest.TestCase):
+    def test_arc_body_bounds_follow_the_selected_sweep(self) -> None:
+        for midpoint, angle, expected in (
+            ((3, 4), 0, (-4, -5, 4, -3)),  # Minor arc reaches beyond all three defining points.
+            ((3, -4), 0, (-5, -3, 5, 5)),  # Same endpoints, major arc around the other side.
+            ((3, -4), 90, (-3, -5, 5, 5)),
+            ((0, 3), 0, (-4, -3, 4, -3)),  # Collinear input retains its endpoints.
+        ):
+            with self.subTest(midpoint=midpoint, angle=angle):
+                arc = node("arc", node("start", -4, 3), node("mid", *midpoint), node("end", 4, 3))
+                view = SymbolView(node("symbol", "Test:Arc", node("symbol", "Arc_0_1", arc)), [], "Test:Arc")
+                self.assertEqual(graphic_bounds(view, angle, include_pins=False), expected)
+
     def fixture(self) -> tuple[PhysicalComponent, SymbolView]:
         # Geometry and labels of PDU hv_or.q1: rotated PowerPAK FET, with
         # three coincident source pins and a long manufacturer value.

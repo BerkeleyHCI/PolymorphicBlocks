@@ -93,6 +93,24 @@ def pins(view: SymbolView, x: float, y: float, angle: int) -> list[tuple[str, fl
     return result
 
 
+def _arc_extrema(start: Point, mid: Point, end: Point) -> Iterable[Point]:
+    """Yield circle extrema on the sweep from start to end through mid."""
+    # Solve for the circle center relative to start using the two perpendicular bisectors.
+    mx, my = mid[0] - start[0], mid[1] - start[1]
+    ex, ey = end[0] - start[0], end[1] - start[1]
+    cross = mx * ey - my * ex
+    if cross == 0:  # Repeated or collinear points have no unique circle.
+        return
+    m_squared, e_squared = mx * mx + my * my, ex * ex + ey * ey
+    cx = (m_squared * ey - e_squared * my) / (2 * cross)
+    cy = (mx * e_squared - ex * m_squared) / (2 * cross)
+    radius = math.hypot(cx, cy)
+    # The endpoint chord divides the circle into two arcs. Keep its midpoint's side.
+    for x, y in ((cx - radius, cy), (cx + radius, cy), (cx, cy - radius), (cx, cy + radius)):
+        if (x * ey - y * ex) * cross >= 0:
+            yield start[0] + x, start[1] + y
+
+
 def graphic_bounds(view: SymbolView, angle: int = 0, include_pins: bool = True) -> Tuple[float, float, float, float]:
     points: list[Point] = []
 
@@ -102,6 +120,15 @@ def graphic_bounds(view: SymbolView, angle: int = 0, include_pins: bool = True) 
         name = str(tree[0])
         if name in ("property", "pin"):
             return
+        if name == "arc":
+            arc = {
+                str(v[0]): (v[1], v[2])
+                for v in tree
+                if isinstance(v, list) and len(v) >= 3 and str(v[0]) in ("start", "mid", "end")
+            }
+            if {"start", "mid", "end"} <= arc.keys():
+                for x, y in _arc_extrema(arc["start"], arc["mid"], arc["end"]):
+                    points.append(transform(x, -y, angle))
         if name == "circle":
             center = next((v for v in tree if isinstance(v, list) and str(v[0]) == "center"), None)
             radius = next(
@@ -111,7 +138,7 @@ def graphic_bounds(view: SymbolView, angle: int = 0, include_pins: bool = True) 
             if center is not None and radius is not None:
                 for dx, dy in ((radius, 0), (-radius, 0), (0, radius), (0, -radius)):
                     points.append(transform(center[1] + dx, -center[2] + dy, angle))
-        if name in ("start", "end", "xy", "center") and len(tree) >= 3:
+        if name in ("start", "mid", "end", "xy", "center") and len(tree) >= 3:
             if isinstance(tree[1], (int, float)) and isinstance(tree[2], (int, float)):
                 points.append(transform(float(tree[1]), -float(tree[2]), angle))
         for child in tree:
