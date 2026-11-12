@@ -206,6 +206,17 @@ class SchematicPlannerTest(unittest.TestCase):
         self.assertEqual(combined.sheets[0].id, "overview")
         self.assertEqual([p.region_id for p in combined.sheets[0].regions], ["mount"])
 
+    def test_explicit_sheet_titles_take_precedence_over_automatic_overview_title(self) -> None:
+        plan = self.planner.plan_regions(
+            [region("auto", 300, 150, title="Overview"), region("base"), region("first")],
+            "f",
+            assignments={"base": "Overview (circuit)", "first": "Overview (circuit) /1"},
+        )
+        names = {p.region_id: s.title for s in plan.sheets for p in s.regions}
+        self.assertEqual(
+            names, {"auto": "Overview (circuit) /2", "base": "Overview (circuit)", "first": "Overview (circuit) /1"}
+        )
+
     def test_adjacency_prefers_a_connected_sheet_when_both_fit(self) -> None:
         # First two regions cannot share a sheet; the small third can fit either.
         regions = [region("a", 250, 150), region("b", 250, 150), region("c", 40, 40)]

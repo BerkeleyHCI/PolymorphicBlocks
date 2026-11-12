@@ -502,7 +502,11 @@ class SchematicSheetPlanner:
             groups.setdefault((region.scope, assigned.get(region.id)), []).append(region)
         sheets = []
         diagnostics = []
-        for (scope, title), members in sorted(groups.items(), key=lambda item: (item[0][0], item[0][1] or "")):
+        # Allocate explicit sheet titles before naming automatic pages in the same scope.
+        used_titles: dict[str, set[str]] = {}
+        for scope, title in sorted(groups, key=lambda group: (group[0], group[1] is None, group[1] or "")):
+            members = groups[(scope, title)]
+            scope_titles = used_titles.setdefault(scope, set())
             if title == "Overview" and not overview:
                 raise ValueError("Overview assignment requires overview=True")
             usable = OVERVIEW_BOUNDS if title == "Overview" else USABLE_BOUNDS
@@ -605,6 +609,10 @@ class SchematicSheetPlanner:
                     base = bases[index]
                     counts[base] += 1
                     sheet_title = base if totals[base] == 1 else f"{base} /{counts[base]}"
+                    if title is None and sheet_title in scope_titles:
+                        while f"{base} /{counts[base]}" in scope_titles:
+                            counts[base] += 1
+                        sheet_title = f"{base} /{counts[base]}"
                     token = json.dumps(
                         [scope, title, sorted(p.region_id for p in placements)], ensure_ascii=False
                     ).encode("utf-8")
@@ -613,6 +621,7 @@ class SchematicSheetPlanner:
                         diagnostics.append(
                             f"continuation: explicit sheet {title!r} in scope {scope!r} continues as {sheet_title!r}"
                         )
+                scope_titles.add(sheet_title)
                 sheets.append(SchematicSheet(sheet_id, sheet_title, scope, tuple(placements)))
         scopes = sorted({region.scope for region in prepared})
         if not scopes and overview:
