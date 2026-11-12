@@ -93,6 +93,12 @@ def pins(view: SymbolView, x: float, y: float, angle: int) -> list[tuple[str, fl
     return result
 
 
+def pin_escape(px: float, py: float, direction: float) -> Point:
+    """Outward endpoint of the fixed native pin stub, in sheet coordinates."""
+    angle = math.radians(direction)
+    return round(px - 5.08 * math.cos(angle), 4), round(py + 5.08 * math.sin(angle), 4)
+
+
 def _arc_extrema(start: Point, mid: Point, end: Point) -> Iterable[Point]:
     """Yield circle extrema on the sweep from start to end through mid."""
     # Solve for the circle center relative to start using the two perpendicular bisectors.
@@ -219,8 +225,7 @@ def annotation_obstacles(
     result = [(x + xmin, y + ymin, x + xmax, y + ymax)]
     labels = getattr(component, "net_labels", {})
     for number, px, py, direction in pins(view, x, y, rotation):
-        r = math.radians(direction)
-        ex, ey = px - 5.08 * math.cos(r), py + 5.08 * math.sin(r)
+        ex, ey = pin_escape(px, py, direction)
         result.append((min(px, ex) - 0.8, min(py, ey) - 0.8, max(px, ex) + 0.8, max(py, ey) + 0.8))
         ground_label = getattr(component, "ground_net_labels", {}).get(number, "")
         name = labels.get(number, "") or ground_label
@@ -637,8 +642,7 @@ def route_local(placed: Placements, views: Views, pin_nets: PinNets, *, strategy
             if net is None:
                 continue
             r = math.radians(direction)
-            ex = round(px - 5.08 * math.cos(r), 4)
-            ey = round(py + 5.08 * math.sin(r), 4)
+            ex, ey = pin_escape(px, py, direction)
             escape = grid(ex, ey)
             escapes[key] = (px, py, ex, ey, direction)
             endpoints[net].append((key, escape))

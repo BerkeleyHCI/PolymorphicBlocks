@@ -2,7 +2,8 @@
 
 import json
 import uuid
-from typing import Any, Sequence
+from collections import defaultdict
+from typing import Any, Mapping, Sequence
 
 import sexpdata
 
@@ -29,6 +30,41 @@ def effects(size: float = 1.27, hide: bool = False) -> SExpr:
         node("font", node("size", size, size)),
         *([S("hide")] if hide else []),
     )
+
+
+def validate_wire_contacts(segments: Sequence[Wire], pin_stubs: Mapping[Wire, str]) -> None:
+    """Reject foreign-net endpoint contacts and overlaps in final sheet coordinates.
+
+    An orthogonal interior crossing has no electrical junction unless another
+    endpoint lands there. Collinear overlaps always contain at least one end.
+    """
+    rows: dict[float, list[Wire]] = defaultdict(list)
+    columns: dict[float, list[Wire]] = defaultdict(list)
+    for wire in segments:
+        _, a, b = wire
+        if a[1] == b[1]:
+            rows[a[1]].append(wire)
+        else:
+            columns[a[0]].append(wire)
+
+    def contains(wire: Wire, p: Point) -> bool:
+        _, a, b = wire
+        return min(a[0], b[0]) <= p[0] <= max(a[0], b[0]) and min(a[1], b[1]) <= p[1] <= max(a[1], b[1])
+
+    def affected_pins(net: str, p: Point) -> str:
+        pins = [(wire, name) for wire, name in pin_stubs.items() if wire[0] == net]
+        touching = [name for wire, name in pins if contains(wire, p)]
+        return ", ".join(sorted(touching or [name for _, name in pins]))
+
+    for net, a, b in segments:
+        for point in (a, b):
+            for line in (rows.get(point[1], []), columns.get(point[0], [])):
+                for other in line:
+                    if net != other[0] and contains(other, point):
+                        raise ValueError(
+                            f"schematic short at {point}: {net} ({affected_pins(net, point)}) "
+                            f"contacts {other[0]} ({affected_pins(other[0], point)})"
+                        )
 
 
 def write_wires(doc: SExpr, all_segments: Sequence[Wire], sheet_id: str, region_id: str) -> None:

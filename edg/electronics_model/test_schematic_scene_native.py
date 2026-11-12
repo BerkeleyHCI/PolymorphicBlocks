@@ -117,6 +117,7 @@ class NativeSceneTest(unittest.TestCase):
     def test_label_tail_crosses_foreign_wire_without_joining_nets(self) -> None:
         from copy import deepcopy
         from .KiCadSchematicScene import safe_wire_crossing
+        from .KiCadSchematicWriter import validate_wire_contacts
 
         doc = self.fixture()
         for index, original in enumerate(list(children(doc, "symbol")), 3):
@@ -137,6 +138,7 @@ class NativeSceneTest(unittest.TestCase):
         foreign = ((70, 70), (90, 70))
         self.assertEqual(safe_wire_crossing(*tail, *foreign), (80, 70))
         segments = [("branch", (70, 80), (90, 80)), ("branch", *tail), ("foreign", *foreign)]
+        validate_wire_contacts(segments, {})
         KiCadSchematicExporter._wires(doc, segments, "fixture", "crossing")
         doc.append(global_label("branch", 80, 60, 0, "left"))
         doc.append(global_label("foreign", 90, 70, 0, "left"))

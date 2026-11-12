@@ -226,8 +226,7 @@ def component_boxes(entry: Placement, views: Views) -> list[Bounds]:
 
 def pin_escapes(entries: Placements, views: Views, pin_nets: PinNets) -> list[tuple[str, Point, Point, str, str]]:
     """Use the exact immutable 5.08 mm pin escapes emitted by the exporter."""
-    import math
-    from .KiCadSchematicLayout import pins
+    from .KiCadSchematicLayout import pin_escape, pins
 
     result = []
     for c, x, y, angle in entries:
@@ -235,8 +234,7 @@ def pin_escapes(entries: Placements, views: Views, pin_nets: PinNets) -> list[tu
             net = pin_nets.get((c.path, number))
             if net is None:
                 continue
-            r = math.radians(direction)
-            ex, ey = round(px - 5.08 * math.cos(r), 4), round(py + 5.08 * math.sin(r), 4)
+            ex, ey = pin_escape(px, py, direction)
             result.append((net, (px, py), (ex, ey), c.path, number))
     return result
 

@@ -56,6 +56,7 @@ from .KiCadSchematicLayout import (
     ground_label_position,
     ground_rotation,
     graphic_bounds,
+    pin_escape,
     pins as positioned_pins,
     place_group,
     regroup,
@@ -445,6 +446,12 @@ class _RegionDrawing:
     heading_boxes: tuple[Bounds, ...] = ()
     route_snapshot: Optional[RouteResult] = None
     source_annotations: dict[str, Optional[Point]] = field(default_factory=dict)
+
+    def sheet_escape(self, key: PinKey, dx: float, dy: float, px: float, py: float, direction: float) -> Point:
+        if self.route_snapshot is None:
+            return pin_escape(px, py, direction)
+        _, _, ex, ey, _ = self.route_snapshot[1][key]
+        return round(ex + dx, 4), round(ey + dy, 4)
 
 
 @dataclass
@@ -1437,11 +1444,7 @@ class KiCadSchematicExporter:
                 net = pin_nets.get((c.path, number))
                 if net is None:
                     continue
-                r = math.radians(direction)
-                ex, ey = (
-                    round(px - 5.08 * math.cos(r), 4),
-                    round(py + 5.08 * math.sin(r), 4),
-                )
+                ex, ey = pin_escape(px, py, direction)
                 if net.lower().split(".")[-1] == "gnd":
                     gx1, gy1, gx2, gy2 = ground_bounds(
                         ex,
@@ -1629,6 +1632,7 @@ class KiCadSchematicExporter:
                 doc.append(node("lib_symbols", *[definitions[k] for k in sorted(definitions)]))
                 ground_positions: set[Point] = set()
                 sheet_segments = []
+                pin_stubs: dict[Wire, str] = {}
                 for location in sheet.regions:
                     sheet_segments.extend(
                         self._render_region(
@@ -1642,12 +1646,13 @@ class KiCadSchematicExporter:
                             ground,
                             ground_positions,
                             diagnostics,
+                            pin_stubs,
                         )
                     )
                 self._inter_region_wires(doc, board, sheet, sheet_id, sheet_segments)
                 from .KiCadSchematicScene import place_document_labels
 
-                evidence = place_document_labels(doc, sheet_segments, sheet_id)
+                evidence = place_document_labels(doc, sheet_segments, sheet_id, pin_stubs)
                 label_evidence.append(evidence)
                 for unknown in evidence["unresolved_anchors"]:
                     diagnostics.append(
@@ -1880,6 +1885,7 @@ class KiCadSchematicExporter:
         ground_definition: SExpr | None,
         ground_positions: set[Point],
         diagnostics: list[SchematicDiagnostic],
+        pin_stubs: Optional[dict[Wire, str]] = None,
     ) -> list[Wire]:
         bounds = drawing.spec.bounds
         dx, dy = location.x - bounds[0], location.y - bounds[1]
@@ -2040,10 +2046,11 @@ class KiCadSchematicExporter:
                 net = pin_nets.get((component.path, number))
                 if net is None:
                     continue
-                r = math.radians(angle)
-                lx = round(px - 5.08 * math.cos(r), 4)
-                ly = round(py + 5.08 * math.sin(r), 4)
-                all_segments.append((net, (px, py), (lx, ly)))
+                lx, ly = drawing.sheet_escape((component.path, number), dx, dy, px, py, angle)
+                stub = net, (px, py), (lx, ly)
+                all_segments.append(stub)
+                if pin_stubs is not None:
+                    pin_stubs[stub] = f"{component.path}.{number}"
                 if (component.path, number) not in selected_labels and net.lower().split(".")[-1] != "gnd":
                     continue
                 if net.lower().split(".")[-1] == "gnd" and ground_definition is not None:
@@ -2196,9 +2203,7 @@ class KiCadSchematicExporter:
                     net = board.pin_nets.get((c.path, number))
                     if net is None:
                         continue
-                    r = math.radians(direction)
-                    ex = round(px - 5.08 * math.cos(r), 4)
-                    ey = round(py + 5.08 * math.sin(r), 4)
+                    ex, ey = drawing.sheet_escape((c.path, number), dx, dy, px, py, direction)
                     if net.lower().split(".")[-1] == "gnd":
                         boxes.append((None, ground_bounds(ex, ey, direction, c.ground_net_labels.get(number, ""))))
                         continue

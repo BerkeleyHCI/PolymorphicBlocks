@@ -10,8 +10,8 @@ from __future__ import annotations
 import math
 import unicodedata
 from dataclasses import dataclass
-from typing import Any, Iterable, Sequence
-from .KiCadSchematicWriter import S, children, node, write_wires
+from typing import Any, Iterable, Mapping, Sequence
+from .KiCadSchematicWriter import S, children, node, validate_wire_contacts, write_wires
 from .KiCadSchematicTypes import SymbolView, Bounds, Point, SExpr, PinTextItem, Placements, Views, PinNets, Wire, PinKey
 
 
@@ -268,7 +268,7 @@ def label_islands(
     connectivity. Junctions are recognized at segment endpoints (KiCad T joins),
     not at unmarked crossings between wire interiors.
     """
-    from .KiCadSchematicLayout import pins
+    from .KiCadSchematicLayout import pin_escape, pins
 
     by_net: dict[str, list[tuple[PinKey, Point, Point, float]]] = {}
     for component, x, y, angle in placed:
@@ -276,8 +276,7 @@ def label_islands(
             net = pin_nets.get((component.path, number))
             if net is None:
                 continue
-            r = math.radians(direction)
-            escape = (round(px - 5.08 * math.cos(r), 4), round(py + 5.08 * math.sin(r), 4))
+            escape = pin_escape(px, py, direction)
             by_net.setdefault(net, []).append(((component.path, number), (px, py), escape, direction))
     selected = set()
     for net, entries in by_net.items():
@@ -344,7 +343,9 @@ def wire_island_anchors(anchor: Point, net: str, segments: Sequence[Wire], limit
     return result
 
 
-def place_document_labels(doc: SExpr, electrical_segments: Sequence[Wire], identity: str) -> dict[str, Any]:
+def place_document_labels(
+    doc: SExpr, electrical_segments: Sequence[Wire], identity: str, pin_stubs: Mapping[Wire, str] | None = None
+) -> dict[str, Any]:
     """Repair serialized labels against the actual sheet scene, in UUID order.
 
     The finite search retains the original label on failure, with an explicit
@@ -671,8 +672,10 @@ def place_document_labels(doc: SExpr, electrical_segments: Sequence[Wire], ident
     # existing route. Rebuild the wire graph with the same writer that splits
     # segments and emits explicit junctions; raw appended tails can appear
     # connected while KiCad exports them as separate nets.
+    final_segments = list(electrical_segments) + [segment for entries in added.values() for segment in entries]
+    if pin_stubs is not None:
+        validate_wire_contacts(final_segments, pin_stubs)
     if any(added.values()):
-        final_segments = list(electrical_segments) + [segment for entries in added.values() for segment in entries]
         doc[:] = [
             item for item in doc if not (isinstance(item, list) and item and str(item[0]) in ("wire", "junction"))
         ]

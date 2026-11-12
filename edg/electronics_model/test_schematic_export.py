@@ -284,6 +284,65 @@ class SchematicExportTest(unittest.TestCase):
                 SchematicExportOptions("Test", placements={"nonexistent": SchematicPlacement("Circuit", 60, 80)}),
             )
 
+    def test_foreign_pin_escapes_cannot_short_a_hinted_sheet(self) -> None:
+        for separation in (35.56, 34.29, 33.02):
+            with self.subTest(separation=separation), self.assertRaisesRegex(
+                ValueError, r"(?=.*gnd)(?=.*vpos)(?=.*source\.2)(?=.*sink\.1)(?=.* at \()"
+            ):
+                KiCadSchematicExporter().export(
+                    self.compiled,
+                    SchematicExportOptions(
+                        "Short",
+                        placements={
+                            "source": SchematicPlacement("Power", 50, 50),
+                            "sink": SchematicPlacement("Power", 50 + separation, 50),
+                        },
+                    ),
+                )
+
+    def test_separated_pin_escapes_preserve_both_nets(self) -> None:
+        result = KiCadSchematicExporter().export(
+            self.compiled,
+            SchematicExportOptions(
+                "Control",
+                placements={
+                    "source": SchematicPlacement("Power", 50, 50),
+                    "sink": SchematicPlacement("Power", 100.8, 50),
+                },
+            ),
+        )
+        if shutil.which("kicad-cli"):
+            with tempfile.TemporaryDirectory() as directory:
+                result.write(Path(directory))
+                root = json.loads(result.files["manifest.json"])["boards"][0]["root"]
+                xml = Path(directory, "control.xml")
+                subprocess.run(
+                    [
+                        "kicad-cli",
+                        "sch",
+                        "export",
+                        "netlist",
+                        "--format",
+                        "kicadxml",
+                        "-o",
+                        str(xml),
+                        str(xml.parent / root),
+                    ],
+                    check=True,
+                    capture_output=True,
+                    timeout=45,
+                )
+                verify_schematic_netlist(next(iter(NetlistTransform(self.compiled).run().values())), xml)
+
+    def test_foreign_route_endpoint_on_wire_is_a_short(self) -> None:
+        from .KiCadSchematicWriter import validate_wire_contacts
+
+        horizontal = ("input", (10.0, 20.0), (30.0, 20.0))
+        vertical = ("output", (20.0, 20.0), (20.0, 30.0))
+        with self.assertRaisesRegex(ValueError, r"short at \(20.0, 20.0\).*output.*input"):
+            validate_wire_contacts([horizontal, vertical], {})
+        validate_wire_contacts([horizontal, ("input", vertical[1], vertical[2])], {})
+
     def test_python_placement_rotation_and_reflection(self) -> None:
         options = SchematicExportOptions(
             "Hinted",
