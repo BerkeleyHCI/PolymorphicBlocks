@@ -11,12 +11,23 @@ import re
 import shutil
 import tempfile
 import textwrap
-import uuid
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, TYPE_CHECKING, cast
 
 import sexpdata
+from .KiCadSchematicWriter import (
+    S as S,
+    children as children,
+    effects as effects,
+    node as node,
+    uid as uid,
+    write_wires,
+)
+from .KiCadSymbolRegistry import infer_symbol
+from .KiCadSchematicRoles import infer_pin_names, infer_description
+from .KiCadCompositeSymbols import resistor_array_symbol
+from .KiCadSchematicTypes import SymbolView as SymbolView
 from .KiCadSchematicTypes import SExpr, Bounds, Point, PinKey, Wire, Placement, Placements, Views, PinNets, RouteResult
 
 if TYPE_CHECKING:
@@ -32,6 +43,7 @@ from .KiCadSchematicPlanner import (
     SchematicSheet,
     SchematicSheetPlan,
     SchematicSheetPlanner,
+    region_fits_page,
 )
 from .KiCadSchematicPresentation import SchematicPresentation
 from .KiCadSchematicOverview import SchematicOverview, build_overviews, render_overview
@@ -54,27 +66,6 @@ from .KiCadSchematicLayout import (
 NOTICE = "GENERATED FROM POLYMORPHICBLOCKS PYTHON — SOURCE OF TRUTH"
 INSTRUCTIONS = "Edit the PB Python source and regenerate. Schematic edits will be overwritten."
 VERSION = "8"
-S = sexpdata.Symbol
-
-
-def node(name: str, *args: Any) -> List[Any]:
-    return [S(name), *args]
-
-
-def children(tree: SExpr, name: str) -> list[SExpr]:
-    return [v for v in tree if isinstance(v, list) and v and v[0] == S(name)]
-
-
-def uid(*parts: str) -> str:
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, json.dumps(parts, ensure_ascii=False)))
-
-
-def effects(size: float = 1.27, hide: bool = False) -> SExpr:
-    return node(
-        "effects",
-        node("font", node("size", size, size)),
-        *([S("hide")] if hide else []),
-    )
 
 
 @dataclass(frozen=True)
@@ -244,13 +235,6 @@ class PhysicalComponent:
         functional_circuit: Optional[SchematicCircuit] = field(init=False)
         placement_evidence: dict[str, Any] = field(init=False)
         functional_continuation: dict[str, Any] = field(init=False)
-
-
-@dataclass
-class SymbolView:
-    definition: SExpr
-    pins: List[Tuple[str, float, float, float]]
-    lib_id: str
 
 
 class SymbolResolver:
@@ -477,6 +461,8 @@ class _PreparedBoard:
 
 
 class KiCadSchematicExporter:
+    _wires = staticmethod(write_wires)
+
     def prepare_regions(
         self, compiled: CompiledDesign, options: SchematicExportOptions
     ) -> tuple[tuple[SchematicRegion, ...], str]:
@@ -561,9 +547,7 @@ class KiCadSchematicExporter:
                     and final_conflicts["visual_clearance"] <= old_conflicts["visual_clearance"]
                     and final_metric["visual_conflicts"] <= old_metric["visual_conflicts"]
                     and passive_orientation_rank(final_metric) < passive_orientation_rank(old_metric)
-                    and w <= 375
-                    and h <= 225
-                    and not (w > 210 and h > 205)
+                    and region_fits_page(w, h)
                 )
                 if not valid:
                     self._rollback_passive(selected, drawing, "final routing or page-fit guard")
@@ -949,6 +933,10 @@ class KiCadSchematicExporter:
             prefix = "board_" + uid(options.design_name, scope_name)
             root_id = uid(prefix, "root")
             components = []
+            blocks_by_path = {str(block.full_path): block for block in netlist.blocks}
+            classes_by_path = {
+                path: [c.target.name for c in block.path_classes] for path, block in blocks_by_path.items()
+            }
             for block in netlist.blocks:
                 path = str(block.full_path)
                 raw = cast(list[str], compiled.get_value(block.full_path.to_tuple() + ("fp_pinning",)))
@@ -982,15 +970,9 @@ class KiCadSchematicExporter:
                     mapping_source="explicit" if component.mapping is not None else "registry",
                 )
                 if component.mapping is None:
-                    try:
-                        from .KiCadSymbolRegistry import infer_symbol
-
-                        classes = [c.target.name for c in block.path_classes]
-                        component.mapping = infer_symbol(
-                            component, classes, block.part, resolver, component.symbol_coverage
-                        )
-                    except ImportError:
-                        pass
+                    component.mapping = infer_symbol(
+                        component, classes_by_path[path], block.part, resolver, component.symbol_coverage
+                    )
             for component in components:
                 entry = presentation.components.get(component.path, {})
                 component.presentation_pin_roles = {
@@ -1001,13 +983,8 @@ class KiCadSchematicExporter:
                 }
                 if entry.get("display_value"):
                     component.display_value = entry["display_value"]
-                from .KiCadSchematicRoles import infer_pin_names, infer_description
-
-                classes = [
-                    c.target.name
-                    for c in next(b for b in netlist.blocks if str(b.full_path) == component.path).path_classes
-                ]
-                physical_block = next(b for b in netlist.blocks if str(b.full_path) == component.path)
+                classes = classes_by_path[component.path]
+                physical_block = blocks_by_path[component.path]
                 connector_length = compiled.get_value(physical_block.full_path.to_tuple() + ("length",))
                 inferred_names = infer_pin_names(component, classes, connector_length)
                 if inferred_names:
@@ -1023,9 +1000,6 @@ class KiCadSchematicExporter:
                         (component.mapping or {}).get("pin_names", {}),
                         **entry["pin_names"],
                     )
-            from .KiCadCompositeSymbols import resistor_array_symbol
-
-            classes_by_path = {str(b.full_path): [c.target.name for c in b.path_classes] for b in netlist.blocks}
             views = {}
             for component in components:
                 composite = resistor_array_symbol(component, classes_by_path[component.path])
@@ -1230,25 +1204,17 @@ class KiCadSchematicExporter:
                     # Measure the selected route so detours reserve their actual packing area.
                     bounds = self._region_bounds(placed, views, pin_nets, names, wires, group)
                     width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
-                    if routed is not baseline and (width > 375 or height > 225 or (width > 210 and height > 205)):
+                    if routed is not baseline and not region_fits_page(width, height):
                         original = self._region_bounds(placed, views, pin_nets, names, baseline[0], group)
                         original_width, original_height = original[2] - original[0], original[3] - original[1]
-                        if (
-                            original_width <= 375
-                            and original_height <= 225
-                            and not (original_width > 210 and original_height > 205)
-                        ):
+                        if region_fits_page(original_width, original_height):
                             routing["rejected_for_page_fit"] = routing["selected"]
                             routing["selected"] = "baseline"
                             routing["after"] = routing["before"]
                             routed = baseline
                             wires, _, failed = baseline
                             bounds, width, height = original, original_width, original_height
-                    if (
-                        (width > 375 or height > 225 or (width > 210 and height > 205))
-                        and len(placed) > 1
-                        and not hinted
-                    ):
+                    if not region_fits_page(width, height) and len(placed) > 1 and not hinted:
                         subsets = split_group(placed, views, pin_nets)
                         if subsets is None:
                             raise ValueError(
@@ -1274,7 +1240,7 @@ class KiCadSchematicExporter:
                             )
                         )
                         continue
-                    if width > 375 or height > 225 or (width > 210 and height > 205):
+                    if not region_fits_page(width, height):
                         raise ValueError(
                             f"region {group!r} ({width:.1f} x {height:.1f} mm) exceeds A3; revise presentation without shrinking text"
                         )
@@ -1519,7 +1485,7 @@ class KiCadSchematicExporter:
 
         def fits(bounds: Bounds) -> bool:
             width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
-            return width <= 375 and height <= 225 and not (width > 210 and height > 205)
+            return region_fits_page(width, height)
 
         top = top_layout(rendered, measured)
         if not notes or fits(top[0]):
@@ -2159,7 +2125,7 @@ class KiCadSchematicExporter:
                     )
                 doc.append(label)
             doc.append(instance)
-        self._wires(doc, all_segments, sheet_id, drawing.spec.id)
+        write_wires(doc, all_segments, sheet_id, drawing.spec.id)
         return all_segments
 
     @staticmethod
@@ -2296,51 +2262,6 @@ class KiCadSchematicExporter:
                     )
                 )
             segments.append((net, a, b))
-
-    @staticmethod
-    def _wires(doc: SExpr, all_segments: Sequence[Wire], sheet_id: str, region_id: str) -> None:
-        for net in sorted({n for n, _, _ in all_segments}):
-            segments = [(a, b) for n, a, b in all_segments if n == net and a != b]
-            candidates = {p for pair in segments for p in pair}
-            edges: set[tuple[Point, Point]] = set()
-            for a, b in segments:
-                cuts = [
-                    p
-                    for p in candidates
-                    if (a[0] == b[0] == p[0] and min(a[1], b[1]) <= p[1] <= max(a[1], b[1]))
-                    or (a[1] == b[1] == p[1] and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]))
-                ]
-                cuts.sort()
-                edges.update((u, v) for u, v in zip(cuts, cuts[1:]) if u != v)
-            degrees: dict[Point, int] = {}
-            for a, b in sorted(edges):
-                for p in (a, b):
-                    degrees[p] = degrees.get(p, 0) + 1
-                doc.append(
-                    node(
-                        "wire",
-                        node("pts", node("xy", *a), node("xy", *b)),
-                        node("stroke", node("width", 0), node("type", S("default"))),
-                        node(
-                            "uuid",
-                            uid(sheet_id, region_id, net, str(a), str(b), "wire"),
-                        ),
-                    )
-                )
-            for p, degree in sorted(degrees.items()):
-                if degree >= 3:
-                    doc.append(
-                        node(
-                            "junction",
-                            node("at", *p),
-                            node("diameter", 0),
-                            node("color", 0, 0, 0, 0),
-                            node(
-                                "uuid",
-                                uid(sheet_id, region_id, net, str(p), "junction"),
-                            ),
-                        )
-                    )
 
     @staticmethod
     def _display_value(compiled: CompiledDesign, block: NetBlock, mapping: Mapping[str, Any] | None = None) -> str:

@@ -6,10 +6,11 @@ identity and routing geometry have concrete types independent of serialization.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence, TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
-    from .KiCadSchematicExporter import PhysicalComponent, SymbolView
+    from .KiCadSchematicExporter import PhysicalComponent
 
 SExpr = list[Any]
 Point = tuple[float, float]
@@ -23,6 +24,13 @@ Placements = Sequence[Placement]
 Views = Mapping[str, "SymbolView"]
 Escape = tuple[float, float, float, float, float]
 RouteResult = tuple[list[Wire], dict[PinKey, Escape], list[tuple[PinKey, str]]]
+
+
+@dataclass
+class SymbolView:
+    definition: SExpr
+    pins: list[tuple[str, float, float, float]]
+    lib_id: str
 
 
 class PinTextItem(TypedDict):

@@ -25,6 +25,16 @@ GUTTER = 8.0
 TITLE_BLOCK_BOUNDS: Bounds = (230, 245, 410, 287)
 
 
+def region_fits_page(width: float, height: float) -> bool:
+    """Whether an A3 content page has room beside or above the title block."""
+    left, top, right, bottom = USABLE_BOUNDS
+    return (
+        width <= right - left
+        and height <= bottom - top
+        and (width <= TITLE_BLOCK_BOUNDS[0] - left or height <= TITLE_BLOCK_BOUNDS[1] - top)
+    )
+
+
 def natural_order(value: str) -> tuple[tuple[int, Union[int, str]], ...]:
     """Stable human ordering for continuation and array indices."""
     return tuple((1, int(part)) if part.isdecimal() else (0, part) for part in re.split(r"(\d+)", value))

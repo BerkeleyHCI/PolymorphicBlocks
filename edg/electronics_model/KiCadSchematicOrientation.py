@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Collection, Mapping, Optional, Sequence
+from .KiCadSchematicPlanner import region_fits_page
 from .KiCadSchematicTypes import Bounds, Point, PinKey, PinNets, Wire, Placement, Placements, Views, RouteResult
 
 if TYPE_CHECKING:
@@ -130,7 +131,7 @@ def _geometry(placed: Placements, views: Views, pin_nets: PinNets) -> dict[str, 
         collision_pairs=contacts,
         escape_conflicts=score[0],
         collisions=score[1],
-        clipped=width > 375 or height > 225 or (width > 210 and height > 205),
+        clipped=not region_fits_page(width, height),
     )
 
 
@@ -203,7 +204,7 @@ def optimize_orientations(
                 if region_bounds is not None:
                     a, b, cx, d = region_bounds(trial_placed, trial_route)
                     width, height = cx - a, d - b
-                    trial_geometry["clipped"] = width > 375 or height > 225 or (width > 210 and height > 205)
+                    trial_geometry["clipped"] = not region_fits_page(width, height)
                 if trial_geometry["clipped"]:
                     reason = "routed region page overflow"
                 elif not set(trial_route[2]) <= original_failures:
@@ -447,7 +448,7 @@ def optimize_passive_orientations(
                 if region_bounds is not None:
                     a, b, c, d = region_bounds(trial_placed, trial_route)
                     width, height = c - a, d - b
-                    trial_geometry["clipped"] = width > 375 or height > 225 or (width > 210 and height > 205)
+                    trial_geometry["clipped"] = not region_fits_page(width, height)
                 if trial_geometry["clipped"]:
                     reason = "routed region page overflow"
                 elif not set(trial_route[2]) <= visit_failures:

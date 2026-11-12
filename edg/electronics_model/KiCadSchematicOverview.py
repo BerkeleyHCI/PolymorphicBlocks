@@ -12,6 +12,7 @@ import math
 import re
 import textwrap
 from typing import Any, Mapping, Tuple, Sequence, TYPE_CHECKING, cast
+from .KiCadSchematicWriter import S, children, effects, node, uid
 from .KiCadSchematicTypes import SExpr, Bounds, GridPoint
 
 if TYPE_CHECKING:
@@ -537,7 +538,6 @@ def render_overview(
     doc: SExpr, board: _PreparedBoard, data: Mapping[str, Any], options: SchematicExportOptions
 ) -> None:
     # Import only when rendering, so the option models stay independent of the writer.
-    from .KiCadSchematicExporter import node, children, effects, uid, S
 
     def text(role: str, value: str, x: float, y: float, size: float = 1.27) -> None:
         doc.append(

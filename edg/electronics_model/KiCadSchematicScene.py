@@ -11,7 +11,8 @@ import math
 import unicodedata
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
-from .KiCadSchematicTypes import Bounds, Point, SExpr, PinTextItem, Placements, Views, PinNets, Wire, PinKey
+from .KiCadSchematicWriter import S, children, node, write_wires
+from .KiCadSchematicTypes import SymbolView, Bounds, Point, SExpr, PinTextItem, Placements, Views, PinNets, Wire, PinKey
 
 
 def text_width(text: object, size: float) -> float:
@@ -165,8 +166,6 @@ class SceneObject:
 
 def pin_name_items(definition: SExpr, sx: float, sy: float, rotation: float, owner: str = "") -> list[PinTextItem]:
     """Visible library pin names in sheet coordinates, including actual fonts."""
-    from .KiCadSchematicExporter import children
-
     options = children(definition, "pin_names")
     if options and any(str(v) == "hide" for v in options[0][1:]):
         return []
@@ -218,8 +217,6 @@ def instance_property_at(property_at: SExpr, symbol_at: SExpr) -> SExpr:
 
 def pin_number_items(definition: SExpr, sx: float, sy: float, rotation: float, owner: str = "") -> list[PinTextItem]:
     """Reserve visible pin-number glyphs above the native readable pin line."""
-    from .KiCadSchematicExporter import children
-
     options = children(definition, "pin_numbers")
     if options and any(str(v) == "hide" for v in options[0][1:]):
         return []
@@ -354,7 +351,6 @@ def place_document_labels(doc: SExpr, electrical_segments: Sequence[Wire], ident
     diagnostic. At most six settling passes let constrained labels benefit from
     later repairs; stable or repeated states stop the search early.
     """
-    from .KiCadSchematicExporter import children, node, S, SymbolView
     from .KiCadSchematicLayout import graphic_bounds
     from .KiCadSchematicReadability import text_item
 
@@ -676,13 +672,11 @@ def place_document_labels(doc: SExpr, electrical_segments: Sequence[Wire], ident
     # segments and emits explicit junctions; raw appended tails can appear
     # connected while KiCad exports them as separate nets.
     if any(added.values()):
-        from .KiCadSchematicExporter import KiCadSchematicExporter
-
         final_segments = list(electrical_segments) + [segment for entries in added.values() for segment in entries]
         doc[:] = [
             item for item in doc if not (isinstance(item, list) and item and str(item[0]) in ("wire", "junction"))
         ]
-        KiCadSchematicExporter._wires(doc, final_segments, identity, "final-label-scene")
+        write_wires(doc, final_segments, identity, "final-label-scene")
     unresolved_anchors = [
         dict(identity=children(label, "uuid")[0][1], name=label[1], anchor=anchors[id(label)])
         for label in labels
