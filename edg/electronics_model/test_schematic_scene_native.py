@@ -38,6 +38,21 @@ def global_label(name: str, x: float, y: float, angle: float, justify: str) -> S
     )
 
 
+def export_native(test: unittest.TestCase, cli: str, doc: SExpr, action: str) -> Path:
+    temporary = tempfile.TemporaryDirectory()
+    test.addCleanup(temporary.cleanup)
+    folder = Path(temporary.name)
+    schematic = folder / "Fixture.kicad_sch"
+    schematic.write_text(sexpdata.dumps(doc), encoding="utf-8")
+    output = folder / ("netlist.xml" if action == "netlist" else "svg")
+    args = [cli, "sch", "export", action]
+    if action == "netlist":
+        args += ["--format", "kicadxml"]
+    proc = subprocess.run(args + ["-o", str(output), str(schematic)], capture_output=True, text=True, timeout=60)
+    test.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+    return output
+
+
 class NativeSceneTest(unittest.TestCase):
     clis: tuple[str, ...]
 
@@ -99,20 +114,6 @@ class NativeSceneTest(unittest.TestCase):
             doc.append(symbol)
         return doc
 
-    def native(self: unittest.TestCase, cli: str, doc: SExpr, action: str) -> Path:
-        temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        folder = Path(temporary.name)
-        schematic = folder / "Fixture.kicad_sch"
-        schematic.write_text(sexpdata.dumps(doc), encoding="utf-8")
-        output = folder / ("netlist.xml" if action == "netlist" else "svg")
-        args = [cli, "sch", "export", action]
-        if action == "netlist":
-            args += ["--format", "kicadxml"]
-        proc = subprocess.run(args + ["-o", str(output), str(schematic)], capture_output=True, text=True, timeout=60)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        return output
-
     def test_label_tail_crosses_foreign_wire_without_joining_nets(self) -> None:
         from copy import deepcopy
         from .KiCadSchematicScene import safe_wire_crossing
@@ -142,7 +143,7 @@ class NativeSceneTest(unittest.TestCase):
         self.assertNotIn((80, 70), [tuple(children(j, "at")[0][1:]) for j in children(doc, "junction")])
         for cli in self.clis:
             with self.subTest(cli=cli):
-                xml = ET.parse(self.native(cli, doc, "netlist")).getroot()
+                xml = ET.parse(export_native(self, cli, doc, "netlist")).getroot()
                 nets = {
                     net.attrib["name"]: {(n.attrib["ref"], n.attrib["pin"]) for n in net.findall("node")}
                     for net in xml.findall("./nets/net")
@@ -160,7 +161,7 @@ class NativeSceneTest(unittest.TestCase):
         self.assertEqual(evidence["conflicts"], [])
         for cli in self.clis:
             with self.subTest(cli=cli):
-                xml = ET.parse(self.native(cli, doc, "netlist")).getroot()
+                xml = ET.parse(export_native(self, cli, doc, "netlist")).getroot()
                 components = {c.attrib["ref"] for c in xml.findall("./components/comp")}
                 self.assertEqual(components, {"U1", "U2"})
                 nets = [
@@ -204,7 +205,7 @@ class NativeSceneTest(unittest.TestCase):
                         )
                     )
         for cli in self.clis:
-            folder = self.native(cli, doc, "svg")
+            folder = export_native(self, cli, doc, "svg")
             svg = ET.parse(next(folder.glob("*.svg"))).getroot()
             parents = {child: parent for parent in svg.iter() for child in parent}
             for name, bounds in cases:
@@ -252,7 +253,7 @@ class NativeSceneTest(unittest.TestCase):
         self.assertLess(bounds[2], 122)
         for cli in self.clis:
             with self.subTest(cli=cli):
-                folder = self.native(cli, doc, "svg")
+                folder = export_native(self, cli, doc, "svg")
                 root = ET.parse(next(folder.glob("*.svg"))).getroot()
                 text = next(item for item in root.iter() if item.tag.endswith("}text") and item.text == "LEFT_FRAME")
                 self.assertEqual(text.attrib["text-anchor"], "end")
@@ -274,7 +275,7 @@ class NativeSceneTest(unittest.TestCase):
         self.assertNotEqual(tuple(evidence["moves"][0]["wire_anchor"]), (80, 80))
         for cli in self.clis:
             with self.subTest(cli=cli):
-                xml = ET.parse(self.native(cli, doc, "netlist")).getroot()
+                xml = ET.parse(export_native(self, cli, doc, "netlist")).getroot()
                 connected = [
                     net
                     for net in xml.findall("./nets/net")

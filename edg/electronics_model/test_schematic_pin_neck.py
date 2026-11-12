@@ -139,7 +139,7 @@ class PinNeckTest(unittest.TestCase):
                 self.assertFalse(crosses_neck or inside_neck_vertical, (number, net, a, b))
 
     def test_u12_native_nets_preserve_both_bare_pin_identities(self) -> None:
-        from .test_schematic_scene_native import NativeSceneTest
+        from .test_schematic_scene_native import export_native
 
         clis = tuple(filter(None, os.environ.get("PB_SCHEMATIC_TEST_KICAD_CLIS", "").split(os.pathsep)))
         if not clis:
@@ -184,7 +184,7 @@ class PinNeckTest(unittest.TestCase):
         KiCadSchematicExporter._wires(doc, wires, "fixture", "pin-neck")
         for cli in clis:
             with self.subTest(cli=cli):
-                xml = ET.parse(NativeSceneTest().native(cli, doc, "netlist")).getroot()
+                xml = ET.parse(export_native(self, cli, doc, "netlist")).getroot()
                 native = [
                     {(n.attrib["ref"], n.attrib["pin"]) for n in net.findall("node")}
                     for net in xml.findall("./nets/net")
