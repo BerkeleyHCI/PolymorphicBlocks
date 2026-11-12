@@ -102,3 +102,4 @@ class IdealIoController(
             self.i2s.append_elt(I2sController(dio_model), elt)
 
         self.assign(self.pwr.current_draw, io_current_draw_builder)
+        self.assign(self.actual_pin_assigns, [])

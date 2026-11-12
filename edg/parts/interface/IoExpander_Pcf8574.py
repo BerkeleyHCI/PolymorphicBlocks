@@ -86,6 +86,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C86832")
+        self.assign(self.actual_basic_part, False)
 
 
 class Pcf8574(IoExpander, PinMappable):

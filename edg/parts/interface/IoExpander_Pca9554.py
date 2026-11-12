@@ -87,6 +87,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C86803")
+        self.assign(self.actual_basic_part, False)
 
 
 class Pca9554(IoExpander, PinMappable):
