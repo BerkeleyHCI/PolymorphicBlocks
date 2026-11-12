@@ -286,8 +286,9 @@ class SchematicExportTest(unittest.TestCase):
 
     def test_foreign_pin_escapes_cannot_short_a_hinted_sheet(self) -> None:
         for separation in (35.56, 34.29, 33.02):
-            with self.subTest(separation=separation), self.assertRaisesRegex(
-                ValueError, r"(?=.*gnd)(?=.*vpos)(?=.*source\.2)(?=.*sink\.1)(?=.* at \()"
+            with (
+                self.subTest(separation=separation),
+                self.assertRaisesRegex(ValueError, r"(?=.*gnd)(?=.*vpos)(?=.*source\.2)(?=.*sink\.1)(?=.* at \()"),
             ):
                 KiCadSchematicExporter().export(
                     self.compiled,
