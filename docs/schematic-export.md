@@ -145,6 +145,8 @@ self.schematic_symbol("Device:LED", {"1": "1", "2": "2"})
 ```
 
 Keys are library symbol pin numbers; values are physical footprint pad numbers.
+The exporter first uses the part's explicit declaration, then the standard
+footprint mapping, then the registry. Declaration order has no effect.
 Export mappings do not change schematic-import `symbol_pinning()`.
 
 For ESP32-C6-WROOM-1, use the exact symbol in
@@ -230,6 +232,9 @@ fields, pin labels, power symbols and wires. Fixed margins and gutters prevent
 region overlap; oversized automatic groups continue on numbered regions.
 Explicitly hinted circuits must fit as a whole or report an error. Mechanical
 parts may occupy the overview inset instead of a dedicated circuit page.
+An automatically titled sheet for a group named `Overview` uses the title
+`Overview (circuit)`. An explicit sheet assignment to `Overview` selects the
+overview inset.
 
 Assign related regions to named pages when the automatic organization needs
 refinement. Assignment keys are canonical region IDs or unambiguous titles:

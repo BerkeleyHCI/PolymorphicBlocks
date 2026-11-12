@@ -61,7 +61,7 @@ class StandardFootprint(Generic[StandardPinningType]):
             elif footprint.startswith("Capacitor_SMD:CP_"):
                 lib_id = "Device:C_Polarized"
         if lib_id and set(pinning) == {"1", "2"} and isinstance(block, FootprintBlock):
-            block.schematic_symbol(lib_id, {"1": "1", "2": "2"})
+            block._default_schematic_symbol(lib_id, {"1": "1", "2": "2"})
         return pinning
 
 

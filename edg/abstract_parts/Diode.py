@@ -34,7 +34,7 @@ class DiodeStandardFootprint(StandardFootprint["BaseDiode"]):
         # enough to choose a unidirectional/bidirectional symbol automatically.
         if isinstance(block, FootprintBlock) and not isinstance(block, TvsDiode) and set(pinning) == {"1", "2"}:
             symbol = "Device:D_Zener" if isinstance(block, ZenerDiode) else "Device:D"
-            block.schematic_symbol(symbol, {"1": "1", "2": "2"})
+            block._default_schematic_symbol(symbol, {"1": "1", "2": "2"})
         return pinning
 
     FOOTPRINT_PINNING_MAP = {

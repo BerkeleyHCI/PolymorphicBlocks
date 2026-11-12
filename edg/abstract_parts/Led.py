@@ -44,7 +44,7 @@ class LedStandardFootprint(StandardFootprint[Led]):
         pinning = super()._make_pinning(block, footprint)
         # Device:LED has 1=K, 2=A, matching these verified standard packages.
         if isinstance(block, FootprintBlock) and set(pinning) == {"1", "2"}:
-            block.schematic_symbol("Device:LED", {"1": "1", "2": "2"})
+            block._default_schematic_symbol("Device:LED", {"1": "1", "2": "2"})
         return pinning
 
     FOOTPRINT_PINNING_MAP = {

@@ -185,6 +185,27 @@ class SchematicPlannerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only an overview"):
             SchematicSheet("empty", "Empty", "scope", ())
 
+    def test_automatic_overview_content_title_respects_reserved_overview(self) -> None:
+        circuit = region("a", title="Overview")
+        single = self.planner.plan_regions([circuit], "f")
+        self.assertEqual(single.regions[0].title, "Overview")
+        self.assertEqual(single.sheets[0].title, "Overview (circuit)")
+        self.assertNotEqual(single.sheets[0].id, "overview")
+        combined = self.planner.plan_regions(
+            [
+                region("one", 300, 150, title="Overview"),
+                region("two", 300, 150, title="Overview"),
+                region("mount", 60, 20),
+            ],
+            "f",
+            assignments={"mount": "Overview"},
+        )
+        self.assertEqual(
+            [s.title for s in combined.sheets], ["Overview", "Overview (circuit) /1", "Overview (circuit) /2"]
+        )
+        self.assertEqual(combined.sheets[0].id, "overview")
+        self.assertEqual([p.region_id for p in combined.sheets[0].regions], ["mount"])
+
     def test_adjacency_prefers_a_connected_sheet_when_both_fit(self) -> None:
         # First two regions cannot share a sheet; the small third can fit either.
         regions = [region("a", 250, 150), region("b", 250, 150), region("c", 40, 40)]

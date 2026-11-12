@@ -893,7 +893,8 @@ class KiCadSchematicExporter:
                         str(b.full_path),
                         [cls.target.name for cls in b.path_classes],
                         compiled.get_value(b.full_path.to_tuple() + ("fp_pinning",)),
-                        compiled.get_value(b.full_path.to_tuple() + ("sch_symbol",)),
+                        compiled.get_value(b.full_path.to_tuple() + ("sch_symbol",))
+                        or compiled.get_value(b.full_path.to_tuple() + ("sch_symbol_default",)),
                     ]
                     for b in sorted(netlist.blocks, key=lambda b: str(b.full_path))
                 ],
@@ -942,6 +943,12 @@ class KiCadSchematicExporter:
                 raw = cast(list[str], compiled.get_value(block.full_path.to_tuple() + ("fp_pinning",)))
                 pins = {number: port for number, port in (v.split("=", 1) for v in raw)}
                 mapping_raw = cast(Optional[str], compiled.get_value(block.full_path.to_tuple() + ("sch_symbol",)))
+                mapping_source = "explicit"
+                if mapping_raw is None:
+                    mapping_raw = cast(
+                        Optional[str], compiled.get_value(block.full_path.to_tuple() + ("sch_symbol_default",))
+                    )
+                    mapping_source = "footprint_default" if mapping_raw else "registry"
                 relative = block.full_path.blocks[len(scope.blocks) :]
                 group = relative[0] if relative else "Board-level components"
                 if not pins and ("MountingHole" in block.footprint or "ToolingHole" in block.footprint):
@@ -967,7 +974,7 @@ class KiCadSchematicExporter:
                     component=path,
                     refdes=component.refdes,
                     compiled_class=block.path_classes[-1].target.name if block.path_classes else "",
-                    mapping_source="explicit" if component.mapping is not None else "registry",
+                    mapping_source=mapping_source,
                 )
                 if component.mapping is None:
                     component.mapping = infer_symbol(

@@ -26,6 +26,7 @@ class FootprintBlock(Block):
         self.fp_pinning = self.Parameter(ArrayStringExpr())
         self.fp_datasheet = self.Parameter(StringExpr())
         self.sch_symbol = self.Parameter(StringExpr())
+        self.sch_symbol_default = self.Parameter(StringExpr())
 
         self.fp_mfr = self.Parameter(StringExpr())
         self.fp_part = self.Parameter(StringExpr())
@@ -48,6 +49,15 @@ class FootprintBlock(Block):
 
         This is export-only metadata; Python remains the connectivity source of truth.
         """
+        self._assign_schematic_symbol(self.sch_symbol, lib_id, pinning, pin_names)
+
+    def _default_schematic_symbol(self, lib_id: str, pinning: Mapping[str, str]) -> None:
+        """Supply category metadata when the concrete part has no explicit symbol."""
+        self._assign_schematic_symbol(self.sch_symbol_default, lib_id, pinning, None)
+
+    def _assign_schematic_symbol(
+        self, parameter: StringExpr, lib_id: str, pinning: Mapping[str, str], pin_names: Optional[Mapping[str, str]]
+    ) -> None:
         import json
 
         if (
@@ -65,7 +75,7 @@ class FootprintBlock(Block):
             ):
                 raise ValueError("schematic pin names must name mapped physical pads")
             metadata["pin_names"] = dict(pin_names)
-        self.assign(self.sch_symbol, json.dumps(metadata, sort_keys=True))
+        self.assign(parameter, json.dumps(metadata, sort_keys=True))
 
     def _schematic_symbol_for_footprint(self, pinning: Mapping[str, Any]) -> Optional[Tuple[str, Mapping[str, str]]]:
         """Optional category hook; must map verified physical pads to symbol pins."""
@@ -160,7 +170,7 @@ class FootprintBlock(Block):
         self.assign(self.fp_pinning, pinning_array)
         schematic = self._schematic_symbol_for_footprint(flat_pinning)
         if schematic is not None:
-            self.schematic_symbol(*schematic)
+            self._default_schematic_symbol(*schematic)
 
         self.assign(self.fp_footprint, footprint)
         self.assign(self.fp_refdes_prefix, refdes)

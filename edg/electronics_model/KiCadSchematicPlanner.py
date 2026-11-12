@@ -595,7 +595,7 @@ class SchematicSheetPlanner:
                 else:
                     labels = sorted(set(by_id[p.region_id].title.split(" /")[0] for p in placements))
                     base = " + ".join(labels[:2]) + (" + others" if len(labels) > 2 else "")
-                    bases.append(base[:60])
+                    bases.append("Overview (circuit)" if base == "Overview" else base[:60])
             totals = Counter(bases)
             counts: Counter[str] = Counter()
             for index, placements in enumerate(pages):
