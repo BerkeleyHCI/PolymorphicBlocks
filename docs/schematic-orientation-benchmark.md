@@ -28,12 +28,6 @@ repair tails and inter-region connections are excluded. Counts are physical
 fallback endpoints, not disconnected electrical nets: labels preserve electrical
 connectivity in every profile.
 
-![Matched native views](images/schematic-orientation-usbc-comparison.png)
-
-Full sheets: [baseline](images/schematic-orientation-usbc-baseline.png),
-[rotations](images/schematic-orientation-usbc-rotations.png),
-[final bridge](images/schematic-orientation-usbc-bridge.png).
-
 The first-export timings are one observation per profile. Compilation, repeat
 verification, native CLI and raster rendering are excluded. Parallel validation
 load, OS cache and unrelated host activity were not controlled. No statistical

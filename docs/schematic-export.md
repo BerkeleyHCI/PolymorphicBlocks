@@ -48,8 +48,6 @@ destination. The example uses Python presentation hints to keep the LED and
 its current-limiting resistor in circuit order. The LED rotation stays locked;
 the resistor explicitly allows fixed-center 180-degree trials.
 
-![Native KiCad 9 excerpt of the opt-in LED example](images/schematic-example.png)
-
 Open the root schematic in `MyBoard/MyBoard.schematic/`. Each independent
 physical board scope has its own root. The manifest lists generated files,
 source provenance, a compiled-design fingerprint and diagnostics.
@@ -285,8 +283,6 @@ connectivity remains defined by the board's Python source.
 
 ### A useful first page
 
-![Native Ballu Gen3 system overview with witnessed functional relationships](images/schematic-overview.png)
-
 Multi-sheet boards open on a system overview. Functional cards show a readable
 name, circuit summary, actual component count and detail-sheet number. Each card
 is a real KiCad hierarchical sheet link. The source notice, board identity and
@@ -457,8 +453,6 @@ Whole circuits that cannot fit the remaining space continue onto another sheet;
 page counts may increase rather than draw through provenance or shrink text.
 Display connector names follow verified device connection maps, including an
 explicit FPC flip only when its exact adapter and compiled length are known.
-
-![Native KiCad 10 packed resistor-array branches, retaining one physical RN1 reference](images/schematic-packed-resistors.png)
 
 ### Local bypass ownership
 
@@ -768,19 +762,10 @@ unclassified rather than handing an outer device's capacitors to nested memory
 merely because its supply roles are easier to recognize.
 
 
-### Rendered complex example
+### USB source/measure example
 
-These are native KiCad 10 exports of the same compiled USB source/measure
-example. The earlier layout separates the current-amplifier feedback diodes;
+The native KiCad 10 comparison used the same compiled USB source/measure design. The earlier layout separates the current-amplifier feedback diodes;
 the new layout keeps U41, D8/D9 and its owned bypass together. Physical
 connectivity is independently round-tripped in KiCad 9 and 10. The new automatic
 layout remains a generated reference, with generic-symbol fallbacks and some
 long routes; publication-quality spacing is not claimed.
-
-Before:
-
-![USB source/measure amplifier layout before functional atoms](images/schematic-native-smu-before.png)
-
-After:
-
-![USB source/measure amplifier layout with feedback and local support together](images/schematic-native-smu-after.png)

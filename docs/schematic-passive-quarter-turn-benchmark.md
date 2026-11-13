@@ -65,8 +65,6 @@ The optimizer's segment-based bend measure can differ from a viewer's count of
 visible corners. The shorter retained path reduces this fixture's measured wire
 length by 26.5% and weighted cost by 23.0%; it does not establish whole-board gains.
 
-![Matched native KiCad fixture crops](images/schematic-passive-quarter-fixture.png)
-
 ## Focused verification
 
 | Check | Result |
@@ -169,11 +167,6 @@ stepped LED-to-resistor connection. The reviewed PNGs match the final validated
 native render hashes. The other 16 PDU documents differ only in the design
 fingerprint in title-block comment 2; their parsed S-expressions otherwise match.
 
-![Matched PDU LED-branch crops](images/schematic-passive-pdu-comparison.png)
-
-Full PDU detail: [half-turn](images/schematic-passive-pdu-half-turn.png),
-[quarter-turn](images/schematic-passive-pdu-quarter-turn.png).
-
 A different fresh reviewer inspected the actual USB-C converter sheet 4/10.
 Both modes produce identical pixels, SHA256
 `732941d7d122b18d837b5e8e6680176fd6b7aa78226ed47237d34c6524e3a685`.
@@ -184,16 +177,9 @@ stays resolved, while fixed-center optimization provides no retained improvement
 on this sheet. The initially supplied overview-only render was rejected by the
 reviewer and replaced with the title-verified converter render before acceptance.
 
-Full converter: [half-turn](images/schematic-passive-usbc-half-turn.png),
-[quarter-turn](images/schematic-passive-usbc-quarter-turn.png).
-
 Ballu has no changed schematic pages to review; its complete eight-document
 identity was checked and the regenerated contact sheet inspected. These reviews
 cover the named drawings only, with electrical fidelity checked separately.
-
-
-The final Ballu contact sheet is available here; both modes have identical
-schematic documents: [eight-sheet contact](images/schematic-passive-ballu-contact.png).
 
 ## Remaining readability flags
 

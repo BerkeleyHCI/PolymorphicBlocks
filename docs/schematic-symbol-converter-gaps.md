@@ -215,24 +215,4 @@ hash-bound reuse record retains that review's sampled scope and limitations.
 Native SVG export timestamps differ, so only drawing bytes are reused as visual
 evidence. Final native connectivity checks are fresh.
 
-## Matched native drawings
-
-These are measured-region crops from native KiCad SVG exports, with identical
-render scaling and no manual schematic repair. Full-sheet inventories and hashes
-remain in the isolated host evidence.
-
-LED-driver channel before:
-
-![LED-driver channel before](images/schematic-gaps-led-driver-before.png)
-
-LED-driver channel after:
-
-![LED-driver channel after](images/schematic-gaps-led-driver-after.png)
-
-Datalogger MCU region before:
-
-![Datalogger MCU before](images/schematic-gaps-datalogger-before.png)
-
-Datalogger MCU region after:
-
-![Datalogger MCU after](images/schematic-gaps-datalogger-after.png)
+Full-sheet inventories and hashes remain in the isolated host evidence.
