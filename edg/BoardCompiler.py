@@ -9,9 +9,17 @@ from .electronics_model.NetlistBackend import NetlistBackend  # imported separat
 from .electronics_model.SvgPcbBackend import SvgPcbBackend
 from .electronics_model.RefdesRefinementPass import RefdesRefinementPass
 from .electronics_model.BomBackend import GenerateBom
+from .electronics_model.KiCadSchematicExporter import KiCadSchematicExporter, SchematicExportOptions
+from pathlib import Path
+from dataclasses import replace
 
 
-def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]]) -> CompiledDesign:
+def compile_board(
+    design: Type[Block],
+    target_dir_name: Optional[Tuple[str, str]],
+    *,
+    schematic: Optional[SchematicExportOptions] = None,
+) -> CompiledDesign:
     if target_dir_name is not None:
         target_dir, target_name = target_dir_name
         if not os.path.exists(target_dir):
@@ -80,10 +88,21 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
                 )
             )
 
+    if schematic is not None:
+        options = replace(schematic, source=schematic.source or f"{design.__module__}.{design.__qualname__}")
+        exported = KiCadSchematicExporter().export(compiled, options)
+        if target_dir_name is not None:
+            exported.write(Path(target_dir_name[0]) / (target_dir_name[1] + ".schematic"))
+
     return compiled
 
 
-def compile_board_inplace(design: Type[Block], generate: bool = True) -> CompiledDesign:
+def compile_board_inplace(
+    design: Type[Block],
+    generate: bool = True,
+    *,
+    schematic: Optional[SchematicExportOptions] = None,
+) -> CompiledDesign:
     """Compiles a board and writes the results in a sub-directory
     where the module containing the top-level is located"""
     designfile = inspect.getfile(design)
@@ -91,6 +110,6 @@ def compile_board_inplace(design: Type[Block], generate: bool = True) -> Compile
         target_dir_name = (os.path.join(os.path.dirname(designfile), design.__name__), design.__name__)
     else:
         target_dir_name = None
-    compiled = compile_board(design, target_dir_name)
+    compiled = compile_board(design, target_dir_name, schematic=schematic)
 
     return compiled

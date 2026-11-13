@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from typing_extensions import override
 
 from ..electronics_interfaces import *
@@ -22,6 +22,20 @@ class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
 
 class DiodeStandardFootprint(StandardFootprint["BaseDiode"]):
     REFDES_PREFIX = "D"
+
+    @classmethod
+    @override
+    def _make_pinning(cls, block: "BaseDiode", footprint: str) -> Dict[str, Union[Passive, HasPassivePort]]:
+        pinning = super()._make_pinning(block, footprint)
+        from .ZenerDiode import ZenerDiode
+        from .TvsDiode import TvsDiode
+
+        # Device:D and D_Zener have 1=K, 2=A. TVS polarity is not modeled well
+        # enough to choose a unidirectional/bidirectional symbol automatically.
+        if isinstance(block, FootprintBlock) and not isinstance(block, TvsDiode) and set(pinning) == {"1", "2"}:
+            symbol = "Device:D_Zener" if isinstance(block, ZenerDiode) else "Device:D"
+            block._default_schematic_symbol(symbol, {"1": "1", "2": "2"})
+        return pinning
 
     FOOTPRINT_PINNING_MAP = {
         (

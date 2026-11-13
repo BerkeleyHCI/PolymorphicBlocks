@@ -56,6 +56,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
             kicad_part=symbol.lib,
             kicad_value=symbol.properties.get("Value", ""),
             kicad_datasheet=symbol.properties.get("Datasheet", ""),
+            kicad_pin_names=[f"{pin.number}={pin.name}" for pin in lib.pins if pin.name and pin.name != "~"],
         )
 
         def block_pinning(block: KiCadBlackbox) -> Mapping[str, BasePort]:
@@ -71,6 +72,8 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         kicad_part: StringLike,
         kicad_value: StringLike,
         kicad_datasheet: StringLike,
+        *,
+        kicad_pin_names: ArrayStringLike = [],
     ):
         super().__init__()
         self.ports = self.Port(Vector(Passive()), optional=True)
@@ -81,7 +84,8 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
 
         self.kicad_pins = self.ArgParameter(kicad_pins)
-        self.generator_param(self.kicad_pins)
+        self.kicad_pin_names = self.ArgParameter(kicad_pin_names)
+        self.generator_param(self.kicad_pins, self.kicad_part, self.kicad_pin_names)
 
     @override
     def generate(self) -> None:
@@ -95,6 +99,13 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
             value=self.kicad_value,
             datasheet=self.kicad_datasheet,
         )
+        # Imported library pin numbers are the footprint pad numbers by the
+        # blackbox contract. Preserve verified identity through compilation.
+        numbers = self.get(self.kicad_pins)
+        lib_id = self.get(self.kicad_part)
+        if numbers and ":" in lib_id:
+            names = dict(value.split("=", 1) for value in self.get(self.kicad_pin_names))
+            self.schematic_symbol(lib_id, {number: number for number in numbers}, pin_names=names)
 
 
 @non_library

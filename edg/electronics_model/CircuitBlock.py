@@ -25,6 +25,8 @@ class FootprintBlock(Block):
         self.fp_footprint = self.Parameter(StringExpr())
         self.fp_pinning = self.Parameter(ArrayStringExpr())
         self.fp_datasheet = self.Parameter(StringExpr())
+        self.sch_symbol = self.Parameter(StringExpr())
+        self.sch_symbol_default = self.Parameter(StringExpr())
 
         self.fp_mfr = self.Parameter(StringExpr())
         self.fp_part = self.Parameter(StringExpr())
@@ -35,6 +37,49 @@ class FootprintBlock(Block):
         self.fp_pnp_rot = self.Parameter(FloatExpr())
         self.fp_pnp_offset_x = self.Parameter(FloatExpr())
         self.fp_pnp_offset_y = self.Parameter(FloatExpr())
+
+    def schematic_symbol(
+        self,
+        lib_id: str,
+        pinning: Mapping[str, str],
+        *,
+        pin_names: Optional[Mapping[str, str]] = None,
+    ) -> None:
+        """Declare a generated schematic symbol: library pin number -> physical pad number.
+
+        This is export-only metadata; Python remains the connectivity source of truth.
+        """
+        self._assign_schematic_symbol(self.sch_symbol, lib_id, pinning, pin_names)
+
+    def _default_schematic_symbol(self, lib_id: str, pinning: Mapping[str, str]) -> None:
+        """Supply category metadata when the concrete part has no explicit symbol."""
+        self._assign_schematic_symbol(self.sch_symbol_default, lib_id, pinning, None)
+
+    def _assign_schematic_symbol(
+        self, parameter: StringExpr, lib_id: str, pinning: Mapping[str, str], pin_names: Optional[Mapping[str, str]]
+    ) -> None:
+        import json
+
+        if (
+            not isinstance(lib_id, str)
+            or ":" not in lib_id
+            or not all(lib_id.split(":", 1))
+            or not pinning
+            or any(not isinstance(k, str) or not k or not isinstance(v, str) or not v for k, v in pinning.items())
+        ):
+            raise ValueError("schematic_symbol requires Library:Symbol and string pin numbers")
+        metadata: Dict[str, Any] = {"lib_id": lib_id, "pinning": dict(pinning)}
+        if pin_names is not None:
+            if not set(pin_names).issubset(set(pinning.values())) or any(
+                not isinstance(v, str) or not v for v in pin_names.values()
+            ):
+                raise ValueError("schematic pin names must name mapped physical pads")
+            metadata["pin_names"] = dict(pin_names)
+        self.assign(parameter, json.dumps(metadata, sort_keys=True))
+
+    def _schematic_symbol_for_footprint(self, pinning: Mapping[str, Any]) -> Optional[Tuple[str, Mapping[str, str]]]:
+        """Optional category hook; must map verified physical pads to symbol pins."""
+        return None
 
     @overload
     def footprint(
@@ -106,6 +151,7 @@ class FootprintBlock(Block):
 
         pinning_array = []
         assigned_pins: Set[str] = set()
+        flat_pinning = {}
         for pin_name, pin_port in pinning.items():
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
@@ -120,7 +166,11 @@ class FootprintBlock(Block):
                 pinning_array.append(f"{pin}={self._path_name_of(pin_port)}")
                 assert pin not in assigned_pins, f"duplicate pin name {pin} in footprint pinning"
                 assigned_pins.add(pin)
+                flat_pinning[pin] = pin_port
         self.assign(self.fp_pinning, pinning_array)
+        schematic = self._schematic_symbol_for_footprint(flat_pinning)
+        if schematic is not None:
+            self._default_schematic_symbol(*schematic)
 
         self.assign(self.fp_footprint, footprint)
         self.assign(self.fp_refdes_prefix, refdes)

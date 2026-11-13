@@ -26,6 +26,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
             kicad_value=symbol.properties.get("Value", ""),
             kicad_datasheet=symbol.properties.get("Datasheet", ""),
             kicad_jlcpcb_part=symbol.properties["JLCPCB Part #"],
+            kicad_pin_names=[f"{pin.number}={pin.name}" for pin in lib.pins if pin.name and pin.name != "~"],
         )  # required, no .get(...)
 
         def block_pinning(block: KiCadJlcBlackbox) -> Mapping[str, BasePort]:
@@ -42,6 +43,8 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
         kicad_value: StringLike,
         kicad_datasheet: StringLike,
         kicad_jlcpcb_part: StringLike,
+        *,
+        kicad_pin_names: ArrayStringLike = [],
     ):
         super().__init__()
         self.ports = self.Port(Vector(Passive()), optional=True)
@@ -54,7 +57,8 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
         self.assign(self.actual_basic_part, False)  # assumed
 
         self.kicad_pins = self.ArgParameter(kicad_pins)
-        self.generator_param(self.kicad_pins)
+        self.kicad_pin_names = self.ArgParameter(kicad_pin_names)
+        self.generator_param(self.kicad_pins, self.kicad_part, self.kicad_pin_names)
 
     @override
     def generate(self) -> None:
@@ -69,3 +73,8 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
             value=self.kicad_value,
             datasheet=self.kicad_datasheet,
         )
+        numbers = self.get(self.kicad_pins)
+        lib_id = self.get(self.kicad_part)
+        if numbers and ":" in lib_id:
+            names = dict(value.split("=", 1) for value in self.get(self.kicad_pin_names))
+            self.schematic_symbol(lib_id, {number: number for number in numbers}, pin_names=names)

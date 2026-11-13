@@ -40,7 +40,29 @@ class StandardFootprint(Generic[StandardPinningType]):
     @classmethod
     def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Returns the pinning for a footprint for a specific block's pins"""
-        return cls._footprint_pinning_map()[footprint](block)
+        pinning = cls._footprint_pinning_map()[footprint](block)
+        # These category helpers explicitly declare the physical pad mappings.
+        from .Resistor import ResistorStandardFootprint
+        from .Capacitor import CapacitorStandardFootprint
+        from .Inductor import InductorStandardFootprint
+        from .FerriteBead import FerriteBeadStandardFootprint
+        from .Fuse import FuseStandardFootprint
+
+        symbols = {
+            ResistorStandardFootprint: "Device:R",
+            InductorStandardFootprint: "Device:L",
+            FerriteBeadStandardFootprint: "Device:Ferrite_Bead",
+            FuseStandardFootprint: "Device:Fuse",
+        }
+        lib_id = symbols.get(cls)
+        if cls is CapacitorStandardFootprint:
+            if footprint.startswith("Capacitor_SMD:C_"):
+                lib_id = "Device:C"
+            elif footprint.startswith("Capacitor_SMD:CP_"):
+                lib_id = "Device:C_Polarized"
+        if lib_id and set(pinning) == {"1", "2"} and isinstance(block, FootprintBlock):
+            block._default_schematic_symbol(lib_id, {"1": "1", "2": "2"})
+        return pinning
 
 
 @non_library
