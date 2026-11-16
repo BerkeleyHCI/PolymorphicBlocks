@@ -44,15 +44,15 @@ class BomTestCase(unittest.TestCase):
         self.assertEqual(bom_csv_dict[0]["Designator"], "C1")
         self.assertEqual(bom_csv_dict[0]["Footprint"], "Capacitor_SMD:C_0603_1608Metric")
         self.assertEqual(bom_csv_dict[0]["Quantity"], "1")
-        self.assertEqual(bom_csv_dict[0]["PNP Rotation Offset"], "")  # unspecified
-        self.assertEqual(bom_csv_dict[0]["PNP Offset Y"], "")  # unspecified
-        self.assertEqual(bom_csv_dict[0]["PNP Offset X"], "")  # unspecified
+        self.assertEqual(bom_csv_dict[0]["PNP Rotation Offset"], "0.0")  # unspecified
+        self.assertEqual(bom_csv_dict[0]["PNP Offset Y"], "0.0")  # unspecified
+        self.assertEqual(bom_csv_dict[0]["PNP Offset X"], "0.0")  # unspecified
         self.assertEqual(bom_csv_dict[1]["Designator"], "R1")
         self.assertEqual(bom_csv_dict[1]["Footprint"], "Resistor_SMD:R_0603_1608Metric")
         self.assertEqual(bom_csv_dict[1]["Quantity"], "1")
-        self.assertEqual(bom_csv_dict[1]["PNP Rotation Offset"], "")  # unspecified
-        self.assertEqual(bom_csv_dict[1]["PNP Offset Y"], "")  # unspecified
-        self.assertEqual(bom_csv_dict[1]["PNP Offset X"], "")  # unspecified
+        self.assertEqual(bom_csv_dict[1]["PNP Rotation Offset"], "0.0")  # unspecified
+        self.assertEqual(bom_csv_dict[1]["PNP Offset Y"], "0.0")  # unspecified
+        self.assertEqual(bom_csv_dict[1]["PNP Offset X"], "0.0")  # unspecified
 
     def test_multisink_bom(self) -> None:
         # test aggregation of similar components

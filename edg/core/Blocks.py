@@ -10,7 +10,7 @@ from typing_extensions import override
 
 from .. import edgir
 from .Array import BaseVector, Vector
-from .Binding import AssignBinding, NameBinding
+from .Binding import AssignBinding, NameBinding, InitParamBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
 from .Core import (
     Refable,
@@ -304,6 +304,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             Connection, List[Connection]
         ]()  # for net joins, joined connect -> prior connects
         self._constraints: List[ConstraintExpr] = []
+        self._assigns = IdentityDict[ConstraintExpr, ConstraintExpr]()  # target -> assign constraint
 
         self._name = StringExpr()._bind(NameBinding(self))
 
@@ -362,6 +363,10 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
                 metadata_dict[self._name_of(port)] = self._port_docs[port]
         self._docs = self.Metadata(metadata_dict)
 
+    @classmethod
+    def _is_abstract(cls) -> bool:
+        return (cls, AbstractBlockProperty) in cls._elt_properties
+
     def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
         """Populates the structural parts of a block proto: parameters, ports, superclasses"""
         assert (
@@ -369,7 +374,7 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
             or self._elaboration_state == BlockElaborationState.post_generate
         )
 
-        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+        if self._is_abstract():
             assert isinstance(pb, edgir.HierarchyBlock)
             pb.is_abstract = True
             pb.is_mixin = False
@@ -430,12 +435,64 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
                     ref_map,
                 )
 
+    def _collect_unassigned_params(self) -> List[List[str]]:
+        """Walks through all params and checks that they have been assigned.
+        TODO: return List[ConstraintExpr] when param names can be resolved."""
+        if (self.__class__, AbstractBlockProperty) in self._elt_properties:
+            return []  # abstract blocks do not need assigned parameters
+
+        unassigned: List[List[str]] = []
+
+        # TODO instead of filtering by binding, init should have assign record
+        for param in self._parameters:
+            if (
+                param not in self._assigns
+                and param.initializer is None
+                and not isinstance(param.binding, InitParamBinding)
+            ):
+                unassigned.append([self._name_of(param)])
+
+        for port in self._ports:
+            unassigned.extend(self._collect_unassigned_port_params(port, [self._name_of(port)]))
+
+        return unassigned
+
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
+        if container_port in self._connects_by_port:
+            # TODO check for absence of assignments
+            return []  # connected boundary ports inherit parameters
+
+        unassigned: List[List[str]] = []
+
+        if isinstance(container_port, Port):
+            for port in container_port._ports:
+                unassigned.extend(self._collect_unassigned_port_params(port, path + [container_port._name_of(port)]))
+
+            for param in container_port._parameters:
+                if param not in self._assigns and param.initializer is None:
+                    unassigned.append(path + [container_port._name_of(param)])
+        elif isinstance(container_port, Vector):
+            if container_port._elts is not None:
+                for name, elt in container_port._elts.items():
+                    unassigned.extend(self._collect_unassigned_port_params(elt, path + [name]))
+        else:
+            raise ValueError(f"unsupported port type {container_port}")
+
+        return unassigned
+
+    def _check_params_assigned(self) -> None:
+        unassigned = self._collect_unassigned_params()
+        if unassigned:
+            raise MissingParameterError(self, unassigned)
+
     def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
         """Populates the contents of a block proto: constraints"""
         assert (
             self._elaboration_state == BlockElaborationState.post_contents
             or self._elaboration_state == BlockElaborationState.post_generate
         )
+
+        self._check_params_assigned()
 
         for i, constraint in enumerate(self._constraints):
             name = self._name_of(constraint)
@@ -530,6 +587,10 @@ class BaseBlock(HasMetadata, NamingContainer, metaclass=BaseBlockMeta):
         constraint = AssignExpr()._bind(AssignBinding(target, expr_value))
         self._constraints.append(constraint)
         self._namer.add_expected(constraint, SourceLocator.from_caller(), default_prefix="anon_constr")
+
+        if target in self._assigns:
+            raise OverassignParameterError(self, target)
+        self._assigns[target] = constraint
 
         if name:  # TODO unify naming API with everything else?
             self._namer.add_name(constraint, name)

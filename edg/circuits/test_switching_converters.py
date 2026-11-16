@@ -155,6 +155,7 @@ class TestInductor(Inductor):
         self.assign(self.actual_inductance, self.inductance)
         self.assign(self.actual_current_rating, (0, 1.5) * Amp)
         self.assign(self.actual_frequency_rating, Range.all())
+        self.assign(self.actual_resistance_dc, (0, 0) * Ohm)
 
 
 class BuckPowerPathTestTop(DesignTop):

@@ -573,7 +573,6 @@ class Lp5907_Device(
     InternalSubcircuit,
     LinearRegulatorDevice,
     SelectorFootprint,
-    PartsTablePart,
     JlcPart,
     GeneratorBlock,
     FootprintBlock,
@@ -587,7 +586,7 @@ class Lp5907_Device(
         self.assign(self.actual_dropout, (50, 250) * mVolt)
 
         self.output_voltage = self.ArgParameter(output_voltage)
-        self.generator_param(self.output_voltage, self.part, self.filter_footprints)
+        self.generator_param(self.output_voltage, self.filter_footprints)
 
         self.en = self.Port(
             DigitalSink(
@@ -707,9 +706,7 @@ class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
             self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Tlv757p_Device(
-    InternalSubcircuit, LinearRegulatorDevice, PartsTablePart, JlcPart, GeneratorBlock, FootprintBlock
-):
+class Tlv757p_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorBlock, FootprintBlock):
     def __init__(self, output_voltage: RangeLike):
         super().__init__()
 
@@ -718,7 +715,7 @@ class Tlv757p_Device(
         self.assign(self.actual_quiescent_current, (0.1, 40) * uAmp)  # shutdown to worst-case ground current
 
         self.output_voltage = self.ArgParameter(output_voltage)
-        self.generator_param(self.output_voltage, self.part)
+        self.generator_param(self.output_voltage)
 
         self.en = self.Port(DigitalSink(voltage_limits=(0, 5.5) * Volt, input_thresholds=(0.3, 1) * Volt))
 

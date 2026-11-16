@@ -42,6 +42,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C7976")
+        self.assign(self.actual_basic_part, False)
 
 
 class Lmv331(Comparator):

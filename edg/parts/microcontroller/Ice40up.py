@@ -7,7 +7,7 @@ from ...vendor_parts.jlc.JlcPart import JlcPart
 from ..connector.Headers import PinHeader127DualShrouded
 
 
-class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
+class Ice40TargetHeader(ProgrammingConnector):
     """Custom programming header for iCE40 loosely based on the SWD pinning"""
 
     def __init__(self) -> None:

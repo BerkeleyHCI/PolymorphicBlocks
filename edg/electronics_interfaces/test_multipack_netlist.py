@@ -8,16 +8,11 @@ from .CircuitPackingBlock import PackedVoltageSource
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink, NetlistTestCase, Net, net_pin, net_block
 
 
-class TestFakeSinkElement(TestBaseFakeSink):
-    # just exists to not be an abstract part
-    pass
-
-
 class TestPackedSink(MultipackBlock):
     def __init__(self) -> None:
         super().__init__()
 
-        self.elements = self.PackedPart(PackedBlockArray(TestFakeSinkElement()))
+        self.elements = self.PackedPart(PackedBlockArray(TestBaseFakeSink()))
         self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
         self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
 

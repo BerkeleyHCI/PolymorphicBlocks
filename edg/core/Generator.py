@@ -43,13 +43,15 @@ class GeneratorBlock(Block):
             )
         for param in params:
             if not isinstance(param, ConstraintExpr):
-                raise EdgTypeError(f"generator_param(...) param", param, ConstraintExpr)
+                raise EdgTypeError(
+                    f"generator_param(...) param {self._name_of(param, debug=True)}", param, ConstraintExpr
+                )
             if param.binding is None:
                 raise BlockDefinitionError(type(self), "generator_param(...) param must be bound")
             if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
                 raise BlockDefinitionError(
                     type(self),
-                    "generator_param(...) param must be an __init__ param, port requested, or port is_connected",
+                    f"generator_param(...) param {self._name_of(param, debug=True)} must be an __init__ param, port requested, or port is_connected",
                 )
 
             self._generator_params_list.append(param)
@@ -92,6 +94,23 @@ class GeneratorBlock(Block):
 
     # Generator serialization and parsing
     #
+    @override
+    def _check_params_assigned(self) -> None:
+        # the block is only complete when generating, don't check for missing params before then
+        if self._elaboration_state != BlockElaborationState.post_generate:
+            return
+        super()._check_params_assigned()
+
+    @override
+    def _collect_unassigned_port_params(self, container_port: BasePort, path: List[str]) -> List[List[str]]:
+        # generators can inspect ports for connected-ness, if not connected, it does not need an assignment
+        if self._elaboration_state == BlockElaborationState.post_generate:
+            if isinstance(container_port, Port):
+                port_connected = container_port.is_connected()
+                if port_connected in self._generator_param_values and not self.get(port_connected):
+                    return []  # port is not connected, so no assignment needed
+        return super()._collect_unassigned_port_params(container_port, path)
+
     @override
     def _def_to_proto(self) -> edgir.HierarchyBlock:
         self._namer.resolve_names()

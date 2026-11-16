@@ -86,7 +86,7 @@ class Vl53l5cx_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Vl53l5cx(DistanceSensor, Resettable, GeneratorBlock):
+class Vl53l5cx(DistanceSensor, GeneratorBlock):
     """Time-of-flight 8x8 multizone laser ranging sensor, up to 4m.
     Requires using the ST API, does not have a defined register map.
     Exposed pad must be thermally connected to GND.

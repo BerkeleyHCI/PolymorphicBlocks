@@ -9,7 +9,7 @@ from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
 
 
 @abstract_block
-class SelectorArea(PartsTablePart):
+class SelectorArea(Block):
     """A base mixin that defines a filter_area range specification for blocks that automatically select parts.
     Provides no implementation, only defines the specification parameter.
 

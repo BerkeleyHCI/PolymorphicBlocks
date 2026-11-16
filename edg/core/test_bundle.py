@@ -9,9 +9,9 @@ from .test_elaboration_common import TestPortSink
 class TestBundle(Port):
     def __init__(
         self,
-        float_param: FloatLike = FloatExpr(),
-        a_float_param: FloatLike = FloatExpr(),
-        b_float_param: FloatLike = FloatExpr(),
+        float_param: FloatLike = 0.0,
+        a_float_param: FloatLike = 0.0,
+        b_float_param: FloatLike = 0.0,
     ) -> None:
         super().__init__()
 

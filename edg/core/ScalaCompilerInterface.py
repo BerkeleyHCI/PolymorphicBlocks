@@ -72,10 +72,9 @@ class CompiledDesign:
         return self._values.get(localpath.SerializeToString(), None)
 
     def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]) -> None:
-        """Append solved values to this design, such as from a refinement pass"""
+        """Append / replaces solved values to this design, such as from a refinement pass"""
         for value_path, value_value in values:
             value_path_str = value_path.SerializeToString()
-            assert value_path_str not in self._values
             self._values[value_path_str] = edgir.valuelit_to_lit(value_value)
 
     def get_connected_link_port(self, block_port: edgir.LocalPath) -> Optional[edgir.LocalPath]:

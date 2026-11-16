@@ -100,7 +100,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 
 
 @abstract_block
-class SelectorFootprint(PartsTablePart):
+class SelectorFootprint(Block):
     """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
 
     def __init__(

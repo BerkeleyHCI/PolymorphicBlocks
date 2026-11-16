@@ -104,6 +104,7 @@ class Fpc050BottomFlip(Fpc050Bottom, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
         self.conn = self.Block(Fpc050Top(self.length))
+        self.assign(self.actual_length, self.conn.actual_length)
         length = self.get(self.length)
         assert length > 0, "explicit length required"
         for pin in self.get(self.pins.requested()):

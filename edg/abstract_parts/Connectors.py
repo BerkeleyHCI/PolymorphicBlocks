@@ -46,6 +46,10 @@ class RfConnectorAntenna(Antenna):
         self.connect(self.conn.sig, self.a)
         self.connect(self.conn.gnd, self.gnd)
 
+        self.assign(self.actual_frequency_rating, (0, float("inf") * Henry))
+        self.assign(self.actual_impedance, (0, float("inf") * Ohm))
+        self.assign(self.actual_power_rating, (0, float("inf") * Watt))
+
 
 @abstract_block
 class UflConnector(RfConnector):

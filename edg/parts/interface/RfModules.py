@@ -67,7 +67,7 @@ class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
         )
 
 
-class Xbee_S3b(Interface, Radiofrequency, FootprintBlock):
+class Xbee_S3b(Interface, Radiofrequency):
     """XBee-PRO 900HP, product numbers XBP9B-*"""
 
     def __init__(self) -> None:

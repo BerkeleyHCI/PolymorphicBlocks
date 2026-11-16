@@ -100,6 +100,7 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C50506")
+        self.assign(self.actual_basic_part, False)
 
 
 class Drv8833(BrushedMotorDriver, GeneratorBlock):

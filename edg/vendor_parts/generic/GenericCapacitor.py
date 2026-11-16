@@ -154,16 +154,17 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
             assert valid_footprint is not None, "cannot select a valid footprint"
 
             cap_model = DummyCapacitorFootprint(
-                capacitance=Range.exact(self.SINGLE_CAP_MAX),
-                voltage=self.voltage,
-                footprint=valid_footprint,
-                value=f"{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F",
+                in_footprint=valid_footprint,
+                in_value=f"{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F",
             )
             self.c = ElementDict[DummyCapacitorFootprint]()
             for i in range(num_caps):
                 self.c[i] = self.Block(cap_model)
                 self.connect(self.c[i].pos, self.pos)
                 self.connect(self.c[i].neg, self.neg)
+
+            self.footprint("", "", {})  # no footprint, but needed to satisfy required params
+
         else:
             value = ESeriesUtil.choose_preferred_number(nominal_capacitance, ESeriesUtil.SERIES[24], 0)
             assert value is not None, "cannot select a preferred number"

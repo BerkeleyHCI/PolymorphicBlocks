@@ -95,7 +95,7 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, True)
 
 
-class Cp2102(Interface, PinMappable):
+class Cp2102(Interface):
     """USB-UART converter"""
 
     def __init__(self) -> None:

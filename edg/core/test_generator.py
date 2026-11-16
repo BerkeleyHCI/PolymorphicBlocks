@@ -94,7 +94,7 @@ class TestLink(Link):
 class TestPortSource(Port[TestLink]):
     link_type = TestLink
 
-    def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
+    def __init__(self, float_value: FloatLike = 0.0) -> None:
         super().__init__()
         self.float_param = self.Parameter(FloatExpr(float_value))
 
@@ -102,7 +102,7 @@ class TestPortSource(Port[TestLink]):
 class TestPortSink(Port[TestLink]):
     link_type = TestLink
 
-    def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
+    def __init__(self, range_value: RangeLike = Range(0.0, 0.0)) -> None:
         super().__init__()
         self.range_param = self.Parameter(RangeExpr(range_value))
 
@@ -152,7 +152,7 @@ class TestGeneratorNotConnectedTop(Block):
 class GeneratorInnerConnect(GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.port = self.Port(TestPortSource(), optional=True)
+        self.port = self.Port(TestPortSource.empty(), optional=True)
 
     @override
     def generate(self) -> None:

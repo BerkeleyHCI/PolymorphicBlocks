@@ -6,7 +6,7 @@ from edg import *
 from .util import run_test_board
 
 
-class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
+class SwdCortexSourceHeader(ProgrammingConnector):
     def __init__(self) -> None:
         super().__init__()
 
@@ -33,7 +33,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
         )
 
 
-class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
+class SwdCortexSourceTagConnect(ProgrammingConnector):
     def __init__(self) -> None:
         super().__init__()
 

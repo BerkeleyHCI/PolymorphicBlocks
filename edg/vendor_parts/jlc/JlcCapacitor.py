@@ -118,21 +118,22 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
         if row[self.PARALLEL_COUNT] == 1:
             super()._row_generate(row)  # creates the footprint
         else:
-            TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+            TableDeratingCapacitor._row_generate(
+                self, row
+            )  # skips creating the footprint in PartsTableSelectorFootprint
+            self.assign(self.lcsc_part, "")
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
 
     @override
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
         cap_model = JlcDummyCapacitor(
-            set_lcsc_part=row[self.LCSC_PART_HEADER],
-            set_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
-            footprint=row[self.KICAD_FOOTPRINT],
-            manufacturer=row[self.MANUFACTURER_COL],
-            part_number=row[self.PART_NUMBER_COL],
-            value=row[self.DESCRIPTION_COL],
-            capacitance=row[self.NOMINAL_CAPACITANCE],
-            voltage=self.voltage,
+            in_footprint=row[self.KICAD_FOOTPRINT],
+            in_manufacturer=row[self.MANUFACTURER_COL],
+            in_part_number=row[self.PART_NUMBER_COL],
+            in_value=row[self.DESCRIPTION_COL],
+            in_lcsc_part=row[self.LCSC_PART_HEADER],
+            in_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
         )
         self.c = ElementDict[JlcDummyCapacitor]()
         for i in range(row[self.PARALLEL_COUNT]):
@@ -140,27 +141,26 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
             self.connect(self.c[i].pos, self.pos)
             self.connect(self.c[i].neg, self.neg)
 
+        self.footprint("", "", {})  # no footprint, but needed to satisfy required params
+
 
 class JlcDummyCapacitor(JlcPart, DummyCapacitorFootprint):
     """Dummy capacitor that additionally has JLC part fields"""
 
     def __init__(
         self,
-        set_lcsc_part: StringLike = "",
-        set_basic_part: BoolLike = False,
-        footprint: StringLike = "",
-        manufacturer: StringLike = "",
-        part_number: StringLike = "",
-        value: StringLike = "",
         *args: Any,
+        in_lcsc_part: StringLike = "",
+        in_basic_part: BoolLike = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            footprint=footprint, manufacturer=manufacturer, part_number=part_number, value=value, *args, **kwargs
+            *args,
+            **kwargs,
         )
 
-        self.assign(self.lcsc_part, set_lcsc_part)
-        self.assign(self.actual_basic_part, set_basic_part)
+        self.assign(self.lcsc_part, in_lcsc_part)
+        self.assign(self.actual_basic_part, in_basic_part)
 
 
 lambda: JlcCapacitor()  # ensure class is instantiable (non-abstract)

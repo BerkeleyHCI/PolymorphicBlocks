@@ -3,6 +3,7 @@ from deprecated import deprecated
 from ..electronics_interfaces import *
 
 
+@abstract_block
 class Neopixel(Light, Block):
     """Abstract base class for individually-addressable, serially-connected Neopixel-type
     (typically RGB) LEDs and defines the pwr/gnd/din/dout interface."""

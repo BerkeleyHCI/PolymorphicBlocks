@@ -68,6 +68,7 @@ class Sn74lvc1g3157(AnalogSwitch):
         super().contents()
 
         self.require(~self.control_gnd.is_connected(), "device does not support control ground")
+        self.control_gnd.init_from(Ground())  # satisfy strict params
 
         self.ic = self.Block(Sn74lvc1g3157_Device())
         self.connect(self.pwr, self.ic.vcc)

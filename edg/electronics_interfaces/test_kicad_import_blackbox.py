@@ -14,9 +14,9 @@ class KiCadBlackboxBlock(KiCadSchematicBlock):
 
     def __init__(self) -> None:
         super().__init__()
-        self.pwr = self.Port(Passive.empty())
-        self.gnd = self.Port(Passive.empty())
-        self.out = self.Port(Passive.empty())
+        self.pwr = self.Port(Passive())
+        self.gnd = self.Port(Passive())
+        self.out = self.Port(Passive())
         self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"))
 
 

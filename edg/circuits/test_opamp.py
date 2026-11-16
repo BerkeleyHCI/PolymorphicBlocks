@@ -22,6 +22,8 @@ class TestResistor(Resistor):
     def contents(self) -> None:
         super().contents()
         self.assign(self.actual_resistance, self.resistance)
+        self.assign(self.actual_power_rating, (0, 0) * Watt)
+        self.assign(self.actual_voltage_rating, (0, 0) * Volt)
 
 
 class AmplifierTestTop(Block):
