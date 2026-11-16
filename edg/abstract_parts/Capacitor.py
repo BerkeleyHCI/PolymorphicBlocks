@@ -339,7 +339,7 @@ class TableDeratingCapacitor(TableCapacitor):
         ...
 
 
-class DummyCapacitorFootprint(Capacitor, DummyDevice, FootprintBlock):
+class DummyCapacitorFootprint(DummyDevice, FootprintBlock):
     """Dummy capacitor that takes in all its parameters (footprint, value, etc) and does not do any computation.
     Used as the leaf block for generating parallel capacitors.
 
@@ -348,25 +348,28 @@ class DummyCapacitorFootprint(Capacitor, DummyDevice, FootprintBlock):
 
     def __init__(
         self,
-        footprint: StringLike = "",
-        manufacturer: StringLike = "",
-        part_number: StringLike = "",
-        value: StringLike = "",
+        in_footprint: StringLike = "",
+        in_manufacturer: StringLike = "",
+        in_part_number: StringLike = "",
+        in_value: StringLike = "",
         *args: Any,
         **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
 
+        self.pos = self.Port(Passive.empty())
+        self.neg = self.Port(Passive.empty())
+
         self.footprint(
             "C",
-            footprint,
+            in_footprint,
             {
                 "1": self.pos,
                 "2": self.neg,
             },
-            mfr=manufacturer,
-            part=part_number,
-            value=value,
+            mfr=in_manufacturer,
+            part=in_part_number,
+            value=in_value,
         )
 
 

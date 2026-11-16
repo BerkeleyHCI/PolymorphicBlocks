@@ -5,7 +5,7 @@ from ...vendor_parts.jlc.JlcPart import JlcPart
 
 
 class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.gnd = self.Port(Ground(), [Common])

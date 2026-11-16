@@ -85,14 +85,12 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
     @override
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
         cap_model = JlcDummyCapacitor(
-            set_lcsc_part=row[self.LCSC_COL],
-            set_basic_part=row[self.BASIC_PART_COL],
-            footprint=row[self.KICAD_FOOTPRINT],
-            manufacturer=row[self.MANUFACTURER_COL],
-            part_number=row[self.PART_NUMBER_COL],
-            value=row[self.DESCRIPTION_COL],
-            capacitance=row[self.NOMINAL_CAPACITANCE],
-            voltage=self.voltage,
+            in_footprint=row[self.KICAD_FOOTPRINT],
+            in_manufacturer=row[self.MANUFACTURER_COL],
+            in_part_number=row[self.PART_NUMBER_COL],
+            in_value=row[self.DESCRIPTION_COL],
+            in_lcsc_part=row[self.LCSC_COL],
+            in_basic_part=row[self.BASIC_PART_COL],
         )
         self.c = ElementDict[JlcDummyCapacitor]()
         for i in range(row[self.PARALLEL_COUNT]):
